@@ -4,6 +4,7 @@
 	import SvelteMarkdown from "svelte-markdown";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { cn } from "$lib/utils";
+	import { Badge } from "$lib/components/ui/badge";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
@@ -65,6 +66,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Svelte Changelog | {repos[currentRepo]}</title>
+</svelte:head>
+
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
 		<span class="text-primary">{repos[currentRepo]}</span>
@@ -80,6 +85,7 @@
 				{/each}
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
+				<!-- Tab-specific settings -->
 				{#if currentRepo === "svelte"}
 					<Checkbox
 						id="beta-releases"
@@ -109,6 +115,7 @@
 				{/if}
 			</div>
 		</div>
+		<!-- Tabs content creation -->
 		{#each Object.entries(repos) as [repo, name]}
 			<Tabs.Content value={repo}>
 				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo: repo, per_page: 50 })}
@@ -120,6 +127,7 @@
 					<Accordion.Root
 						multiple
 						value={data
+							// Only expand releases that are less than a week old and are Svelte or SvelteKit releases
 							.filter(release => {
 								const isLessThanAWeekOld =
 									new Date(release.created_at).getTime() >
@@ -132,34 +140,51 @@
 							.map(release => release.id.toString())}
 					>
 						{#each data.filter(release => {
+							// Filter out Svelte beta releases depending on the setting
 							if (repo === "svelte" && release.prerelease) return $displayBetaReleases;
+							// Filter out non-SvelteKit releases depending on the setting
 							if (repo === "kit" && !release.name?.startsWith("@sveltejs/kit")) return $nonKitReleasesDisplay !== "hide";
+							// Else, show the release
 							return true;
 						}) as release (release.id)}
+							{@const releaseDate = new Date(release.created_at)}
 							<Accordion.Item value={release.id.toString()}>
-								<Accordion.Trigger class="group items-baseline gap-2 hover:no-underline xs:gap-1">
-									<span
-										class="text-left text-lg group-hover:underline"
-										class:text-muted-foreground={repo === "kit" &&
-											!release.name?.startsWith("@sveltejs/kit") &&
-											$nonKitReleasesDisplay === "dim"}
-									>
-										{release.name}
-									</span>
-									<span
-										title={new Date(release.created_at).getTime() >
-										new Date().getTime() - 1000 * 60 * 60 * 24 * 7
-											? new Date(release.created_at).toLocaleDateString()
-											: undefined}
-										class="mr-auto flex text-sm text-muted-foreground"
-									>
-										<span class="mr-1 hidden xs:block">•</span>
-										{toRelativeDateString(new Date(release.created_at))}
-									</span>
+								<!-- Trigger with release name, date and optional prerelease badge -->
+								<Accordion.Trigger class="group items-center hover:no-underline">
+									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
+										<div class="flex flex-col items-start gap-1">
+											<span
+												class="text-left text-lg group-hover:underline"
+												class:text-muted-foreground={repo === "kit" &&
+													!release.name?.startsWith("@sveltejs/kit") &&
+													$nonKitReleasesDisplay === "dim"}
+											>
+												{release.name}
+											</span>
+											{#if release.prerelease}
+												<Badge class="xs:hidden">Prerelease</Badge>
+											{/if}
+										</div>
+										<span
+											title={releaseDate.getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+												? releaseDate.toLocaleDateString()
+												: undefined}
+											class="ml-auto mr-4 flex text-sm text-muted-foreground xs:ml-0 xs:mr-auto"
+										>
+											<span class="mr-1 hidden xs:block">•</span>
+											{toRelativeDateString(releaseDate)}
+										</span>
+									</div>
+									{#if release.prerelease}
+										<Badge class="ml-auto mr-4 hidden xs:block">Prerelease</Badge>
+									{/if}
 								</Accordion.Trigger>
 								<Accordion.Content>
+									<!-- Accordion content with markdown body and a link to open it on GitHub -->
 									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
 										<div>
+											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
+											<!-- for clean look and using GitHub Flavored Markdown as an option -->
 											<SvelteMarkdown
 												source={release.body}
 												renderers={{
@@ -170,6 +195,7 @@
 												options={{ gfm: true }}
 											/>
 										</div>
+										<!-- Open the release on GitHub in a new tab, with a nice hover animation -->
 										<Button
 											href={release.html_url}
 											target="_blank"
@@ -185,6 +211,7 @@
 							</Accordion.Item>
 						{/each}
 					</Accordion.Root>
+					<!-- Accordion footer linking to more (all) releases -->
 					<span class="mt-8 flex justify-center">
 						<em class="text-center text-sm text-muted-foreground">
 							{data.length} results are shown. If you want to see more releases, please visit the
@@ -203,6 +230,7 @@
 						</em>
 					</span>
 				{:catch error}
+					<!-- Error on fetch fail -->
 					<p class="text-red-500">{error.message}</p>
 				{/await}
 			</Tabs.Content>

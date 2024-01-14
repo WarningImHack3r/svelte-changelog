@@ -20,10 +20,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Svelte Changelog</title>
-</svelte:head>
-
 <ModeWatcher />
 <header
 	class="sticky top-0 z-40 w-full border-b bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
