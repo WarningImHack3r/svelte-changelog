@@ -33,6 +33,36 @@
 
 	// GitHub API client
 	const octokit = new Octokit();
+
+	// Date formatting
+	function toRelativeDateString(date: Date) {
+		let dateDiff = new Date().getTime() - date.getTime();
+		let relevantUnit: Intl.RelativeTimeFormatUnit;
+		switch (true) {
+			case dateDiff < 1000 * 60:
+				dateDiff /= 1000;
+				relevantUnit = "seconds";
+				break;
+			case dateDiff < 1000 * 60 * 60:
+				dateDiff /= 1000 * 60;
+				relevantUnit = "minutes";
+				break;
+			case dateDiff < 1000 * 60 * 60 * 24:
+				dateDiff /= 1000 * 60 * 60;
+				relevantUnit = "hours";
+				break;
+			case dateDiff < 1000 * 60 * 60 * 24 * 8: // 8 days instead of 7 to display "7 days ago" instead of "1 week ago" / regular date
+				dateDiff /= 1000 * 60 * 60 * 24;
+				relevantUnit = "days";
+				break;
+			default:
+				return date.toLocaleDateString();
+		}
+		// formatting to english because it would be the only thing localized otherwise
+		return new Intl.RelativeTimeFormat("en", {
+			style: "long"
+		}).format(-Math.ceil(dateDiff), relevantUnit);
+	}
 </script>
 
 <div class="container py-8">
@@ -107,7 +137,7 @@
 							return true;
 						}) as release (release.id)}
 							<Accordion.Item value={release.id.toString()}>
-								<Accordion.Trigger class="group items-baseline gap-2 hover:no-underline">
+								<Accordion.Trigger class="group items-baseline gap-2 hover:no-underline xs:gap-1">
 									<span
 										class="text-left text-lg group-hover:underline"
 										class:text-muted-foreground={repo === "kit" &&
@@ -116,9 +146,15 @@
 									>
 										{release.name}
 									</span>
-									<span class="mr-auto flex text-sm text-muted-foreground">
-										<span class="mr-1.5 hidden xs:block">•</span>
-										{new Date(release.created_at).toLocaleDateString()}
+									<span
+										title={new Date(release.created_at).getTime() >
+										new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+											? new Date(release.created_at).toLocaleDateString()
+											: undefined}
+										class="mr-auto flex text-sm text-muted-foreground"
+									>
+										<span class="mr-1 hidden xs:block">•</span>
+										{toRelativeDateString(new Date(release.created_at))}
 									</span>
 								</Accordion.Trigger>
 								<Accordion.Content>
