@@ -41,14 +41,16 @@
 		Releases
 	</h2>
 	<Tabs.Root bind:value={currentRepo} class="mt-8">
-		<div class="flex items-center justify-between">
+		<div
+			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
+		>
 			<Tabs.List>
 				{#each Object.entries(repos) as [id, name]}
 					<Tabs.Trigger value={id}>{name}</Tabs.Trigger>
 				{/each}
 			</Tabs.List>
-			{#if currentRepo === "svelte"}
-				<div class="flex items-center space-x-2">
+			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
+				{#if currentRepo === "svelte"}
 					<Checkbox
 						id="beta-releases"
 						bind:checked={$displayBetaReleases}
@@ -61,9 +63,7 @@
 					>
 						Show beta releases
 					</Label>
-				</div>
-			{:else}
-				<div class="flex items-center gap-2">
+				{:else}
 					<span class="text-sm text-muted-foreground">Non-SvelteKit releases:</span>
 					<ToggleGroup.Root
 						bind:value={$nonKitReleasesDisplay}
@@ -76,13 +76,13 @@
 							</ToggleGroup.Item>
 						{/each}
 					</ToggleGroup.Root>
-				</div>
-			{/if}
+				{/if}
+			</div>
 		</div>
 		{#each Object.entries(repos) as [repo, name]}
 			<Tabs.Content value={repo}>
 				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo: repo, per_page: 50 })}
-					<p class="flex items-center justify-center text-xl">
+					<p class="mt-8 flex items-center justify-center text-xl">
 						<Loader2 class="mr-2 size-4 animate-spin" />
 						Loading...
 					</p>
@@ -107,21 +107,22 @@
 							return true;
 						}) as release (release.id)}
 							<Accordion.Item value={release.id.toString()}>
-								<Accordion.Trigger class="group items-baseline hover:no-underline">
+								<Accordion.Trigger class="group items-baseline gap-2 hover:no-underline">
 									<span
-										class="text-lg group-hover:underline"
+										class="text-left text-lg group-hover:underline"
 										class:text-muted-foreground={repo === "kit" &&
 											!release.name?.startsWith("@sveltejs/kit") &&
 											$nonKitReleasesDisplay === "dim"}
 									>
 										{release.name}
 									</span>
-									<span class="ml-1.5 mr-auto text-sm text-muted-foreground">
-										• {new Date(release.created_at).toLocaleDateString()}
+									<span class="mr-auto flex text-sm text-muted-foreground">
+										<span class="mr-1.5 hidden xs:block">•</span>
+										{new Date(release.created_at).toLocaleDateString()}
 									</span>
 								</Accordion.Trigger>
 								<Accordion.Content>
-									<div class="flex items-end justify-between">
+									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
 										<div>
 											<SvelteMarkdown
 												source={release.body}
@@ -133,7 +134,11 @@
 												options={{ gfm: true }}
 											/>
 										</div>
-										<Button href={release.html_url} target="_blank" class="group mb-4 mr-8">
+										<Button
+											href={release.html_url}
+											target="_blank"
+											class="group mb-4 ml-auto mr-8 sm:ml-0 sm:mt-auto"
+										>
 											Open release
 											<ArrowUpRight
 												class="ml-2 size-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
@@ -145,7 +150,7 @@
 						{/each}
 					</Accordion.Root>
 					<span class="mt-8 flex justify-center">
-						<em class="text-sm text-muted-foreground">
+						<em class="text-center text-sm text-muted-foreground">
 							{data.length} results are shown. If you want to see more releases, please visit the
 							<a
 								href="https://github.com/sveltejs/{repo}/releases"

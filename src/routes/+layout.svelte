@@ -44,9 +44,8 @@
 		<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
 			<nav class="flex items-center space-x-1">
 				<Button
-					href="https://github.com/WarningImHack3r/advent-of-svelte"
+					href="https://github.com/WarningImHack3r/svelte-changelog"
 					target="_blank"
-					rel="noreferrer"
 					variant="ghost"
 					size="icon"
 				>
@@ -109,7 +108,7 @@
 
 <slot />
 
-<footer class="mt-auto w-full border-t bg-background py-4 xs:py-0">
+<footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">
 		<p class="text-sm text-muted-foreground">
 			Built by <a
