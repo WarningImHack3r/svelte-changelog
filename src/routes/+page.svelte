@@ -157,9 +157,10 @@
 								return true;
 							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
+							{@const isMajorRelease = release.tag_name?.includes(".0.0") && !release.prerelease}
 							<Accordion.Item value={release.id.toString()}>
 								<!-- Trigger with release name, date and optional prerelease badge -->
-								<Accordion.Trigger class="group items-center hover:no-underline">
+								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
 										<div class="flex flex-col items-start gap-1">
 											<span
@@ -170,23 +171,31 @@
 											>
 												{release.name}
 											</span>
-											{#if release.prerelease}
-												<Badge class="xs:hidden">Prerelease</Badge>
+											{#if isMajorRelease}
+												<Badge class="xs:hidden">Major</Badge>
+											{:else if release.prerelease}
+												<Badge variant="outline" class="border-primary text-primary xs:hidden">
+													Prerelease
+												</Badge>
 											{/if}
 										</div>
 										<span
 											title={releaseDate.getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
 												? releaseDate.toLocaleDateString()
 												: undefined}
-											class="ml-auto mr-4 flex text-sm text-muted-foreground xs:ml-0 xs:mr-auto"
+											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
 											{toRelativeDateString(releaseDate)}
 										</span>
+										{#if isMajorRelease}
+											<Badge class="hidden xs:block">Major</Badge>
+										{:else if release.prerelease}
+											<Badge variant="outline" class="hidden border-primary text-primary xs:block">
+												Prerelease
+											</Badge>
+										{/if}
 									</div>
-									{#if release.prerelease}
-										<Badge class="ml-auto mr-4 hidden xs:block">Prerelease</Badge>
-									{/if}
 								</Accordion.Trigger>
 								<Accordion.Content>
 									<!-- Accordion content with markdown body and a link to open it on GitHub -->
