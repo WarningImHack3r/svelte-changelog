@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Octokit } from "octokit";
 	import { ArrowUpRight, Loader2 } from "lucide-svelte";
-	import SvelteMarkdown from "svelte-markdown";
+	import Markdown from "svelte-exmarkdown";
+	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
@@ -193,15 +194,25 @@
 										<div>
 											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
 											<!-- for clean look and using GitHub Flavored Markdown as an option -->
-											<SvelteMarkdown
-												source={release.body}
-												renderers={{
-													codespan: CodeRenderer,
-													heading: HeadingRenderer,
-													list: ListRenderer,
-													link: LinkRenderer
-												}}
-												options={{ gfm: true }}
+											<Markdown
+												md={release.body ?? ""}
+												plugins={[
+													{
+														renderer: {
+															a: LinkRenderer,
+															code: CodeRenderer,
+															h1: HeadingRenderer,
+															h2: HeadingRenderer,
+															h3: HeadingRenderer,
+															h4: HeadingRenderer,
+															h5: HeadingRenderer,
+															h6: HeadingRenderer,
+															ol: ListRenderer,
+															ul: ListRenderer
+														}
+													},
+													gfmPlugin()
+												]}
 											/>
 										</div>
 										<!-- Open the release on GitHub in a new tab, with a nice hover animation -->

@@ -1,46 +1,13 @@
 <script lang="ts">
-	/**
-	 * A list item.
-	 */
-	type ListItem = {
-		type: string;
-		raw: string;
-		task: boolean;
-		loose: boolean;
-		text: string;
-		tokens: Token[];
-	};
+	import { getAstNode } from "svelte-exmarkdown";
 
-	/**
-	 * A token.
-	 */
-	type Token = {
-		type: string;
-		raw: string;
-		href: string | undefined;
-		title: string | null | undefined;
-		text: string;
-		tokens: Token[] | undefined;
-	};
+	export let start: number | undefined = undefined;
 
-	/**
-	 * Whether the list is ordered (ol) or unordered (ul).
-	 */
-	export let ordered: boolean;
-	/**
-	 * The raw markdown string.
-	 */
-	export let raw: string;
-	/**
-	 * The starting number for ordered lists.
-	 */
-	export let start: number;
-	export let loose: boolean;
-	export let items: ListItem[];
+	const node = getAstNode();
 </script>
 
-{#if ordered}
-	<ol {start} class="my-6 ml-6 list-decimal [&>li]:mt-2 [li>&]:my-2">
+{#if $node.tagName === "ol"}
+	<ol start={start ?? 1} class="my-6 ml-6 list-decimal [&>li]:mt-2 [li>&]:my-2">
 		<slot />
 	</ol>
 {:else}
