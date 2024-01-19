@@ -35,6 +35,6 @@
 			{text.replaceAll("`", "")}
 		</code>
 	{:else}
-		{text}
+		<slot />
 	{/if}
 </a>

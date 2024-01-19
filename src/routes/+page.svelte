@@ -11,6 +11,7 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
+	import CodeRenderer from "./renderers/CodeRenderer.svelte";
 	import HeadingRenderer from "./renderers/HeadingRenderer.svelte";
 	import LinkRenderer from "./renderers/LinkRenderer.svelte";
 	import ListRenderer from "./renderers/ListRenderer.svelte";
@@ -81,7 +82,12 @@
 		>
 			<Tabs.List>
 				{#each Object.entries(repos) as [id, name]}
-					<Tabs.Trigger value={id}>{name}</Tabs.Trigger>
+					<Tabs.Trigger
+						class="data-[state=inactive]:hover:bg-background/25 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground"
+						value={id}
+					>
+						{name}
+					</Tabs.Trigger>
 				{/each}
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
@@ -139,14 +145,16 @@
 							})
 							.map(release => release.id.toString())}
 					>
-						{#each data.filter(release => {
-							// Filter out Svelte beta releases depending on the setting
-							if (repo === "svelte" && release.prerelease) return $displayBetaReleases;
-							// Filter out non-SvelteKit releases depending on the setting
-							if (repo === "kit" && !release.name?.startsWith("@sveltejs/kit")) return $nonKitReleasesDisplay !== "hide";
-							// Else, show the release
-							return true;
-						}) as release (release.id)}
+						{#each data
+							.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+							.filter(release => {
+								// Filter out Svelte beta releases depending on the setting
+								if (repo === "svelte" && release.prerelease) return $displayBetaReleases;
+								// Filter out non-SvelteKit releases depending on the setting
+								if (repo === "kit" && !release.name?.startsWith("@sveltejs/kit")) return $nonKitReleasesDisplay !== "hide";
+								// Else, show the release
+								return true;
+							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
 							<Accordion.Item value={release.id.toString()}>
 								<!-- Trigger with release name, date and optional prerelease badge -->
@@ -188,6 +196,7 @@
 											<SvelteMarkdown
 												source={release.body}
 												renderers={{
+													codespan: CodeRenderer,
 													heading: HeadingRenderer,
 													list: ListRenderer,
 													link: LinkRenderer
