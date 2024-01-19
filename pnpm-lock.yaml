@@ -11,8 +11,8 @@ dependencies:
 
 devDependencies:
   '@sveltejs/adapter-vercel':
-    specifier: ^4.0.4
-    version: 4.0.4(@sveltejs/kit@2.3.2)
+    specifier: ^5.0.0
+    version: 5.0.0(@sveltejs/kit@2.3.2)
   '@sveltejs/kit':
     specifier: ^2.3.2
     version: 2.3.2(@sveltejs/vite-plugin-svelte@3.0.1)(svelte@4.2.8)(vite@5.0.11)
@@ -863,10 +863,10 @@ packages:
     dev: true
     optional: true
 
-  /@sveltejs/adapter-vercel@4.0.4(@sveltejs/kit@2.3.2):
-    resolution: {integrity: sha512-2MMThT6eROTqAGmx81Xv+tafhpetQfRUDIsboFiGgkFoaxcmoTzW4t9GyXZdMY8xl1YOdvAnZXcCgacYzmVWVw==}
+  /@sveltejs/adapter-vercel@5.0.0(@sveltejs/kit@2.3.2):
+    resolution: {integrity: sha512-aN4IY/Nkx6I7qrIvwQqK5uTJc9TtNZBvlgWnYFc8EFmBKi0ZSi+Zf10Nt2/e7dP8MlIBiX9N+gh33OoZwATJ9g==}
     peerDependencies:
-      '@sveltejs/kit': ^2.0.0
+      '@sveltejs/kit': ^2.4.0
     dependencies:
       '@sveltejs/kit': 2.3.2(@sveltejs/vite-plugin-svelte@3.0.1)(svelte@4.2.8)(vite@5.0.11)
       '@vercel/nft': 0.26.2
