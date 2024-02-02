@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { getAstNode } from "svelte-exmarkdown";
+	import type { Readable } from "svelte/store";
+	import { getAstNode, type HastElement } from "svelte-exmarkdown";
 
-	const node = getAstNode();
+	const node = getAstNode() as Readable<HastElement>;
 </script>
 
 {#if $node.tagName === "h1"}

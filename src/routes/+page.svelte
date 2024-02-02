@@ -15,6 +15,7 @@
 	import CodeRenderer from "./renderers/CodeRenderer.svelte";
 	import HeadingRenderer from "./renderers/HeadingRenderer.svelte";
 	import LinkRenderer from "./renderers/LinkRenderer.svelte";
+	import ListElementRenderer from "./renderers/ListElementRenderer.svelte";
 	import ListRenderer from "./renderers/ListRenderer.svelte";
 
 	// Repositories to fetch releases from
@@ -216,6 +217,7 @@
 															h4: HeadingRenderer,
 															h5: HeadingRenderer,
 															h6: HeadingRenderer,
+															li: ListElementRenderer,
 															ol: ListRenderer,
 															ul: ListRenderer
 														}

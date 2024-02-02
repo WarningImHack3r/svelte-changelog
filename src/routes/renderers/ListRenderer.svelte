@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { getAstNode } from "svelte-exmarkdown";
+	import type { Readable } from "svelte/store";
+	import { getAstNode, type HastElement } from "svelte-exmarkdown";
 
 	export let start: number | undefined = undefined;
 
-	const node = getAstNode();
+	const node = getAstNode() as Readable<HastElement>;
 </script>
 
 {#if $node.tagName === "ol"}
