@@ -82,10 +82,10 @@
 		<div
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
-			<Tabs.List>
+			<Tabs.List class="bg-input dark:bg-muted">
 				{#each Object.entries(repos) as [id, name]}
 					<Tabs.Trigger
-						class="data-[state=inactive]:hover:bg-background/25 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground"
+						class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
 						value={id}
 					>
 						{name}
