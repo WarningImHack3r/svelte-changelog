@@ -1,19 +1,45 @@
 <script lang="ts">
 	import "../app.pcss";
-	import { onMount } from "svelte";
+	import { onMount, type SvelteComponent } from "svelte";
+	import type { SvelteHTMLElements } from "svelte/elements";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import { ChevronDown, Github, Monitor, Moon, Sun } from "lucide-svelte";
+	import ChevronDown from "lucide-svelte/icons/chevron-down";
+	import Moon from "lucide-svelte/icons/moon";
+	import Monitor from "lucide-svelte/icons/monitor";
+	import Sun from "lucide-svelte/icons/sun";
 	import { cn } from "$lib/utils";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
 	// Theme selector
+	type Theme = {
+		value: typeof theme;
+		label: string;
+		icon: typeof SvelteComponent<SvelteHTMLElements["svg"]>;
+	};
+	const themes: Theme[] = [
+		{
+			value: "light",
+			label: "Light",
+			icon: Sun
+		},
+		{
+			value: "dark",
+			label: "Dark",
+			icon: Moon
+		},
+		{
+			value: "system",
+			label: "System",
+			icon: Monitor
+		}
+	];
 	let theme: "light" | "dark" | "system";
 	let themeSwitcherOpen = false;
 
 	onMount(() => {
-		if ("userPrefersMode" in localStorage) {
-			theme = localStorage.userPrefersMode.replace(/"/g, "");
+		if ("mode-watcher-mode" in localStorage) {
+			theme = localStorage["mode-watcher-mode"].replace(/"/g, "");
 		} else {
 			theme = "system";
 		}
@@ -45,7 +71,7 @@
 					variant="ghost"
 					size="icon"
 				>
-					<Github class="size-5" />
+					<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
 					<span class="sr-only">GitHub</span>
 				</Button>
 				<DropdownMenu.Root bind:open={themeSwitcherOpen}>
@@ -70,30 +96,21 @@
 						<DropdownMenu.Label>Theme</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.RadioGroup bind:value={theme}>
-							<DropdownMenu.RadioItem
-								class="cursor-pointer"
-								value="light"
-								on:click={() => setMode("light")}
-							>
-								<Sun class="mr-2 size-4" />
-								<span>Light</span>
-							</DropdownMenu.RadioItem>
-							<DropdownMenu.RadioItem
-								class="cursor-pointer"
-								value="dark"
-								on:click={() => setMode("dark")}
-							>
-								<Moon class="mr-2 size-4" />
-								<span>Dark</span>
-							</DropdownMenu.RadioItem>
-							<DropdownMenu.RadioItem
-								class="cursor-pointer"
-								value="system"
-								on:click={() => resetMode()}
-							>
-								<Monitor class="mr-2 size-4" />
-								<span>System</span>
-							</DropdownMenu.RadioItem>
+							{#each themes as availableTheme}
+								<DropdownMenu.RadioItem
+									class="cursor-pointer data-[disabled]:opacity-100"
+									value={availableTheme.value}
+									disabled={theme === availableTheme.value}
+									on:click={() => {
+										return availableTheme.value === "system"
+											? resetMode()
+											: setMode(availableTheme.value);
+									}}
+								>
+									<svelte:component this={availableTheme.icon} class="mr-2 size-4" />
+									<span>{availableTheme.label}</span>
+								</DropdownMenu.RadioItem>
+							{/each}
 						</DropdownMenu.RadioGroup>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>

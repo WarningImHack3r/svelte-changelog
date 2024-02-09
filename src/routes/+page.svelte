@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Octokit } from "octokit";
-	import { ArrowUpRight, Loader2 } from "lucide-svelte";
+	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
+	import Loader2 from "lucide-svelte/icons/loader-2";
+	import { MetaTags } from "svelte-meta-tags";
 	import Markdown from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import { localStorageStore } from "$lib/localStorageStore";
@@ -69,9 +71,34 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Svelte Changelog | {repos[currentRepo]}</title>
-</svelte:head>
+<MetaTags
+	title={repos[currentRepo]}
+	titleTemplate="%s | Svelte Changelog"
+	description="A nice UI to stay up-to-date with Svelte releases"
+	canonical="https://svelte-changelog.vercel.app"
+	openGraph={{
+		images: [
+			{
+				url: "https://svelte.dev/favicon.png",
+				width: 128,
+				height: 128,
+				alt: "Svelte logo"
+			}
+		],
+		siteName: "Svelte Changelog"
+	}}
+	twitter={{
+		cardType: "summary",
+		site: "@probably_coding",
+		title: "Svelte Changelog",
+		description: "A nice UI to stay up-to-date with Svelte releases",
+		image: "https://svelte.dev/favicon.png",
+		imageAlt: "Svelte logo"
+	}}
+	additionalRobotsProps={{
+		noarchive: true
+	}}
+/>
 
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
