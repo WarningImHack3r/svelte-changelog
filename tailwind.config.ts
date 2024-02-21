@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import { fontFamily, screens } from "tailwindcss/defaultTheme";
+import typography from "@tailwindcss/typography";
 
 export default {
 	darkMode: ["class"],
@@ -60,7 +61,17 @@ export default {
 			},
 			fontFamily: {
 				sans: [...fontFamily.sans]
-			}
+			},
+			typography: () => ({
+				DEFAULT: {
+					css: {
+						a: {
+							color: 'theme("colors.primary.DEFAULT")'
+						}
+					}
+				}
+			})
 		}
-	}
+	},
+	plugins: [typography]
 } satisfies Config;

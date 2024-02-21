@@ -14,11 +14,7 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
-	import CodeRenderer from "./renderers/CodeRenderer.svelte";
-	import HeadingRenderer from "./renderers/HeadingRenderer.svelte";
-	import LinkRenderer from "./renderers/LinkRenderer.svelte";
 	import ListElementRenderer from "./renderers/ListElementRenderer.svelte";
-	import ListRenderer from "./renderers/ListRenderer.svelte";
 
 	// Repositories to fetch releases from
 	const repos = {
@@ -153,6 +149,7 @@
 		<!-- Tabs content creation -->
 		{#each Object.entries(repos) as [repo, name]}
 			<Tabs.Content value={repo}>
+				<!-- Fetch releases from GitHub -->
 				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo: repo, per_page: 50 })}
 					<p class="mt-8 flex items-center justify-center text-xl">
 						<Loader2 class="mr-2 size-4 animate-spin" />
@@ -228,7 +225,9 @@
 								<Accordion.Content>
 									<!-- Accordion content with markdown body and a link to open it on GitHub -->
 									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
-										<div>
+										<div
+											class="prose prose-sm dark:prose-invert prose-p:my-0 prose-a:no-underline prose-a:underline-offset-4 hover:prose-a:underline"
+										>
 											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
 											<!-- for clean look and using GitHub Flavored Markdown as an option -->
 											<Markdown
@@ -236,17 +235,7 @@
 												plugins={[
 													{
 														renderer: {
-															a: LinkRenderer,
-															code: CodeRenderer,
-															h1: HeadingRenderer,
-															h2: HeadingRenderer,
-															h3: HeadingRenderer,
-															h4: HeadingRenderer,
-															h5: HeadingRenderer,
-															h6: HeadingRenderer,
-															li: ListElementRenderer,
-															ol: ListRenderer,
-															ul: ListRenderer
+															li: ListElementRenderer
 														}
 													},
 													gfmPlugin()
