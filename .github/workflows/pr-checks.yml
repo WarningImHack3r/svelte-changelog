@@ -1,0 +1,138 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    paths:
+      - src/**
+      - static/**
+      - package.json
+      - pnpm-lock.yaml
+      - "*.config.*s"
+      - tsconfig.json
+      - .github/workflows/*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  permissions-check:
+    name: Permissions check
+    runs-on: ubuntu-latest
+    outputs:
+      has-permissions: ${{ steps.check-output.outputs.has-permissions }}
+
+    steps:
+      - name: ❓ Has access to secrets?
+        id: secrets-check
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.repository.full_name }}
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.WORKFLOW_PAT }}
+
+      - name: 📤 Set output
+        id: check-output
+        if: always()
+        run: echo "has-permissions=${{ steps.secrets-check.outcome == 'success' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+
+  check-and-fix:
+    name: Pre-checks
+    runs-on: ubuntu-latest
+    needs: permissions-check
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📂 Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.repository.full_name }}
+          ref: ${{ github.head_ref }}
+          token: ${{ needs.permissions-check.outputs.has-permissions == 'false' && github.token || secrets.WORKFLOW_PAT }}
+          fetch-depth: ${{ github.event_name == 'push' && 2 || 1 }}
+
+      - name: 📥 Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: 🧭 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: pnpm
+
+      - name: 📥 Install NPM dependencies
+        run: pnpm i --no-frozen-lockfile
+
+      - name: 🔍 Detect file changes
+        id: detect-changes-pnpm
+        run: |
+          if [[ $(git diff --name-only) =~ pnpm-lock.yaml ]]; then
+            echo "changes_detected=true >> $GITHUB_OUTPUT"
+          else
+            echo "changes_detected=false >> $GITHUB_OUTPUT"
+          fi
+
+      - name: ❌ Exit if lock file is not updated
+        if: needs.permissions-check.outputs.has-permissions == 'false' && steps.detect-changes-pnpm.outputs.changes_detected == 'true'
+        run: exit 1
+
+      - name: 📤 Commit updated lock file
+        id: auto-commit-action-lock
+        if: needs.permissions-check.outputs.has-permissions == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update lock file
+          file_pattern: pnpm-lock.yaml
+
+      - name: ❌ Exit if lock file has been committed
+        if: needs.permissions-check.outputs.has-permissions == 'true' && steps.auto-commit-action-lock.outputs.changes_detected == 'true'
+        run: exit 1
+
+      - name: 🔍 Get modified files
+        id: modified-files
+        uses: tj-actions/changed-files@v42
+
+      - name: 📤 Export results
+        id: changed-files
+        run: |
+          code_changes=false
+          config_changes=false
+
+          for file in ${{ steps.modified-files.outputs.all_changed_files }}; do
+            if [[ $file =~ ^src/ || $file =~ ^static/ ]]; then
+              echo "$file changes code"
+              code_changes=true
+            elif [[ $file = *.config.*s || $file = tsconfig.json ]]; then
+              echo "$file changes config"
+              config_changes=true
+            fi
+            if [[ $code_changes == 'true' && $config_changes == 'true' ]]; then
+              echo "Code and config changes detected, skipping further checks"
+              break
+            fi
+          done
+
+          echo "code_changes=$code_changes" >> $GITHUB_OUTPUT
+          echo "config_changes=$config_changes" >> $GITHUB_OUTPUT
+
+      - name: ✨ Check Svelte format
+        if: steps.changed-files.outputs.code_changes == 'true'
+        run: pnpm check
+
+      - name: ✨ Check style with Prettier & ESLint
+        if: steps.changed-files.outputs.code_changes == 'true' || steps.changed-files.outputs.config_changes == 'true'
+        run: pnpm lint
+
+      - name: 🔧 Fix lint
+        if: failure() && needs.permissions-check.outputs.has-permissions == 'true'
+        run: pnpm format
+
+      - name: 📤 Commit lint fixes
+        if: failure() && needs.permissions-check.outputs.has-permissions == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Fix lint
