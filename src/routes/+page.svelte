@@ -4,6 +4,7 @@
 	import Loader2 from "lucide-svelte/icons/loader-2";
 	import { MetaTags } from "svelte-meta-tags";
 	import Markdown from "svelte-exmarkdown";
+	import semver from "semver";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { cn } from "$lib/utils";
@@ -14,13 +15,14 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import ListElementRenderer from "./renderers/ListElementRenderer.svelte";
 
 	// Repositories to fetch releases from
 	const repos = {
 		svelte: "Svelte",
 		kit: "SvelteKit"
-	};
+	} as const;
 	let currentRepo: keyof typeof repos = "svelte";
 
 	// Svelte setting
@@ -150,12 +152,38 @@
 		{#each Object.entries(repos) as [repo, name]}
 			<Tabs.Content value={repo}>
 				<!-- Fetch releases from GitHub -->
-				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo: repo, per_page: 50 })}
+				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo, per_page: 50 })}
 					<p class="mt-8 flex items-center justify-center text-xl">
 						<Loader2 class="mr-2 size-4 animate-spin" />
 						Loading...
 					</p>
 				{:then { data }}
+					{@const latestRelease = data
+						.filter(release => release.tag_name.includes(`${repo}@`) && !release.prerelease)
+						.sort((a, b) =>
+							semver.rcompare(
+								a.tag_name.substring(a.tag_name.lastIndexOf("@") + 1),
+								b.tag_name.substring(b.tag_name.lastIndexOf("@") + 1)
+							)
+						)[0]}
+					{@const earliestOfLatestMajor = data
+						.filter(
+							release =>
+								release.tag_name.includes(`${repo}@`) &&
+								!release.prerelease &&
+								(latestRelease
+									? semver.major(
+											latestRelease.tag_name.substring(latestRelease.tag_name.lastIndexOf("@") + 1)
+										) ===
+										semver.major(release.tag_name.substring(release.tag_name.lastIndexOf("@") + 1))
+									: true)
+						)
+						.sort((a, b) =>
+							semver.compare(
+								a.tag_name.substring(a.tag_name.lastIndexOf("@") + 1),
+								b.tag_name.substring(b.tag_name.lastIndexOf("@") + 1)
+							)
+						)[0]}
 					<Accordion.Root
 						multiple
 						value={data
@@ -183,6 +211,22 @@
 							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
 							{@const isMajorRelease = release.tag_name?.includes(".0.0") && !release.prerelease}
+							{@const isLatestRelease = latestRelease?.id === release.id}
+							{@const isMaintenanceRelease =
+								latestRelease && earliestOfLatestMajor
+									? !isMajorRelease &&
+										!release.prerelease &&
+										release.tag_name.includes(`${repo}@`) &&
+										semver.major(
+											release.tag_name.substring(release.tag_name.lastIndexOf("@") + 1)
+										) <
+											semver.major(
+												latestRelease.tag_name.substring(
+													latestRelease.tag_name.lastIndexOf("@") + 1
+												)
+											) &&
+										releaseDate.getTime() > new Date(earliestOfLatestMajor.created_at).getTime()
+									: false}
 							<Accordion.Item value={release.id.toString()}>
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
@@ -196,13 +240,55 @@
 											>
 												{release.name}
 											</span>
-											{#if isMajorRelease}
-												<Badge class="xs:hidden">Major</Badge>
-											{:else if release.prerelease}
-												<Badge variant="outline" class="border-primary text-primary xs:hidden">
-													Prerelease
-												</Badge>
-											{/if}
+											<div class="flex items-center gap-2 xs:hidden">
+												{#if isLatestRelease}
+													<Tooltip.Root>
+														<Tooltip.Trigger>
+															<Badge
+																class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
+															>
+																Latest
+															</Badge>
+														</Tooltip.Trigger>
+														<Tooltip.Content>
+															This is the latest stable release of {repos[repo]}
+														</Tooltip.Content>
+													</Tooltip.Root>
+												{/if}
+												{#if isMajorRelease}
+													<Tooltip.Root>
+														<Tooltip.Trigger>
+															<Badge>Major</Badge>
+														</Tooltip.Trigger>
+														<Tooltip.Content>
+															Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
+														</Tooltip.Content>
+													</Tooltip.Root>
+												{:else if release.prerelease}
+													<Tooltip.Root>
+														<Tooltip.Trigger>
+															<Badge variant="outline" class="border-primary text-primary">
+																Prerelease
+															</Badge>
+														</Tooltip.Trigger>
+														<Tooltip.Content>
+															This version is a alpha or a beta, unstable version of {repos[repo]}
+														</Tooltip.Content>
+													</Tooltip.Root>
+												{:else if isMaintenanceRelease}
+													<Tooltip.Root>
+														<Tooltip.Trigger>
+															<Badge variant="outline" class="border-blue-600 text-blue-600">
+																Maintenance
+															</Badge>
+														</Tooltip.Trigger>
+														<Tooltip.Content>
+															An update bringing bug fixes and minor improvements to an older major
+															version
+														</Tooltip.Content>
+													</Tooltip.Root>
+												{/if}
+											</div>
 										</div>
 										<span
 											title={releaseDate.getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
@@ -213,13 +299,55 @@
 											<span class="mr-1 hidden xs:block">•</span>
 											{toRelativeDateString(releaseDate)}
 										</span>
-										{#if isMajorRelease}
-											<Badge class="hidden xs:block">Major</Badge>
-										{:else if release.prerelease}
-											<Badge variant="outline" class="hidden border-primary text-primary xs:block">
-												Prerelease
-											</Badge>
-										{/if}
+										<div class="hidden items-center gap-2 xs:flex">
+											{#if isLatestRelease}
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Badge
+															class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
+														>
+															Latest
+														</Badge>
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														This is the latest stable release of {repos[repo]}
+													</Tooltip.Content>
+												</Tooltip.Root>
+											{/if}
+											{#if isMajorRelease}
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Badge>Major</Badge>
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
+													</Tooltip.Content>
+												</Tooltip.Root>
+											{:else if release.prerelease}
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Badge variant="outline" class="border-primary text-primary">
+															Prerelease
+														</Badge>
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														This version is a alpha or a beta, unstable version of {repos[repo]}
+													</Tooltip.Content>
+												</Tooltip.Root>
+											{:else if isMaintenanceRelease}
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Badge variant="outline" class="border-blue-600 text-blue-600">
+															Maintenance
+														</Badge>
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														An update bringing bug fixes and minor improvements to an older major
+														version
+													</Tooltip.Content>
+												</Tooltip.Root>
+											{/if}
+										</div>
 									</div>
 								</Accordion.Trigger>
 								<Accordion.Content>
