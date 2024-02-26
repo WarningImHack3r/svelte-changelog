@@ -12,6 +12,7 @@
 	import { Button, buttonVariants } from "$lib/components/ui/button";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
+	import { Skeleton } from "$lib/components/ui/skeleton";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
@@ -130,7 +131,7 @@
 						for="beta-releases"
 						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
-						Show beta releases
+						Show prereleases
 					</Label>
 				{:else}
 					<span class="text-sm text-muted-foreground">Non-SvelteKit releases:</span>
@@ -153,10 +154,18 @@
 			<Tabs.Content value={repo}>
 				<!-- Fetch releases from GitHub -->
 				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo, per_page: 50 })}
-					<p class="mt-8 flex items-center justify-center text-xl">
-						<Loader2 class="mr-2 size-4 animate-spin" />
-						Loading...
-					</p>
+					<div class="relative w-full space-y-2">
+						<p
+							class="absolute left-1/2 top-[4.5rem] z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
+						>
+							<Loader2 class="mr-2 size-4 animate-spin" />
+							Loading...
+						</p>
+						<Skeleton class="h-36 w-full" />
+						<Skeleton class="h-44 w-full" />
+						<Skeleton class="h-16 w-full" />
+						<Skeleton class="h-80 w-full" />
+					</div>
 				{:then { data }}
 					{@const latestRelease = data
 						.filter(release => release.tag_name.includes(`${repo}@`) && !release.prerelease)
