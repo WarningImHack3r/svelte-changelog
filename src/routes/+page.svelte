@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { Octokit } from "octokit";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import Loader2 from "lucide-svelte/icons/loader-2";
@@ -15,26 +16,81 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tabs from "$lib/components/ui/tabs";
-	import * as ToggleGroup from "$lib/components/ui/toggle-group";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import ListElementRenderer from "./renderers/ListElementRenderer.svelte";
 
 	// Repositories to fetch releases from
-	const repos = {
-		svelte: "Svelte",
-		kit: "SvelteKit"
+	type Repo = {
+		// Name of the repository
+		repoName: string;
+		// Filter function to apply to the releases of the repo
+		// If it returns false, the release is filtered out
+		// Could not use Octokit's `data` type because it's not exported
+		dataFilter?: (release: { tag_name: string }) => boolean;
+	};
+	const repos: Record<"svelte" | "kit" | "others", { name: string; repos: Repo[] }> = {
+		svelte: {
+			name: "Svelte",
+			repos: [{ repoName: "svelte" }]
+		},
+		kit: {
+			name: "SvelteKit",
+			repos: [
+				{
+					repoName: "kit",
+					dataFilter: ({ tag_name }) => tag_name.includes("/kit@")
+				}
+			]
+		},
+		others: {
+			name: "Other",
+			repos: [
+				{
+					repoName: "kit",
+					dataFilter: ({ tag_name }) => !tag_name.includes("/kit@")
+				},
+				{ repoName: "vite-plugin-svelte" },
+				{ repoName: "eslint-config" }
+			]
+		}
 	} as const;
 	let currentRepo: keyof typeof repos = "svelte";
 
-	// Svelte setting
-	let displayBetaReleases = localStorageStore("displayBetaReleases", true);
+	/**
+	 * Fetches releases from GitHub for the given category, for
+	 * all the repositories in that category.
+	 * Also applies the data filter if it exists for the repo.
+	 * @param category The category of the repos to fetch
+	 * @returns A promise that resolves to an array of flatten releases
+	 */
+	async function octokitResponse(category: keyof typeof repos) {
+		return Promise.all(
+			repos[category].repos.map(({ repoName, dataFilter }) =>
+				octokit.rest.repos
+					.listReleases({
+						owner: "sveltejs",
+						repo: repoName,
+						per_page: 50
+					})
+					.then(({ data }) =>
+						data
+							// Apply repo-specific data filter
+							.filter(release => dataFilter?.(release) ?? true)
+							// Add repo name to release name if it's not already there
+							.map(release => ({
+								...release,
+								name: release.name?.includes("@")
+									? release.name
+									: `${repoName}@${release.tag_name.replace(/^v/, "")}`
+							}))
+					)
+			)
+		).then(responses => responses.flat());
+	}
 
-	// SvelteKit setting
-	const nonKitReleasesOptions = ["show", "dim", "hide"] as const;
-	let nonKitReleasesDisplay = localStorageStore<(typeof nonKitReleasesOptions)[number]>(
-		"nonKitReleasesDisplay",
-		"dim"
-	);
+	// Settings
+	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
+	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
 
 	// GitHub API client
 	const octokit = new Octokit();
@@ -68,10 +124,25 @@
 			style: "long"
 		}).format(-Math.ceil(dateDiff), relevantUnit);
 	}
+
+	// Misc
+	type Entries<T> = {
+		[K in keyof T]: [K, T[K]];
+	}[keyof T][];
+	// https://stackoverflow.com/a/74823834/12070367
+	function typedEntries<T extends object>(obj: T) {
+		return Object.entries(obj) as Entries<T>;
+	}
+
+	// Remove previous settings (will be removed in a future update)
+	onMount(() => {
+		localStorage.removeItem("displayBetaReleases");
+		localStorage.removeItem("nonKitReleasesDisplay");
+	});
 </script>
 
 <MetaTags
-	title={repos[currentRepo]}
+	title={repos[currentRepo].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
 	canonical="https://svelte-changelog.vercel.app"
@@ -101,7 +172,7 @@
 
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
-		<span class="text-primary">{repos[currentRepo]}</span>
+		<span class="text-primary">{repos[currentRepo].name}</span>
 		Releases
 	</h2>
 	<Tabs.Root bind:value={currentRepo} class="mt-8">
@@ -109,7 +180,7 @@
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
-				{#each Object.entries(repos) as [id, name]}
+				{#each typedEntries(repos) as [id, { name }]}
 					<Tabs.Trigger
 						class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
 						value={id}
@@ -120,40 +191,35 @@
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
 				<!-- Tab-specific settings -->
-				{#if currentRepo === "svelte"}
-					<Checkbox
-						id="beta-releases"
-						bind:checked={$displayBetaReleases}
-						aria-labelledby="beta-releases-label"
-					/>
+				{#if currentRepo === "svelte" || currentRepo === "kit"}
+					{#if currentRepo === "svelte"}
+						<Checkbox
+							id="beta-releases-{currentRepo}"
+							bind:checked={$displaySvelteBetaReleases}
+							aria-labelledby="beta-releases-label-{currentRepo}"
+						/>
+					{:else}
+						<Checkbox
+							id="beta-releases-{currentRepo}"
+							bind:checked={$displayKitBetaReleases}
+							aria-labelledby="beta-releases-label-{currentRepo}"
+						/>
+					{/if}
 					<Label
-						id="beta-releases-label"
-						for="beta-releases"
+						id="beta-releases-label-{currentRepo}"
+						for="beta-releases-{currentRepo}"
 						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
-						Show prereleases
+						Show {repos[currentRepo].name} prereleases
 					</Label>
-				{:else}
-					<span class="text-sm text-muted-foreground">Non-SvelteKit releases:</span>
-					<ToggleGroup.Root
-						bind:value={$nonKitReleasesDisplay}
-						size="sm"
-						class="scale-90 rounded-md outline outline-offset-4 outline-input"
-					>
-						{#each nonKitReleasesOptions as option}
-							<ToggleGroup.Item value={option}>
-								{option.charAt(0).toUpperCase() + option.slice(1)}
-							</ToggleGroup.Item>
-						{/each}
-					</ToggleGroup.Root>
 				{/if}
 			</div>
 		</div>
 		<!-- Tabs content creation -->
-		{#each Object.entries(repos) as [repo, name]}
-			<Tabs.Content value={repo}>
+		{#each typedEntries(repos) as [id, { name }]}
+			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
-				{#await octokit.rest.repos.listReleases({ owner: "sveltejs", repo, per_page: 50 })}
+				{#await octokitResponse(id)}
 					<div class="relative w-full space-y-2">
 						<p
 							class="absolute left-1/2 top-[4.5rem] z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
@@ -166,25 +232,26 @@
 						<Skeleton class="h-16 w-full" />
 						<Skeleton class="h-80 w-full" />
 					</div>
-				{:then { data }}
-					{@const latestRelease = data
-						.filter(release => release.tag_name.includes(`${repo}@`) && !release.prerelease)
-						.sort((a, b) =>
-							semver.rcompare(
-								a.tag_name.substring(a.tag_name.lastIndexOf("@") + 1),
-								b.tag_name.substring(b.tag_name.lastIndexOf("@") + 1)
-							)
-						)[0]}
-					{@const earliestOfLatestMajor = data
+				{:then releases}
+					{@const latestRelease =
+						id === "others"
+							? undefined
+							: releases
+									.filter(({ prerelease }) => !prerelease)
+									.sort((a, b) =>
+										semver.rcompare(
+											a.tag_name.substring(a.tag_name.lastIndexOf("@") + 1),
+											b.tag_name.substring(b.tag_name.lastIndexOf("@") + 1)
+										)
+									)[0]}
+					{@const earliestOfLatestMajor = releases
 						.filter(
-							release =>
-								release.tag_name.includes(`${repo}@`) &&
-								!release.prerelease &&
+							({ prerelease, tag_name }) =>
+								!prerelease &&
 								(latestRelease
 									? semver.major(
 											latestRelease.tag_name.substring(latestRelease.tag_name.lastIndexOf("@") + 1)
-										) ===
-										semver.major(release.tag_name.substring(release.tag_name.lastIndexOf("@") + 1))
+										) === semver.major(tag_name.substring(tag_name.lastIndexOf("@") + 1))
 									: true)
 						)
 						.sort((a, b) =>
@@ -195,28 +262,23 @@
 						)[0]}
 					<Accordion.Root
 						multiple
-						value={data
+						value={releases
 							// Only expand releases that are less than a week old and are Svelte or SvelteKit releases
 							.filter(release => {
-								const isLessThanAWeekOld =
-									new Date(release.created_at).getTime() >
-									new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
 								return (
-									isLessThanAWeekOld &&
-									(repo === "kit" ? release.name?.startsWith("@sveltejs/kit") : true)
+									new Date(release.created_at).getTime() >
+									new Date().getTime() - 1000 * 60 * 60 * 24 * 7
 								);
 							})
-							.map(release => release.id.toString())}
+							.map(({ id }) => id.toString())}
 					>
-						{#each data
+						{#each releases
 							.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-							.filter(release => {
-								// Filter out Svelte beta releases depending on the setting
-								if (repo === "svelte" && release.prerelease) return $displayBetaReleases;
-								// Filter out non-SvelteKit releases depending on the setting
-								if (repo === "kit" && !release.name?.startsWith("@sveltejs/kit")) return $nonKitReleasesDisplay !== "hide";
-								// Else, show the release
-								return true;
+							.filter(({ prerelease }) => {
+								// Other releases, show the release
+								if (id === "others" || !prerelease) return true;
+								// Filter out beta releases depending on the setting
+								return id === "svelte" ? $displaySvelteBetaReleases : $displayKitBetaReleases;
 							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
 							{@const isMajorRelease = release.tag_name?.includes(".0.0") && !release.prerelease}
@@ -225,7 +287,7 @@
 								latestRelease && earliestOfLatestMajor
 									? !isMajorRelease &&
 										!release.prerelease &&
-										release.tag_name.includes(`${repo}@`) &&
+										release.tag_name.includes(`${id}@`) &&
 										semver.major(
 											release.tag_name.substring(release.tag_name.lastIndexOf("@") + 1)
 										) <
@@ -241,12 +303,7 @@
 								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
 										<div class="flex flex-col items-start gap-1">
-											<span
-												class="text-left text-lg group-hover:underline"
-												class:text-muted-foreground={repo === "kit" &&
-													!release.name?.startsWith("@sveltejs/kit") &&
-													$nonKitReleasesDisplay === "dim"}
-											>
+											<span class="text-left text-lg group-hover:underline">
 												{release.name}
 											</span>
 											<div class="flex items-center gap-2 xs:hidden">
@@ -260,7 +317,7 @@
 															</Badge>
 														</Tooltip.Trigger>
 														<Tooltip.Content>
-															This is the latest stable release of {repos[repo]}
+															This is the latest stable release of {name}
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{/if}
@@ -281,7 +338,7 @@
 															</Badge>
 														</Tooltip.Trigger>
 														<Tooltip.Content>
-															This version is a alpha or a beta, unstable version of {repos[repo]}
+															This version is a alpha or a beta, unstable version of {name}
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if isMaintenanceRelease}
@@ -319,7 +376,7 @@
 														</Badge>
 													</Tooltip.Trigger>
 													<Tooltip.Content>
-														This is the latest stable release of {repos[repo]}
+														This is the latest stable release of {name}
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{/if}
@@ -340,7 +397,7 @@
 														</Badge>
 													</Tooltip.Trigger>
 													<Tooltip.Content>
-														This version is a alpha or a beta, unstable version of {repos[repo]}
+														This version is a alpha or a beta, unstable version of {name}
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if isMaintenanceRelease}
@@ -398,9 +455,9 @@
 					<!-- Accordion footer linking to more (all) releases -->
 					<span class="mt-8 flex justify-center">
 						<em class="text-center text-sm text-muted-foreground">
-							{data.length} results are shown. If you want to see more releases, please visit the
+							{releases.length} results are shown. If you want to see more releases, please visit the
 							<a
-								href="https://github.com/sveltejs/{repo}/releases"
+								href="https://github.com/sveltejs/{id}/releases"
 								target="_blank"
 								class={cn(
 									buttonVariants({
