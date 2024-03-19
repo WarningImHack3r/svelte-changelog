@@ -63,11 +63,11 @@ export function localStorageStore<T>(
 		const { subscribe, set } = store;
 
 		stores[key] = {
-			set(value: T) {
+			set: (value: T) => {
 				updateStorage(key, value);
 				set(value);
 			},
-			update(updater: Updater<T>) {
+			update: (updater: Updater<T>) => {
 				const value = updater(get(store));
 
 				updateStorage(key, value);
