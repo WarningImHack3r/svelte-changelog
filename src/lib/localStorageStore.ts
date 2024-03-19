@@ -12,8 +12,8 @@ declare type StoreDict<T> = { [key: string]: Writable<T> };
 const stores: StoreDict<any> = {};
 
 interface Serializer<T> {
-	parse(text: string): T;
-	stringify(object: T): string;
+	parse: (text: string) => T;
+	stringify: (object: T) => string;
 }
 
 type StorageType = "local" | "session";
@@ -63,11 +63,11 @@ export function localStorageStore<T>(
 		const { subscribe, set } = store;
 
 		stores[key] = {
-			set(value: T) {
+			set: (value: T) => {
 				updateStorage(key, value);
 				set(value);
 			},
-			update(updater: Updater<T>) {
+			update: (updater: Updater<T>) => {
 				const value = updater(get(store));
 
 				updateStorage(key, value);
