@@ -12,8 +12,8 @@ declare type StoreDict<T> = { [key: string]: Writable<T> };
 const stores: StoreDict<any> = {};
 
 interface Serializer<T> {
-	parse(text: string): T;
-	stringify(object: T): string;
+	parse: (text: string) => T;
+	stringify: (object: T) => string;
 }
 
 type StorageType = "local" | "session";
