@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { Octokit } from "octokit";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
-	import Loader2 from "lucide-svelte/icons/loader-2";
+	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
 	import Markdown from "svelte-exmarkdown";
 	import semver from "semver";
@@ -224,7 +224,7 @@
 						<p
 							class="absolute left-1/2 top-[4.5rem] z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
 						>
-							<Loader2 class="mr-2 size-4 animate-spin" />
+							<LoaderCircle class="mr-2 size-4 animate-spin" />
 							Loading...
 						</p>
 						<Skeleton class="h-36 w-full" />
