@@ -21,24 +21,43 @@
 
 	// Repositories to fetch releases from
 	type Repo = {
-		// Name of the repository
+		/**
+		 * Repository name on GitHub
+		 */
 		repoName: string;
-		// Filter function to apply to the releases of the repo
-		// If it returns false, the release is filtered out
-		// Could not use Octokit's `data` type because it's not exported
+		/**
+		 * Filter function to apply to the releases of the repo.
+		 * If it returns false, the release is filtered out.
+		 * Could not use Octokit's `data` type because it's not exported.
+		 *
+		 * @param release The release to filter
+		 */
 		dataFilter?: (release: { tag_name: string }) => boolean;
+		/**
+		 * Extracts the version from the tag name.
+		 *
+		 * @param tag The tag name to extract the version from
+		 */
+		versionFromTag: (tag: string) => string;
 	};
-	const repos: Record<"svelte" | "kit" | "others", { name: string; repos: Repo[] }> = {
+	type Tabs = "svelte" | "kit" | "others";
+	const repos: Record<Tabs, { name: string; repos: Repo[] }> = {
 		svelte: {
 			name: "Svelte",
-			repos: [{ repoName: "svelte" }]
+			repos: [
+				{
+					repoName: "svelte",
+					versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
+				}
+			]
 		},
 		kit: {
 			name: "SvelteKit",
 			repos: [
 				{
 					repoName: "kit",
-					dataFilter: ({ tag_name }) => tag_name.includes("/kit@")
+					dataFilter: ({ tag_name }) => tag_name.includes("/kit@"),
+					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
 				}
 			]
 		},
@@ -47,14 +66,25 @@
 			repos: [
 				{
 					repoName: "kit",
-					dataFilter: ({ tag_name }) => !tag_name.includes("/kit@")
+					dataFilter: ({ tag_name }) => !tag_name.includes("/kit@"),
+					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
 				},
-				{ repoName: "vite-plugin-svelte" },
-				{ repoName: "eslint-config" }
+				{
+					repoName: "vite-plugin-svelte",
+					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
+				},
+				{
+					repoName: "eslint-config",
+					versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
+				},
+				{
+					repoName: "language-tools",
+					versionFromTag: tag => tag.substring(tag.lastIndexOf("-") + 1)
+				}
 			]
 		}
 	} as const;
-	let currentRepo: keyof typeof repos = "svelte";
+	let currentRepo: Tabs = "svelte";
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -216,7 +246,7 @@
 			</div>
 		</div>
 		<!-- Tabs content creation -->
-		{#each typedEntries(repos) as [id, { name }]}
+		{#each typedEntries(repos) as [id, { name, repos: repoList }]}
 			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
 				{#await octokitResponse(id)}
@@ -240,8 +270,8 @@
 									.filter(({ prerelease }) => !prerelease)
 									.sort((a, b) =>
 										semver.rcompare(
-											a.tag_name.substring(a.tag_name.lastIndexOf("@") + 1),
-											b.tag_name.substring(b.tag_name.lastIndexOf("@") + 1)
+											repoList[0].versionFromTag(a.tag_name),
+											repoList[0].versionFromTag(b.tag_name)
 										)
 									)[0]}
 					{@const earliestOfLatestMajor = releases
@@ -249,15 +279,14 @@
 							({ prerelease, tag_name }) =>
 								!prerelease &&
 								(latestRelease
-									? semver.major(
-											latestRelease.tag_name.substring(latestRelease.tag_name.lastIndexOf("@") + 1)
-										) === semver.major(tag_name.substring(tag_name.lastIndexOf("@") + 1))
-									: true)
+									? semver.major(repoList[0].versionFromTag(latestRelease.tag_name)) ===
+										semver.major(repoList[0].versionFromTag(tag_name))
+									: false)
 						)
 						.sort((a, b) =>
 							semver.compare(
-								a.tag_name.substring(a.tag_name.lastIndexOf("@") + 1),
-								b.tag_name.substring(b.tag_name.lastIndexOf("@") + 1)
+								repoList[0].versionFromTag(a.tag_name),
+								repoList[0].versionFromTag(b.tag_name)
 							)
 						)[0]}
 					<Accordion.Root
@@ -287,15 +316,8 @@
 								latestRelease && earliestOfLatestMajor
 									? !isMajorRelease &&
 										!release.prerelease &&
-										release.tag_name.includes(`${id}@`) &&
-										semver.major(
-											release.tag_name.substring(release.tag_name.lastIndexOf("@") + 1)
-										) <
-											semver.major(
-												latestRelease.tag_name.substring(
-													latestRelease.tag_name.lastIndexOf("@") + 1
-												)
-											) &&
+										semver.major(repoList[0].versionFromTag(release.tag_name)) <
+											semver.major(repoList[0].versionFromTag(latestRelease.tag_name)) &&
 										releaseDate.getTime() > new Date(earliestOfLatestMajor.created_at).getTime()
 									: false}
 							<Accordion.Item value={release.id.toString()}>
