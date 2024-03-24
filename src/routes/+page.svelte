@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Octokit } from "octokit";
+	import { dev } from "$app/environment";
+	import { env } from "$env/dynamic/public";
+	import { Octokit } from "@octokit/rest";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
@@ -123,7 +125,13 @@
 	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
 
 	// GitHub API client
-	const octokit = new Octokit();
+	const octokit = new Octokit(
+		dev && env.PUBLIC_GITHUB_TOKEN
+			? {
+					auth: env.PUBLIC_GITHUB_TOKEN
+				}
+			: undefined
+	);
 
 	// Date formatting
 	function toRelativeDateString(date: Date) {
