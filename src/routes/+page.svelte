@@ -123,6 +123,7 @@
 	// Settings
 	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
 	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
+	let displayOtherBetaReleases = localStorageStore("displayOtherBetaReleases", true);
 
 	// GitHub API client
 	const octokit = new Octokit(
@@ -229,28 +230,32 @@
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
 				<!-- Tab-specific settings -->
-				{#if currentRepo === "svelte" || currentRepo === "kit"}
-					{#if currentRepo === "svelte"}
-						<Checkbox
-							id="beta-releases-{currentRepo}"
-							bind:checked={$displaySvelteBetaReleases}
-							aria-labelledby="beta-releases-label-{currentRepo}"
-						/>
-					{:else}
-						<Checkbox
-							id="beta-releases-{currentRepo}"
-							bind:checked={$displayKitBetaReleases}
-							aria-labelledby="beta-releases-label-{currentRepo}"
-						/>
-					{/if}
-					<Label
-						id="beta-releases-label-{currentRepo}"
-						for="beta-releases-{currentRepo}"
-						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					>
-						Show {repos[currentRepo].name} prereleases
-					</Label>
+				{#if currentRepo === "svelte"}
+					<Checkbox
+						id="beta-releases-{currentRepo}"
+						bind:checked={$displaySvelteBetaReleases}
+						aria-labelledby="beta-releases-label-{currentRepo}"
+					/>
+				{:else if currentRepo === "kit"}
+					<Checkbox
+						id="beta-releases-{currentRepo}"
+						bind:checked={$displayKitBetaReleases}
+						aria-labelledby="beta-releases-label-{currentRepo}"
+					/>
+				{:else}
+					<Checkbox
+						id="beta-releases-{currentRepo}"
+						bind:checked={$displayOtherBetaReleases}
+						aria-labelledby="beta-releases-label-{currentRepo}"
+					/>
 				{/if}
+				<Label
+					id="beta-releases-label-{currentRepo}"
+					for="beta-releases-{currentRepo}"
+					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+				>
+					Show {repos[currentRepo].name} prereleases
+				</Label>
 			</div>
 		</div>
 		<!-- Tabs content creation -->
@@ -300,7 +305,7 @@
 					<Accordion.Root
 						multiple
 						value={releases
-							// Only expand releases that are less than a week old and are Svelte or SvelteKit releases
+							// Only expand releases that are less than a week old
 							.filter(release => {
 								return (
 									new Date(release.created_at).getTime() >
@@ -312,13 +317,20 @@
 						{#each releases
 							.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 							.filter(({ prerelease }) => {
-								// Other releases, show the release
-								if (id === "others" || !prerelease) return true;
+								// If not a prerelease, show the release anyway
+								if (!prerelease) return true;
 								// Filter out beta releases depending on the setting
-								return id === "svelte" ? $displaySvelteBetaReleases : $displayKitBetaReleases;
+								switch (id) {
+									case "svelte":
+										return $displaySvelteBetaReleases;
+									case "kit":
+										return $displayKitBetaReleases;
+									case "others":
+										return $displayOtherBetaReleases;
+								}
 							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
-							{@const isMajorRelease = release.tag_name?.includes(".0.0") && !release.prerelease}
+							{@const isMajorRelease = release.tag_name.includes(".0.0") && !release.prerelease}
 							{@const isLatestRelease = latestRelease?.id === release.id}
 							{@const isMaintenanceRelease =
 								latestRelease && earliestOfLatestMajor
@@ -368,7 +380,7 @@
 															</Badge>
 														</Tooltip.Trigger>
 														<Tooltip.Content>
-															This version is a alpha or a beta, unstable version of {name}
+															This version is an alpha or a beta, unstable version of {name}
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if isMaintenanceRelease}
@@ -427,7 +439,7 @@
 														</Badge>
 													</Tooltip.Trigger>
 													<Tooltip.Content>
-														This version is a alpha or a beta, unstable version of {name}
+														This version is an alpha or a beta, unstable version of {name}
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if isMaintenanceRelease}
@@ -446,8 +458,8 @@
 										</div>
 									</div>
 								</Accordion.Trigger>
+								<!-- Accordion content with markdown body and a link to open it on GitHub -->
 								<Accordion.Content>
-									<!-- Accordion content with markdown body and a link to open it on GitHub -->
 									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
 										<div
 											class="prose prose-sm dark:prose-invert prose-p:my-0 prose-a:no-underline prose-a:underline-offset-4 hover:prose-a:underline"
@@ -482,22 +494,27 @@
 							</Accordion.Item>
 						{/each}
 					</Accordion.Root>
-					<!-- Accordion footer linking to more (all) releases -->
+					<!-- Tab's footer linking to more (all) releases -->
 					<span class="mt-8 flex justify-center">
 						<em class="text-center text-sm text-muted-foreground">
-							{releases.length} results are shown. If you want to see more releases, please visit the
-							<a
-								href="https://github.com/sveltejs/{id}/releases"
-								target="_blank"
-								class={cn(
-									buttonVariants({
-										variant: "link"
-									}),
-									"h-auto p-0"
-								)}
-							>
-								{name}'s releases page
-							</a>.
+							{releases.length} results are shown. If you want to see more releases,
+							{#if id !== "others"}
+								please visit
+								<a
+									href="https://github.com/sveltejs/{id}/releases"
+									target="_blank"
+									class={cn(
+										buttonVariants({
+											variant: "link"
+										}),
+										"h-auto p-0"
+									)}
+								>
+									{name}'s releases page
+								</a>.
+							{:else}
+								please visit each package's releases page.
+							{/if}
 						</em>
 					</span>
 				{:catch error}
