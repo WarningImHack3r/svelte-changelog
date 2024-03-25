@@ -276,32 +276,120 @@
 						<Skeleton class="h-80 w-full" />
 					</div>
 				{:then releases}
-					{@const latestRelease =
+					<!-- The latest releases for each package of the repoList -->
+					{@const latestReleases = (
 						id === "others"
-							? undefined
-							: releases
-									.filter(({ prerelease }) => !prerelease)
-									.sort((a, b) =>
-										semver.rcompare(
-											repoList[0].versionFromTag(a.tag_name),
-											repoList[0].versionFromTag(b.tag_name)
-										)
-									)[0]}
-					{@const earliestOfLatestMajor = releases
-						.filter(
-							({ prerelease, tag_name }) =>
-								!prerelease &&
-								(latestRelease
-									? semver.major(repoList[0].versionFromTag(latestRelease.tag_name)) ===
-										semver.major(repoList[0].versionFromTag(tag_name))
-									: false)
-						)
-						.sort((a, b) =>
-							semver.compare(
-								repoList[0].versionFromTag(a.tag_name),
-								repoList[0].versionFromTag(b.tag_name)
-							)
-						)[0]}
+							? repoList
+									.map(repo => {
+										const thisRepoReleases = releases.filter(
+											({ prerelease, html_url }) =>
+												!prerelease &&
+												html_url.startsWith(`https://github.com/sveltejs/${repo.repoName}`)
+										);
+										const uniquePackages = new Set(
+											thisRepoReleases.map(({ tag_name }) => {
+												// Not exactly the package name, but the _generic_ part of the tag name
+												const pkgFromTag = tag_name.replace(repo.versionFromTag(tag_name), "");
+												return pkgFromTag ? pkgFromTag : repo.repoName; // workaround for eslint-config
+											})
+										);
+										return [...uniquePackages].map(
+											pkg =>
+												thisRepoReleases
+													.filter(({ tag_name }) =>
+														["eslint-config"].includes(pkg)
+															? true // workaround for eslint-config
+															: tag_name.includes(pkg)
+													)
+													.sort((a, b) =>
+														semver.rcompare(
+															repo.versionFromTag(a.tag_name),
+															repo.versionFromTag(b.tag_name)
+														)
+													)[0]
+										);
+									})
+									.flat()
+							: repoList.map(
+									repo =>
+										releases
+											.filter(({ prerelease }) => !prerelease)
+											.sort((a, b) =>
+												semver.rcompare(
+													repo.versionFromTag(a.tag_name),
+													repo.versionFromTag(b.tag_name)
+												)
+											)[0]
+								)
+					).filter(Boolean)}
+					<!-- The earliest version available of the latest major version of each package -->
+					{@const earliestOfLatestMajors = (
+						id === "others"
+							? repoList
+									.map(repo => {
+										const thisRepoReleases = releases.filter(
+											({ prerelease, html_url }) =>
+												!prerelease &&
+												html_url.startsWith(`https://github.com/sveltejs/${repo.repoName}`)
+										);
+										const uniquePackages = new Set(
+											thisRepoReleases.map(({ tag_name }) => {
+												const pkgFromTag = tag_name.replace(repo.versionFromTag(tag_name), "");
+												return pkgFromTag ? pkgFromTag : repo.repoName;
+											})
+										);
+										return [...uniquePackages].map(
+											pkg =>
+												thisRepoReleases
+													.filter(({ tag_name }) => {
+														const isSamePackage = ["eslint-config"].includes(pkg)
+															? true // workaround for eslint-config
+															: tag_name.includes(pkg);
+														if (!isSamePackage) return false;
+														const matchingLatestRelease = latestReleases.find(
+															({ html_url, tag_name: latest_tag_name }) =>
+																html_url.startsWith(
+																	`https://github.com/sveltejs/${repo.repoName}`
+																) &&
+																latest_tag_name.replace(
+																	repo.versionFromTag(latest_tag_name),
+																	""
+																) === tag_name.replace(repo.versionFromTag(tag_name), "")
+														);
+														if (!matchingLatestRelease) return false;
+														return (
+															semver.major(repo.versionFromTag(tag_name)) ===
+															semver.major(repo.versionFromTag(matchingLatestRelease.tag_name))
+														);
+													})
+													.sort((a, b) =>
+														semver.compare(
+															repo.versionFromTag(a.tag_name),
+															repo.versionFromTag(b.tag_name)
+														)
+													)[0]
+										);
+									})
+									.flat()
+							: repoList.map(
+									repo =>
+										releases
+											.filter(
+												({ prerelease, tag_name }) =>
+													!prerelease &&
+													(latestReleases[0]
+														? semver.major(repo.versionFromTag(latestReleases[0].tag_name)) ===
+															semver.major(repo.versionFromTag(tag_name))
+														: false)
+											)
+											.sort((a, b) =>
+												semver.compare(
+													repo.versionFromTag(a.tag_name),
+													repo.versionFromTag(b.tag_name)
+												)
+											)[0]
+								)
+					).filter(Boolean)}
 					<Accordion.Root
 						multiple
 						value={releases
@@ -331,14 +419,32 @@
 							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
 							{@const isMajorRelease = release.tag_name.includes(".0.0") && !release.prerelease}
-							{@const isLatestRelease = latestRelease?.id === release.id}
+							{@const isLatestRelease = latestReleases.map(({ id }) => id).includes(release.id)}
+							{@const releaseRepo = repoList.find(({ repoName }) =>
+								release.html_url.startsWith(`https://github.com/sveltejs/${repoName}`)
+							)}
+							{@const matchingLatestRelease = latestReleases.find(({ html_url, tag_name }) =>
+								releaseRepo
+									? html_url.startsWith(`https://github.com/sveltejs/${releaseRepo.repoName}`) &&
+										tag_name.replace(releaseRepo.versionFromTag(tag_name), "") ===
+											release.tag_name.replace(releaseRepo.versionFromTag(release.tag_name), "")
+									: false
+							)}
+							{@const matchingEarliestOfLatestMajor = earliestOfLatestMajors.find(
+								({ html_url, tag_name }) =>
+									releaseRepo
+										? html_url.startsWith(`https://github.com/sveltejs/${releaseRepo.repoName}`) &&
+											tag_name.replace(releaseRepo.versionFromTag(tag_name), "") ===
+												release.tag_name.replace(releaseRepo.versionFromTag(release.tag_name), "")
+										: false
+							)}
 							{@const isMaintenanceRelease =
-								latestRelease && earliestOfLatestMajor
+								releaseRepo && matchingLatestRelease && matchingEarliestOfLatestMajor
 									? !isMajorRelease &&
-										!release.prerelease &&
-										semver.major(repoList[0].versionFromTag(release.tag_name)) <
-											semver.major(repoList[0].versionFromTag(latestRelease.tag_name)) &&
-										releaseDate.getTime() > new Date(earliestOfLatestMajor.created_at).getTime()
+										semver.major(releaseRepo.versionFromTag(release.tag_name)) <
+											semver.major(releaseRepo.versionFromTag(matchingLatestRelease.tag_name)) &&
+										releaseDate.getTime() >
+											new Date(matchingEarliestOfLatestMajor.created_at).getTime()
 									: false}
 							<Accordion.Item value={release.id.toString()}>
 								<!-- Trigger with release name, date and optional prerelease badge -->
@@ -359,7 +465,11 @@
 															</Badge>
 														</Tooltip.Trigger>
 														<Tooltip.Content>
-															This is the latest stable release of {name}
+															{#if id === "others"}
+																This is a latest stable release
+															{:else}
+																This is the latest stable release of {name}
+															{/if}
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{/if}
@@ -380,7 +490,9 @@
 															</Badge>
 														</Tooltip.Trigger>
 														<Tooltip.Content>
-															This version is an alpha or a beta, unstable version of {name}
+															This version is an alpha or a beta, unstable version{id === "others"
+																? ""
+																: ` of ${name}`}
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if isMaintenanceRelease}
@@ -418,7 +530,11 @@
 														</Badge>
 													</Tooltip.Trigger>
 													<Tooltip.Content>
-														This is the latest stable release of {name}
+														{#if id === "others"}
+															This is a latest stable release
+														{:else}
+															This is the latest stable release of {name}
+														{/if}
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{/if}
@@ -439,7 +555,9 @@
 														</Badge>
 													</Tooltip.Trigger>
 													<Tooltip.Content>
-														This version is an alpha or a beta, unstable version of {name}
+														This version is an alpha or a beta, unstable version{id === "others"
+															? ""
+															: ` of ${name}`}
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if isMaintenanceRelease}
