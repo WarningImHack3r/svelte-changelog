@@ -151,14 +151,11 @@
 				dateDiff /= 1000 * 60 * 60;
 				relevantUnit = "hours";
 				break;
-			case dateDiff < 1000 * 60 * 60 * 24 * 8: // 8 days instead of 7 to display "7 days ago" instead of "1 week ago" / regular date
+			default:
 				dateDiff /= 1000 * 60 * 60 * 24;
 				relevantUnit = "days";
 				break;
-			default:
-				return date.toLocaleDateString();
 		}
-		// formatting to english because it would be the only thing localized otherwise
 		return new Intl.RelativeTimeFormat("en", {
 			style: "long"
 		}).format(-Math.ceil(dateDiff), relevantUnit);
@@ -418,6 +415,8 @@
 								}
 							}) as release (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
+							{@const isOlderThanAWeek =
+								releaseDate.getTime() < new Date().getTime() - 1000 * 60 * 60 * 24 * 7}
 							{@const isMajorRelease = release.tag_name.includes(".0.0") && !release.prerelease}
 							{@const isLatestRelease = latestReleases.map(({ id }) => id).includes(release.id)}
 							{@const releaseRepo = repoList.find(({ repoName }) =>
@@ -511,13 +510,15 @@
 											</div>
 										</div>
 										<span
-											title={releaseDate.getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
-												? releaseDate.toLocaleDateString()
-												: undefined}
+											title={isOlderThanAWeek
+												? toRelativeDateString(releaseDate)
+												: releaseDate.toLocaleDateString("en")}
 											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
-											{toRelativeDateString(releaseDate)}
+											{isOlderThanAWeek
+												? releaseDate.toLocaleDateString("en")
+												: toRelativeDateString(releaseDate)}
 										</span>
 										<div class="hidden items-center gap-2 xs:flex">
 											{#if isLatestRelease}
