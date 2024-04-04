@@ -581,7 +581,7 @@
 								<Accordion.Content>
 									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
 										<div
-											class="prose prose-sm dark:prose-invert prose-p:my-0 prose-a:no-underline prose-a:underline-offset-4 hover:prose-a:underline"
+											class="prose prose-sm max-w-full dark:prose-invert prose-p:my-0 prose-a:no-underline prose-a:underline-offset-4 hover:prose-a:underline"
 										>
 											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
 											<!-- for clean look and using GitHub Flavored Markdown as an option -->
