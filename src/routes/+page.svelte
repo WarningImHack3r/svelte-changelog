@@ -19,7 +19,8 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as Tooltip from "$lib/components/ui/tooltip";
-	import ListElementRenderer from "./renderers/ListElementRenderer.svelte";
+	import BlinkingBadge from "$lib/components/BlinkingBadge.svelte";
+	import ListElementRenderer from "$lib/renderers/ListElementRenderer.svelte";
 
 	// Repositories to fetch releases from
 	type Repo = {
@@ -42,8 +43,8 @@
 		 */
 		versionFromTag: (tag: string) => string;
 	};
-	type Tabs = "svelte" | "kit" | "others";
-	const repos: Record<Tabs, { name: string; repos: Repo[] }> = {
+	type Tab = "svelte" | "kit" | "others";
+	const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 		svelte: {
 			name: "Svelte",
 			repos: [
@@ -120,6 +121,12 @@
 		).then(responses => responses.flat());
 	}
 
+	// Badges
+	let previousTab: string = currentRepo;
+	let visitedTabs: string[] = [];
+	const lastVisitKey = "lastVisit";
+	let lastVisitDateString = "";
+
 	// Settings
 	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
 	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
@@ -161,7 +168,7 @@
 		}).format(-Math.ceil(dateDiff), relevantUnit);
 	}
 
-	// Misc
+	// Types
 	type Entries<T> = {
 		[K in keyof T]: [K, T[K]];
 	}[keyof T][];
@@ -170,10 +177,15 @@
 		return Object.entries(obj) as Entries<T>;
 	}
 
-	// Remove previous settings (will be removed in a future update)
 	onMount(() => {
+		// Remove previous settings (will be removed in a future update)
 		localStorage.removeItem("displayBetaReleases");
 		localStorage.removeItem("nonKitReleasesDisplay");
+
+		const localItem = localStorage.getItem(lastVisitKey);
+		const nowDate = new Date().toISOString();
+		lastVisitDateString = localItem ?? nowDate;
+		localStorage.setItem(lastVisitKey, nowDate);
 	});
 </script>
 
@@ -211,18 +223,42 @@
 		<span class="text-primary">{repos[currentRepo].name}</span>
 		Releases
 	</h2>
-	<Tabs.Root bind:value={currentRepo} class="mt-8">
+	<Tabs.Root
+		bind:value={currentRepo}
+		class="mt-8"
+		onValueChange={newValue => {
+			const toSet = new Set(visitedTabs);
+			toSet.add(previousTab);
+			visitedTabs = [...toSet];
+
+			// I have no clue how this can be undefined
+			if (newValue) {
+				previousTab = newValue;
+			}
+		}}
+	>
 		<div
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
 				{#each typedEntries(repos) as [id, { name }]}
-					<Tabs.Trigger
-						class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
-						value={id}
-					>
-						{name}
-					</Tabs.Trigger>
+					{#if !visitedTabs.includes(id) && id !== currentRepo}
+						<BlinkingBadge storedDateItem="{id.toLowerCase()}MostRecentUpdate">
+							<Tabs.Trigger
+								class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
+								value={id}
+							>
+								{name}
+							</Tabs.Trigger>
+						</BlinkingBadge>
+					{:else}
+						<Tabs.Trigger
+							class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
+							value={id}
+						>
+							{name}
+						</Tabs.Trigger>
+					{/if}
 				{/each}
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
@@ -273,6 +309,30 @@
 						<Skeleton class="h-80 w-full" />
 					</div>
 				{:then releases}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+					{@const _ = (() => {
+						// Update the most recent date of a release of the list
+						const latestRelease = releases.sort(
+							(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+						)[0];
+						if (!latestRelease) return false; // boolean because cannot store void in a const
+						const storedDate = localStorage.getItem(`${id.toLowerCase()}MostRecentUpdate`);
+						const latestReleaseDate = new Date(latestRelease.created_at);
+						if (storedDate) {
+							const storedDateObj = new Date(storedDate);
+							if (latestReleaseDate > storedDateObj) {
+								localStorage.setItem(
+									`${id.toLowerCase()}MostRecentUpdate`,
+									`"${latestReleaseDate.toISOString()}"`
+								);
+							}
+						} else {
+							localStorage.setItem(
+								`${id.toLowerCase()}MostRecentUpdate`,
+								`"${latestReleaseDate.toISOString()}"`
+							);
+						}
+					})()}
 					<!-- The latest releases for each package of the repoList -->
 					{@const latestReleases = (
 						id === "others"
@@ -442,8 +502,7 @@
 									? !isMajorRelease &&
 										semver.major(releaseRepo.versionFromTag(release.tag_name)) <
 											semver.major(releaseRepo.versionFromTag(matchingLatestRelease.tag_name)) &&
-										releaseDate.getTime() >
-											new Date(matchingEarliestOfLatestMajor.created_at).getTime()
+										releaseDate > new Date(matchingEarliestOfLatestMajor.created_at)
 									: false}
 							{@const releaseBody = (() => {
 								const body = release.body ?? "";
@@ -461,6 +520,14 @@
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
+										{#if new Date(release.created_at) > new Date(lastVisitDateString) && !visitedTabs.includes(id)}
+											<div class="relative ml-1 mr-2 inline-flex">
+												<span
+													class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
+												/>
+												<span class="inline-flex size-2.5 rounded-full bg-primary" />
+											</div>
+										{/if}
 										<div class="flex flex-col items-start gap-1">
 											<span class="text-left text-lg group-hover:underline">
 												{release.name}
