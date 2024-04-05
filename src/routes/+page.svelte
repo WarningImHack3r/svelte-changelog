@@ -86,7 +86,7 @@
 			]
 		}
 	} as const;
-	let currentRepo: Tabs = "svelte";
+	let currentRepo: keyof typeof repos = "svelte";
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -445,6 +445,18 @@
 										releaseDate.getTime() >
 											new Date(matchingEarliestOfLatestMajor.created_at).getTime()
 									: false}
+							{@const releaseBody = (() => {
+								const body = release.body ?? "";
+								if (releaseRepo?.repoName !== "language-tools") return body;
+								// Add missing links to PRs in the release body
+								return body.replaceAll(
+									/\(#(\d+)\)/g, // Match all `(#1234)` patterns
+									(_, prNumber) => {
+										const prUrl = `https://github.com/sveltejs/${releaseRepo.repoName}/pull/${prNumber}`;
+										return `([#${prNumber}](${prUrl}))`;
+									}
+								);
+							})()}
 							<Accordion.Item value={release.id.toString()}>
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
@@ -586,7 +598,7 @@
 											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
 											<!-- for clean look and using GitHub Flavored Markdown as an option -->
 											<Markdown
-												md={release.body ?? ""}
+												md={releaseBody}
 												plugins={[
 													{
 														renderer: {
