@@ -77,6 +77,10 @@
 					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
 				},
 				{
+					repoName: "eslint-plugin-svelte",
+					versionFromTag: tag => tag.replace(/^v/, "")
+				},
+				{
 					repoName: "eslint-config",
 					versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
 				},
