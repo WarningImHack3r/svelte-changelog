@@ -40,8 +40,8 @@ export default [
 			".svelte-kit/",
 			"package/",
 			"vite.config.[jt]s.timestamp-*",
-			"/src/lib/components/ui/",
-			"/src/lib/utils.[jt]s"
+			"src/lib/components/ui/",
+			"src/lib/utils.[jt]s"
 		]
 	}
 ];
