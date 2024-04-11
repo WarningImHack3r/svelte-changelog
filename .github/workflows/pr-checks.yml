@@ -101,11 +101,15 @@ jobs:
         run: |
           code_changes=false
           config_changes=false
+          deps_changes=false
 
           for file in ${{ steps.modified-files.outputs.all_changed_files }}; do
             if [[ $file =~ ^src/ || $file =~ ^static/ ]]; then
               echo "$file changes code"
               code_changes=true
+            elif [[ $file = pnpm-lock.yaml ]]; then
+              echo "$file changes dependencies"
+              deps_changes=true
             elif [[ $file = *.config.*s || $file = tsconfig.json ]]; then
               echo "$file changes config"
               config_changes=true
@@ -118,21 +122,24 @@ jobs:
 
           echo "code_changes=$code_changes" >> $GITHUB_OUTPUT
           echo "config_changes=$config_changes" >> $GITHUB_OUTPUT
+          echo "deps_changes=$deps_changes" >> $GITHUB_OUTPUT
 
       - name: ✨ Check Svelte format
+        id: svelte-format
         if: steps.changed-files.outputs.code_changes == 'true'
         run: pnpm check
 
       - name: ✨ Check style with Prettier & ESLint
-        if: steps.changed-files.outputs.code_changes == 'true' || steps.changed-files.outputs.config_changes == 'true'
+        id: prettier-eslint
+        if: steps.changed-files.outputs.code_changes == 'true' || steps.changed-files.outputs.config_changes == 'true' || steps.changed-files.outputs.deps_changes == 'true'
         run: pnpm lint
 
       - name: 🔧 Fix lint
-        if: failure() && needs.permissions-check.outputs.has-permissions == 'true'
-        run: pnpm format
+        if: failure() && needs.permissions-check.outputs.has-permissions == 'true' && (steps.svelte-format.outcome == 'failure' || steps.prettier-eslint.outcome == 'failure')
+        run: pnpm format && pnpm eslint --fix .
 
       - name: 📤 Commit lint fixes
-        if: failure() && needs.permissions-check.outputs.has-permissions == 'true'
+        if: failure() && needs.permissions-check.outputs.has-permissions == 'true' && (steps.svelte-format.outcome == 'failure' || steps.prettier-eslint.outcome == 'failure')
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Fix lint
