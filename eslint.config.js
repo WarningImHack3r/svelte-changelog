@@ -10,6 +10,7 @@ export default [
 	...ts.configs.recommended,
 	...svelte.configs["flat/recommended"],
 	prettier,
+	...svelte.configs["flat/prettier"],
 	{
 		languageOptions: {
 			globals: {
@@ -39,7 +40,6 @@ export default [
 			"build/",
 			".svelte-kit/",
 			"package/",
-			"vite.config.[jt]s.timestamp-*",
 			"src/lib/components/ui/",
 			"src/lib/utils.[jt]s"
 		]
