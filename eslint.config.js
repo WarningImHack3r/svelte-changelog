@@ -36,6 +36,6 @@ export default [
 		}
 	},
 	{
-		ignores: ["build/", ".svelte-kit/", "package/", "src/lib/components/ui/", "src/lib/utils.[jt]s"]
+		ignores: ["build/", ".svelte-kit/", "dist/", "src/lib/components/ui/", "src/lib/utils.[jt]s"]
 	}
 ];
