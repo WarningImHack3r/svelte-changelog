@@ -136,7 +136,12 @@
 	// Badges
 	let previousTab: string = currentRepo;
 	let visitedTabs: string[] = [];
-	const lastVisitKey = "lastVisit";
+	let loadedTabs: Tab[] = [];
+	let isLoadingDone = false;
+	$: if (loadedTabs.length === Object.keys(repos).length) {
+		isLoadingDone = true;
+	}
+	const lastVisitKey = "lastVisit" as const;
 	let lastVisitDateString = "";
 
 	// Settings
@@ -184,6 +189,7 @@
 	type Entries<T> = {
 		[K in keyof T]: [K, T[K]];
 	}[keyof T][];
+
 	// https://stackoverflow.com/a/74823834/12070367
 	function typedEntries<T extends object>(obj: T) {
 		return Object.entries(obj) as Entries<T>;
@@ -194,6 +200,7 @@
 		localStorage.removeItem("displayBetaReleases");
 		localStorage.removeItem("nonKitReleasesDisplay");
 
+		// Get the last visit date for the blinking badge
 		const localItem = localStorage.getItem(lastVisitKey);
 		const nowDate = new Date().toISOString();
 		lastVisitDateString = localItem ?? nowDate;
@@ -323,6 +330,11 @@
 				{:then releases}
 					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{@const _ = (() => {
+						// Add tab to loaded tabs
+						const toSet = new Set(loadedTabs);
+						toSet.add(id);
+						loadedTabs = [...toSet];
+
 						// Update the most recent date of a release of the list
 						const latestRelease = releases.sort(
 							(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -331,7 +343,7 @@
 						const storedDate = localStorage.getItem(`${id.toLowerCase()}MostRecentUpdate`);
 						const latestReleaseDate = new Date(latestRelease.created_at);
 						if (storedDate) {
-							const storedDateObj = new Date(storedDate);
+							const storedDateObj = new Date(storedDate.replace(/"/g, ""));
 							if (latestReleaseDate > storedDateObj) {
 								localStorage.setItem(
 									`${id.toLowerCase()}MostRecentUpdate`,
@@ -532,21 +544,24 @@
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
-										{#if new Date(release.created_at) > new Date(lastVisitDateString) && !visitedTabs.includes(id)}
-											<div class="relative ml-1 mr-2 inline-flex">
-												<span
-													class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
-												/>
-												<span class="inline-flex size-2.5 rounded-full bg-primary" />
-											</div>
-										{/if}
+										<!-- Trigger reactivity (please give me Svelte 5) -->
+										{#key isLoadingDone}
+											{#if releaseDate > new Date(lastVisitDateString) && !visitedTabs.includes(id)}
+												<div class="relative ml-1 mr-2 inline-flex">
+													<span
+														class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
+													/>
+													<span class="inline-flex size-2.5 rounded-full bg-primary" />
+												</div>
+											{/if}
+										{/key}
 										<div class="flex flex-col items-start gap-1">
 											<span class="text-left text-lg group-hover:underline">
 												{release.name}
 											</span>
 											<div class="flex items-center gap-2 xs:hidden">
 												{#if isLatestRelease}
-													<Tooltip.Root>
+													<Tooltip.Root openDelay={300}>
 														<Tooltip.Trigger>
 															<Badge
 																class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
@@ -564,7 +579,7 @@
 													</Tooltip.Root>
 												{/if}
 												{#if isMajorRelease}
-													<Tooltip.Root>
+													<Tooltip.Root openDelay={300}>
 														<Tooltip.Trigger>
 															<Badge>Major</Badge>
 														</Tooltip.Trigger>
@@ -573,7 +588,7 @@
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if release.prerelease}
-													<Tooltip.Root>
+													<Tooltip.Root openDelay={300}>
 														<Tooltip.Trigger>
 															<Badge variant="outline" class="border-primary text-primary">
 																Prerelease
@@ -586,7 +601,7 @@
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if isMaintenanceRelease}
-													<Tooltip.Root>
+													<Tooltip.Root openDelay={300}>
 														<Tooltip.Trigger>
 															<Badge variant="outline" class="border-blue-600 text-blue-600">
 																Maintenance
@@ -601,19 +616,28 @@
 											</div>
 										</div>
 										<span
-											title={isOlderThanAWeek
-												? toRelativeDateString(releaseDate)
-												: releaseDate.toLocaleDateString("en")}
 											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
-											{isOlderThanAWeek
-												? releaseDate.toLocaleDateString("en")
-												: toRelativeDateString(releaseDate)}
+											<Tooltip.Root openDelay={300}>
+												<Tooltip.Trigger>
+													{isOlderThanAWeek
+														? releaseDate.toLocaleDateString("en")
+														: toRelativeDateString(releaseDate)}
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													{isOlderThanAWeek
+														? toRelativeDateString(releaseDate)
+														: new Intl.DateTimeFormat("en", {
+																dateStyle: "medium",
+																timeStyle: "short"
+															}).format(releaseDate)}
+												</Tooltip.Content>
+											</Tooltip.Root>
 										</span>
 										<div class="hidden items-center gap-2 xs:flex">
 											{#if isLatestRelease}
-												<Tooltip.Root>
+												<Tooltip.Root openDelay={300}>
 													<Tooltip.Trigger>
 														<Badge
 															class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
@@ -631,7 +655,7 @@
 												</Tooltip.Root>
 											{/if}
 											{#if isMajorRelease}
-												<Tooltip.Root>
+												<Tooltip.Root openDelay={300}>
 													<Tooltip.Trigger>
 														<Badge>Major</Badge>
 													</Tooltip.Trigger>
@@ -640,7 +664,7 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if release.prerelease}
-												<Tooltip.Root>
+												<Tooltip.Root openDelay={300}>
 													<Tooltip.Trigger>
 														<Badge variant="outline" class="border-primary text-primary">
 															Prerelease
@@ -653,7 +677,7 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if isMaintenanceRelease}
-												<Tooltip.Root>
+												<Tooltip.Root openDelay={300}>
 													<Tooltip.Trigger>
 														<Badge variant="outline" class="border-blue-600 text-blue-600">
 															Maintenance
