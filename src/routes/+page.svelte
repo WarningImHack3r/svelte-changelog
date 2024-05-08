@@ -98,8 +98,8 @@
 				}
 			]
 		}
-	} as const;
-	let currentRepo: keyof typeof repos = "svelte";
+	};
+	let currentRepo: Tab = "svelte";
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -108,7 +108,7 @@
 	 * @param category The category of the repos to fetch
 	 * @returns A promise that resolves to an array of flatten releases
 	 */
-	async function octokitResponse(category: keyof typeof repos) {
+	async function octokitResponse(category: Tab) {
 		return Promise.all(
 			repos[category].repos.map(({ repoName, dataFilter }) =>
 				octokit.rest.repos
@@ -134,8 +134,8 @@
 	}
 
 	// Badges
-	let previousTab: string = currentRepo;
-	let visitedTabs: string[] = [];
+	let previousTab: Tab = currentRepo;
+	let visitedTabs: Tab[] = [];
 	let loadedTabs: Tab[] = [];
 	let isLoadingDone = false;
 	$: if (loadedTabs.length === Object.keys(repos).length) {
@@ -252,6 +252,7 @@
 
 			// I have no clue how this can be undefined
 			if (newValue) {
+				// @ts-expect-error Svelte 5, please
 				previousTab = newValue;
 			}
 		}}

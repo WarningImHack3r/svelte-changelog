@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { get } from "svelte/store";
+	import { browser } from "$app/environment";
 	import { localStorageStore } from "$lib/localStorageStore";
 
 	/**
@@ -10,15 +10,14 @@
 
 	let showPulse = false;
 
-	onMount(() => {
-		if (storedDateItem) {
-			const storedDate = localStorageStore(storedDateItem, "");
-			const lastVisitItem = localStorage.getItem("lastVisit");
-			if (storedDate && lastVisitItem) {
-				showPulse = new Date(get(storedDate)) > new Date(lastVisitItem);
-			}
+	$: if (storedDateItem && browser) {
+		const storedDateStore = localStorageStore(storedDateItem, "");
+		const storedDate = get(storedDateStore);
+		const lastVisitItem = localStorage.getItem("lastVisit");
+		if (storedDate && lastVisitItem) {
+			showPulse = new Date(storedDate) > new Date(lastVisitItem);
 		}
-	});
+	}
 </script>
 
 {#if showPulse}
