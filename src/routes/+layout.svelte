@@ -54,12 +54,10 @@
 		<!-- Left part -->
 		<a href="/" class="flex items-center gap-2">
 			<img src="https://svelte.dev/favicon.png" alt="Svelte" class="h-8" />
-			<div class="hidden xs:block">
-				<h2 class="font-semibold xs:text-xl">
-					Svelte
-					<span class="text-primary">Changelog</span>
-				</h2>
-			</div>
+			<h2 class="hidden text-xl xs:inline-block">
+				Svelte
+				<span class="text-primary">Changelog</span>
+			</h2>
 		</a>
 
 		<!-- Right part -->
