@@ -1,26 +1,30 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { get } from "svelte/store";
-	import { browser } from "$app/environment";
 	import { localStorageStore } from "$lib/localStorageStore";
 
 	/**
 	 * The name of the localStorage item to get the date from.
 	 */
 	export let storedDateItem: string;
+	/**
+	 * Whether to show the pulse animation.
+	 */
+	export let show = false;
 
-	let showPulse = false;
+	let shouldShowPulse = false;
 
-	$: if (storedDateItem && browser) {
+	onMount(() => {
 		const storedDateStore = localStorageStore(storedDateItem, "");
-		const storedDate = get(storedDateStore);
+		const storedDate = get(storedDateStore).replace(/"/g, "");
 		const lastVisitItem = localStorage.getItem("lastVisit");
 		if (storedDate && lastVisitItem) {
-			showPulse = new Date(storedDate) > new Date(lastVisitItem);
+			shouldShowPulse = new Date(storedDate) > new Date(lastVisitItem);
 		}
-	}
+	});
 </script>
 
-{#if showPulse}
+{#if show && shouldShowPulse}
 	<div class="relative inline-flex">
 		<slot />
 		<span class="absolute right-0 top-0 -mr-0.5 -mt-0.5 flex size-2.5">

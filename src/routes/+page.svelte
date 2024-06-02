@@ -262,23 +262,17 @@
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
 				{#each typedEntries(repos) as [id, { name }]}
-					{#if !visitedTabs.includes(id) && id !== currentRepo}
-						<BlinkingBadge storedDateItem="{id.toLowerCase()}MostRecentUpdate">
-							<Tabs.Trigger
-								class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
-								value={id}
-							>
-								{name}
-							</Tabs.Trigger>
-						</BlinkingBadge>
-					{:else}
+					<BlinkingBadge
+						storedDateItem="{id.toLowerCase()}MostRecentUpdate"
+						show={!visitedTabs.includes(id) && id !== currentRepo}
+					>
 						<Tabs.Trigger
 							class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
 							value={id}
 						>
 							{name}
 						</Tabs.Trigger>
-					{/if}
+					</BlinkingBadge>
 				{/each}
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
