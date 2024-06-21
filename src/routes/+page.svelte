@@ -264,7 +264,7 @@
 			<Tabs.List class="bg-input dark:bg-muted">
 				{#each typedEntries(repos) as [id, { name }]}
 					<BlinkingBadge
-						storedDateItem="{id.toLowerCase()}MostRecentUpdate"
+						storedDateItem="{id}MostRecentUpdate"
 						show={!visitedTabs.includes(id) && id !== currentRepo}
 					>
 						<Tabs.Trigger
