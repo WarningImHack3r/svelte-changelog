@@ -78,7 +78,8 @@
 				},
 				{
 					repoName: "eslint-plugin-svelte",
-					versionFromTag: tag => tag.includes("@") ? tag.substring(tag.lastIndexOf("@") + 1) : tag.replace(/^v/, "")
+					versionFromTag: tag =>
+						tag.includes("@") ? tag.substring(tag.lastIndexOf("@") + 1) : tag.replace(/^v/, "")
 				},
 				{
 					repoName: "eslint-config",
