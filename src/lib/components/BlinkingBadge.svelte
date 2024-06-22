@@ -15,6 +15,7 @@
 	let shouldShowPulse = false;
 
 	onMount(() => {
+		if (!storedDateItem) return;
 		const storedDateStore = localStorageStore(storedDateItem, "");
 		const storedDate = get(storedDateStore).replace(/"/g, "");
 		const lastVisitItem = localStorage.getItem("lastVisit");
