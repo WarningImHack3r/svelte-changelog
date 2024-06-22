@@ -336,21 +336,18 @@
 							(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 						)[0];
 						if (!latestRelease) return false; // boolean because cannot store void in a const
-						const storedDate = localStorage.getItem(`${id.toLowerCase()}MostRecentUpdate`);
+						const storedDate = localStorage.getItem(`${id}MostRecentUpdate`);
 						const latestReleaseDate = new Date(latestRelease.created_at);
 						if (storedDate) {
 							const storedDateObj = new Date(storedDate.replace(/"/g, ""));
 							if (latestReleaseDate > storedDateObj) {
 								localStorage.setItem(
-									`${id.toLowerCase()}MostRecentUpdate`,
+									`${id}MostRecentUpdate`,
 									`"${latestReleaseDate.toISOString()}"`
 								);
 							}
 						} else {
-							localStorage.setItem(
-								`${id.toLowerCase()}MostRecentUpdate`,
-								`"${latestReleaseDate.toISOString()}"`
-							);
+							localStorage.setItem(`${id}MostRecentUpdate`, `"${latestReleaseDate.toISOString()}"`);
 						}
 					})()}
 					<!-- The latest releases for each package of the repoList -->
@@ -712,7 +709,7 @@
 										<Button
 											href={release.html_url}
 											target="_blank"
-											class="group mb-4 ml-auto mr-8 sm:ml-0 sm:mt-auto"
+											class="group mb-4 ml-auto mr-8 font-semibold dark:text-black sm:ml-0 sm:mt-auto"
 										>
 											Open release
 											<ArrowUpRight

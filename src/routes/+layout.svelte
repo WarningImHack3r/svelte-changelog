@@ -53,7 +53,7 @@
 	<div class="mx-auto flex h-14 w-full items-center px-8">
 		<!-- Left part -->
 		<a href="/" class="flex items-center gap-2">
-			<img src="https://svelte.dev/favicon.png" alt="Svelte" class="h-8" />
+			<img src="https://svelte.dev/favicon.png" alt="Svelte" class="size-8" />
 			<h2 class="hidden text-xl font-semibold xs:inline-block">
 				Svelte
 				<span class="text-primary">Changelog</span>
@@ -70,7 +70,7 @@
 					size="icon"
 				>
 					<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
-					<span class="sr-only">GitHub</span>
+					<span class="sr-only">Visit the repository</span>
 				</Button>
 				<DropdownMenu.Root bind:open={themeSwitcherOpen}>
 					<DropdownMenu.Trigger asChild let:builder>
