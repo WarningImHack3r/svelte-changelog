@@ -11,6 +11,8 @@
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
+	export let data;
+
 	// Theme selector
 	type Theme = {
 		value: typeof theme;
@@ -59,6 +61,17 @@
 				<span class="text-primary">Changelog</span>
 			</h2>
 		</a>
+
+		<!-- Navigation -->
+		<ul class="ml-6 hidden sm:block">
+			<li>
+				{#each Object.values(data.repos) as { name }}
+					<Button variant="ghost" on:click={() => {}}>
+						{name}
+					</Button>
+				{/each}
+			</li>
+		</ul>
 
 		<!-- Right part -->
 		<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
