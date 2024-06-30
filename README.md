@@ -34,7 +34,7 @@ If you think I missed a package, you can either open an issue or directly contri
 
 ### How to contribute
 
-Fork the repo, edit the `/src/routes/+page.svelte` file, and open a PR.  
+Fork the repo, edit the `/src/routes/+layout.ts` file, and open a PR.  
 **If the repo is not from the `sveltejs` organization, please open an issue instead.**
 
 The code architecture is made to be as flexible as possible, here's how it works:
