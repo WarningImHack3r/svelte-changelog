@@ -13,6 +13,14 @@ Made with SvelteKit, TailwindCSS & shadcn-svelte.
 - Hover popups at multiple places across the site
 - Optional use of a GitHub token in dev mode to avoid rate limiting
 
+## How does it work?
+
+The site makes requests to the GitHub API on the client side to get the latest releases for all the packages.
+As such, the data is fresh from GitHub each time you refresh the page.
+
+Some computations are made to generate the badges, but everything else is a simple cosmetic wrapper
+around GitHub releases.
+
 ## Missing a package?
 
 If you think I missed a package, you can either open an issue or directly contribute.
