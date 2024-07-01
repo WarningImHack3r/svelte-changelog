@@ -2,14 +2,29 @@
 	import "../app.pcss";
 	import { onMount, type SvelteComponent } from "svelte";
 	import type { SvelteHTMLElements } from "svelte/elements";
+	import { fade } from "svelte/transition";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import ChevronDown from "lucide-svelte/icons/chevron-down";
 	import Moon from "lucide-svelte/icons/moon";
 	import Monitor from "lucide-svelte/icons/monitor";
 	import Sun from "lucide-svelte/icons/sun";
+	import { tabState } from "$lib/tabState";
 	import { cn } from "$lib/utils";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+
+	export let data;
+
+	let scrollY = 0;
+
+	// Types
+	type Entries<T> = {
+		[K in keyof T]: [K, T[K]];
+	}[keyof T][];
+
+	function typedEntries<T extends object>(obj: T) {
+		return Object.entries(obj) as Entries<T>;
+	}
 
 	// Theme selector
 	type Theme = {
@@ -59,6 +74,20 @@
 				<span class="text-primary">Changelog</span>
 			</h2>
 		</a>
+
+		<!-- Navigation -->
+		<!-- TODO: don't hardcode this? -->
+		{#if scrollY > 150}
+			<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
+				<li>
+					{#each typedEntries(data.repos) as [id, { name }]}
+						<Button variant="ghost" on:click={() => tabState.set(id)}>
+							{name}
+						</Button>
+					{/each}
+				</li>
+			</ul>
+		{/if}
 
 		<!-- Right part -->
 		<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
@@ -116,6 +145,8 @@
 		</div>
 	</div>
 </header>
+
+<svelte:window bind:scrollY />
 
 <slot />
 

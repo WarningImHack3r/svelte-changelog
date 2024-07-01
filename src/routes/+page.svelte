@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { get } from "svelte/store";
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
 	import { Octokit } from "@octokit/rest";
@@ -9,7 +10,9 @@
 	import Markdown from "svelte-exmarkdown";
 	import semver from "semver";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
+	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
+	import { tabState } from "$lib/tabState";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -22,85 +25,24 @@
 	import BlinkingBadge from "$lib/components/BlinkingBadge.svelte";
 	import ListElementRenderer from "$lib/renderers/ListElementRenderer.svelte";
 
+	export let data;
+
 	// Repositories to fetch releases from
-	type Repo = {
-		/**
-		 * Repository name on GitHub
-		 */
-		repoName: string;
-		/**
-		 * Filter function to apply to the releases of the repo.
-		 * If it returns false, the release is filtered out.
-		 * Could not use Octokit's `data` type because it's not exported.
-		 *
-		 * @param release The release to filter
-		 */
-		dataFilter?: (release: { tag_name: string }) => boolean;
-		/**
-		 * Extracts the version from the tag name.
-		 *
-		 * @param tag The tag name to extract the version from
-		 */
-		versionFromTag: (tag: string) => string;
-	};
-	type Tab = "svelte" | "kit" | "others";
-	const repos: Record<Tab, { name: string; repos: Repo[] }> = {
-		svelte: {
-			name: "Svelte",
-			repos: [
-				{
-					repoName: "svelte",
-					versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
-				}
-			]
-		},
-		kit: {
-			name: "SvelteKit",
-			repos: [
-				{
-					repoName: "kit",
-					dataFilter: ({ tag_name }) => tag_name.includes("/kit@"),
-					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-				}
-			]
-		},
-		others: {
-			name: "Other",
-			repos: [
-				{
-					repoName: "kit",
-					dataFilter: ({ tag_name }) => !tag_name.includes("/kit@"),
-					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-				},
-				{
-					repoName: "vite-plugin-svelte",
-					versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-				},
-				{
-					repoName: "eslint-plugin-svelte",
-					versionFromTag: tag =>
-						tag.includes("@") ? tag.substring(tag.lastIndexOf("@") + 1) : tag.replace(/^v/, "")
-				},
-				{
-					repoName: "eslint-config",
-					versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
-				},
-				{
-					repoName: "svelte-eslint-parser",
-					versionFromTag: tag => tag.replace(/^v/, "")
-				},
-				{
-					repoName: "language-tools",
-					versionFromTag: tag => tag.substring(tag.lastIndexOf("-") + 1)
-				},
-				{
-					repoName: "svelte-devtools",
-					versionFromTag: tag => tag.replace(/^v/, "")
-				}
-			]
-		}
-	};
 	let currentRepo: Tab = "svelte";
+
+	// Tab change
+	let tabChangeAsked = false;
+	tabState.subscribe(value => {
+		if (value === currentRepo) return;
+		tabChangeAsked = true;
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	});
+
+	let scrollY = 0;
+	$: if (tabChangeAsked && scrollY === 0) {
+		currentRepo = get(tabState);
+		tabChangeAsked = false;
+	}
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -111,7 +53,7 @@
 	 */
 	async function octokitResponse(category: Tab) {
 		return Promise.all(
-			repos[category].repos.map(({ repoName, dataFilter }) =>
+			data.repos[category].repos.map(({ repoName, dataFilter }) =>
 				octokit.rest.repos
 					.listReleases({
 						owner: "sveltejs",
@@ -139,7 +81,7 @@
 	let visitedTabs: Tab[] = [];
 	let loadedTabs: Tab[] = [];
 	let isLoadingDone = false;
-	$: if (loadedTabs.length === Object.keys(repos).length) {
+	$: if (loadedTabs.length === Object.keys(data.repos).length) {
 		isLoadingDone = true;
 	}
 	const lastVisitKey = "lastVisit" as const;
@@ -209,8 +151,10 @@
 	});
 </script>
 
+<svelte:window bind:scrollY />
+
 <MetaTags
-	title={repos[currentRepo].name}
+	title={data.repos[currentRepo].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
 	canonical="https://svelte-changelog.vercel.app"
@@ -240,7 +184,7 @@
 
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
-		<span class="text-primary">{repos[currentRepo].name}</span>
+		<span class="text-primary">{data.repos[currentRepo].name}</span>
 		Releases
 	</h2>
 	<Tabs.Root
@@ -262,7 +206,7 @@
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
-				{#each typedEntries(repos) as [id, { name }]}
+				{#each typedEntries(data.repos) as [id, { name }]}
 					<BlinkingBadge
 						storedDateItem="{id}MostRecentUpdate"
 						show={!visitedTabs.includes(id) && id !== currentRepo}
@@ -302,12 +246,12 @@
 					for="beta-releases-{currentRepo}"
 					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
-					Show {repos[currentRepo].name} prereleases
+					Show {data.repos[currentRepo].name} prereleases
 				</Label>
 			</div>
 		</div>
 		<!-- Tabs content creation -->
-		{#each typedEntries(repos) as [id, { name, repos: repoList }]}
+		{#each typedEntries(data.repos) as [id, { name, repos: repoList }]}
 			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
 				{#await octokitResponse(id)}
