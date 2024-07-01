@@ -147,7 +147,7 @@
 		const localItem = localStorage.getItem(lastVisitKey);
 		const nowDate = new Date().toISOString();
 		lastVisitDateString = localItem ?? nowDate;
-		localStorage.setItem(lastVisitKey, nowDate);
+		localStorage.setItem(lastVisitKey, nowDate); // TODO: after load?
 	});
 </script>
 
