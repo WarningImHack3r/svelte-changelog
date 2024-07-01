@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { get } from "svelte/store";
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
 	import { Octokit } from "@octokit/rest";
@@ -11,6 +12,7 @@
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
+	import { tabState } from "$lib/tabState";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -27,6 +29,20 @@
 
 	// Repositories to fetch releases from
 	let currentRepo: Tab = "svelte";
+
+	// Tab change
+	let tabChangeAsked = false;
+	tabState.subscribe(value => {
+		if (value === currentRepo) return;
+		tabChangeAsked = true;
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	});
+
+	let scrollY = 0;
+	$: if (tabChangeAsked && scrollY === 0) {
+		currentRepo = get(tabState);
+		tabChangeAsked = false;
+	}
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -134,6 +150,8 @@
 		localStorage.setItem(lastVisitKey, nowDate);
 	});
 </script>
+
+<svelte:window bind:scrollY />
 
 <MetaTags
 	title={data.repos[currentRepo].name}

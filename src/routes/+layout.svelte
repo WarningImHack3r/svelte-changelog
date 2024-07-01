@@ -7,11 +7,21 @@
 	import Moon from "lucide-svelte/icons/moon";
 	import Monitor from "lucide-svelte/icons/monitor";
 	import Sun from "lucide-svelte/icons/sun";
+	import { tabState } from "$lib/tabState";
 	import { cn } from "$lib/utils";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
 	export let data;
+
+	// Types
+	type Entries<T> = {
+		[K in keyof T]: [K, T[K]];
+	}[keyof T][];
+
+	function typedEntries<T extends object>(obj: T) {
+		return Object.entries(obj) as Entries<T>;
+	}
 
 	// Theme selector
 	type Theme = {
@@ -65,8 +75,8 @@
 		<!-- Navigation -->
 		<ul class="ml-6 hidden sm:block">
 			<li>
-				{#each Object.values(data.repos) as { name }}
-					<Button variant="ghost" on:click={() => {}}>
+				{#each typedEntries(data.repos) as [id, { name }]}
+					<Button variant="ghost" on:click={() => tabState.set(id)}>
 						{name}
 					</Button>
 				{/each}
