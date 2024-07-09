@@ -469,7 +469,7 @@
 								const body = release.body ?? "";
 								if (releaseRepo?.repoName !== "language-tools") return body;
 								// Add missing links to PRs in the release body
-								return body.replaceAll(
+								return body.replace(
 									/\(#(\d+)\)/g, // Match all `(#1234)` patterns
 									(_, prNumber) => {
 										const prUrl = `https://github.com/sveltejs/${releaseRepo.repoName}/pull/${prNumber}`;
@@ -655,7 +655,7 @@
 											target="_blank"
 											class="group mb-4 ml-auto mr-8 font-semibold dark:text-black sm:ml-0 sm:mt-auto"
 										>
-											Open release
+											Open on <img src="/github.svg" alt="GitHub" class="ml-1.5 size-5" />
 											<ArrowUpRight
 												class="ml-2 size-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
 											/>

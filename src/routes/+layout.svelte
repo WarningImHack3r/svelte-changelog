@@ -3,6 +3,7 @@
 	import { onMount, type SvelteComponent } from "svelte";
 	import type { SvelteHTMLElements } from "svelte/elements";
 	import { fade } from "svelte/transition";
+	import { dev } from "$app/environment";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import ChevronDown from "lucide-svelte/icons/chevron-down";
 	import Moon from "lucide-svelte/icons/moon";
@@ -10,6 +11,7 @@
 	import Sun from "lucide-svelte/icons/sun";
 	import { tabState } from "$lib/tabState";
 	import { cn } from "$lib/utils";
+	import ScreenSize from "$lib/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
@@ -61,6 +63,9 @@
 	});
 </script>
 
+{#if dev}
+	<ScreenSize />
+{/if}
 <ModeWatcher />
 <header
 	class="sticky top-0 z-40 w-full border-b bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
