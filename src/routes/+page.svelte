@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
-	import { dev } from "$app/environment";
-	import { env } from "$env/dynamic/public";
-	import { Octokit } from "@octokit/rest";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
@@ -54,7 +51,7 @@
 	async function octokitResponse(category: Tab) {
 		return Promise.all(
 			data.repos[category].repos.map(({ repoName, dataFilter }) =>
-				octokit.rest.repos
+				data.octokit.rest.repos
 					.listReleases({
 						owner: "sveltejs",
 						repo: repoName,
@@ -91,15 +88,6 @@
 	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
 	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
 	let displayOtherBetaReleases = localStorageStore("displayOtherBetaReleases", true);
-
-	// GitHub API client
-	const octokit = new Octokit(
-		dev && env.PUBLIC_GITHUB_TOKEN
-			? {
-					auth: env.PUBLIC_GITHUB_TOKEN
-				}
-			: undefined
-	);
 
 	// Date formatting
 	function toRelativeDateString(date: Date) {
