@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let data;
 
-	let resolvedClosingIssues;
+	// let resolvedClosingIssues;
 
 	$: if (data.pullOrIssue === "pull") {
 		// TODO: get resolved issues from GraphQL API (not available with REST)
