@@ -131,6 +131,7 @@
 	<title>Detail of {data.org}/{data.repo}#{data.id} | Svelte Changelog</title>
 </svelte:head>
 
+<!-- TODO: move into separate components -->
 <div class="container py-8">
 	{#if prInfo.info && prInfo.files && prInfo.commits}
 		<!-- TODO: support issues only -->
@@ -142,7 +143,7 @@
 			</span>
 			<span class="ml-1 font-light text-muted-foreground">#{prInfo.info.number}</span>
 		</h2>
-		{#if resolvedClosingIssues}
+		{#if resolvedClosingIssues && resolvedClosingIssues.length > 0}
 			<h3 class="text-2xl font-semibold tracking-tight">
 				Closing issue{resolvedClosingIssues.length > 1 ? "s" : ""}
 			</h3>
@@ -233,6 +234,8 @@
 					{/each}
 				</div>
 			</div>
+			<!-- Comments -->
+			<!-- TODO -->
 			<!-- Files -->
 			<div class="rounded-xl border px-4">
 				<Accordion.Root>
@@ -252,6 +255,7 @@
 									</div>
 								{/each}
 							</div>
+							<!-- TODO: show details -->
 						</Accordion.Content>
 					</Accordion.Item>
 				</Accordion.Root>
