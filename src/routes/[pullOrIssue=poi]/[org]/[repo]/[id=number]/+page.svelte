@@ -44,6 +44,7 @@
 		files: undefined,
 		commits: undefined
 	};
+	// TODO: remove `separate` when bottom TODOs are done
 	let rightPartInfo: { title: string; value: string; separate?: boolean }[] = [];
 	$: if (prInfo.info) {
 		rightPartInfo = [
@@ -132,6 +133,8 @@
 </svelte:head>
 
 <!-- TODO: move into separate components -->
+<!-- TODO: use Shiki for bodies snippets? -->
+
 <div class="container py-8">
 	{#if prInfo.info && prInfo.files && prInfo.commits}
 		<!-- TODO: support issues only -->
@@ -193,7 +196,7 @@
 				type={prInfo.info.closed_at ? (prInfo.info.merged ? "pr-merged" : "pr-closed") : "pr-open"}
 			/>
 		</div>
-		<div class="mt-4 flex flex-col gap-8 md:gap-4">
+		<div class="mt-4 flex flex-col gap-8">
 			<!-- Info -->
 			<div class="flex w-full flex-col gap-8 md:flex-row">
 				<!-- Left part - body -->
@@ -235,7 +238,9 @@
 				</div>
 			</div>
 			<!-- Comments -->
-			<!-- TODO -->
+			<!-- TODO then remove from right panel -->
+			<!-- Commits -->
+			<!-- TODO with CI status, then remove from right panel -->
 			<!-- Files -->
 			<div class="rounded-xl border px-4">
 				<Accordion.Root>
@@ -255,7 +260,7 @@
 									</div>
 								{/each}
 							</div>
-							<!-- TODO: show details -->
+							<!-- TODO: show details then remove from right panel -->
 						</Accordion.Content>
 					</Accordion.Item>
 				</Accordion.Root>
