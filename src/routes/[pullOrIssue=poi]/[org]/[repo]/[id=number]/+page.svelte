@@ -8,7 +8,7 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Button } from "$lib/components/ui/button";
-	import GHBadge from "./GHBadge.svelte";
+	import GHBadge from "$lib/components/GHBadge.svelte";
 
 	export let data;
 
