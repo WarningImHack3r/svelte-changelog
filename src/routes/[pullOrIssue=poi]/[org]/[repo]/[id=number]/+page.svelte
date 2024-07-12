@@ -7,15 +7,16 @@
 	import FileDiff from "lucide-svelte/icons/file-diff";
 	import GitCommitVertical from "lucide-svelte/icons/git-commit-vertical";
 	import MessagesSquare from "lucide-svelte/icons/messages-square";
+	import { Badge } from "$lib/components/ui/badge";
+	import { Button } from "$lib/components/ui/button";
+	import { Separator } from "$lib/components/ui/separator";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as Accordion from "$lib/components/ui/accordion";
-	import { Separator } from "$lib/components/ui/separator";
-	import { Button } from "$lib/components/ui/button";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
-	import { Badge } from "$lib/components/ui/badge";
 
 	export let data;
 
@@ -160,13 +161,19 @@
 <div class="container py-8">
 	{#if prInfo.info && prInfo.files && prInfo.commits}
 		<!-- TODO: support issues only -->
-		<h2 class="mb-8 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight">
-			<span
-				class="prose prose-2xl text-3xl dark:prose-invert *:inline dark:text-primary-foreground"
+		<h2 class="group mb-8 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight">
+			<a
+				href={prInfo.info.html_url}
+				class="prose prose-2xl text-3xl decoration-2 dark:prose-invert *:inline group-hover:underline dark:text-primary-foreground"
 			>
 				<Markdown md={prInfo.info.title} plugins={[gfmPlugin()]} />
-			</span>
-			<span class="ml-1 font-light text-muted-foreground">#{prInfo.info.number}</span>
+			</a>
+			<a
+				href={prInfo.info.html_url}
+				class="ml-1 font-light text-muted-foreground decoration-2 group-hover:underline"
+			>
+				#{prInfo.info.number}
+			</a>
 		</h2>
 		{#if resolvedClosingIssues}
 			{#if resolvedClosingIssues.length > 0}
@@ -236,11 +243,17 @@
 				<div class="w-full rounded-xl border bg-muted/30">
 					<!-- Author -->
 					<div class="inline-flex w-full items-center border-b bg-muted/60 px-4 py-2">
-						<Avatar.Root class="mr-2 size-5">
-							<Avatar.Image src={prInfo.info.user.avatar_url} alt={prInfo.info.user.login} />
-							<Avatar.Fallback>{prInfo.info.user.login.charAt(0).toUpperCase()}</Avatar.Fallback>
-						</Avatar.Root>
-						<span>{prInfo.info.user.login}</span>
+						<a href={prInfo.info.user.html_url} class="group inline-flex items-center">
+							<Avatar.Root class="mr-2 size-5">
+								<Avatar.Image
+									src={prInfo.info.user.avatar_url}
+									alt={prInfo.info.user.login}
+									class="group-hover:opacity-75"
+								/>
+								<Avatar.Fallback>{prInfo.info.user.login.charAt(0).toUpperCase()}</Avatar.Fallback>
+							</Avatar.Root>
+							<span class="group-hover:underline">{prInfo.info.user.login}</span>
+						</a>
 						<span class="mx-1 text-muted-foreground">•</span>
 						<span class="text-muted-foreground">
 							{formatToDateTime(prInfo.info.created_at)}
@@ -258,7 +271,7 @@
 				</div>
 				<!-- Right part - info -->
 				<div class="h-fit w-2/5 max-w-xs rounded-xl border px-4 pb-3">
-					<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pb-1 pt-3 text-xl font-semibold">Info</h4>
+					<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pb-1 pt-2 text-xl font-semibold">Info</h4>
 					{#each rightPartInfo as { title, value }, i}
 						{#if i > 0}
 							<Separator class="my-2" />
@@ -321,22 +334,34 @@
 								<!-- Left part: commit message, description & author -->
 								<div class="flex flex-col gap-1">
 									<div class="flex items-center gap-1.5">
-										<div class="prose dark:prose-invert prose-p:text-foreground">
+										<a
+											href={commit.url}
+											class="prose dark:prose-invert hover:underline prose-p:text-foreground"
+										>
 											<Markdown
 												md={commitMessage ?? "_No message provided_"}
 												plugins={[gfmPlugin()]}
 											/>
-										</div>
+										</a>
 										{#if commit.author}
 											<div class="flex items-center gap-1.5 text-muted-foreground">
 												<span>•</span>
-												<Avatar.Root class="size-4">
-													<Avatar.Image src={commit.author.avatar_url} alt={commit.author.login} />
-													<Avatar.Fallback>
-														{commit.author.login.charAt(0).toUpperCase()}
-													</Avatar.Fallback>
-												</Avatar.Root>
-												<span>{commit.author.login}</span>
+												<a
+													href={commit.author.html_url}
+													class="group inline-flex items-center gap-1.5"
+												>
+													<Avatar.Root class="size-4">
+														<Avatar.Image
+															src={commit.author.avatar_url}
+															alt={commit.author.login}
+															class="group-hover:opacity-75"
+														/>
+														<Avatar.Fallback>
+															{commit.author.login.charAt(0).toUpperCase()}
+														</Avatar.Fallback>
+													</Avatar.Root>
+													<span class="group-hover:underline">{commit.author.login}</span>
+												</a>
 											</div>
 										{/if}
 									</div>
@@ -352,7 +377,15 @@
 										<Badge variant="outline" class="text-green-500">Verified</Badge>
 									{/if}
 									{#if commit.sha}
-										<span class="font-mono text-muted-foreground">{commit.sha.slice(0, 7)}</span>
+										<Tooltip.Root openDelay={300}>
+											<Tooltip.Trigger>
+												<span class="font-mono text-muted-foreground">{commit.sha.slice(0, 7)}</span
+												>
+											</Tooltip.Trigger>
+											<Tooltip.Content>
+												<span class="font-mono">{commit.sha}</span>
+											</Tooltip.Content>
+										</Tooltip.Root>
 									{/if}
 								</div>
 							</div>
@@ -369,15 +402,15 @@
 				<div class="flex flex-col gap-1">
 					{#each prInfo.files as file}
 						<div class="flex items-center justify-between gap-2">
-							<span class="inline-flex gap-2">
-								{file.filename}
+							<a href={file.blob_url} class="inline-flex gap-2 *:hover:underline">
+								<span>{file.filename}</span>
 								{#if file.additions > 0}
 									<span class="font-semibold text-green-500">+{file.additions}</span>
 								{/if}
 								{#if file.deletions > 0}
 									<span class="font-semibold text-red-500">-{file.deletions}</span>
 								{/if}
-							</span>
+							</a>
 							<span class="text-nowrap text-muted-foreground">{file.changes} changes</span>
 						</div>
 					{/each}
