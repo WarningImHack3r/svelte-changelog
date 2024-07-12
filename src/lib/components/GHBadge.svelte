@@ -9,55 +9,67 @@
 	import GitPullRequestClosed from "lucide-svelte/icons/git-pull-request-closed";
 	import GitPullRequestDraft from "lucide-svelte/icons/git-pull-request-draft";
 
-	export let type:
-		| "pr-draft"
-		| "pr-open"
-		| "pr-closed"
-		| "pr-merged"
-		| "issue-open"
-		| "issue-closed"
-		| "issue-solved";
+	type CommonStatus = "open" | "closed";
+	type Props =
+		| {
+				type: "pr";
+				status: "draft" | CommonStatus | "merged";
+		  }
+		| {
+				type: "issue";
+				status: CommonStatus | "solved";
+		  };
+
+	export let type: Props["type"];
+	export let status: Props["status"]; // NOT type-safe for now, waiting for Svelte 5 props declaration
 
 	let icon: ComponentType<Icon> | null = null;
 	let label = "";
 	let color = "";
 
 	switch (type) {
-		case "pr-draft":
-			icon = GitPullRequestDraft;
-			label = "Draft";
-			color = "bg-neutral-500";
+		case "pr":
+			switch (status) {
+				case "draft":
+					icon = GitPullRequestDraft;
+					label = "Draft";
+					color = "bg-neutral-500";
+					break;
+				case "open":
+					icon = GitPullRequestArrow;
+					label = "Open";
+					color = "bg-green-500";
+					break;
+				case "merged":
+					icon = GitMerge;
+					label = "Merged";
+					color = "bg-purple-500";
+					break;
+				case "closed":
+					icon = GitPullRequestClosed;
+					label = "Closed";
+					color = "bg-red-500";
+					break;
+			}
 			break;
-		case "pr-open":
-			icon = GitPullRequestArrow;
-			label = "Open";
-			color = "bg-green-500";
-			break;
-		case "pr-merged":
-			icon = GitMerge;
-			label = "Merged";
-			color = "bg-purple-500";
-			break;
-		case "pr-closed":
-			icon = GitPullRequestClosed;
-			label = "Closed";
-			color = "bg-red-500";
-			break;
-		case "issue-open":
-			icon = CircleDot;
-			label = "Open";
-			color = "bg-green-500";
-			break;
-		case "issue-closed":
-			icon = CircleSlash;
-			label = "Closed";
-			color = "bg-neutral-500";
-			break;
-		case "issue-solved":
-			icon = CircleCheck;
-			label = "Solved";
-			color = "bg-purple-500";
-			break;
+		case "issue":
+			switch (status) {
+				case "open":
+					icon = CircleDot;
+					label = "Open";
+					color = "bg-green-500";
+					break;
+				case "closed":
+					icon = CircleSlash;
+					label = "Closed";
+					color = "bg-neutral-500";
+					break;
+				case "solved":
+					icon = CircleCheck;
+					label = "Solved";
+					color = "bg-purple-500";
+					break;
+			}
 	}
 </script>
 

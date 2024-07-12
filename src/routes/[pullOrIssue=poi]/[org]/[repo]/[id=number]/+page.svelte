@@ -12,6 +12,10 @@
 	import { Separator } from "$lib/components/ui/separator";
 	import { Button } from "$lib/components/ui/button";
 	import GHBadge from "$lib/components/GHBadge.svelte";
+	import Step from "$lib/components/Step.svelte";
+	import Steps from "$lib/components/Steps.svelte";
+	import BottomCollapsible from "./BottomCollapsible.svelte";
+	import { Badge } from "$lib/components/ui/badge";
 
 	export let data;
 
@@ -150,7 +154,7 @@
 	<title>Detail of {data.org}/{data.repo}#{data.id} | Svelte Changelog</title>
 </svelte:head>
 
-<!-- TODO: move into separate components -->
+<!-- TODO: move into separate components, especially md rendering related -->
 <!-- TODO: use Shiki for bodies snippets? -->
 
 <div class="container py-8">
@@ -215,13 +219,14 @@
 		<div class="flex items-center justify-between">
 			<h3 class="text-2xl font-semibold tracking-tight">Pull request</h3>
 			<GHBadge
-				type={prInfo.info.closed_at
+				type="pr"
+				status={prInfo.info.closed_at
 					? prInfo.info.merged
-						? "pr-merged"
-						: "pr-closed"
+						? "merged"
+						: "closed"
 					: prInfo.info.draft
-						? "pr-draft"
-						: "pr-open"}
+						? "draft"
+						: "open"}
 			/>
 		</div>
 		<div class="mt-4 flex flex-col gap-4">
@@ -266,98 +271,111 @@
 				</div>
 			</div>
 			<!-- Comments -->
-			<div class="rounded-xl border px-4">
-				<Accordion.Root>
-					<Accordion.Item value="comments" class="border-b-0">
-						<Accordion.Trigger
-							class="group hover:no-underline [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
-						>
-							<MessagesSquare class="mr-3 size-5" />
-							<span class="text-xl font-semibold">Comments</span>
-							<span class="ml-auto mr-4 text-muted-foreground">
-								{prInfo.info.comments} comment{prInfo.info.comments > 1 ? "s" : ""}
+			<BottomCollapsible
+				icon={MessagesSquare}
+				label="Comments"
+				secondaryLabel="{prInfo.info.comments} comment{prInfo.info.comments > 1 ? 's' : ''}"
+			>
+				{#each prInfo.comments ?? [] as comment, i}
+					{#if i > 0}
+						<Separator class="my-2" />
+					{/if}
+					<div>
+						<!-- Author -->
+						<div class="inline-flex w-full items-center border-b px-4 py-2">
+							{#if comment.user}
+								<Avatar.Root class="mr-2 size-5">
+									<Avatar.Image src={comment.user.avatar_url} alt={comment.user.login} />
+									<Avatar.Fallback>
+										{comment.user.login.charAt(0).toUpperCase()}
+									</Avatar.Fallback>
+								</Avatar.Root>
+								<span>{comment.user.login}</span>
+								<span class="mx-1 text-muted-foreground">•</span>
+							{/if}
+							<span class="text-muted-foreground">
+								{formatToDateTime(comment.created_at)}
 							</span>
-						</Accordion.Trigger>
-						<Accordion.Content>
-							{#each prInfo.comments ?? [] as comment, i}
-								{#if i > 0}
-									<Separator class="my-2" />
-								{/if}
-								<div>
-									<!-- Author -->
-									<div class="inline-flex w-full items-center border-b px-4 py-2">
-										{#if comment.user}
-											<Avatar.Root class="mr-2 size-5">
-												<Avatar.Image src={comment.user.avatar_url} alt={comment.user.login} />
-												<Avatar.Fallback>
-													{comment.user.login.charAt(0).toUpperCase()}
-												</Avatar.Fallback>
-											</Avatar.Root>
-											<span>{comment.user.login}</span>
-											<span class="mx-1 text-muted-foreground">•</span>
-										{/if}
-										<span class="text-muted-foreground">
-											{formatToDateTime(comment.created_at)}
-										</span>
-									</div>
-									<!-- Body -->
-									<div
-										class="prose max-w-full p-4 dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_break-word] hover:prose-a:underline prose-li:my-1"
-									>
-										<Markdown md={comment.body || "_Empty comment_"} plugins={[gfmPlugin()]} />
-									</div>
-								</div>
-							{/each}
-						</Accordion.Content>
-					</Accordion.Item>
-				</Accordion.Root>
-			</div>
+						</div>
+						<!-- Body -->
+						<div
+							class="prose max-w-full p-4 dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_break-word] hover:prose-a:underline prose-li:my-1"
+						>
+							<Markdown md={comment.body || "_Empty comment_"} plugins={[gfmPlugin()]} />
+						</div>
+					</div>
+				{/each}
+			</BottomCollapsible>
 			<!-- Commits -->
-			<div class="rounded-xl border px-4">
-				<Accordion.Root>
-					<Accordion.Item value="commits" class="border-b-0">
-						<Accordion.Trigger
-							class="group hover:no-underline [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
-						>
-							<GitCommitVertical class="mr-3 size-5" />
-							<span class="text-xl font-semibold">Commits</span>
-							<span class="ml-auto mr-4 text-muted-foreground">
-								{prInfo.info.commits} commit{prInfo.info.commits > 1 ? "s" : ""}
-							</span>
-						</Accordion.Trigger>
-						<Accordion.Content>
-							<!-- TODO with CI status, then remove from right panel -->
-						</Accordion.Content>
-					</Accordion.Item>
-				</Accordion.Root>
-			</div>
-			<!-- Files -->
-			<div class="rounded-xl border px-4">
-				<Accordion.Root>
-					<Accordion.Item value="files" class="border-b-0">
-						<Accordion.Trigger
-							class="group hover:no-underline [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
-						>
-							<FileDiff class="mr-3 size-5" />
-							<span class="text-xl font-semibold">File changes</span>
-							<span class="ml-auto mr-4 text-muted-foreground">
-								{prInfo.files.length} changed file{prInfo.files.length > 1 ? "s" : ""}
-							</span>
-						</Accordion.Trigger>
-						<Accordion.Content>
-							<div class="flex flex-col gap-1">
-								{#each prInfo.files as file}
-									<div class="flex items-center justify-between gap-2">
-										<span>{file.filename}</span>
-										<span class="text-nowrap text-muted-foreground">{file.changes} changes</span>
+			<BottomCollapsible
+				icon={GitCommitVertical}
+				label="Commits"
+				secondaryLabel="{prInfo.info.commits} commit{prInfo.info.commits > 1 ? 's' : ''}"
+			>
+				<Steps class="my-4">
+					{#each prInfo.commits as commit}
+						{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
+						<Step>
+							<GitCommitVertical class="size-4" slot="stepIcon" />
+							<div class="flex items-start justify-between gap-40">
+								<!-- Left part: commit message, description & author -->
+								<div class="flex flex-col gap-1">
+									<div class="flex items-center gap-1.5">
+										<div class="prose dark:prose-invert prose-p:text-foreground">
+											<Markdown
+												md={commitMessage ?? "_No message provided_"}
+												plugins={[gfmPlugin()]}
+											/>
+										</div>
+										{#if commit.author}
+											<div class="flex items-center gap-1.5 text-muted-foreground">
+												<span>•</span>
+												<Avatar.Root class="size-4">
+													<Avatar.Image src={commit.author.avatar_url} alt={commit.author.login} />
+													<Avatar.Fallback>
+														{commit.author.login.charAt(0).toUpperCase()}
+													</Avatar.Fallback>
+												</Avatar.Root>
+												<span>{commit.author.login}</span>
+											</div>
+										{/if}
 									</div>
-								{/each}
+									{#if commitDescription.length > 0}
+										<div class="prose prose-sm max-w-full text-muted-foreground dark:prose-invert">
+											<Markdown md={commitDescription.join(" ")} plugins={[gfmPlugin()]} />
+										</div>
+									{/if}
+								</div>
+								<!-- Right part: verification badge & sha -->
+								<div class="flex items-center gap-2">
+									{#if commit.commit.verification?.verified ?? false}
+										<Badge variant="outline" class="text-green-500">Verified</Badge>
+									{/if}
+									{#if commit.sha}
+										<span class="font-mono text-muted-foreground">{commit.sha.slice(0, 7)}</span>
+									{/if}
+								</div>
 							</div>
-							<!-- TODO: show detailed diff -->
-						</Accordion.Content>
-					</Accordion.Item>
-				</Accordion.Root>
-			</div>
+						</Step>
+					{/each}
+				</Steps>
+			</BottomCollapsible>
+			<!-- Files -->
+			<BottomCollapsible
+				icon={FileDiff}
+				label="Files"
+				secondaryLabel="{prInfo.files.length} file{prInfo.files.length > 1 ? 's' : ''}"
+			>
+				<div class="flex flex-col gap-1">
+					{#each prInfo.files as file}
+						<div class="flex items-center justify-between gap-2">
+							<span>{file.filename}</span>
+							<span class="text-nowrap text-muted-foreground">{file.changes} changes</span>
+						</div>
+					{/each}
+				</div>
+				<!-- TODO: show detailed diff -->
+			</BottomCollapsible>
 		</div>
 		<!-- Bottom links -->
 		<div class="gap mt-16 flex w-full items-center justify-between gap-40">
