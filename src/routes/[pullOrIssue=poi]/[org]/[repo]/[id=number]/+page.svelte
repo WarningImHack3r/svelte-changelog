@@ -193,7 +193,13 @@
 		<div class="flex items-center justify-between">
 			<h3 class="text-2xl font-semibold tracking-tight">Pull request</h3>
 			<GHBadge
-				type={prInfo.info.closed_at ? (prInfo.info.merged ? "pr-merged" : "pr-closed") : "pr-open"}
+				type={prInfo.info.closed_at
+					? prInfo.info.merged
+						? "pr-merged"
+						: "pr-closed"
+					: prInfo.info.draft
+						? "pr-draft"
+						: "pr-open"}
 			/>
 		</div>
 		<div class="mt-4 flex flex-col gap-8">
@@ -238,7 +244,7 @@
 				</div>
 			</div>
 			<!-- Comments -->
-			<!-- TODO then remove from right panel -->
+			<!-- TODO with hide from bots checkbox localStorage, then remove from right panel -->
 			<!-- Commits -->
 			<!-- TODO with CI status, then remove from right panel -->
 			<!-- Files -->
