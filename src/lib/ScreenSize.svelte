@@ -2,14 +2,15 @@
 	// From https://gist.github.com/WarningImHack3r/375c559c5ee120408f9df2390ec2747a
 	// Inspired by https://gist.github.com/Sh4yy/0300299ae60af4910bcb341703946330
 	import { slide } from "svelte/transition";
-	import tailwindConfig from "/tailwind.config";
+	import tailwindConfig from "../../tailwind.config";
 	import resolveConfig from "tailwindcss/resolveConfig";
 
 	const fullConfig = resolveConfig(tailwindConfig);
-	const screens = Object.keys(fullConfig.theme.screens)
+	const configScreens = fullConfig.theme.screens;
+	const screens = Object.keys(configScreens)
 		.map(screen => ({
 			name: screen,
-			size: parseInt(fullConfig.theme.screens[screen].replace("px", ""))
+			size: parseInt(configScreens[screen as keyof typeof configScreens].replace("px", ""))
 		}))
 		.sort((a, b) => a.size - b.size);
 	let matchingScreen: (typeof screens)[number] | undefined;
