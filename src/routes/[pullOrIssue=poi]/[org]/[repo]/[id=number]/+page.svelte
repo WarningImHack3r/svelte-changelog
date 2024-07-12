@@ -2,8 +2,11 @@
 	import type { Octokit } from "octokit";
 	import Markdown from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
-	import ChevronLeft from "lucide-svelte/icons/chevron-left";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
+	import ChevronLeft from "lucide-svelte/icons/chevron-left";
+	import FileDiff from "lucide-svelte/icons/file-diff";
+	import GitCommitVertical from "lucide-svelte/icons/git-commit-vertical";
+	import MessagesSquare from "lucide-svelte/icons/messages-square";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Separator } from "$lib/components/ui/separator";
@@ -34,34 +37,37 @@
 	let resolvedClosingIssues: ResponseEntity[] | undefined = undefined;
 
 	// PR
+	type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
 	type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
 	let prInfo: {
 		info: Awaited<ReturnType<Pulls["get"]>>["data"] | undefined;
-		files: Awaited<ReturnType<Pulls["listFiles"]>>["data"] | undefined;
+		comments: Awaited<ReturnType<Issues["listComments"]>>["data"] | undefined;
 		commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"] | undefined;
+		files: Awaited<ReturnType<Pulls["listFiles"]>>["data"] | undefined;
 	} = {
 		info: undefined,
-		files: undefined,
-		commits: undefined
+		comments: undefined,
+		commits: undefined,
+		files: undefined
 	};
-	// TODO: remove `separate` when bottom TODOs are done
-	let rightPartInfo: { title: string; value: string; separate?: boolean }[] = [];
+	let rightPartInfo: { title: string; value: string }[] = [];
 	$: if (prInfo.info) {
 		rightPartInfo = [
-			{
-				title: prInfo.info.merged ? "Merged at" : "Closed at",
-				value: prInfo.info.closed_at ? formatToDateTime(prInfo.info.closed_at) : "Open"
-			},
+			...(prInfo.info.closed_at
+				? [
+						{
+							title: prInfo.info.merged ? "Merged at" : "Closed at",
+							value: formatToDateTime(prInfo.info.closed_at)
+						}
+					]
+				: []),
 			{ title: "Assignees", value: prInfo.info.assignees?.join(", ") || "None" },
 			{
 				title: "Reviewers",
 				value: prInfo.info.requested_reviewers?.map(r => r.login).join(", ") || "None"
 			},
 			{ title: "Labels", value: prInfo.info.labels?.join(", ") || "None" },
-			{ title: "Milestone", value: prInfo.info.milestone?.title || "None" },
-			{ title: "Comments", value: prInfo.info.comments.toString(), separate: true },
-			{ title: "Commits", value: prInfo.info.commits.toString(), separate: true },
-			{ title: "Files", value: prInfo.info.changed_files.toString() }
+			{ title: "Milestone", value: prInfo.info.milestone?.title || "None" }
 		];
 	}
 
@@ -75,13 +81,18 @@
 				pull_number: data.id
 			})
 			.then(({ data }) => (prInfo.info = data));
-		data.octokit.rest.pulls
-			.listFiles({
+		data.octokit.rest.issues
+			.listComments({
 				owner: data.org,
 				repo: data.repo,
-				pull_number: data.id
+				issue_number: data.id
 			})
-			.then(({ data }) => (prInfo.files = data));
+			.then(
+				({ data }) =>
+					(prInfo.comments = data.sort(
+						(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+					))
+			);
 		data.octokit.rest.pulls
 			.listCommits({
 				owner: data.org,
@@ -89,6 +100,13 @@
 				pull_number: data.id
 			})
 			.then(({ data }) => (prInfo.commits = data));
+		data.octokit.rest.pulls
+			.listFiles({
+				owner: data.org,
+				repo: data.repo,
+				pull_number: data.id
+			})
+			.then(({ data }) => (prInfo.files = data));
 
 		// Fetch closing issues
 		data.octokit
@@ -146,49 +164,53 @@
 			</span>
 			<span class="ml-1 font-light text-muted-foreground">#{prInfo.info.number}</span>
 		</h2>
-		{#if resolvedClosingIssues && resolvedClosingIssues.length > 0}
-			<h3 class="text-2xl font-semibold tracking-tight">
-				Closing issue{resolvedClosingIssues.length > 1 ? "s" : ""}
-			</h3>
-			<Accordion.Root class="mb-12">
-				{#each resolvedClosingIssues as closingIssue}
-					<Accordion.Item value={closingIssue.number.toString()}>
-						<Accordion.Trigger class="group hover:no-underline">
-							<!-- Title -->
-							<span class="text-left *:group-hover:underline">
-								<span
-									class="prose leading-normal dark:prose-invert *:inline dark:text-primary-foreground"
-								>
-									<Markdown md={closingIssue.title} plugins={[gfmPlugin()]} />
+		{#if resolvedClosingIssues}
+			{#if resolvedClosingIssues.length > 0}
+				<h3 class="text-2xl font-semibold tracking-tight">
+					Closing issue{resolvedClosingIssues.length > 1 ? "s" : ""}
+				</h3>
+				<Accordion.Root class="mb-12">
+					{#each resolvedClosingIssues as closingIssue}
+						<Accordion.Item value={closingIssue.number.toString()}>
+							<Accordion.Trigger class="group hover:no-underline">
+								<!-- Title -->
+								<span class="text-left *:group-hover:underline">
+									<span
+										class="prose leading-normal dark:prose-invert *:inline dark:text-primary-foreground"
+									>
+										<Markdown md={closingIssue.title} plugins={[gfmPlugin()]} />
+									</span>
+									<span class="ml-1 font-light text-muted-foreground">#{closingIssue.number}</span>
 								</span>
-								<span class="ml-1 font-light text-muted-foreground">#{closingIssue.number}</span>
-							</span>
-							<!-- Author & Date -->
-							<div
-								class="ml-auto mr-4 flex items-center gap-2 whitespace-nowrap pl-32 text-right text-sm text-muted-foreground"
+								<!-- Author & Date -->
+								<div
+									class="ml-auto mr-4 flex items-center gap-2 whitespace-nowrap pl-32 text-right text-sm text-muted-foreground"
+								>
+									<Avatar.Root class="size-6">
+										<Avatar.Image
+											src={closingIssue.author.avatarUrl}
+											alt={closingIssue.author.login}
+										/>
+										<Avatar.Fallback>
+											{closingIssue.author.login.charAt(0).toUpperCase()}
+										</Avatar.Fallback>
+									</Avatar.Root>
+									<span>{closingIssue.author.login}</span>
+									<span>•</span>
+									<span>{formatToDateTime(closingIssue.createdAt)}</span>
+								</div>
+							</Accordion.Trigger>
+							<Accordion.Content
+								class="prose mx-auto w-3/4 max-w-full text-base dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_break-word] hover:prose-a:underline prose-li:my-1"
 							>
-								<Avatar.Root class="size-6">
-									<Avatar.Image
-										src={closingIssue.author.avatarUrl}
-										alt={closingIssue.author.login}
-									/>
-									<Avatar.Fallback>
-										{closingIssue.author.login.charAt(0).toUpperCase()}
-									</Avatar.Fallback>
-								</Avatar.Root>
-								<span>{closingIssue.author.login}</span>
-								<span>•</span>
-								<span>{formatToDateTime(closingIssue.createdAt)}</span>
-							</div>
-						</Accordion.Trigger>
-						<Accordion.Content
-							class="prose mx-auto w-3/4 max-w-full text-base dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_break-word] hover:prose-a:underline prose-li:my-1"
-						>
-							<Markdown md={closingIssue.body} plugins={[gfmPlugin()]} />
-						</Accordion.Content>
-					</Accordion.Item>
-				{/each}
-			</Accordion.Root>
+								<Markdown md={closingIssue.body} plugins={[gfmPlugin()]} />
+							</Accordion.Content>
+						</Accordion.Item>
+					{/each}
+				</Accordion.Root>
+			{/if}
+		{:else}
+			<span class="text-lg font-semibold tracking-tight">Loading closing issues...</span>
 		{/if}
 		<div class="flex items-center justify-between">
 			<h3 class="text-2xl font-semibold tracking-tight">Pull request</h3>
@@ -202,20 +224,20 @@
 						: "pr-open"}
 			/>
 		</div>
-		<div class="mt-4 flex flex-col gap-8">
+		<div class="mt-4 flex flex-col gap-4">
 			<!-- Info -->
-			<div class="flex w-full flex-col gap-8 md:flex-row">
+			<div class="mb-8 flex w-full flex-col gap-8 md:flex-row">
 				<!-- Left part - body -->
-				<div class="w-full rounded-xl border">
+				<div class="w-full rounded-xl border bg-muted/30">
 					<!-- Author -->
-					<div class="inline-flex w-full items-center border-b px-4 py-2">
-						<Avatar.Root class="size-5">
+					<div class="inline-flex w-full items-center border-b bg-muted/60 px-4 py-2">
+						<Avatar.Root class="mr-2 size-5">
 							<Avatar.Image src={prInfo.info.user.avatar_url} alt={prInfo.info.user.login} />
 							<Avatar.Fallback>{prInfo.info.user.login.charAt(0).toUpperCase()}</Avatar.Fallback>
 						</Avatar.Root>
-						<span class="ml-2 mr-1.5">{prInfo.info.user.login}</span>
+						<span>{prInfo.info.user.login}</span>
+						<span class="mx-1 text-muted-foreground">•</span>
 						<span class="text-muted-foreground">
-							•
 							{formatToDateTime(prInfo.info.created_at)}
 						</span>
 					</div>
@@ -230,13 +252,13 @@
 					</div>
 				</div>
 				<!-- Right part - info -->
-				<div class="h-fit w-2/5 max-w-xs rounded-xl border px-4 py-3">
-					<h4 class="mb-4 border-b pb-1 text-xl font-semibold">Info</h4>
-					{#each rightPartInfo as { title, value, separate }, i}
+				<div class="h-fit w-2/5 max-w-xs rounded-xl border px-4 pb-3">
+					<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pb-1 pt-3 text-xl font-semibold">Info</h4>
+					{#each rightPartInfo as { title, value }, i}
 						{#if i > 0}
 							<Separator class="my-2" />
 						{/if}
-						<div class="flex items-center justify-between *:text-nowrap" class:mt-12={separate}>
+						<div class="flex items-center justify-between *:text-nowrap">
 							<span class="font-medium">{title}</span>
 							<span class="text-muted-foreground">{value}</span>
 						</div>
@@ -244,17 +266,82 @@
 				</div>
 			</div>
 			<!-- Comments -->
-			<!-- TODO with hide from bots checkbox localStorage, then remove from right panel -->
+			<div class="rounded-xl border px-4">
+				<Accordion.Root>
+					<Accordion.Item value="comments" class="border-b-0">
+						<Accordion.Trigger
+							class="group hover:no-underline [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
+						>
+							<MessagesSquare class="mr-3 size-5" />
+							<span class="text-xl font-semibold">Comments</span>
+							<span class="ml-auto mr-4 text-muted-foreground">
+								{prInfo.info.comments} comment{prInfo.info.comments > 1 ? "s" : ""}
+							</span>
+						</Accordion.Trigger>
+						<Accordion.Content>
+							{#each prInfo.comments ?? [] as comment, i}
+								{#if i > 0}
+									<Separator class="my-2" />
+								{/if}
+								<div>
+									<!-- Author -->
+									<div class="inline-flex w-full items-center border-b px-4 py-2">
+										{#if comment.user}
+											<Avatar.Root class="mr-2 size-5">
+												<Avatar.Image src={comment.user.avatar_url} alt={comment.user.login} />
+												<Avatar.Fallback>
+													{comment.user.login.charAt(0).toUpperCase()}
+												</Avatar.Fallback>
+											</Avatar.Root>
+											<span>{comment.user.login}</span>
+											<span class="mx-1 text-muted-foreground">•</span>
+										{/if}
+										<span class="text-muted-foreground">
+											{formatToDateTime(comment.created_at)}
+										</span>
+									</div>
+									<!-- Body -->
+									<div
+										class="prose max-w-full p-4 dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_break-word] hover:prose-a:underline prose-li:my-1"
+									>
+										<Markdown md={comment.body || "_Empty comment_"} plugins={[gfmPlugin()]} />
+									</div>
+								</div>
+							{/each}
+						</Accordion.Content>
+					</Accordion.Item>
+				</Accordion.Root>
+			</div>
 			<!-- Commits -->
-			<!-- TODO with CI status, then remove from right panel -->
+			<div class="rounded-xl border px-4">
+				<Accordion.Root>
+					<Accordion.Item value="commits" class="border-b-0">
+						<Accordion.Trigger
+							class="group hover:no-underline [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
+						>
+							<GitCommitVertical class="mr-3 size-5" />
+							<span class="text-xl font-semibold">Commits</span>
+							<span class="ml-auto mr-4 text-muted-foreground">
+								{prInfo.info.commits} commit{prInfo.info.commits > 1 ? "s" : ""}
+							</span>
+						</Accordion.Trigger>
+						<Accordion.Content>
+							<!-- TODO with CI status, then remove from right panel -->
+						</Accordion.Content>
+					</Accordion.Item>
+				</Accordion.Root>
+			</div>
 			<!-- Files -->
 			<div class="rounded-xl border px-4">
 				<Accordion.Root>
 					<Accordion.Item value="files" class="border-b-0">
-						<Accordion.Trigger class="group hover:no-underline">
-							<span class="text-xl font-semibold">Files</span>
+						<Accordion.Trigger
+							class="group hover:no-underline [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
+						>
+							<FileDiff class="mr-3 size-5" />
+							<span class="text-xl font-semibold">File changes</span>
 							<span class="ml-auto mr-4 text-muted-foreground">
-								{prInfo.files.length} changed files
+								{prInfo.files.length} changed file{prInfo.files.length > 1 ? "s" : ""}
 							</span>
 						</Accordion.Trigger>
 						<Accordion.Content>
@@ -266,7 +353,7 @@
 									</div>
 								{/each}
 							</div>
-							<!-- TODO: show details then remove from right panel -->
+							<!-- TODO: show detailed diff -->
 						</Accordion.Content>
 					</Accordion.Item>
 				</Accordion.Root>
