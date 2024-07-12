@@ -12,7 +12,7 @@
 	type CommonStatus = "open" | "closed";
 	type Props =
 		| {
-				type: "pr";
+				type: "pull";
 				status: "draft" | CommonStatus | "merged";
 		  }
 		| {
@@ -28,7 +28,7 @@
 	let color = "";
 
 	switch (type) {
-		case "pr":
+		case "pull":
 			switch (status) {
 				case "draft":
 					icon = GitPullRequestDraft;
@@ -38,7 +38,7 @@
 				case "open":
 					icon = GitPullRequestArrow;
 					label = "Open";
-					color = "bg-green-500";
+					color = "bg-green-600";
 					break;
 				case "merged":
 					icon = GitMerge;
@@ -57,7 +57,7 @@
 				case "open":
 					icon = CircleDot;
 					label = "Open";
-					color = "bg-green-500";
+					color = "bg-green-600";
 					break;
 				case "closed":
 					icon = CircleSlash;
