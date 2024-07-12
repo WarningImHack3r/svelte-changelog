@@ -155,7 +155,7 @@
 </svelte:head>
 
 <!-- TODO: move into separate components, especially md rendering related -->
-<!-- TODO: use Shiki for bodies snippets? -->
+<!-- TODO: use Shiki for bodies snippets & detailed diff -->
 
 <div class="container py-8">
 	{#if prInfo.info && prInfo.files && prInfo.commits}
@@ -369,12 +369,30 @@
 				<div class="flex flex-col gap-1">
 					{#each prInfo.files as file}
 						<div class="flex items-center justify-between gap-2">
-							<span>{file.filename}</span>
+							<span class="inline-flex gap-2">
+								{file.filename}
+								{#if file.additions > 0}
+									<span class="font-semibold text-green-500">+{file.additions}</span>
+								{/if}
+								{#if file.deletions > 0}
+									<span class="font-semibold text-red-500">-{file.deletions}</span>
+								{/if}
+							</span>
 							<span class="text-nowrap text-muted-foreground">{file.changes} changes</span>
 						</div>
 					{/each}
 				</div>
-				<!-- TODO: show detailed diff -->
+				<div class="mt-4 flex items-center justify-between">
+					<span class="font-semibold">Total</span>
+					<div class="flex items-center gap-2">
+						<span class="font-semibold text-green-500">
+							+{prInfo.files.reduce((acc, file) => acc + file.additions, 0)}
+						</span>
+						<span class="font-semibold text-red-500">
+							-{prInfo.files.reduce((acc, file) => acc + file.deletions, 0)}
+						</span>
+					</div>
+				</div>
 			</BottomCollapsible>
 		</div>
 		<!-- Bottom links -->
