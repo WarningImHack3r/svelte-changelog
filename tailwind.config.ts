@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import { fontFamily, screens } from "tailwindcss/defaultTheme";
+import defaultTheme from "tailwindcss/defaultTheme";
 import typography from "@tailwindcss/typography";
 
 export default {
@@ -16,7 +16,7 @@ export default {
 		},
 		screens: {
 			xs: "475px",
-			...screens
+			...defaultTheme.screens
 		},
 		extend: {
 			colors: {
@@ -60,7 +60,7 @@ export default {
 				sm: "calc(var(--radius) - 4px)"
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				sans: [...defaultTheme.fontFamily.sans]
 			},
 			typography: () => ({
 				DEFAULT: {
