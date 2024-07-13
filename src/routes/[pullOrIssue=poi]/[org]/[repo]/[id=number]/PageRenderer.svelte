@@ -73,12 +73,12 @@
 <!-- TODO: use Shiki for bodies snippets & detailed diff -->
 
 <div class="container py-8">
-	<h2 class="group mb-8 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight">
+	<h2 class="group mb-8 scroll-m-20 border-b pb-2 font-semibold tracking-tight xs:text-3xl">
 		<a href={info.html_url}>
 			<MarkdownRenderer
 				markdown={info.title}
 				inline
-				class="prose-2xl text-3xl text-foreground group-hover:underline"
+				class="prose-xl text-foreground xs:prose-2xl group-hover:underline xs:text-3xl"
 			/>
 			<span class="ml-1 font-light text-muted-foreground group-hover:underline">#{info.number}</span
 			>
@@ -91,35 +91,39 @@
 		<Accordion.Root class="mb-12">
 			{#each linkedEntities as entity}
 				<Accordion.Item value={entity.number.toString()}>
-					<Accordion.Trigger class="group hover:no-underline">
-						<!-- Title -->
-						<span class="text-left *:group-hover:underline">
-							<MarkdownRenderer
-								markdown={entity.title}
-								inline
-								class="leading-normal text-foreground"
-							/>
-							<span class="ml-1 font-light text-muted-foreground">
-								#{entity.number}
+					<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:flex-shrink-0">
+						<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
+							<!-- Title -->
+							<span class="text-left *:group-hover:underline">
+								<MarkdownRenderer
+									markdown={entity.title}
+									inline
+									class="leading-normal text-foreground"
+								/>
+								<span class="ml-1 font-light text-muted-foreground">
+									#{entity.number}
+								</span>
 							</span>
-						</span>
-						<!-- Author & Date -->
-						<div
-							class="ml-auto mr-4 flex items-center gap-2 whitespace-nowrap pl-32 text-right text-sm text-muted-foreground"
-						>
-							<Avatar.Root class="size-6">
-								<Avatar.Image src={entity.author.avatarUrl} alt={entity.author.login} />
-								<Avatar.Fallback>
-									{entity.author.login.charAt(0).toUpperCase()}
-								</Avatar.Fallback>
-							</Avatar.Root>
-							<span>{entity.author.login}</span>
-							<span>•</span>
-							<span>{formatToDateTime(entity.createdAt)}</span>
+							<!-- Author & Date -->
+							<div
+								class="mr-4 flex flex-shrink-0 flex-col items-end gap-1 text-right text-sm text-muted-foreground xs:ml-auto xs:flex-row xs:items-center"
+							>
+								<div class="flex items-center gap-2">
+									<Avatar.Root class="size-6">
+										<Avatar.Image src={entity.author.avatarUrl} alt={entity.author.login} />
+										<Avatar.Fallback>
+											{entity.author.login.charAt(0).toUpperCase()}
+										</Avatar.Fallback>
+									</Avatar.Root>
+									<span class="font-semibold">{entity.author.login}</span>
+								</div>
+								<span class="hidden xs:block">•</span>
+								<span>{formatToDateTime(entity.createdAt)}</span>
+							</div>
 						</div>
 					</Accordion.Trigger>
 					<!-- Body -->
-					<Accordion.Content class="mx-auto w-3/4">
+					<Accordion.Content class="mx-auto sm:w-3/4">
 						<MarkdownRenderer markdown={entity.body} class="max-w-full text-base" />
 					</Accordion.Content>
 				</Accordion.Item>
@@ -153,7 +157,9 @@
 			<!-- Left part - body -->
 			<div class="w-full rounded-xl border bg-muted/30">
 				<!-- Author -->
-				<div class="inline-flex w-full items-center border-b bg-muted/60 px-4 py-2">
+				<div
+					class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
+				>
 					{#if info.user}
 						<a href={info.user.html_url} class="group inline-flex items-center">
 							<Avatar.Root class="mr-2 size-5">
@@ -166,9 +172,9 @@
 									{info.user.login.charAt(0).toUpperCase()}
 								</Avatar.Fallback>
 							</Avatar.Root>
-							<span class="group-hover:underline">{info.user.login}</span>
+							<span class="font-semibold group-hover:underline">{info.user.login}</span>
 						</a>
-						<span class="mx-1 text-muted-foreground">•</span>
+						<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
 					{/if}
 					<span class="text-muted-foreground">
 						{formatToDateTime(info.created_at)}
@@ -183,15 +189,15 @@
 				</div>
 			</div>
 			<!-- Right part - info -->
-			<div class="h-fit w-2/5 max-w-xs rounded-xl border px-4 pb-3">
+			<div class="h-fit w-full rounded-xl border px-4 pb-3 md:w-2/5 md:max-w-xs">
 				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pb-1 pt-2 text-xl font-semibold">Info</h4>
 				{#each rightPartInfo as { title, value }, i}
 					{#if i > 0}
 						<Separator class="my-2" />
 					{/if}
-					<div class="flex items-center justify-between *:text-nowrap">
+					<div class="flex items-center justify-between gap-2 xs:*:text-nowrap">
 						<span class="font-medium">{title}</span>
-						<span class="text-muted-foreground">{value}</span>
+						<span class="text-right text-muted-foreground">{value}</span>
 					</div>
 				{/each}
 			</div>
@@ -208,7 +214,9 @@
 				{/if}
 				<div>
 					<!-- Author -->
-					<div class="inline-flex w-full items-center border-b px-4 py-2">
+					<div
+						class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
+					>
 						{#if comment.user}
 							<a href={comment.user.html_url} class="group inline-flex items-center">
 								<Avatar.Root class="mr-2 size-5">
@@ -221,9 +229,9 @@
 										{comment.user.login.charAt(0).toUpperCase()}
 									</Avatar.Fallback>
 								</Avatar.Root>
-								<span class="group-hover:underline">{comment.user.login}</span>
+								<span class="font-semibold group-hover:underline">{comment.user.login}</span>
 							</a>
-							<span class="mx-1 text-muted-foreground">•</span>
+							<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
 						{/if}
 						<span class="text-muted-foreground">
 							{formatToDateTime(comment.created_at)}
@@ -248,18 +256,19 @@
 						{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
 						<Step>
 							<GitCommitVertical class="size-4" slot="stepIcon" />
-							<div class="flex items-start justify-between gap-40">
+							<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 								<!-- Left part: commit message, description & author -->
 								<div class="flex flex-col gap-1">
-									<div class="flex items-center gap-1.5">
-										<a href={commit.url} class="hover:underline">
+									<div>
+										<a href={commit.html_url} class="hover:underline">
 											<MarkdownRenderer
 												markdown={commitMessage ?? "_No message provided_"}
+												inline
 												class="prose-p:text-foreground"
 											/>
 										</a>
 										{#if commit.author}
-											<div class="flex items-center gap-1.5 text-muted-foreground">
+											<div class="ml-0.5 inline-flex items-center gap-1.5 text-muted-foreground">
 												<span>•</span>
 												<a
 													href={commit.author.html_url}
@@ -275,7 +284,9 @@
 															{commit.author.login.charAt(0).toUpperCase()}
 														</Avatar.Fallback>
 													</Avatar.Root>
-													<span class="group-hover:underline">{commit.author.login}</span>
+													<span class="font-semibold group-hover:underline">
+														{commit.author.login}
+													</span>
 												</a>
 											</div>
 										{/if}
@@ -318,11 +329,13 @@
 				label="Files"
 				secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			>
-				<div class="flex flex-col gap-1">
+				<div class="flex flex-col gap-2">
 					{#each files as file}
-						<div class="flex items-center justify-between gap-2">
-							<a href={file.blob_url} class="inline-flex gap-2 *:hover:underline">
-								<span>{file.filename}</span>
+						<div
+							class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
+						>
+							<a href={file.blob_url} class="inline-block *:hover:underline">
+								<span class="[overflow-wrap:_anywhere]">{file.filename}</span>
 								{#if file.additions > 0}
 									<span class="font-semibold text-green-500">+{file.additions}</span>
 								{/if}
@@ -330,7 +343,9 @@
 									<span class="font-semibold text-red-500">-{file.deletions}</span>
 								{/if}
 							</a>
-							<span class="text-nowrap text-muted-foreground">{file.changes} changes</span>
+							<span class="flex-shrink-0 text-right text-muted-foreground">
+								{file.changes} changes
+							</span>
 						</div>
 					{/each}
 				</div>
@@ -349,18 +364,18 @@
 		{/if}
 	</div>
 	<!-- Bottom links -->
-	<div class="gap mt-16 flex w-full items-center justify-between gap-40">
-		<Button href="/" variant="link" class="group">
+	<div class="mt-16 flex w-full flex-col-reverse justify-between gap-8 md:flex-row md:items-center">
+		<Button href="/" variant="link" class="group mr-auto md:mr-0">
 			<ChevronLeft
 				class="mr-1 size-4 transition-transform duration-300 group-hover:-translate-x-1"
 			/>
 			Back to homepage
 		</Button>
-		<div>
+		<div class="flex flex-col-reverse items-end gap-4 md:flex-row md:items-center">
 			{#each linkedEntities as closingIssue}
 				<Button
 					href="/{type === 'pull' ? 'issues' : 'pull'}/{org}/{repo}/{closingIssue.number}"
-					variant="link"
+					variant="secondary"
 				>
 					Open {type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
 				</Button>
