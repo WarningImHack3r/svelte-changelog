@@ -3,6 +3,8 @@
 	import type { Icon } from "lucide-svelte";
 	import * as Accordion from "$lib/components/ui/accordion";
 
+	const key = "collapsible";
+
 	export let icon: ComponentType<Icon> | null = null;
 	export let label: string;
 	export let secondaryLabel: string | undefined = undefined;
@@ -10,8 +12,8 @@
 </script>
 
 <div class="rounded-xl border px-4">
-	<Accordion.Root value={openByDefault ? "comments" : undefined}>
-		<Accordion.Item value="comments" class="border-b-0">
+	<Accordion.Root value={openByDefault ? key : undefined}>
+		<Accordion.Item value={key} class="border-b-0">
 			<Accordion.Trigger
 				class="group hover:no-underline [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
 			>

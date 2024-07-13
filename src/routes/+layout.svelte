@@ -82,7 +82,7 @@
 		</a>
 
 		<!-- Navigation -->
-		<!-- TODO: don't hardcode this? -->
+		<!-- TODO: don't hardcode scrollY? -->
 		{#if scrollY > 150 && $page.route.id === "/"}
 			<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 				<li>

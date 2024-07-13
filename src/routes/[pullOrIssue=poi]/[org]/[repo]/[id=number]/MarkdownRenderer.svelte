@@ -12,7 +12,7 @@
 
 <span
 	class={cn(
-		"prose dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_anywhere] hover:prose-a:underline prose-li:my-1",
+		"prose dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_anywhere] hover:prose-a:underline prose-code:text-wrap prose-li:my-1",
 		inline && "*:inline",
 		className
 	)}

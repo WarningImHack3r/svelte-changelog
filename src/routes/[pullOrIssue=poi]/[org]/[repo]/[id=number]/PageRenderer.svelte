@@ -136,18 +136,16 @@
 		</h3>
 		<GHBadge
 			{type}
-			status={info.closed_at
-				? type === "pull" && "merged" in info
+			status={info.state === "closed"
+				? "merged" in info
 					? info.merged
 						? "merged"
 						: "closed"
-					: info.draft
-						? "draft"
-						: "open"
-				: info.state === "closed"
-					? "state_reason" in info && info.state_reason === "completed"
+					: "state_reason" in info && info.state_reason === "completed"
 						? "solved"
 						: "closed"
+				: info.draft
+					? "draft"
 					: "open"}
 		/>
 	</div>

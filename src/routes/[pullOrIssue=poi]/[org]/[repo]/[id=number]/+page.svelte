@@ -29,6 +29,7 @@
 		info: undefined,
 		comments: undefined
 	};
+	let prsToFetch: number[] = [];
 
 	$: info = prInfo.info || issueInfo.info;
 	$: pullOrIssue = data.pullOrIssue;
@@ -147,37 +148,50 @@
 				issue_number: data.id
 			})
 			.then(({ data: response }) => {
-				for (let event of response) {
-					if (event.event === "cross-referenced") {
+				prsToFetch = response
+					.filter(event => event.event === "cross-referenced")
+					.map(event => {
 						const anyEvent = event as any; // doesn't have the source property for some reason
-						const prNumber = anyEvent.source.issue.number;
-						data.octokit.rest.pulls
-							.get({
-								owner: data.org,
-								repo: data.repo,
-								pull_number: prNumber
-							})
-							.then(({ data }) => {
-								if (!linkedPRsOrIssues) {
-									linkedPRsOrIssues = [];
-								}
-								if (linkedPRsOrIssues.map(i => i.number).includes(data.number)) {
-									return;
-								}
-								linkedPRsOrIssues.push({
-									title: data.title,
-									author: {
-										login: data.user.login,
-										avatarUrl: data.user.avatar_url
-									},
-									body: data.body ?? "",
-									createdAt: data.created_at,
-									number: data.number
-								});
-								linkedPRsOrIssues = [...linkedPRsOrIssues];
-							});
-					}
+						return anyEvent.source.issue.number;
+					});
+			})
+			.catch(() => (linkedPRsOrIssues = []));
+	}
+	$: if (prsToFetch.length > 0) {
+		Promise.all(
+			prsToFetch.map(prNumber =>
+				data.octokit.rest.pulls.get({
+					owner: data.org,
+					repo: data.repo,
+					pull_number: prNumber
+				})
+			)
+		)
+			.then(prs => {
+				if (!linkedPRsOrIssues) {
+					linkedPRsOrIssues = [];
 				}
+				for (let { data } of prs) {
+					if (linkedPRsOrIssues.map(i => i.number).includes(data.number)) {
+						continue;
+					}
+					linkedPRsOrIssues.push({
+						title: data.title,
+						author: {
+							login: data.user.login,
+							avatarUrl: data.user.avatar_url
+						},
+						body: data.body ?? "",
+						createdAt: data.created_at,
+						number: data.number
+					});
+				}
+				linkedPRsOrIssues = linkedPRsOrIssues.sort(
+					(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+				);
+				prsToFetch = prsToFetch.filter(
+					prNumber => !prs.map(pr => pr.data.number).includes(prNumber)
+				);
 			})
 			.catch(() => (linkedPRsOrIssues = []));
 	}
