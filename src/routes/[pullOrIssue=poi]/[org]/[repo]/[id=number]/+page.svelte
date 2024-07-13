@@ -31,9 +31,16 @@
 	};
 
 	$: info = prInfo.info || issueInfo.info;
+	$: pullOrIssue = data.pullOrIssue;
 
 	// Data fetching
-	$: if (data.pullOrIssue === "pull") {
+	$: if (pullOrIssue === "pull") {
+		linkedPRsOrIssues = [];
+		issueInfo = {
+			info: undefined,
+			comments: undefined
+		};
+
 		// Fetch PR info
 		data.octokit.rest.pulls
 			.get({
@@ -105,7 +112,15 @@
 			)
 			.catch(() => (linkedPRsOrIssues = []));
 	}
-	$: if (data.pullOrIssue === "issues") {
+	$: if (pullOrIssue === "issues") {
+		linkedPRsOrIssues = [];
+		prInfo = {
+			info: undefined,
+			comments: undefined,
+			commits: undefined,
+			files: undefined
+		};
+
 		data.octokit.rest.issues
 			.get({
 				owner: data.org,
@@ -159,10 +174,12 @@
 									createdAt: data.created_at,
 									number: data.number
 								});
+								linkedPRsOrIssues = [...linkedPRsOrIssues];
 							});
 					}
 				}
-			});
+			})
+			.catch(() => (linkedPRsOrIssues = []));
 	}
 </script>
 
