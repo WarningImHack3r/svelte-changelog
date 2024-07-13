@@ -64,7 +64,10 @@
 						}
 					]
 				: []),
-			{ title: "Labels", value: info.labels?.join(", ") || "None" },
+			{
+				title: "Labels",
+				value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
+			},
 			{ title: "Milestone", value: info.milestone?.title || "None" }
 		];
 	}
@@ -370,14 +373,16 @@
 			Back to homepage
 		</Button>
 		<div class="flex flex-col-reverse items-end gap-4 md:flex-row md:items-center">
-			{#each linkedEntities as closingIssue}
-				<Button
-					href="/{type === 'pull' ? 'issues' : 'pull'}/{org}/{repo}/{closingIssue.number}"
-					variant="secondary"
-				>
-					Open {type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
-				</Button>
-			{/each}
+			<div class="flex flex-wrap justify-end gap-4">
+				{#each linkedEntities as closingIssue}
+					<Button
+						href="/{type === 'pull' ? 'issues' : 'pull'}/{org}/{repo}/{closingIssue.number}"
+						variant="secondary"
+					>
+						Open {type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
+					</Button>
+				{/each}
+			</div>
 			<Button href={info.html_url} target="_blank" class="group dark:text-black">
 				Open {type === "pull" ? "pull request" : "issue"} on GitHub
 				<ArrowUpRight

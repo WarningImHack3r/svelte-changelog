@@ -1,9 +1,51 @@
 <script lang="ts">
+	import { dev } from "$app/environment";
+	import { env } from "$env/dynamic/public";
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 
 	export let data;
+
+	async function linkedIssuesForPR(
+		owner: string,
+		repo: string,
+		pr: number
+	): Promise<LinkedEntity[]> {
+		return data.octokit
+			.graphql(
+				`
+				query closingIssues($number: Int!, $owner: String!, $repo: String!) {
+					repository(owner: $owner, name: $repo) {
+						pullRequest(number: $number) {
+							closingIssuesReferences(first: 10) {
+								nodes {
+									createdAt
+									author {
+										login
+										avatarUrl
+									}
+									number
+									title
+									body
+								}
+							}
+						}
+					}
+				}
+				`,
+				{
+					owner,
+					repo,
+					number: pr
+				}
+			)
+			.then(
+				/* eslint-disable @typescript-eslint/no-explicit-any */ (response: any) =>
+					response.repository.pullRequest.closingIssuesReferences.nodes
+			)
+			.catch(() => []);
+	}
 
 	// PR issues or issue PRs
 	let linkedPRsOrIssues: LinkedEntity[] | undefined = undefined;
@@ -78,40 +120,9 @@
 			.then(({ data }) => (prInfo.files = data));
 
 		// Fetch closing issues
-		data.octokit
-			.graphql(
-				`
-				query closingIssues($number: Int!, $owner: String!, $repo: String!) {
-					repository(owner: $owner, name: $repo) {
-						pullRequest(number: $number) {
-							closingIssuesReferences(first: 10) {
-								nodes {
-									createdAt
-									author {
-										login
-										avatarUrl
-									}
-									number
-									title
-									body
-								}
-							}
-						}
-					}
-				}
-				`,
-				{
-					owner: data.org,
-					repo: data.repo,
-					number: data.id
-				}
-			)
-			.then(
-				/* eslint-disable @typescript-eslint/no-explicit-any */ (response: any) => {
-					linkedPRsOrIssues = response.repository.pullRequest.closingIssuesReferences.nodes;
-				}
-			)
-			.catch(() => (linkedPRsOrIssues = []));
+		linkedIssuesForPR(data.org, data.repo, data.id).then(response => {
+			linkedPRsOrIssues = response;
+		});
 	}
 	$: if (pullOrIssue === "issues") {
 		linkedPRsOrIssues = [];
@@ -147,13 +158,45 @@
 				repo: data.repo,
 				issue_number: data.id
 			})
-			.then(({ data: response }) => {
-				prsToFetch = response
-					.filter(event => event.event === "cross-referenced")
-					.map(event => {
-						const anyEvent = event as any; // doesn't have the source property for some reason
-						return anyEvent.source.issue.number;
-					});
+			.then(({ data: events }) =>
+				events.filter(
+					event =>
+						event.event === "cross-referenced" &&
+						"source" in event &&
+						event.source.issue?.repository?.owner.login === data.org &&
+						event.source.issue?.repository?.name === data.repo
+				)
+			)
+			.then(async crEvents => {
+				const prEvents = [];
+				for (let event of crEvents) {
+					const anyEvent = event as any;
+					const response = await fetch(
+						`https://api.github.com/repos/${data.org}/${data.repo}/pulls/${anyEvent.source.issue.number}`,
+						{
+							headers:
+								dev && env.PUBLIC_GITHUB_TOKEN
+									? {
+											Authorization: `token ${env.PUBLIC_GITHUB_TOKEN}`
+										}
+									: undefined
+						}
+					);
+					if (response.ok) {
+						const containedInPr = await linkedIssuesForPR(
+							data.org,
+							data.repo,
+							anyEvent.source.issue.number
+						);
+						if (containedInPr.map(pr => pr.number).includes(data.id)) {
+							prEvents.push(event);
+						}
+					}
+				}
+				return prEvents;
+			})
+			.then(prEvents => {
+				prsToFetch = prEvents.map(event => (event as any).source.issue.number);
 			})
 			.catch(() => (linkedPRsOrIssues = []));
 	}
@@ -193,7 +236,7 @@
 					prNumber => !prs.map(pr => pr.data.number).includes(prNumber)
 				);
 			})
-			.catch(() => (linkedPRsOrIssues = []));
+			.catch(() => (prsToFetch = []));
 	}
 </script>
 
