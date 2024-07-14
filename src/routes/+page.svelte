@@ -4,9 +4,7 @@
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
-	import Markdown from "svelte-exmarkdown";
 	import semver from "semver";
-	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { tabState } from "$lib/tabState";
@@ -21,6 +19,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import BlinkingBadge from "$lib/components/BlinkingBadge.svelte";
 	import ListElementRenderer from "$lib/renderers/ListElementRenderer.svelte";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
 	export let data;
 
@@ -620,23 +619,11 @@
 								<!-- Accordion content with markdown body and a link to open it on GitHub -->
 								<Accordion.Content>
 									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
-										<div
-											class="prose prose-sm max-w-full dark:prose-invert prose-p:my-0 prose-a:no-underline prose-a:underline-offset-4 hover:prose-a:underline"
-										>
-											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
-											<!-- for clean look and using GitHub Flavored Markdown as an option -->
-											<Markdown
-												md={releaseBody}
-												plugins={[
-													{
-														renderer: {
-															li: ListElementRenderer
-														}
-													},
-													gfmPlugin()
-												]}
-											/>
-										</div>
+										<MarkdownRenderer
+											markdown={releaseBody}
+											additionalPlugins={[{ renderer: { li: ListElementRenderer } }]}
+											class="prose-sm max-w-full prose-p:my-0"
+										/>
 										<!-- Open the release on GitHub in a new tab, with a nice hover animation -->
 										<Button
 											href={release.html_url}

@@ -37,14 +37,14 @@
 	bind:this={data}
 	class:dark:font-bold={data?.innerText.startsWith("breaking:")}
 	class:font-semibold={data?.innerText.startsWith("breaking:")}
-	class="group *:inline-block"
+	class="group *:inline"
 >
 	<slot />
 	{#if allLinks.length > 0}
 		<Button
 			href={ghLinkToHref(allLinks[0] ?? "")}
 			variant="link"
-			class="ml-4 hidden h-auto -translate-x-2 p-0 opacity-0 transition-[transform,_opacity] duration-300 group-hover:translate-x-0 group-hover:opacity-100 md:inline-flex lg:mr-8"
+			class="ml-2 !inline-flex h-auto p-0 transition-[transform,_opacity] duration-300 group-hover:translate-x-0 group-hover:opacity-100 md:ml-4 md:-translate-x-2 md:opacity-0 lg:mr-8"
 		>
 			Open details
 			<ArrowRight class="ml-2 size-4" />
