@@ -134,7 +134,10 @@
 		const localItem = localStorage.getItem(lastVisitKey);
 		const nowDate = new Date().toISOString();
 		lastVisitDateString = localItem ?? nowDate;
-		localStorage.setItem(lastVisitKey, nowDate); // TODO: after load?
+		const timeout = setTimeout(() => {
+			localStorage.setItem(lastVisitKey, nowDate);
+		}, 5_000);
+		return () => clearTimeout(timeout);
 	});
 </script>
 
