@@ -4,6 +4,7 @@
 	import type { SvelteHTMLElements } from "svelte/elements";
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
+	import { page } from "$app/stores";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import ChevronDown from "lucide-svelte/icons/chevron-down";
 	import Moon from "lucide-svelte/icons/moon";
@@ -81,8 +82,8 @@
 		</a>
 
 		<!-- Navigation -->
-		<!-- TODO: don't hardcode this? -->
-		{#if scrollY > 150}
+		<!-- TODO: don't hardcode scrollY? -->
+		{#if scrollY > 150 && $page.route.id === "/"}
 			<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 				<li>
 					{#each typedEntries(data.repos) as [id, { name }]}

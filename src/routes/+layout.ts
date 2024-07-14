@@ -1,5 +1,8 @@
-import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
+import { dev } from "$app/environment";
+import { env } from "$env/dynamic/public";
 import type { Repo, Tab } from "../types";
+import { Octokit } from "octokit";
+import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 
 injectSpeedInsights();
 
@@ -61,5 +64,14 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 };
 
 export function load() {
-	return { repos };
+	return {
+		repos,
+		octokit: new Octokit(
+			dev && env.PUBLIC_GITHUB_TOKEN
+				? {
+						auth: env.PUBLIC_GITHUB_TOKEN
+					}
+				: undefined
+		)
+	};
 }
