@@ -12,10 +12,10 @@
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import GHBadge from "$lib/components/GHBadge.svelte";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
-	import MarkdownRenderer from "./MarkdownRenderer.svelte";
 
 	// Utils
 	function formatToDateTime(date: string) {
