@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
-	import { dev } from "$app/environment";
-	import { env } from "$env/dynamic/public";
-	import { Octokit } from "@octokit/rest";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
@@ -24,6 +21,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import BlinkingBadge from "$lib/components/BlinkingBadge.svelte";
 	import ListElementRenderer from "$lib/renderers/ListElementRenderer.svelte";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
 	export let data;
 
@@ -54,7 +52,7 @@
 	async function octokitResponse(category: Tab) {
 		return Promise.all(
 			data.repos[category].repos.map(({ repoName, dataFilter }) =>
-				octokit.rest.repos
+				data.octokit.rest.repos
 					.listReleases({
 						owner: "sveltejs",
 						repo: repoName,
@@ -91,15 +89,6 @@
 	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
 	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
 	let displayOtherBetaReleases = localStorageStore("displayOtherBetaReleases", true);
-
-	// GitHub API client
-	const octokit = new Octokit(
-		dev && env.PUBLIC_GITHUB_TOKEN
-			? {
-					auth: env.PUBLIC_GITHUB_TOKEN
-				}
-			: undefined
-	);
 
 	// Date formatting
 	function toRelativeDateString(date: Date) {
@@ -469,7 +458,7 @@
 								const body = release.body ?? "";
 								if (releaseRepo?.repoName !== "language-tools") return body;
 								// Add missing links to PRs in the release body
-								return body.replaceAll(
+								return body.replace(
 									/\(#(\d+)\)/g, // Match all `(#1234)` patterns
 									(_, prNumber) => {
 										const prUrl = `https://github.com/sveltejs/${releaseRepo.repoName}/pull/${prNumber}`;
@@ -632,30 +621,18 @@
 								<!-- Accordion content with markdown body and a link to open it on GitHub -->
 								<Accordion.Content>
 									<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
-										<div
-											class="prose prose-sm max-w-full dark:prose-invert prose-p:my-0 prose-a:no-underline prose-a:underline-offset-4 hover:prose-a:underline"
-										>
-											<!-- Markdown block using Marked.js under the hood, with custom renderers -->
-											<!-- for clean look and using GitHub Flavored Markdown as an option -->
-											<Markdown
-												md={releaseBody}
-												plugins={[
-													{
-														renderer: {
-															li: ListElementRenderer
-														}
-													},
-													gfmPlugin()
-												]}
-											/>
-										</div>
+										<MarkdownRenderer
+											markdown={releaseBody}
+											additionalPlugins={[{ renderer: { li: ListElementRenderer } }]}
+											class="prose-sm max-w-full prose-p:my-0"
+										/>
 										<!-- Open the release on GitHub in a new tab, with a nice hover animation -->
 										<Button
 											href={release.html_url}
 											target="_blank"
 											class="group mb-4 ml-auto mr-8 font-semibold dark:text-black sm:ml-0 sm:mt-auto"
 										>
-											Open release
+											Open on <img src="/github.svg" alt="GitHub" class="ml-1.5 size-5" />
 											<ArrowUpRight
 												class="ml-2 size-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
 											/>
