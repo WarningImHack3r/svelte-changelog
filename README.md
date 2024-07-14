@@ -8,9 +8,11 @@ Made with SvelteKit, TailwindCSS & shadcn-svelte.
 
 - Gorgeous UI from shadcn/ui
 - Includes _all_ NPM packages by the Svelte team that can be used in a project
+- Stunning page embedding all details of a pull request/issue
 - Blinking badges to indicate new versions since the last visit
 - Dynamically computed badges to indicate whether a package is the Latest, a Major version, a Prerelease, or a Maintenance version
 - Hover popups at multiple places across the site
+- "What's new" banner to keep users updated about the latest changes of the website
 - Optional use of a GitHub token in dev mode to avoid rate limiting
 
 ## How does it work?
