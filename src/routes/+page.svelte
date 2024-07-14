@@ -4,9 +4,7 @@
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
-	import Markdown from "svelte-exmarkdown";
 	import semver from "semver";
-	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { tabState } from "$lib/tabState";
