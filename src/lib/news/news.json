@@ -1,0 +1,10 @@
+{
+	"$schema": "news.schema.json",
+	"news": [
+		{
+			"id": 0,
+			"content": "New: This banner and PR/issues details are now available!",
+			"endDate": "2024-08-01"
+		}
+	]
+}

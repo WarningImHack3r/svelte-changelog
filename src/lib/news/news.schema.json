@@ -1,0 +1,35 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "News",
+	"description": "News schema",
+	"type": "object",
+	"properties": {
+		"news": {
+			"type": "array",
+			"description": "A list of news",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "number",
+						"description": "The unique identifier of the news"
+					},
+					"content": {
+						"type": "string",
+						"description": "The text content of the news",
+						"minLength": 1
+					},
+					"endDate": {
+						"type": "string",
+						"description": "The maximum date and time the news will be displayed until",
+						"format": "date",
+						"minLength": 1
+					}
+				},
+				"required": ["content", "endDate"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"required": ["news"]
+}
