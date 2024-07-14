@@ -40,6 +40,8 @@
 			>
 				{matchingScreen.name.toUpperCase()}
 			</button>
+		{:else}
+			<div class="mr-1"></div>
 		{/if}
 	</div>
 	{#if showAllScreens}
