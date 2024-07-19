@@ -5,6 +5,8 @@
 	import FileDiff from "lucide-svelte/icons/file-diff";
 	import GitCommitVertical from "lucide-svelte/icons/git-commit-vertical";
 	import MessagesSquare from "lucide-svelte/icons/messages-square";
+	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
+	import { createHighlighterCore } from "shiki/core";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
@@ -16,6 +18,21 @@
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
+
+	const highlighterCorePromise = createHighlighterCore({
+		langs: [
+			import("shiki/langs/svelte.mjs"),
+			import("shiki/langs/typescript.mjs"),
+			import("shiki/langs/javascript.mjs"),
+			import("shiki/langs/html.mjs"),
+			import("shiki/langs/css.mjs")
+		],
+		themes: [
+			import("shiki/themes/github-light-default.mjs"),
+			import("shiki/themes/github-dark-default.mjs")
+		],
+		loadWasm: import("shiki/wasm")
+	});
 
 	// Utils
 	function formatToDateTime(date: string) {
@@ -72,8 +89,6 @@
 		];
 	}
 </script>
-
-<!-- TODO: use Shiki for bodies snippets & detailed diff -->
 
 <div class="container py-8">
 	<h2 class="group mb-8 scroll-m-20 border-b pb-2 font-semibold tracking-tight xs:text-3xl">
@@ -183,10 +198,23 @@
 				</div>
 				<!-- Body -->
 				<div class="p-4">
-					<MarkdownRenderer
-						markdown={info.body || "_No description provided_"}
-						class="max-w-full"
-					/>
+					{#await highlighterCorePromise}
+						<p>Loading...</p>
+					{:then highlighter}
+						<MarkdownRenderer
+							markdown={info.body || "_No description provided_"}
+							class="max-w-full"
+							additionalPlugins={[
+								{
+									rehypePlugin: [
+										rehypeShikiFromHighlighter,
+										highlighter,
+										{ themes: { light: "github-light-default", dark: "github-dark-default" } }
+									]
+								}
+							]}
+						/>
+					{/await}
 				</div>
 			</div>
 			<!-- Right part - info -->
@@ -325,6 +353,7 @@
 		{/if}
 		<!-- Files -->
 		{#if type === "pull"}
+			<!-- TODO: detailed diff? -->
 			<BottomCollapsible
 				icon={FileDiff}
 				label="Files"
@@ -392,3 +421,15 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	:global(html.dark .shiki),
+	:global(html.dark .shiki span) {
+		color: var(--shiki-dark) !important;
+		background-color: var(--shiki-dark-bg) !important;
+		/* Optional, if you also want font styles */
+		font-style: var(--shiki-dark-font-style) !important;
+		font-weight: var(--shiki-dark-font-weight) !important;
+		text-decoration: var(--shiki-dark-text-decoration) !important;
+	}
+</style>
