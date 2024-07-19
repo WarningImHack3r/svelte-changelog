@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
+	import type { Octokit } from "octokit";
 	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
 	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 	import { MetaTags } from "svelte-meta-tags";
 	import semver from "semver";
+	import type { Snapshot } from "./$types";
 	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { tabState } from "$lib/tabState";
@@ -44,10 +46,14 @@
 	 * Fetches releases from GitHub for the given category, for
 	 * all the repositories in that category.
 	 * Also applies the data filter if it exists for the repo.
+	 *
 	 * @param category The category of the repos to fetch
-	 * @returns A promise that resolves to an array of flatten releases
+	 * @returns A promise that resolves to an array of releases
 	 */
 	async function octokitResponse(category: Tab) {
+		if (cachedResponses[category].length) {
+			return Promise.resolve(cachedResponses[category]);
+		}
 		return Promise.all(
 			data.repos[category].repos.map(({ repoName, dataFilter }) =>
 				data.octokit.rest.repos
@@ -71,6 +77,22 @@
 			)
 		).then(responses => responses.flat());
 	}
+
+	type OctokitResponse = Awaited<
+		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
+	>["data"];
+
+	// Data caching
+	let cachedResponses: Record<Tab, OctokitResponse> = {
+		svelte: [],
+		kit: [],
+		others: []
+	};
+
+	export const snapshot: Snapshot<typeof cachedResponses> = {
+		capture: () => cachedResponses,
+		restore: restored => (cachedResponses = restored)
+	};
 
 	// Badges
 	let previousTab: Tab = currentRepo;
@@ -260,6 +282,9 @@
 				{:then releases}
 					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{@const _ = (() => {
+						// Cache the response
+						cachedResponses[id] = releases;
+
 						// Add tab to loaded tabs
 						const toSet = new Set(loadedTabs);
 						toSet.add(id);
