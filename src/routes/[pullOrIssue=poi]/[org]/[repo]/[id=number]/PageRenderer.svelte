@@ -17,6 +17,7 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
+	import BodyRenderer from "$lib/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
 	const highlighterCorePromise = createHighlighterCore({
@@ -205,6 +206,7 @@
 							markdown={info.body || "_No description provided_"}
 							class="max-w-full"
 							additionalPlugins={[
+								{ renderer: { p: BodyRenderer } },
 								{
 									rehypePlugin: [
 										rehypeShikiFromHighlighter,
