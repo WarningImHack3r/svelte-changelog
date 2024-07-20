@@ -7,11 +7,14 @@
 
 	$: if (data) {
 		let replaced = data.innerHTML;
-		const issuesCandidates = replaced.match(/ #(\d+) /g) || [];
+		const issuesCandidates = replaced.matchAll(/ #(\d+)/g) || [];
 		for (let candidate of issuesCandidates) {
+			const wholeMatch = candidate[0];
+			const matchedGroup = candidate[1];
+			if (!wholeMatch || !matchedGroup) continue;
 			replaced = replaced.replace(
-				candidate,
-				` <a href="https://github.com/${org}/${repo}/issues/${candidate.trim().replace("#", "")}">${candidate.trim()}</a> `
+				wholeMatch,
+				` <a href="https://github.com/${org}/${repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
 			);
 		}
 		data.innerHTML = replaced;
