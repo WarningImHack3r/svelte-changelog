@@ -2,8 +2,7 @@
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
 	import type { Octokit } from "octokit";
-	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
-	import LoaderCircle from "lucide-svelte/icons/loader-circle";
+	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import { MetaTags } from "svelte-meta-tags";
 	import semver from "semver";
 	import type { Snapshot } from "./$types";

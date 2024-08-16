@@ -119,6 +119,9 @@ importers:
       vite:
         specifier: ^5.4.1
         version: 5.4.1
+      vite-plugin-lucide-preprocess:
+        specifier: ^1.0.3
+        version: 1.0.3(vite@5.4.1)
 
 packages:
 
@@ -2208,6 +2211,11 @@ packages:
 
   vfile@6.0.1:
     resolution: {integrity: sha512-1bYqc7pt6NIADBJ98UiG0Bn/CHIVOoZ/IyEkqIruLg0mE1BKzkOXY2D6CSqQIcKqgadppE5lrxgWXJmXd7zZJw==}
+
+  vite-plugin-lucide-preprocess@1.0.3:
+    resolution: {integrity: sha512-68y+j7ZxsIiO6Loekd+zCZnlKl2RtFc0O8jTZL3aLKEKBDoCj7mauxOhuEG/KAhr3xNEvHg6PzGcxD7erVmwDw==}
+    peerDependencies:
+      vite: ^5
 
   vite@5.4.1:
     resolution: {integrity: sha512-1oE6yuNXssjrZdblI9AfBbHCC41nnyoVoEZxQnID6yvQZAFBzxxkqoFLtHUMkYunL8hwOLEjgTuxpkRxvba3kA==}
@@ -4546,6 +4554,10 @@ snapshots:
       '@types/unist': 3.0.2
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
+
+  vite-plugin-lucide-preprocess@1.0.3(vite@5.4.1):
+    dependencies:
+      vite: 5.4.1
 
   vite@5.4.1:
     dependencies:

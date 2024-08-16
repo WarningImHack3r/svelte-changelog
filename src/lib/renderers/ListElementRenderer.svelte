@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { ArrowRight } from "lucide-svelte";
 	import { Button } from "$lib/components/ui/button";
-	import ArrowRight from "lucide-svelte/icons/arrow-right";
 
 	let data: HTMLLIElement | undefined = undefined;
 	let pullsLinks: string[] = [];

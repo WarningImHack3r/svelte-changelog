@@ -6,11 +6,7 @@
 	import { dev } from "$app/environment";
 	import { page } from "$app/stores";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import ChevronDown from "lucide-svelte/icons/chevron-down";
-	import Moon from "lucide-svelte/icons/moon";
-	import Monitor from "lucide-svelte/icons/monitor";
-	import Sun from "lucide-svelte/icons/sun";
-	import X from "lucide-svelte/icons/x";
+	import { ChevronDown, Monitor, Moon, Sun, X } from "lucide-svelte";
 	import { tabState } from "$lib/tabState";
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/ScreenSize.svelte";

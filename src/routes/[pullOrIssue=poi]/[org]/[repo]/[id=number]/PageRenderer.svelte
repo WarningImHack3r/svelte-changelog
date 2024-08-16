@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { Issues, LinkedEntity, Pulls } from "./types";
-	import ArrowUpRight from "lucide-svelte/icons/arrow-up-right";
-	import ChevronLeft from "lucide-svelte/icons/chevron-left";
-	import FileDiff from "lucide-svelte/icons/file-diff";
-	import GitCommitVertical from "lucide-svelte/icons/git-commit-vertical";
-	import MessagesSquare from "lucide-svelte/icons/messages-square";
+	import {
+		ArrowUpRight,
+		ChevronLeft,
+		FileDiff,
+		GitCommitVertical,
+		MessagesSquare
+	} from "lucide-svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import { createHighlighterCore } from "shiki/core";
 	import { Badge } from "$lib/components/ui/badge";

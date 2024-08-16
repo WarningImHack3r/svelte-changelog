@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { ComponentType } from "svelte";
-	import type { Icon } from "lucide-svelte";
-	import GitMerge from "lucide-svelte/icons/git-merge";
-	import CircleCheck from "lucide-svelte/icons/circle-check";
-	import CircleDot from "lucide-svelte/icons/circle-dot";
-	import CircleSlash from "lucide-svelte/icons/circle-slash";
-	import GitPullRequestArrow from "lucide-svelte/icons/git-pull-request-arrow";
-	import GitPullRequestClosed from "lucide-svelte/icons/git-pull-request-closed";
-	import GitPullRequestDraft from "lucide-svelte/icons/git-pull-request-draft";
+	import {
+		CircleCheck,
+		CircleDot,
+		CircleSlash,
+		GitMerge,
+		GitPullRequestArrow,
+		GitPullRequestClosed,
+		GitPullRequestDraft,
+		type Icon
+	} from "lucide-svelte";
 
 	type CommonStatus = "open" | "closed";
 	type Props =

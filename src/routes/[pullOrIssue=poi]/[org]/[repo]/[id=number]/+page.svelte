@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { dev } from "$app/environment";
-	import { env } from "$env/dynamic/public";
+	import { LoaderCircle } from "lucide-svelte";
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";
-	import LoaderCircle from "lucide-svelte/icons/loader-circle";
 
 	export let data;
 
