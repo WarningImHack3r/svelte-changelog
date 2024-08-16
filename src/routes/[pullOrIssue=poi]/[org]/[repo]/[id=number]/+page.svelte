@@ -171,26 +171,23 @@
 				const prEvents = [];
 				for (let event of crEvents) {
 					const anyEvent = event as any;
-					const response = await fetch(
-						`https://api.github.com/repos/${data.org}/${data.repo}/pulls/${anyEvent.source.issue.number}`,
-						{
-							headers:
-								dev && env.PUBLIC_GITHUB_TOKEN
-									? {
-											Authorization: `token ${env.PUBLIC_GITHUB_TOKEN}`
-										}
-									: undefined
-						}
+					const doesPRExist = await data.octokit.rest.pulls
+						.get({
+							owner: data.org,
+							repo: data.repo,
+							pull_number: anyEvent.source.issue.number
+						})
+						.then(() => true)
+						.catch(() => false);
+					if (!doesPRExist) continue;
+
+					const containedInPr = await linkedIssuesForPR(
+						data.org,
+						data.repo,
+						anyEvent.source.issue.number
 					);
-					if (response.ok) {
-						const containedInPr = await linkedIssuesForPR(
-							data.org,
-							data.repo,
-							anyEvent.source.issue.number
-						);
-						if (containedInPr.map(pr => pr.number).includes(data.id)) {
-							prEvents.push(event);
-						}
+					if (containedInPr.map(pr => pr.number).includes(data.id)) {
+						prEvents.push(event);
 					}
 				}
 				return prEvents;
