@@ -247,7 +247,13 @@
 									{/if}
 								{:else}
 									<p class="text-sm text-muted-foreground">
-										Tired of getting rate-limited? Input your token.
+										Tired of getting rate-limited? Input your token. No token? <Button
+											variant="link"
+											href="https://github.com/settings/tokens/new?description=Svelte-Changelog&scopes=public_repo"
+											class="h-auto p-0"
+										>
+											Grab one here
+										</Button>.
 									</p>
 								{/if}
 							</div>
