@@ -204,6 +204,14 @@
 								{#if userInfoError}
 									<p class="text-sm text-red-500">{userInfoError.message}</p>
 								{:else if userInfo}
+									{@const currentUsageHeader = userInfo.headers["x-ratelimit-used"]}
+									{@const currentUsage = currentUsageHeader ? Number(currentUsageHeader) : 0}
+									{@const maxUsageHeader = userInfo.headers["x-ratelimit-remaining"]}
+									{@const maxUsage = maxUsageHeader ? Number(maxUsageHeader) : 0}
+									{@const resetHeader = userInfo.headers["x-ratelimit-reset"]}
+									{@const resetTime = resetHeader
+										? new Date(Number(resetHeader) * 1000)
+										: undefined}
 									<p class="text-sm text-green-500">
 										Logged in as <strong>{userInfo.data.login}</strong>.
 									</p>
@@ -220,6 +228,23 @@
 											{/if}
 										</p>
 									{/each}
+									{#if currentUsageHeader && maxUsageHeader}
+										{#if currentUsage < maxUsage}
+											{@const percentage = (currentUsage / maxUsage) * 100}
+											<p class="text-sm text-green-500">
+												You have <strong>{maxUsage - currentUsage}</strong> ({(
+													100 - percentage
+												).toFixed()}%) requests left.
+											</p>
+										{:else}
+											<p class="text-sm text-red-500">
+												You have no requests left.
+												{#if resetTime}
+													Reset at {resetTime.toLocaleTimeString()}.
+												{/if}
+											</p>
+										{/if}
+									{/if}
 								{:else}
 									<p class="text-sm text-muted-foreground">
 										Tired of getting rate-limited? Input your token.
