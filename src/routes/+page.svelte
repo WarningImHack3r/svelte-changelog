@@ -8,7 +8,8 @@
 	import type { Snapshot } from "./$types";
 	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
-	import { tabState } from "$lib/tabState";
+	import { getDataFromSettings } from "$lib/data";
+	import { getSettings, getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -23,12 +24,14 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
 	export let data;
+	$: ({ octokit, repos } = getDataFromSettings(data, get(getSettings())));
 
 	// Repositories to fetch releases from
 	let currentRepo: Tab = "svelte";
 
 	// Tab change
 	let tabChangeAsked = false;
+	const tabState = getTabState();
 	tabState.subscribe(value => {
 		if (value === currentRepo) return;
 		tabChangeAsked = true;
@@ -53,9 +56,10 @@
 		if (cachedResponses[category].length) {
 			return Promise.resolve(cachedResponses[category]);
 		}
+		const kit = await octokit;
 		return Promise.all(
-			data.repos[category].repos.map(({ repoName, dataFilter }) =>
-				data.octokit.rest.repos
+			repos[category].repos.map(({ repoName, dataFilter }) =>
+				kit.rest.repos
 					.listReleases({
 						owner: "sveltejs",
 						repo: repoName,
@@ -98,7 +102,7 @@
 	let visitedTabs: Tab[] = [];
 	let loadedTabs: Tab[] = [];
 	let isLoadingDone = false;
-	$: if (loadedTabs.length === Object.keys(data.repos).length) {
+	$: if (loadedTabs.length === Object.keys(repos).length) {
 		isLoadingDone = true;
 	}
 	const lastVisitKey = "lastVisit" as const;
@@ -165,7 +169,7 @@
 <svelte:window bind:scrollY />
 
 <MetaTags
-	title={data.repos[currentRepo].name}
+	title={repos[currentRepo].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
 	canonical="https://svelte-changelog.vercel.app"
@@ -195,7 +199,7 @@
 
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
-		<span class="text-primary">{data.repos[currentRepo].name}</span>
+		<span class="text-primary">{repos[currentRepo].name}</span>
 		Releases
 	</h2>
 	<Tabs.Root
@@ -217,7 +221,7 @@
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
-				{#each typedEntries(data.repos) as [id, { name }]}
+				{#each typedEntries(repos) as [id, { name }]}
 					<BlinkingBadge
 						storedDateItem="{id}MostRecentUpdate"
 						show={!visitedTabs.includes(id) && id !== currentRepo}
@@ -257,12 +261,12 @@
 					for="beta-releases-{currentRepo}"
 					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
-					Show {data.repos[currentRepo].name} prereleases
+					Show {repos[currentRepo].name} prereleases
 				</Label>
 			</div>
 		</div>
 		<!-- Tabs content creation -->
-		{#each typedEntries(data.repos) as [id, { name, repos: repoList }]}
+		{#each typedEntries(repos) as [id, { name, repos: repoList }]}
 			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
 				{#await octokitResponse(id)}

@@ -1,16 +1,26 @@
 <script lang="ts">
+	import { get } from "svelte/store";
 	import { LoaderCircle } from "lucide-svelte";
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";
+	import { getDataFromSettings } from "$lib/data";
+	import { getSettings } from "$lib/stores";
 
 	export let data;
+	$: ({
+		org: owner,
+		id,
+		repo,
+		octokit,
+		pullOrIssue
+	} = getDataFromSettings(data, get(getSettings())));
 
 	async function linkedIssuesForPR(
 		owner: string,
 		repo: string,
 		pr: number
 	): Promise<LinkedEntity[]> {
-		return data.octokit
+		return (await octokit)
 			.graphql(
 				`
 				query closingIssues($number: Int!, $owner: String!, $repo: String!) {
@@ -72,7 +82,6 @@
 	let prsToFetch: number[] = [];
 
 	$: info = prInfo.info || issueInfo.info;
-	$: pullOrIssue = data.pullOrIssue;
 
 	// Data fetching
 	$: if (pullOrIssue === "pull") {
@@ -83,44 +92,50 @@
 		};
 
 		// Fetch PR info
-		data.octokit.rest.pulls
-			.get({
-				owner: data.org,
-				repo: data.repo,
-				pull_number: data.id
-			})
-			.then(({ data }) => (prInfo.info = data));
-		data.octokit.rest.issues
-			.listComments({
-				owner: data.org,
-				repo: data.repo,
-				issue_number: data.id
-			})
-			.then(
-				({ data }) =>
-					(prInfo.comments = data.sort(
-						(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-					))
-			);
-		data.octokit.rest.pulls
-			.listCommits({
-				owner: data.org,
-				repo: data.repo,
-				pull_number: data.id
-			})
-			.then(({ data }) => (prInfo.commits = data));
-		data.octokit.rest.pulls
-			.listFiles({
-				owner: data.org,
-				repo: data.repo,
-				pull_number: data.id
-			})
-			.then(({ data }) => (prInfo.files = data));
+		octokit.then(kit =>
+			kit.rest.pulls
+				.get({
+					owner,
+					repo,
+					pull_number: id
+				})
+				.then(({ data }) => (prInfo.info = data))
+		);
+		octokit.then(kit =>
+			kit.rest.issues
+				.listComments({
+					owner,
+					repo,
+					issue_number: id
+				})
+				.then(
+					({ data }) =>
+						(prInfo.comments = data.sort(
+							(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+						))
+				)
+		);
+		octokit.then(kit =>
+			kit.rest.pulls
+				.listCommits({
+					owner,
+					repo,
+					pull_number: id
+				})
+				.then(({ data }) => (prInfo.commits = data))
+		);
+		octokit.then(kit =>
+			kit.rest.pulls
+				.listFiles({
+					owner,
+					repo,
+					pull_number: id
+				})
+				.then(({ data }) => (prInfo.files = data))
+		);
 
 		// Fetch closing issues
-		linkedIssuesForPR(data.org, data.repo, data.id).then(response => {
-			linkedPRsOrIssues = response;
-		});
+		linkedIssuesForPR(owner, repo, id).then(response => (linkedPRsOrIssues = response));
 	}
 	$: if (pullOrIssue === "issues") {
 		linkedPRsOrIssues = [];
@@ -131,78 +146,88 @@
 			files: undefined
 		};
 
-		data.octokit.rest.issues
-			.get({
-				owner: data.org,
-				repo: data.repo,
-				issue_number: data.id
-			})
-			.then(({ data }) => (issueInfo.info = data));
-		data.octokit.rest.issues
-			.listComments({
-				owner: data.org,
-				repo: data.repo,
-				issue_number: data.id
-			})
-			.then(
-				({ data }) =>
-					(issueInfo.comments = data.sort(
-						(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-					))
-			);
-		data.octokit.rest.issues
-			.listEventsForTimeline({
-				owner: data.org,
-				repo: data.repo,
-				issue_number: data.id
-			})
-			.then(({ data: events }) =>
-				events.filter(
-					event =>
-						event.event === "cross-referenced" &&
-						"source" in event &&
-						event.source.issue?.repository?.owner.login === data.org &&
-						event.source.issue?.repository?.name === data.repo
+		octokit.then(kit =>
+			kit.rest.issues
+				.get({
+					owner,
+					repo,
+					issue_number: id
+				})
+				.then(({ data }) => (issueInfo.info = data))
+		);
+		octokit.then(kit =>
+			kit.rest.issues
+				.listComments({
+					owner,
+					repo,
+					issue_number: id
+				})
+				.then(
+					({ data }) =>
+						(issueInfo.comments = data.sort(
+							(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+						))
 				)
-			)
-			.then(async crEvents => {
-				const prEvents = [];
-				for (let event of crEvents) {
-					const anyEvent = event as any;
-					const doesPRExist = await data.octokit.rest.pulls
-						.get({
-							owner: data.org,
-							repo: data.repo,
-							pull_number: anyEvent.source.issue.number
-						})
-						.then(() => true)
-						.catch(() => false);
-					if (!doesPRExist) continue;
+		);
+		octokit.then(kit =>
+			kit.rest.issues
+				.listEventsForTimeline({
+					owner,
+					repo,
+					issue_number: id
+				})
+				.then(({ data: events }) =>
+					events.filter(
+						event =>
+							event.event === "cross-referenced" &&
+							"source" in event &&
+							event.source.issue?.repository?.owner.login === owner &&
+							event.source.issue?.repository?.name === repo
+					)
+				)
+				.then(async crEvents => {
+					const prEvents = [];
+					for (let event of crEvents) {
+						const anyEvent = event as any;
+						const doesPRExist = await (
+							await octokit
+						).rest.pulls
+							.get({
+								owner,
+								repo,
+								pull_number: anyEvent.source.issue.number
+							})
+							.then(() => true)
+							.catch(() => false);
+						if (!doesPRExist) continue;
 
-					const containedInPr = await linkedIssuesForPR(
-						data.org,
-						data.repo,
-						anyEvent.source.issue.number
-					);
-					if (containedInPr.map(pr => pr.number).includes(data.id)) {
-						prEvents.push(event);
+						const containedInPr = await linkedIssuesForPR(
+							owner,
+							repo,
+							anyEvent.source.issue.number
+						);
+						if (containedInPr.map(pr => pr.number).includes(id)) {
+							prEvents.push(event);
+						}
 					}
-				}
-				return prEvents;
-			})
-			.then(prEvents => {
-				prsToFetch = prEvents.map(event => (event as any).source.issue.number);
-			})
-			.catch(() => (linkedPRsOrIssues = []));
+					return prEvents;
+				})
+				.then(prEvents => {
+					prsToFetch = prEvents.map(event => (event as any).source.issue.number);
+				})
+				.catch(() => (linkedPRsOrIssues = []))
+		);
 	}
 	$: if (prsToFetch.length > 0) {
 		Promise.all(
 			prsToFetch.map(prNumber =>
-				data.octokit.rest.pulls.get({
-					owner: data.org,
-					repo: data.repo,
-					pull_number: prNumber
-				})
+				octokit.then(kit =>
+					kit.rest.pulls.get({
+						owner,
+						repo,
+						pull_number: prNumber
+					})
+				)
 			)
 		)
 			.then(prs => {
@@ -236,7 +261,7 @@
 </script>
 
 <svelte:head>
-	<title>Detail of {data.org}/{data.repo}#{data.id} | Svelte Changelog</title>
+	<title>Detail of {owner}/{repo}#{id} | Svelte Changelog</title>
 </svelte:head>
 
 {#if info}

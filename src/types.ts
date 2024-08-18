@@ -1,3 +1,7 @@
+export type Prettify<T> = {
+	[K in keyof T]: T[K];
+} & {};
+
 export type Repo = {
 	/**
 	 * Repository name on GitHub
@@ -20,3 +24,7 @@ export type Repo = {
 };
 
 export type Tab = "svelte" | "kit" | "others";
+
+export type Settings = {
+	githubToken?: string;
+};
