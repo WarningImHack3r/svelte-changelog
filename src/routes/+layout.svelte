@@ -233,7 +233,7 @@
 									disabled={ghTokenField.length > 0 && !isTokenValid}
 									on:click={() => {
 										settingsOpen = false;
-										settings.set({ githubToken: ghTokenField });
+										settings.set(ghTokenField ? { githubToken: ghTokenField } : {});
 										invalidateAll();
 									}}
 								>
