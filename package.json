@@ -12,7 +12,7 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@shikijs/rehype": "^1.13.0",
+		"@shikijs/rehype": "^1.14.1",
 		"@sveltejs/adapter-vercel": "^5.4.3",
 		"@sveltejs/kit": "^2.5.22",
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
@@ -37,7 +37,7 @@
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.6",
 		"semver": "^7.6.3",
-		"shiki": "^1.13.0",
+		"shiki": "^1.14.1",
 		"svelte": "^4.2.18",
 		"svelte-check": "^3.8.5",
 		"svelte-exmarkdown": "^3.0.5",

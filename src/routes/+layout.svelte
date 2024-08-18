@@ -108,11 +108,10 @@
 		}
 
 		// Theme
-		if ("mode-watcher-mode" in localStorage) {
-			theme = localStorage["mode-watcher-mode"].replace(/"/g, "");
-		} else {
-			theme = "system";
-		}
+		theme =
+			"mode-watcher-mode" in localStorage
+				? localStorage["mode-watcher-mode"].replace(/"/g, "")
+				: "system";
 
 		// News
 		const closedNews = getClosedNewsIds();
