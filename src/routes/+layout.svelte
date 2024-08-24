@@ -5,13 +5,15 @@
 	import { get } from "svelte/store";
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
+	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import { ChevronDown, Monitor, Moon, Sun, X } from "lucide-svelte";
+	import { ChevronDown, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
 	import { getSettings, getTabState, initSettings, initTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
+	import * as Avatar from "$lib/components/ui/avatar";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { news } from "$lib/news/news.json";
 	import { getDataFromSettings } from "$lib/data";
@@ -35,6 +37,9 @@
 	function typedEntries<T extends object>(obj: T) {
 		return Object.entries(obj) as Entries<T>;
 	}
+
+	// User dropdown
+	let userDropdownOpen = false;
 
 	// Theme selector
 	type Theme = {
@@ -120,6 +125,44 @@
 			<!-- Right part -->
 			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
 				<nav class="flex items-center space-x-1">
+					<Button href="/login" variant="outline" class="gap-1.5">
+						Log in with
+						<img src="/github.svg" alt="GitHub" class="size-4 dark:invert" />
+						<span class="sr-only">GitHub</span>
+					</Button>
+					<DropdownMenu.Root bind:open={userDropdownOpen}>
+						<DropdownMenu.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
+								<Avatar.Root class="size-6">
+									<Avatar.Image src="/avatar.jpg" alt="Avatar" />
+									<Avatar.Fallback>A</Avatar.Fallback>
+								</Avatar.Root>
+								<ChevronDown
+									class="size-4 opacity-50 transition-transform {userDropdownOpen
+										? 'rotate-180'
+										: ''}"
+								/>
+								<span class="sr-only">Manage user</span>
+							</Button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content>
+							<DropdownMenu.Label>Logged in as A</DropdownMenu.Label>
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item class="cursor-pointer text-red-500">
+								<form action="/logout" method="post" use:enhance>
+									<!-- FIXME: remove focus on dropdown open (tabindex={0} doesn't work) -->
+									<Button
+										type="submit"
+										variant="ghost"
+										class="h-auto p-0 hover:bg-inherit hover:text-inherit"
+									>
+										<LogOut class="mr-2 size-4" />
+										Logout
+									</Button>
+								</form>
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
 					<Button
 						href="https://github.com/WarningImHack3r/svelte-changelog"
 						target="_blank"
