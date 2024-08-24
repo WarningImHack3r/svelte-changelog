@@ -145,7 +145,7 @@
 					</Accordion.Trigger>
 					<!-- Body -->
 					<Accordion.Content class="mx-auto sm:w-3/4">
-						<MarkdownRenderer markdown={entity.body} class="max-w-full text-base" />
+						<MarkdownRenderer markdown={entity.body} parseRawHtml class="max-w-full text-base" />
 					</Accordion.Content>
 				</Accordion.Item>
 			{/each}
@@ -206,6 +206,7 @@
 					{:then highlighter}
 						<MarkdownRenderer
 							markdown={info.body || "_No description provided_"}
+							parseRawHtml
 							class="max-w-full"
 							additionalPlugins={[
 								{ renderer: { p: BodyRenderer } },
@@ -272,7 +273,11 @@
 					</div>
 					<!-- Body -->
 					<div class="p-4">
-						<MarkdownRenderer markdown={comment.body || "_Empty comment_"} class="w-full" />
+						<MarkdownRenderer
+							markdown={comment.body || "_Empty comment_"}
+							parseRawHtml
+							class="w-full"
+						/>
 					</div>
 				</div>
 			{/each}

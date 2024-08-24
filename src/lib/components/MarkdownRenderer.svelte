@@ -7,10 +7,12 @@
 	 */
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
+	import rehypeRaw from "rehype-raw";
 	import { cn } from "$lib/utils";
 
 	export let markdown: string;
 	export let inline = false;
+	export let parseRawHtml = false;
 	export let additionalPlugins: Plugin[] = [];
 
 	let className: string | undefined | null = undefined;
@@ -26,5 +28,12 @@
 		className
 	)}
 >
-	<Markdown md={markdown} plugins={[gfmPlugin(), ...additionalPlugins]} />
+	<Markdown
+		md={markdown}
+		plugins={[
+			gfmPlugin(),
+			...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),
+			...additionalPlugins
+		]}
+	/>
 </span>
