@@ -17,9 +17,11 @@
 	export { className as class };
 </script>
 
+<!-- TODO: actually figure out how to overflow-x-auto the code blocks -->
 <span
 	class={cn(
-		"prose dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_anywhere] hover:prose-a:underline prose-code:text-wrap prose-code:[overflow-wrap:_anywhere] prose-li:my-1",
+		"prose dark:prose-invert prose-a:no-underline prose-a:underline-offset-4 prose-a:[overflow-wrap:_anywhere] hover:prose-a:underline prose-code:[overflow-wrap:_anywhere] prose-li:my-1",
+		"prose-code:text-wrap", // remove with TODO
 		inline && "*:inline",
 		className
 	)}
