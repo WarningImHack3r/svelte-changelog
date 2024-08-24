@@ -172,9 +172,9 @@
 	</div>
 	<div class="mt-4 flex flex-col gap-4">
 		<!-- Info -->
-		<div class="mb-8 flex w-full flex-col gap-8 md:flex-row">
+		<div class="mb-8 flex w-full flex-col gap-8 *:h-fit *:w-full *:rounded-xl *:border md:flex-row">
 			<!-- Left part - body -->
-			<div class="w-full rounded-xl border bg-muted/30">
+			<div class="bg-muted/30">
 				<!-- Author -->
 				<div
 					class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
@@ -222,7 +222,7 @@
 				</div>
 			</div>
 			<!-- Right part - info -->
-			<div class="h-fit w-full rounded-xl border px-4 pb-3 md:w-2/5 md:max-w-xs">
+			<div class="px-4 pb-3 md:w-2/5 md:max-w-xs">
 				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pb-1 pt-2 text-xl font-semibold">Info</h4>
 				{#each rightPartInfo as { title, value }, i}
 					{#if i > 0}
