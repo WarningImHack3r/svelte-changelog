@@ -13,6 +13,7 @@ Made with SvelteKit, TailwindCSS & shadcn-svelte.
 - Dynamically computed badges to indicate whether a package is the Latest, a Major version, a Prerelease, or a Maintenance version
 - Hover popups at multiple places across the site
 - "What's new" banner to keep users updated about the latest changes of the website
+- Authenticate with GitHub to bypass rate limits and get access to more features
 - Optional use of a GitHub token to avoid rate limiting in dev mode in a `.env` file (see `.env.example`)
 
 ## How does it work?

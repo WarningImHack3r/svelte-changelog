@@ -4,6 +4,7 @@
 	import type { SvelteHTMLElements } from "svelte/elements";
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
+	import { env } from "$env/dynamic/public";
 	import { page } from "$app/stores";
 	import { Octokit } from "octokit";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
@@ -170,7 +171,14 @@
 								</Button>
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content>
-								<DropdownMenu.Label>Logged in as {user.login}</DropdownMenu.Label>
+								<DropdownMenu.Label>
+									Logged in as {user.login}
+									{#if dev && env.PUBLIC_GITHUB_TOKEN}
+										<em class="mt-1 block text-xs font-light">
+											Dev mode with custom token enabled, user token not used
+										</em>
+									{/if}
+								</DropdownMenu.Label>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item
 									on:click={() => {

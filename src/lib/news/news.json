@@ -10,6 +10,11 @@
 			"id": 1,
 			"content": "You can now authenticate with your own GitHub token! Check the settings in the top-right corner of the page.",
 			"endDate": "2024-08-25"
+		},
+		{
+			"id": 2,
+			"content": "Manual token authentication is no more: you can now use the new, shiny Login with GitHub button!",
+			"endDate": "2024-09-09"
 		}
 	]
 }
