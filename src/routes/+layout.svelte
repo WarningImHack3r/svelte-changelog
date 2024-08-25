@@ -7,8 +7,9 @@
 	import { dev } from "$app/environment";
 	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
+	import { Octokit } from "octokit";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import { ChevronDown, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
+	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
 	import { getSettings, getTabState, initSettings, initTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/ScreenSize.svelte";
@@ -17,6 +18,8 @@
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { news } from "$lib/news/news.json";
 	import { getDataFromSettings } from "$lib/data";
+	import { localStorageStore } from "$lib/localStorageStore";
+	import { tokenKey } from "$lib/types";
 
 	// State
 	initTabState();
@@ -39,6 +42,24 @@
 	}
 
 	// User dropdown
+	const token = localStorageStore(tokenKey, "");
+	let isAuthenticating = false;
+	let user:
+		| Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
+		| undefined = undefined;
+	$: if ($token) {
+		isAuthenticating = true;
+		user = undefined;
+		new Octokit({ auth: $token }).rest.users
+			.getAuthenticated()
+			.then(({ data }) => {
+				user = data;
+				isAuthenticating = false;
+			})
+			.catch(() => {
+				isAuthenticating = false;
+			});
+	}
 	let userDropdownOpen = false;
 
 	// Theme selector
@@ -125,44 +146,53 @@
 			<!-- Right part -->
 			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
 				<nav class="flex items-center space-x-1">
-					<Button href="/login" variant="outline" class="gap-1.5">
-						Log in with
-						<img src="/github.svg" alt="GitHub" class="size-4 dark:invert" />
-						<span class="sr-only">GitHub</span>
-					</Button>
-					<DropdownMenu.Root bind:open={userDropdownOpen}>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
-								<Avatar.Root class="size-6">
-									<Avatar.Image src="/avatar.jpg" alt="Avatar" />
-									<Avatar.Fallback>A</Avatar.Fallback>
-								</Avatar.Root>
-								<ChevronDown
-									class="size-4 opacity-50 transition-transform {userDropdownOpen
-										? 'rotate-180'
-										: ''}"
-								/>
-								<span class="sr-only">Manage user</span>
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content>
-							<DropdownMenu.Label>Logged in as A</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-							<DropdownMenu.Item class="cursor-pointer text-red-500">
-								<form action="/logout" method="post" use:enhance>
-									<!-- FIXME: remove focus on dropdown open (tabindex={0} doesn't work) -->
-									<Button
-										type="submit"
-										variant="ghost"
-										class="h-auto p-0 hover:bg-inherit hover:text-inherit"
-									>
-										<LogOut class="mr-2 size-4" />
-										Logout
-									</Button>
-								</form>
-							</DropdownMenu.Item>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+					{#if isAuthenticating}
+						<Button variant="outline" size="icon" disabled>
+							<LoaderCircle class="size-4 animate-spin" />
+						</Button>
+					{:else if !user}
+						<Button href="/login" variant="outline" class="gap-1.5">
+							Log in with
+							<img src="/github.svg" alt="GitHub" class="size-4 dark:invert" />
+							<span class="sr-only">GitHub</span>
+						</Button>
+					{:else}
+						<DropdownMenu.Root bind:open={userDropdownOpen}>
+							<DropdownMenu.Trigger asChild let:builder>
+								<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
+									<Avatar.Root class="size-6">
+										<Avatar.Image src={user.avatar_url} alt={user.login} />
+										<Avatar.Fallback>
+											{user.login.charAt(0).toUpperCase()}
+										</Avatar.Fallback>
+									</Avatar.Root>
+									<ChevronDown
+										class="size-4 opacity-50 transition-transform {userDropdownOpen
+											? 'rotate-180'
+											: ''}"
+									/>
+									<span class="sr-only">Manage user</span>
+								</Button>
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content>
+								<DropdownMenu.Label>Logged in as {user.login}</DropdownMenu.Label>
+								<DropdownMenu.Separator />
+								<DropdownMenu.Item class="cursor-pointer text-red-500">
+									<form action="/logout" method="post" use:enhance>
+										<!-- FIXME: remove focus on dropdown open (tabindex={0} doesn't work) -->
+										<Button
+											type="submit"
+											variant="ghost"
+											class="h-auto p-0 hover:bg-inherit hover:text-inherit"
+										>
+											<LogOut class="mr-2 size-4" />
+											Logout
+										</Button>
+									</form>
+								</DropdownMenu.Item>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					{/if}
 					<Button
 						href="https://github.com/WarningImHack3r/svelte-changelog"
 						target="_blank"
