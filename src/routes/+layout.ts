@@ -1,7 +1,4 @@
-import { dev } from "$app/environment";
-import { env } from "$env/dynamic/public";
-import type { Repo, Tab } from "../types";
-import { Octokit } from "octokit";
+import type { Repo, Tab } from "$lib/types";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 
 injectSpeedInsights();
@@ -59,19 +56,11 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 				repoName: "svelte-devtools",
 				versionFromTag: tag => tag.replace(/^v/, "")
 			}
+			// TODO: Add "tagAndChangelog" mode, support svelte-preprocess & more
 		]
 	}
 };
 
 export function load() {
-	return {
-		repos,
-		octokit: new Octokit(
-			dev && env.PUBLIC_GITHUB_TOKEN
-				? {
-						auth: env.PUBLIC_GITHUB_TOKEN
-					}
-				: undefined
-		)
-	};
+	return { repos };
 }

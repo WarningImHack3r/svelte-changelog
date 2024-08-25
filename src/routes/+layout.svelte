@@ -2,33 +2,28 @@
 	import "../app.pcss";
 	import { onMount, type SvelteComponent } from "svelte";
 	import type { SvelteHTMLElements } from "svelte/elements";
-	import { get } from "svelte/store";
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
-	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
 	import { Octokit } from "octokit";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
-	import { getSettings, getTabState, initSettings, initTabState } from "$lib/stores";
+	import { getTabState, initTabState } from "$lib/stores";
+	import { tokenKey } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { news } from "$lib/news/news.json";
-	import { getDataFromSettings } from "$lib/data";
 	import { localStorageStore } from "$lib/localStorageStore";
-	import { tokenKey } from "$lib/types";
 
 	// State
 	initTabState();
-	initSettings();
 	const tabState = getTabState();
-	const settings = getSettings();
 
 	export let data;
-	$: ({ repos } = getDataFromSettings(data, get(settings)));
+	$: ({ repos } = data);
 
 	let scrollY = 0;
 
@@ -177,18 +172,16 @@
 							<DropdownMenu.Content>
 								<DropdownMenu.Label>Logged in as {user.login}</DropdownMenu.Label>
 								<DropdownMenu.Separator />
-								<DropdownMenu.Item class="cursor-pointer text-red-500">
-									<form action="/logout" method="post" use:enhance>
-										<!-- FIXME: remove focus on dropdown open (tabindex={0} doesn't work) -->
-										<Button
-											type="submit"
-											variant="ghost"
-											class="h-auto p-0 hover:bg-inherit hover:text-inherit"
-										>
-											<LogOut class="mr-2 size-4" />
-											Logout
-										</Button>
-									</form>
+								<DropdownMenu.Item
+									on:click={() => {
+										localStorage.removeItem(tokenKey);
+										user = undefined;
+										location.reload();
+									}}
+									class="cursor-pointer text-red-500"
+								>
+									<LogOut class="mr-2 size-4" />
+									Logout
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>

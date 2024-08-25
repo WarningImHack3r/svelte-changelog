@@ -6,11 +6,11 @@
 	import { MetaTags } from "svelte-meta-tags";
 	import semver from "semver";
 	import type { Snapshot } from "./$types";
-	import type { Tab } from "../types";
+	import type { Tab } from "$lib/types";
 	import { localStorageStore } from "$lib/localStorageStore";
 	import { PROD_URL } from "$lib/config";
-	import { getDataFromSettings } from "$lib/data";
-	import { getSettings, getTabState } from "$lib/stores";
+	import { getOctokit } from "$lib/octokit";
+	import { getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -25,7 +25,9 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
 	export let data;
-	$: ({ octokit, repos } = getDataFromSettings(data, get(getSettings())));
+	$: ({ repos } = data);
+
+	const octokit = getOctokit();
 
 	// Repositories to fetch releases from
 	let currentRepo: Tab = "svelte";
@@ -57,10 +59,9 @@
 		if (cachedResponses[category].length) {
 			return Promise.resolve(cachedResponses[category]);
 		}
-		const kit = await octokit;
 		return Promise.all(
 			repos[category].repos.map(({ repoName, dataFilter }) =>
-				kit.rest.repos
+				octokit.rest.repos
 					.listReleases({
 						owner: "sveltejs",
 						repo: repoName,
@@ -155,6 +156,7 @@
 		// Remove previous settings (will be removed in a future update)
 		localStorage.removeItem("displayBetaReleases");
 		localStorage.removeItem("nonKitReleasesDisplay");
+		localStorage.removeItem("settings");
 
 		// Get the last visit date for the blinking badge
 		const localItem = localStorage.getItem(lastVisitKey);

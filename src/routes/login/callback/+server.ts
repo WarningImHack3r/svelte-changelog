@@ -1,4 +1,5 @@
 import { github } from "$lib/server/auth";
+import { tokenKey } from "$lib/types";
 
 export async function GET({ cookies, url }) {
 	const code = url.searchParams.get("code");
@@ -19,7 +20,7 @@ export async function GET({ cookies, url }) {
 	return new Response(null, {
 		status: 302,
 		headers: {
-			Location: "/?token=" + tokens.accessToken
+			Location: `/?${tokenKey}=${tokens.accessToken}`
 		}
 	});
 }
