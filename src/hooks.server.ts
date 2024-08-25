@@ -9,17 +9,10 @@ export const handle = async ({ event, resolve }) => {
 	}
 
 	const { session, user } = await lucia.validateSession(sessionId);
-	if (session?.fresh) {
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		// SvelteKit types deviates from the de-facto standard
-		// you can use 'as any' too
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
-		});
-	}
-	if (!session) {
-		const sessionCookie = lucia.createBlankSessionCookie();
+	if (!session || session.fresh) {
+		const sessionCookie = !session
+			? lucia.createBlankSessionCookie()
+			: lucia.createSessionCookie(session.id);
 		event.cookies.set(sessionCookie.name, sessionCookie.value, {
 			path: ".",
 			...sessionCookie.attributes

@@ -5,6 +5,7 @@ import lucidePreprocess from "vite-plugin-lucide-preprocess";
 export default defineConfig({
 	plugins: [lucidePreprocess(), sveltekit()],
 	server: {
+		strictPort: true, // default port required for Login with GH workflow
 		fs: {
 			strict: false
 		}

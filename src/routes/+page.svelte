@@ -8,6 +8,7 @@
 	import type { Snapshot } from "./$types";
 	import type { Tab } from "../types";
 	import { localStorageStore } from "$lib/localStorageStore";
+	import { PROD_URL } from "$lib/config";
 	import { getDataFromSettings } from "$lib/data";
 	import { getSettings, getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
@@ -172,7 +173,7 @@
 	title={repos[currentRepo].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
-	canonical="https://svelte-changelog.vercel.app"
+	canonical={PROD_URL}
 	openGraph={{
 		images: [
 			{
