@@ -38,7 +38,7 @@ jobs:
         run: echo "has-permissions=${{ steps.secrets-check.outcome == 'success' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
 
   check-and-fix:
-    name: Pre-checks
+    name: Check and fix
     runs-on: ubuntu-latest
     needs: permissions-check
     permissions:
@@ -127,7 +127,7 @@ jobs:
       - name: ✨ Check Svelte format
         id: svelte-format
         if: steps.changed-files.outputs.code_changes == 'true'
-        run: pnpm check
+        run: pnpm check:ci
 
       - name: ✨ Check style with Prettier & ESLint
         id: prettier-eslint
