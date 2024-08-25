@@ -56,7 +56,6 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 				repoName: "svelte-devtools",
 				versionFromTag: tag => tag.replace(/^v/, "")
 			}
-			// TODO: Add "tagAndChangelog" mode, support svelte-preprocess & more
 		]
 	}
 };

@@ -11,11 +11,4 @@ export function load({ url }) {
 		localStorage.setItem(tokenKey, `"${token}"`);
 		redirect(302, "/");
 	}
-
-	// Logout redirect
-	const logout = url.searchParams.get("logout");
-	if (logout) {
-		localStorage.removeItem(tokenKey);
-		redirect(302, "/");
-	}
 }

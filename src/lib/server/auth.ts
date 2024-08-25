@@ -44,13 +44,7 @@ class EmptyAdapter implements Adapter {
 
 const adapter = new EmptyAdapter();
 
-export const lucia = new Lucia(adapter, {
-	sessionCookie: {
-		attributes: {
-			secure: !dev
-		}
-	}
-});
+export const lucia = new Lucia(adapter);
 
 export const github = new GitHub(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, {
 	redirectURI: `${dev ? "http://localhost:5173" : PROD_URL}/login/callback`
