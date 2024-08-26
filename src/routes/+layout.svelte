@@ -11,6 +11,8 @@
 	import { Octokit } from "octokit";
 	import { persisted } from "svelte-persisted-store";
 	import { toast } from "svelte-sonner";
+	import { news } from "$lib/news/news.json";
+	import { FAVICON_URL } from "$lib/config";
 	import { getTabState, initTabState, plainTextSerializer } from "$lib/stores";
 	import { tokenKey } from "$lib/types";
 	import { cn } from "$lib/utils";
@@ -20,7 +22,6 @@
 	import { Toaster } from "$lib/components/ui/sonner";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import { news } from "$lib/news/news.json";
 
 	// State
 	initTabState();
@@ -126,7 +127,7 @@
 		const closedNews = getClosedNewsIds();
 		const now = new Date();
 		newsToDisplay = news.find(
-			({ id, endDate }) => !closedNews.includes(id) && new Date(endDate) > now
+			({ id, content, endDate }) => !closedNews.includes(id) && new Date(endDate) > now && content
 		);
 	});
 </script>
@@ -143,7 +144,7 @@
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
 			<a href="/" class="flex items-center gap-2">
-				<img src="https://svelte.dev/favicon.png" alt="Svelte" class="size-8" />
+				<img src={FAVICON_URL} alt="Svelte" class="size-8" />
 				<h2 class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
 					<span class="text-primary">Changelog</span>
@@ -281,8 +282,9 @@
 									/>
 								</div>
 								<ChevronDown
-									class={"size-4 opacity-50 transition-transform" +
-										(themeSwitcherOpen ? " rotate-180" : "")}
+									class="size-4 opacity-50 transition-transform {themeSwitcherOpen
+										? 'rotate-180'
+										: ''}"
 								/>
 								<span class="sr-only">Change theme</span>
 							</Button>
@@ -293,7 +295,7 @@
 							<DropdownMenu.RadioGroup bind:value={theme}>
 								{#each themes as availableTheme}
 									<DropdownMenu.RadioItem
-										class="cursor-pointer data-[disabled]:opacity-100"
+										class="cursor-pointer data-[disabled]:opacity-75"
 										value={availableTheme.value}
 										disabled={theme === availableTheme.value}
 										on:click={() => {

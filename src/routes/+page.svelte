@@ -8,7 +8,7 @@
 	import semver from "semver";
 	import type { Snapshot } from "./$types";
 	import type { Tab } from "$lib/types";
-	import { PROD_URL } from "$lib/config";
+	import { FAVICON_PNG_URL, PROD_URL } from "$lib/config";
 	import { getOctokit } from "$lib/octokit";
 	import { getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
@@ -179,7 +179,7 @@
 	openGraph={{
 		images: [
 			{
-				url: "https://svelte.dev/favicon.png",
+				url: FAVICON_PNG_URL,
 				width: 128,
 				height: 128,
 				alt: "Svelte logo"
@@ -192,7 +192,7 @@
 		site: "@probably_coding",
 		title: "Svelte Changelog",
 		description: "A nice UI to stay up-to-date with Svelte releases",
-		image: "https://svelte.dev/favicon.png",
+		image: FAVICON_PNG_URL,
 		imageAlt: "Svelte logo"
 	}}
 	additionalRobotsProps={{
