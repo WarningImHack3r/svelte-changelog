@@ -1,7 +1,8 @@
 import { dev } from "$app/environment";
 import { env } from "$env/dynamic/public";
 import { Octokit } from "octokit";
-import { localStorageStore } from "./localStorageStore";
+import { persisted } from "svelte-persisted-store";
+import { plainTextSerializer } from "./stores";
 import { tokenKey } from "./types";
 
 /**
@@ -21,7 +22,9 @@ export function getOctokit() {
 			: undefined
 	);
 	if (hasTokenInDev) return octokit;
-	const unsubscribe = localStorageStore(tokenKey, "").subscribe(token => {
+	const unsubscribe = persisted(tokenKey, "", {
+		serializer: plainTextSerializer
+	}).subscribe(token => {
 		if (!token) return;
 		octokit.hook.wrap("request", async (request, options) => {
 			unsubscribe();

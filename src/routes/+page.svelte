@@ -4,10 +4,10 @@
 	import type { Octokit } from "octokit";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import { MetaTags } from "svelte-meta-tags";
+	import { persisted } from "svelte-persisted-store";
 	import semver from "semver";
 	import type { Snapshot } from "./$types";
 	import type { Tab } from "$lib/types";
-	import { localStorageStore } from "$lib/localStorageStore";
 	import { PROD_URL } from "$lib/config";
 	import { getOctokit } from "$lib/octokit";
 	import { getTabState } from "$lib/stores";
@@ -111,9 +111,9 @@
 	let lastVisitDateString = "";
 
 	// Settings
-	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
-	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
-	let displayOtherBetaReleases = localStorageStore("displayOtherBetaReleases", true);
+	let displaySvelteBetaReleases = persisted("displaySvelteBetaReleases", true);
+	let displayKitBetaReleases = persisted("displayKitBetaReleases", true);
+	let displayOtherBetaReleases = persisted("displayOtherBetaReleases", true);
 
 	// Date formatting
 	function toRelativeDateString(date: Date) {

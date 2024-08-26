@@ -6,18 +6,21 @@
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
 	import { page } from "$app/stores";
-	import { Octokit } from "octokit";
-	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
-	import { getTabState, initTabState } from "$lib/stores";
+	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
+	import { Octokit } from "octokit";
+	import { persisted } from "svelte-persisted-store";
+	import { toast } from "svelte-sonner";
+	import { getTabState, initTabState, plainTextSerializer } from "$lib/stores";
 	import { tokenKey } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
+	import { Progress } from "$lib/components/ui/progress";
+	import { Toaster } from "$lib/components/ui/sonner";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { news } from "$lib/news/news.json";
-	import { localStorageStore } from "$lib/localStorageStore";
 
 	// State
 	initTabState();
@@ -38,19 +41,40 @@
 	}
 
 	// User dropdown
-	const token = localStorageStore(tokenKey, "");
+	const token = persisted(tokenKey, "", {
+		serializer: plainTextSerializer
+	});
+	const toastedTokens = persisted<string[]>("toastedTokens", []);
 	let isAuthenticating = false;
+	let authenticatingToastId: string | number | undefined;
+	$: if (isAuthenticating && !$toastedTokens.includes($token)) {
+		authenticatingToastId = toast.loading("Authenticating...", {
+			description: "Logging you in with GitHub"
+		});
+	}
 	let user:
 		| Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
 		| undefined = undefined;
+	$: if (user && !$toastedTokens.includes($token)) {
+		if (authenticatingToastId) {
+			toast.info("Authenticated", {
+				id: authenticatingToastId
+			});
+			authenticatingToastId = undefined;
+		}
+		toast.success("Authenticated", {
+			description: `Welcome, ${user.login}!`
+		});
+		toastedTokens.update(toasted => [...new Set([...toasted, $token])]);
+	}
 	$: if ($token) {
 		isAuthenticating = true;
 		user = undefined;
 		new Octokit({ auth: $token }).rest.users
 			.getAuthenticated()
 			.then(({ data }) => {
-				user = data;
 				isAuthenticating = false;
+				user = data;
 			})
 			.catch(() => {
 				isAuthenticating = false;
@@ -111,6 +135,7 @@
 	<ScreenSize />
 {/if}
 <ModeWatcher />
+<Toaster />
 <header
 	class="sticky top-0 z-40 w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
 >
@@ -170,21 +195,62 @@
 									<span class="sr-only">Manage user</span>
 								</Button>
 							</DropdownMenu.Trigger>
-							<DropdownMenu.Content>
+							<DropdownMenu.Content class="max-w-60">
 								<DropdownMenu.Label>
 									Logged in as {user.login}
 									{#if dev && env.PUBLIC_GITHUB_TOKEN}
-										<em class="mt-1 block text-xs font-light">
+										<em class="mt-1 block text-xs font-light text-red-500">
 											Dev mode with custom token enabled, user token not used
 										</em>
 									{/if}
+									{#await new Octokit({ auth: $token }).rest.users.getAuthenticated()}
+										<div class="mt-1 flex items-center gap-2">
+											<LoaderCircle class="size-4 animate-spin" />
+											Loading stats...
+										</div>
+									{:then { headers }}
+										{@const currentUsageHeader = headers["x-ratelimit-used"]}
+										{@const currentUsage = currentUsageHeader ? Number(currentUsageHeader) : 0}
+										{@const maxUsageHeader = headers["x-ratelimit-remaining"]}
+										{@const maxUsage = maxUsageHeader ? Number(maxUsageHeader) : 0}
+										{@const resetHeader = headers["x-ratelimit-reset"]}
+										{@const resetTime = resetHeader
+											? new Date(Number(resetHeader) * 1000)
+											: undefined}
+										{#if currentUsageHeader && maxUsageHeader}
+											<div class="my-1 inline-flex items-baseline gap-1.5">
+												<h4 class="font-semibold">Token consumption</h4>
+												{#if currentUsage < maxUsage}
+													{@const percentage = (currentUsage / maxUsage) * 100}
+													<span class="text-sm font-light text-muted-foreground">
+														• {Math.round(percentage)}%
+													</span>
+												{/if}
+											</div>
+											{#if currentUsage < maxUsage}
+												<Progress value={currentUsage} max={maxUsage} />
+											{:else}
+												<p class="text-sm text-red-500">
+													You have no requests left.
+													{#if resetTime}
+														Reset at {resetTime.toLocaleTimeString()}.
+													{/if}
+												</p>
+											{/if}
+										{/if}
+									{/await}
 								</DropdownMenu.Label>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item
 									on:click={() => {
+										toastedTokens.update(toasted => toasted.filter(t => t !== $token));
 										localStorage.removeItem(tokenKey);
 										user = undefined;
-										location.reload();
+										toast.success("Logged out", {
+											description: "You have been logged out. Refreshing in 3 seconds...",
+											duration: 3000,
+											onAutoClose: location.reload
+										});
 									}}
 									class="cursor-pointer text-red-500"
 								>

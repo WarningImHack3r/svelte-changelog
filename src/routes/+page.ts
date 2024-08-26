@@ -8,7 +8,7 @@ export function load({ url }) {
 	// Login redirect
 	const token = url.searchParams.get(tokenKey);
 	if (token) {
-		localStorage.setItem(tokenKey, `"${token}"`);
+		localStorage.setItem(tokenKey, token);
 		redirect(302, "/");
 	}
 }

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
-	import { localStorageStore } from "$lib/localStorageStore";
+	import { persisted } from "svelte-persisted-store";
+	import { plainTextSerializer } from "$lib/stores";
 
 	/**
 	 * The name of the localStorage item to get the date from.
@@ -16,7 +17,9 @@
 
 	onMount(() => {
 		if (!storedDateItem) return;
-		const storedDateStore = localStorageStore(storedDateItem, "");
+		const storedDateStore = persisted(storedDateItem, "", {
+			serializer: plainTextSerializer
+		});
 		const storedDate = get(storedDateStore).replace(/"/g, "");
 		const lastVisitItem = localStorage.getItem("lastVisit");
 		if (storedDate && lastVisitItem) {

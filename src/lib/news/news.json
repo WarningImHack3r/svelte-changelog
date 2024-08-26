@@ -13,7 +13,7 @@
 		},
 		{
 			"id": 2,
-			"content": "Manual token authentication is no more: you can now use the new, shiny Login with GitHub button!",
+			"content": "Manual token authentication is no more: you can now use the new, shiny \"Login with GitHub\" button!",
 			"endDate": "2024-09-09"
 		}
 	]
