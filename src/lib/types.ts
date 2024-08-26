@@ -25,6 +25,4 @@ export type Repo = {
 
 export type Tab = "svelte" | "kit" | "others";
 
-export type Settings = {
-	githubToken?: string;
-};
+export const tokenKey = "token";

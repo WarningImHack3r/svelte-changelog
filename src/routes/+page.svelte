@@ -4,12 +4,13 @@
 	import type { Octokit } from "octokit";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import { MetaTags } from "svelte-meta-tags";
+	import { persisted } from "svelte-persisted-store";
 	import semver from "semver";
 	import type { Snapshot } from "./$types";
-	import type { Tab } from "../types";
-	import { localStorageStore } from "$lib/localStorageStore";
-	import { getDataFromSettings } from "$lib/data";
-	import { getSettings, getTabState } from "$lib/stores";
+	import type { Tab } from "$lib/types";
+	import { PROD_URL } from "$lib/config";
+	import { getOctokit } from "$lib/octokit";
+	import { getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -24,7 +25,9 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
 	export let data;
-	$: ({ octokit, repos } = getDataFromSettings(data, get(getSettings())));
+	$: ({ repos } = data);
+
+	const octokit = getOctokit();
 
 	// Repositories to fetch releases from
 	let currentRepo: Tab = "svelte";
@@ -56,10 +59,9 @@
 		if (cachedResponses[category].length) {
 			return Promise.resolve(cachedResponses[category]);
 		}
-		const kit = await octokit;
 		return Promise.all(
 			repos[category].repos.map(({ repoName, dataFilter }) =>
-				kit.rest.repos
+				octokit.rest.repos
 					.listReleases({
 						owner: "sveltejs",
 						repo: repoName,
@@ -109,9 +111,9 @@
 	let lastVisitDateString = "";
 
 	// Settings
-	let displaySvelteBetaReleases = localStorageStore("displaySvelteBetaReleases", true);
-	let displayKitBetaReleases = localStorageStore("displayKitBetaReleases", true);
-	let displayOtherBetaReleases = localStorageStore("displayOtherBetaReleases", true);
+	let displaySvelteBetaReleases = persisted("displaySvelteBetaReleases", true);
+	let displayKitBetaReleases = persisted("displayKitBetaReleases", true);
+	let displayOtherBetaReleases = persisted("displayOtherBetaReleases", true);
 
 	// Date formatting
 	function toRelativeDateString(date: Date) {
@@ -154,6 +156,7 @@
 		// Remove previous settings (will be removed in a future update)
 		localStorage.removeItem("displayBetaReleases");
 		localStorage.removeItem("nonKitReleasesDisplay");
+		localStorage.removeItem("settings");
 
 		// Get the last visit date for the blinking badge
 		const localItem = localStorage.getItem(lastVisitKey);
@@ -172,7 +175,7 @@
 	title={repos[currentRepo].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
-	canonical="https://svelte-changelog.vercel.app"
+	canonical={PROD_URL}
 	openGraph={{
 		images: [
 			{
