@@ -39,11 +39,9 @@
 		toSet.add(previousTab);
 		visitedTabs = [...toSet];
 
-		// I have no clue how this can be undefined
 		if (newTab) {
-			// @ts-expect-error Svelte 5, please
-			previousTab = newTab;
-			pushState(`?${queryParam}=${newTab}`, {});
+			previousTab = newTab as Tab;
+			pushState(`?${tabQueryParam}=${newTab}`, {});
 		}
 	}
 
@@ -64,10 +62,10 @@
 	}
 
 	// Tab change from the URL
-	const queryParam = "tab";
+	const tabQueryParam = "tab";
 	let shouldUnsubscribe = false;
 	const unsubscribe = page.subscribe(({ url }) => {
-		const tab = url.searchParams.get(queryParam) as Tab | null;
+		const tab = url.searchParams.get(tabQueryParam) as Tab | null;
 		if (!tab) {
 			shouldUnsubscribe = true;
 			return;

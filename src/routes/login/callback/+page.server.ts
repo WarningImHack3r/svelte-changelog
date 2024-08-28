@@ -16,5 +16,5 @@ export async function load({ cookies, url }) {
 
 	const tokens = await github.validateAuthorizationCode(code);
 
-	return redirect(302, `/?${tokenKey}=${tokens.accessToken}`);
+	redirect(302, `/?${tokenKey}=${tokens.accessToken}`);
 }
