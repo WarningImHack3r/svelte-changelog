@@ -1,15 +1,14 @@
+import { error, redirect } from "@sveltejs/kit";
 import { github } from "$lib/server/auth";
 import { tokenKey } from "$lib/types";
 
-export async function GET({ cookies, url }) {
+export async function load({ cookies, url }) {
 	const code = url.searchParams.get("code");
 	const state = url.searchParams.get("state");
 	const storedState = cookies.get("github_oauth_state") ?? null;
 
 	if (!code || !state || !storedState || state !== storedState) {
-		return new Response(null, {
-			status: 400
-		});
+		error(400);
 	}
 	cookies.delete("github_oauth_state", {
 		path: "/"
@@ -17,10 +16,5 @@ export async function GET({ cookies, url }) {
 
 	const tokens = await github.validateAuthorizationCode(code);
 
-	return new Response(null, {
-		status: 302,
-		headers: {
-			Location: `/?${tokenKey}=${tokens.accessToken}`
-		}
-	});
+	return redirect(302, `/?${tokenKey}=${tokens.accessToken}`);
 }

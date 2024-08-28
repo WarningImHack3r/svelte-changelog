@@ -250,7 +250,7 @@
 										toast.success("Logged out", {
 											description: "You have been logged out. Refreshing in 3 seconds...",
 											duration: 3000,
-											onAutoClose: location.reload
+											onAutoClose: () => location.reload()
 										});
 									}}
 									class="cursor-pointer text-red-500"
