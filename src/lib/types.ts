@@ -1,7 +1,3 @@
-export type Prettify<T> = {
-	[K in keyof T]: T[K];
-} & {};
-
 export type Repo = {
 	/**
 	 * Repository name on GitHub
@@ -23,6 +19,7 @@ export type Repo = {
 	versionFromTag: (tag: string) => string;
 };
 
-export type Tab = "svelte" | "kit" | "others";
+export const availableTabs = ["svelte", "kit", "others"] as const;
+export type Tab = (typeof availableTabs)[number];
 
 export const tokenKey = "token";

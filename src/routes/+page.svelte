@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
+	import { pushState } from "$app/navigation";
+	import { page } from "$app/stores";
+	import type { TabsProps } from "bits-ui";
 	import type { Octokit } from "octokit";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import { MetaTags } from "svelte-meta-tags";
 	import { persisted } from "svelte-persisted-store";
 	import semver from "semver";
 	import type { Snapshot } from "./$types";
-	import type { Tab } from "$lib/types";
+	import { availableTabs, type Tab } from "$lib/types";
 	import { FAVICON_PNG_URL, PROD_URL } from "$lib/config";
 	import { getOctokit } from "$lib/octokit";
 	import { getTabState } from "$lib/stores";
@@ -29,23 +32,53 @@
 
 	const octokit = getOctokit();
 
-	// Repositories to fetch releases from
-	let currentRepo: Tab = "svelte";
+	let currentTab: Tab = "svelte";
 
-	// Tab change
+	function onTabChange(newTab: TabsProps["value"]) {
+		const toSet = new Set(visitedTabs);
+		toSet.add(previousTab);
+		visitedTabs = [...toSet];
+
+		// I have no clue how this can be undefined
+		if (newTab) {
+			// @ts-expect-error Svelte 5, please
+			previousTab = newTab;
+			pushState(`?${queryParam}=${newTab}`, {});
+		}
+	}
+
+	// Tab change from the store (layout)
 	let tabChangeAsked = false;
 	const tabState = getTabState();
-	tabState.subscribe(value => {
-		if (value === currentRepo) return;
+	tabState.subscribe(newTab => {
+		if (newTab === currentTab) return;
 		tabChangeAsked = true;
 		window.scrollTo({ top: 0, behavior: "smooth" });
 	});
 
 	let scrollY = 0;
 	$: if (tabChangeAsked && scrollY === 0) {
-		currentRepo = get(tabState);
+		currentTab = get(tabState);
+		onTabChange(currentTab);
 		tabChangeAsked = false;
 	}
+
+	// Tab change from the URL
+	const queryParam = "tab";
+	let shouldUnsubscribe = false;
+	const unsubscribe = page.subscribe(({ url }) => {
+		const tab = url.searchParams.get(queryParam) as Tab | null;
+		if (!tab) {
+			shouldUnsubscribe = true;
+			return;
+		}
+		if (availableTabs.includes(tab)) {
+			tabState.set(tab);
+			currentTab = tab;
+			shouldUnsubscribe = true;
+		}
+	});
+	$: if (shouldUnsubscribe) unsubscribe();
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -100,7 +133,7 @@
 	};
 
 	// Badges
-	let previousTab: Tab = currentRepo;
+	let previousTab: Tab = currentTab;
 	let visitedTabs: Tab[] = [];
 	let loadedTabs: Tab[] = [];
 	let isLoadingDone = false;
@@ -172,7 +205,7 @@
 <svelte:window bind:scrollY />
 
 <MetaTags
-	title={repos[currentRepo].name}
+	title={repos[currentTab].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
 	canonical={PROD_URL}
@@ -202,24 +235,10 @@
 
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
-		<span class="text-primary">{repos[currentRepo].name}</span>
+		<span class="text-primary">{repos[currentTab].name}</span>
 		Releases
 	</h2>
-	<Tabs.Root
-		bind:value={currentRepo}
-		class="mt-8"
-		onValueChange={newValue => {
-			const toSet = new Set(visitedTabs);
-			toSet.add(previousTab);
-			visitedTabs = [...toSet];
-
-			// I have no clue how this can be undefined
-			if (newValue) {
-				// @ts-expect-error Svelte 5, please
-				previousTab = newValue;
-			}
-		}}
-	>
+	<Tabs.Root bind:value={currentTab} class="mt-8" onValueChange={onTabChange}>
 		<div
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
@@ -227,7 +246,7 @@
 				{#each typedEntries(repos) as [id, { name }]}
 					<BlinkingBadge
 						storedDateItem="{id}MostRecentUpdate"
-						show={!visitedTabs.includes(id) && id !== currentRepo}
+						show={!visitedTabs.includes(id) && id !== currentTab}
 					>
 						<Tabs.Trigger
 							class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
@@ -240,31 +259,31 @@
 			</Tabs.List>
 			<div class="ml-auto flex items-center space-x-2 xs:ml-0">
 				<!-- Tab-specific settings -->
-				{#if currentRepo === "svelte"}
+				{#if currentTab === "svelte"}
 					<Checkbox
-						id="beta-releases-{currentRepo}"
+						id="beta-releases-{currentTab}"
 						bind:checked={$displaySvelteBetaReleases}
-						aria-labelledby="beta-releases-label-{currentRepo}"
+						aria-labelledby="beta-releases-label-{currentTab}"
 					/>
-				{:else if currentRepo === "kit"}
+				{:else if currentTab === "kit"}
 					<Checkbox
-						id="beta-releases-{currentRepo}"
+						id="beta-releases-{currentTab}"
 						bind:checked={$displayKitBetaReleases}
-						aria-labelledby="beta-releases-label-{currentRepo}"
+						aria-labelledby="beta-releases-label-{currentTab}"
 					/>
 				{:else}
 					<Checkbox
-						id="beta-releases-{currentRepo}"
+						id="beta-releases-{currentTab}"
 						bind:checked={$displayOtherBetaReleases}
-						aria-labelledby="beta-releases-label-{currentRepo}"
+						aria-labelledby="beta-releases-label-{currentTab}"
 					/>
 				{/if}
 				<Label
-					id="beta-releases-label-{currentRepo}"
-					for="beta-releases-{currentRepo}"
+					id="beta-releases-label-{currentTab}"
+					for="beta-releases-{currentTab}"
 					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
-					Show {repos[currentRepo].name} prereleases
+					Show {repos[currentTab].name} prereleases
 				</Label>
 			</div>
 		</div>

@@ -143,7 +143,7 @@
 	<div class="border-b">
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
-			<a href="/" class="flex items-center gap-2">
+			<a href="/" class="flex items-center gap-2" on:click={() => tabState.set("svelte")}>
 				<img src={FAVICON_URL} alt="Svelte" class="size-8" />
 				<h2 class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
