@@ -8,7 +8,7 @@
 		MessagesSquare
 	} from "lucide-svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
-	import { createHighlighterCore } from "shiki/core";
+	import { createHighlighter, createJavaScriptRegexEngine } from "shiki";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
@@ -22,19 +22,21 @@
 	import BodyRenderer from "$lib/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
-	const highlighterCorePromise = createHighlighterCore({
+	const highlighterCorePromise = createHighlighter({
 		langs: [
 			import("shiki/langs/svelte.mjs"),
 			import("shiki/langs/typescript.mjs"),
 			import("shiki/langs/javascript.mjs"),
 			import("shiki/langs/html.mjs"),
-			import("shiki/langs/css.mjs")
+			import("shiki/langs/css.mjs"),
+			import("shiki/langs/json.mjs"),
+			import("shiki/langs/shell.mjs")
 		],
 		themes: [
 			import("shiki/themes/github-light-default.mjs"),
 			import("shiki/themes/github-dark-default.mjs")
 		],
-		loadWasm: import("shiki/wasm")
+		engine: createJavaScriptRegexEngine()
 	});
 
 	// Utils
