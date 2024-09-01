@@ -34,12 +34,12 @@ If you think I missed a package, you can either open an issue or directly contri
 - Must be by the Svelte team or their members
 - Must be on GitHub
 - Must _not_ be an internal package used only by the Svelte team
-- Must have releases on GitHub
+- Must either have releases on GitHub or at least have tags and a `CHANGELOG.md` file at the root of the repository
 
 ### How to contribute
 
 Fork the repo, edit the `/src/routes/+layout.ts` file, and open a PR.  
-**If the repo is not from the `sveltejs` organization, please open an issue instead.**
+**If the repo is not in the `sveltejs` GitHub organization, please open an issue instead.**
 
 The code architecture is made to be as flexible as possible, here's how it works:
 
@@ -54,13 +54,15 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
                 ...
             },
             {
+                changesMode: "releases", // Optional line, the way to get the changes; either "releases" or "changelog", defaults to "releases"
                 repoName: "your-repo", // The name of the repo on GitHub, as it appears in the URL: https://github.com/sveltejs/your-repo
                 dataFilter: ({ tag_name }) => true, // Optional line, return false to exclude a version from its tag name
-                versionFromTag: tag => "..." // Return the version from the tag name; must be a valid semver
+                versionFromTag: tag => "...", // Return the version from the tag name; must be a valid semver
+                changelogContentsReplacer: contents => contents, // Optional line, replace the contents of the changelog file before parsing it; only used if `changesMode` is "changelog"
             }
         ]
     }
 };
 ```
 
-And that's it! The rest of the site will automatically adapt to the new package(s).
+And that's it! The site will automatically adapt to the new package(s).

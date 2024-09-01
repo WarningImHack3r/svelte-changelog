@@ -13,6 +13,7 @@
 	import { availableTabs, type Tab } from "$lib/types";
 	import { FAVICON_PNG_URL, PROD_URL } from "$lib/config";
 	import { getOctokit } from "$lib/octokit";
+	import parseChangelog from "$lib/parsers/changelog-parser";
 	import { getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
@@ -78,6 +79,26 @@
 	});
 	$: if (shouldUnsubscribe) unsubscribe();
 
+	type Releases = Awaited<
+		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
+	>["data"];
+
+	/**
+	 * Decodes a base64 string to a UTF-8 string
+	 * Source: https://stackoverflow.com/a/64752311/12070367
+	 * @param base64 The base64 string to decode
+	 */
+	function decodeBase64(base64: string) {
+		const text = atob(base64);
+		const length = text.length;
+		const bytes = new Uint8Array(length);
+		for (let i = 0; i < length; i++) {
+			bytes[i] = text.charCodeAt(i);
+		}
+		const decoder = new TextDecoder(); // default is utf-8
+		return decoder.decode(bytes);
+	}
+
 	/**
 	 * Fetches releases from GitHub for the given category, for
 	 * all the repositories in that category.
@@ -86,40 +107,126 @@
 	 * @param category The category of the repos to fetch
 	 * @returns A promise that resolves to an array of releases
 	 */
-	async function octokitResponse(category: Tab) {
+	async function fetchReleases(category: Tab): Promise<Releases> {
 		if (cachedResponses[category].length) {
 			return Promise.resolve(cachedResponses[category]);
 		}
 		return Promise.all(
-			repos[category].repos.map(({ repoName, dataFilter }) =>
-				octokit.rest.repos
-					.listReleases({
-						owner: "sveltejs",
-						repo: repoName,
-						per_page: 50
-					})
-					.then(({ data }) =>
-						data
-							// Apply repo-specific data filter
-							.filter(release => dataFilter?.(release) ?? true)
-							// Add repo name to release name if it's not already there
-							.map(release => ({
-								...release,
-								name: release.name?.includes("@")
-									? release.name
-									: `${repoName}@${release.tag_name.replace(/^v/, "")}`
-							}))
-					)
+			repos[category].repos.map(
+				async (
+					{ changesMode, repoName, dataFilter, versionFromTag, changelogContentsReplacer },
+					repoIndex
+				) => {
+					if (changesMode === "changelog") {
+						const { data: tags } = await octokit.rest.repos.listTags({
+							owner: "sveltejs",
+							repo: repoName
+						});
+						return octokit.rest.repos
+							.getContent({
+								owner: "sveltejs",
+								repo: repoName,
+								path: "CHANGELOG.md"
+							})
+							.then(async ({ data }) => {
+								if ("length" in data || !("content" in data)) return []; // filter out empty or multiple results
+								const { content, encoding, type } = data;
+								if (type !== "file" || !content) return []; // filter out directories and empty files
+								const changelogFileContents =
+									encoding === "base64" ? decodeBase64(content) : content;
+								// Return a recreated list of releases from the changelog file
+								const { versions } = await parseChangelog(
+									changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
+								);
+								return await Promise.all(
+									tags.map(
+										async (
+											{ name: tagName, commit: { sha }, zipball_url, tarball_url, node_id },
+											tagIndex
+										) => {
+											const { author, committer } = await octokit.rest.git
+												.getCommit({
+													owner: "sveltejs",
+													repo: repoName,
+													commit_sha: sha
+												})
+												.then(({ data }) => data);
+											const cleanVersion = versionFromTag(tagName);
+											const changelogVersion = versions.find(
+												({ version }) => version === cleanVersion
+											);
+											return {
+												url: "",
+												html_url: `https://github.com/sveltejs/${repoName}/releases/tag/${tagName}`,
+												assets_url: "",
+												upload_url: "",
+												tarball_url,
+												zipball_url,
+												id: tagIndex + repoIndex * 1000,
+												node_id,
+												tag_name: cleanVersion,
+												target_commitish: "main",
+												name: `${repoName}@${cleanVersion}`,
+												body: changelogVersion?.body ?? "_No changelog provided._",
+												draft: false,
+												prerelease: cleanVersion.includes("-"),
+												created_at: committer.date,
+												published_at: null,
+												author: {
+													name: author.name,
+													login: "",
+													email: author.email,
+													id: 0,
+													node_id: "",
+													avatar_url: "",
+													gravatar_id: null,
+													url: "",
+													html_url: "",
+													followers_url: "",
+													following_url: "",
+													gists_url: "",
+													starred_url: "",
+													subscriptions_url: "",
+													organizations_url: "",
+													repos_url: "",
+													events_url: "",
+													received_events_url: "",
+													type: "",
+													site_admin: false
+												},
+												assets: []
+											} satisfies Releases[number];
+										}
+									)
+								);
+							})
+							.catch(() => []);
+					}
+					return octokit.rest.repos
+						.listReleases({
+							owner: "sveltejs",
+							repo: repoName,
+							per_page: 50
+						})
+						.then(({ data }) =>
+							data
+								// Apply repo-specific data filter
+								.filter(release => dataFilter?.(release) ?? true)
+								// Add repo name to release name if it's not already there
+								.map(release => ({
+									...release,
+									name: release.name?.includes("@")
+										? release.name
+										: `${repoName}@${versionFromTag(release.tag_name)}`
+								}))
+						);
+				}
 			)
 		).then(responses => responses.flat());
 	}
 
-	type OctokitResponse = Awaited<
-		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
-	>["data"];
-
 	// Data caching
-	let cachedResponses: Record<Tab, OctokitResponse> = {
+	let cachedResponses: Record<Tab, Releases> = {
 		svelte: [],
 		kit: [],
 		others: []
@@ -289,7 +396,7 @@
 		{#each typedEntries(repos) as [id, { name, repos: repoList }]}
 			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
-				{#await octokitResponse(id)}
+				{#await fetchReleases(id)}
 					<div class="relative w-full space-y-2">
 						<p
 							class="absolute left-1/2 top-[4.5rem] z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"

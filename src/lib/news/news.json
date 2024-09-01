@@ -15,6 +15,11 @@
 			"id": 2,
 			"content": "Manual token authentication is no more: you can now use the new, shiny \"Login with GitHub\" button!",
 			"endDate": "2024-09-09"
+		},
+		{
+			"id": 3,
+			"content": "New! Improved engine brings support for svelte-preprocess, rollup-plugin-svelte and prettier-plugin-svelte",
+			"endDate": "2024-09-09"
 		}
 	]
 }

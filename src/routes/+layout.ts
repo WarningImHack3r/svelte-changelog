@@ -55,6 +55,22 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 			{
 				repoName: "svelte-devtools",
 				versionFromTag: tag => tag.replace(/^v/, "")
+			},
+			{
+				changesMode: "changelog",
+				repoName: "svelte-preprocess",
+				versionFromTag: tag => tag.replace(/^v/, ""),
+				changelogContentsReplacer: file => file.replace(/^# \[/gm, "## [")
+			},
+			{
+				changesMode: "changelog",
+				repoName: "rollup-plugin-svelte",
+				versionFromTag: tag => tag.replace(/^v/, "")
+			},
+			{
+				changesMode: "changelog",
+				repoName: "prettier-plugin-svelte",
+				versionFromTag: tag => tag.replace(/^v/, "")
 			}
 		]
 	}
