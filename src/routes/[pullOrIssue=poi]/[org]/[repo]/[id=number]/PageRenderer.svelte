@@ -8,7 +8,17 @@
 		MessagesSquare
 	} from "lucide-svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
-	import { createHighlighter, createJavaScriptRegexEngine } from "shiki";
+	import { createHighlighterCoreSync, createJavaScriptRegexEngine } from "shiki";
+	import svelte from "shiki/langs/svelte.mjs";
+	import typescript from "shiki/langs/typescript.mjs";
+	import javascript from "shiki/langs/javascript.mjs";
+	import html from "shiki/langs/html.mjs";
+	import css from "shiki/langs/css.mjs";
+	import json from "shiki/langs/json.mjs";
+	import shell from "shiki/langs/shell.mjs";
+	import githubLight from "shiki/themes/github-light-default.mjs";
+	import githubDark from "shiki/themes/github-dark-default.mjs";
+	import type { Plugin } from "svelte-exmarkdown";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
@@ -22,22 +32,19 @@
 	import BodyRenderer from "$lib/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
-	const highlighterCorePromise = createHighlighter({
-		langs: [
-			import("shiki/langs/svelte.mjs"),
-			import("shiki/langs/typescript.mjs"),
-			import("shiki/langs/javascript.mjs"),
-			import("shiki/langs/html.mjs"),
-			import("shiki/langs/css.mjs"),
-			import("shiki/langs/json.mjs"),
-			import("shiki/langs/shell.mjs")
-		],
-		themes: [
-			import("shiki/themes/github-light-default.mjs"),
-			import("shiki/themes/github-dark-default.mjs")
-		],
+	const highlighter = createHighlighterCoreSync({
+		langs: [svelte, typescript, javascript, html, css, json, shell],
+		themes: [githubLight, githubDark],
 		engine: createJavaScriptRegexEngine()
 	});
+
+	const shikiPlugin: Plugin = {
+		rehypePlugin: [
+			rehypeShikiFromHighlighter,
+			highlighter,
+			{ themes: { light: "github-light-default", dark: "github-dark-default" } }
+		]
+	};
 
 	// Utils
 	function formatToDateTime(date: string) {
@@ -147,7 +154,12 @@
 					</Accordion.Trigger>
 					<!-- Body -->
 					<Accordion.Content class="mx-auto sm:w-3/4">
-						<MarkdownRenderer markdown={entity.body} parseRawHtml class="max-w-full text-base" />
+						<MarkdownRenderer
+							markdown={entity.body}
+							parseRawHtml
+							class="max-w-full text-base"
+							additionalPlugins={[shikiPlugin]}
+						/>
 					</Accordion.Content>
 				</Accordion.Item>
 			{/each}
@@ -203,25 +215,12 @@
 				</div>
 				<!-- Body -->
 				<div class="p-4">
-					{#await highlighterCorePromise}
-						<p>Loading...</p>
-					{:then highlighter}
-						<MarkdownRenderer
-							markdown={info.body || "_No description provided_"}
-							parseRawHtml
-							class="max-w-full"
-							additionalPlugins={[
-								{ renderer: { p: BodyRenderer } },
-								{
-									rehypePlugin: [
-										rehypeShikiFromHighlighter,
-										highlighter,
-										{ themes: { light: "github-light-default", dark: "github-dark-default" } }
-									]
-								}
-							]}
-						/>
-					{/await}
+					<MarkdownRenderer
+						markdown={info.body || "_No description provided_"}
+						parseRawHtml
+						class="max-w-full"
+						additionalPlugins={[{ renderer: { p: BodyRenderer } }, shikiPlugin]}
+					/>
 				</div>
 			</div>
 			<!-- Right part - info -->
