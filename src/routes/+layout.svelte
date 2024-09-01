@@ -159,7 +159,7 @@
 						{#each typedEntries(repos) as [id, { name }]}
 							<Button
 								variant="ghost"
-								class={$tabState === id ? "bg-accent/75" : ""}
+								class="hover:bg-accent/75"
 								on:click={() => tabState.set(id)}
 								disabled={$tabState === id}
 							>

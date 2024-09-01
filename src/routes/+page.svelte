@@ -45,6 +45,7 @@
 		previousTab = newTab as Tab;
 		if (fromUrlChange) return;
 		pushState(`?${tabQueryParam}=${newTab}`, {});
+		tabState.set(newTab as Tab);
 	}
 
 	// Tab change from the store (layout)
