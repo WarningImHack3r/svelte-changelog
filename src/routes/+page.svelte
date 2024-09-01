@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
+	import { browser } from "$app/environment";
 	import { pushState } from "$app/navigation";
 	import { page } from "$app/stores";
 	import type { TabsProps } from "bits-ui";
@@ -35,22 +36,22 @@
 
 	let currentTab: Tab = "svelte";
 
-	function onTabChange(newTab: TabsProps["value"]) {
+	function onTabChange(newTab: TabsProps["value"], fromUrlChange = false) {
 		const toSet = new Set(visitedTabs);
 		toSet.add(previousTab);
 		visitedTabs = [...toSet];
 
-		if (newTab) {
-			previousTab = newTab as Tab;
-			pushState(`?${tabQueryParam}=${newTab}`, {});
-		}
+		if (!newTab) return;
+		previousTab = newTab as Tab;
+		if (fromUrlChange) return;
+		pushState(`?${tabQueryParam}=${newTab}`, {});
 	}
 
 	// Tab change from the store (layout)
 	let tabChangeAsked = false;
 	const tabState = getTabState();
 	tabState.subscribe(newTab => {
-		if (newTab === currentTab) return;
+		if (newTab === currentTab || !browser) return;
 		tabChangeAsked = true;
 		window.scrollTo({ top: 0, behavior: "smooth" });
 	});
@@ -58,7 +59,7 @@
 	let scrollY = 0;
 	$: if (tabChangeAsked && scrollY === 0) {
 		currentTab = get(tabState);
-		onTabChange(currentTab);
+		onTabChange(currentTab, true);
 		tabChangeAsked = false;
 	}
 
@@ -443,17 +444,17 @@
 					{@const latestReleases = (
 						id === "others"
 							? repoList
-									.map(repo => {
+									.map(({ repoName, versionFromTag }) => {
 										const thisRepoReleases = releases.filter(
 											({ prerelease, html_url }) =>
 												!prerelease &&
-												html_url.startsWith(`https://github.com/sveltejs/${repo.repoName}`)
+												html_url.startsWith(`https://github.com/sveltejs/${repoName}`)
 										);
 										const uniquePackages = new Set(
 											thisRepoReleases.map(({ tag_name }) => {
 												// Not exactly the package name, but the _generic_ part of the tag name
-												const pkgFromTag = tag_name.replace(repo.versionFromTag(tag_name), "");
-												return pkgFromTag ? pkgFromTag : repo.repoName; // workaround for eslint-config
+												const pkgFromTag = tag_name.replace(versionFromTag(tag_name), "");
+												return pkgFromTag ?? repoName; // workaround for eslint-config
 											})
 										);
 										return [...uniquePackages].map(
@@ -465,10 +466,7 @@
 															: tag_name.includes(pkg)
 													)
 													.sort((a, b) =>
-														semver.rcompare(
-															repo.versionFromTag(a.tag_name),
-															repo.versionFromTag(b.tag_name)
-														)
+														semver.rcompare(versionFromTag(a.tag_name), versionFromTag(b.tag_name))
 													)[0]
 										);
 									})
@@ -557,10 +555,9 @@
 						multiple
 						value={releases
 							// Only expand releases that are less than a week old
-							.filter(release => {
+							.filter(({ created_at }) => {
 								return (
-									new Date(release.created_at).getTime() >
-									new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+									new Date(created_at).getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
 								);
 							})
 							.map(({ id }) => id.toString())}

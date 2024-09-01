@@ -157,7 +157,12 @@
 				<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 					<li>
 						{#each typedEntries(repos) as [id, { name }]}
-							<Button variant="ghost" on:click={() => tabState.set(id)}>
+							<Button
+								variant="ghost"
+								class={$tabState === id ? "bg-accent/75" : ""}
+								on:click={() => tabState.set(id)}
+								disabled={$tabState === id}
+							>
 								{name}
 							</Button>
 						{/each}
