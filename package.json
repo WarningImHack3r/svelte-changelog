@@ -34,7 +34,7 @@
 		"lucide-svelte": "^0.438.0",
 		"mode-watcher": "^0.4.1",
 		"octokit": "^4.0.2",
-		"postcss": "^8.4.43",
+		"postcss": "^8.4.44",
 		"postcss-load-config": "^6.0.1",
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",
