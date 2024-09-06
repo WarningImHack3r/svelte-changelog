@@ -140,66 +140,72 @@
 								const { versions } = await parseChangelog(
 									changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
 								);
-								return await Promise.all(
-									tags.map(
-										async (
-											{ name: tagName, commit: { sha }, zipball_url, tarball_url, node_id },
-											tagIndex
-										) => {
-											const { author, committer } = await octokit.rest.git
-												.getCommit({
-													owner: "sveltejs",
-													repo: repoName,
-													commit_sha: sha
-												})
-												.then(({ data }) => data);
-											const cleanVersion = versionFromTag(tagName);
-											const changelogVersion = versions.find(
-												({ version }) => version === cleanVersion
-											);
-											return {
-												url: "",
-												html_url: `https://github.com/sveltejs/${repoName}/releases/tag/${tagName}`,
-												assets_url: "",
-												upload_url: "",
-												tarball_url,
-												zipball_url,
-												id: tagIndex + repoIndex * 1000,
-												node_id,
-												tag_name: cleanVersion,
-												target_commitish: "main",
-												name: `${repoName}@${cleanVersion}`,
-												body: changelogVersion?.body ?? "_No changelog provided._",
-												draft: false,
-												prerelease: cleanVersion.includes("-"),
-												created_at: committer.date,
-												published_at: null,
-												author: {
-													name: author.name,
-													login: "",
-													email: author.email,
-													id: 0,
-													node_id: "",
-													avatar_url: "",
-													gravatar_id: null,
+								return (
+									await Promise.all(
+										tags.map(
+											async (
+												{ name: tagName, commit: { sha }, zipball_url, tarball_url, node_id },
+												tagIndex
+											) => {
+												const { author, committer } = await octokit.rest.git
+													.getCommit({
+														owner: "sveltejs",
+														repo: repoName,
+														commit_sha: sha
+													})
+													.then(({ data }) => data);
+												const cleanVersion = versionFromTag(tagName);
+												const changelogVersion = versions.find(
+													({ version }) => version === cleanVersion
+												);
+												return {
 													url: "",
-													html_url: "",
-													followers_url: "",
-													following_url: "",
-													gists_url: "",
-													starred_url: "",
-													subscriptions_url: "",
-													organizations_url: "",
-													repos_url: "",
-													events_url: "",
-													received_events_url: "",
-													type: "",
-													site_admin: false
-												},
-												assets: []
-											} satisfies Releases[number];
-										}
+													html_url: `https://github.com/sveltejs/${repoName}/releases/tag/${tagName}`,
+													assets_url: "",
+													upload_url: "",
+													tarball_url,
+													zipball_url,
+													id: tagIndex + repoIndex * 1000,
+													node_id,
+													tag_name: cleanVersion,
+													target_commitish: "main",
+													name: `${repoName}@${cleanVersion}`,
+													body: changelogVersion?.body ?? "_No changelog provided._",
+													draft: false,
+													prerelease: cleanVersion.includes("-"),
+													created_at: committer.date,
+													published_at: null,
+													author: {
+														name: author.name,
+														login: "",
+														email: author.email,
+														id: 0,
+														node_id: "",
+														avatar_url: "",
+														gravatar_id: null,
+														url: "",
+														html_url: "",
+														followers_url: "",
+														following_url: "",
+														gists_url: "",
+														starred_url: "",
+														subscriptions_url: "",
+														organizations_url: "",
+														repos_url: "",
+														events_url: "",
+														received_events_url: "",
+														type: "",
+														site_admin: false
+													},
+													assets: []
+												} satisfies Releases[number];
+											}
+										)
 									)
+								).filter(
+									release =>
+										// Apply repo-specific data filter
+										dataFilter?.(release) ?? true
 								);
 							})
 							.catch(() => []);
@@ -211,16 +217,8 @@
 							per_page: 50
 						})
 						.then(({ data }) =>
-							data
-								// Apply repo-specific data filter
-								.filter(release => dataFilter?.(release) ?? true)
-								// Add repo name to release name if it's not already there
-								.map(release => ({
-									...release,
-									name: release.name?.includes("@")
-										? release.name
-										: `${repoName}@${versionFromTag(release.tag_name)}`
-								}))
+							// Apply repo-specific data filter
+							data.filter(release => dataFilter?.(release) ?? true)
 						);
 				}
 			)
@@ -608,6 +606,19 @@
 											semver.major(releaseRepo.versionFromTag(matchingLatestRelease.tag_name)) &&
 										releaseDate > new Date(matchingEarliestOfLatestMajor.created_at)
 									: false}
+							{@const releaseName = (() => {
+								if (!releaseRepo) return release.name;
+								const packageName = release.tag_name
+									.replace(releaseRepo.versionFromTag(release.tag_name), "")
+									.replace(/-$/, "");
+								return release.name?.includes("@")
+									? release.name
+									: `${
+											/^[\d.]+/.test(release.tag_name.replace(/^v/, ""))
+												? releaseRepo.repoName
+												: packageName
+										}@${releaseRepo.versionFromTag(release.tag_name)}`;
+							})()}
 							{@const releaseBody = (() => {
 								const body = release.body ?? "";
 								if (releaseRepo?.repoName !== "language-tools") return body;
@@ -637,7 +648,7 @@
 										{/key}
 										<div class="flex flex-col items-start gap-1">
 											<span class="text-left text-lg group-hover:underline">
-												{release.name}
+												{releaseName}
 											</span>
 											<div class="flex items-center gap-2 xs:hidden">
 												{#if isLatestRelease}

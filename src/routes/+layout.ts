@@ -42,7 +42,7 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 			},
 			{
 				repoName: "eslint-config",
-				versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
+				versionFromTag: tag => tag.replace(/^v/, "")
 			},
 			{
 				repoName: "svelte-eslint-parser",
