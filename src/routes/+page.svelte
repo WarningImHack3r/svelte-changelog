@@ -5,16 +5,16 @@
 	import { pushState } from "$app/navigation";
 	import { page } from "$app/stores";
 	import type { TabsProps } from "bits-ui";
-	import type { Octokit } from "octokit";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
+	import type { Octokit } from "octokit";
+	import semver from "semver";
 	import { MetaTags } from "svelte-meta-tags";
 	import { persisted } from "svelte-persisted-store";
-	import semver from "semver";
 	import type { Snapshot } from "./$types";
 	import { availableTabs, type Tab } from "$lib/types";
 	import { FAVICON_PNG_URL, PROD_URL } from "$lib/config";
 	import { getOctokit } from "$lib/octokit";
-	import parseChangelog from "$lib/parsers/changelog-parser";
+	import parseChangelog from "$lib/changelog-parser";
 	import { getTabState } from "$lib/stores";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
@@ -26,8 +26,9 @@
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import BlinkingBadge from "$lib/components/BlinkingBadge.svelte";
-	import ListElementRenderer from "$lib/renderers/ListElementRenderer.svelte";
+	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import { decodeBase64, toRelativeDateString, typedEntries } from "$lib/util";
 
 	export let data;
 	$: ({ repos } = data);
@@ -84,22 +85,6 @@
 	type Releases = Awaited<
 		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 	>["data"];
-
-	/**
-	 * Decodes a base64 string to a UTF-8 string
-	 * Source: https://stackoverflow.com/a/64752311/12070367
-	 * @param base64 The base64 string to decode
-	 */
-	function decodeBase64(base64: string) {
-		const text = atob(base64);
-		const length = text.length;
-		const bytes = new Uint8Array(length);
-		for (let i = 0; i < length; i++) {
-			bytes[i] = text.charCodeAt(i);
-		}
-		const decoder = new TextDecoder(); // default is utf-8
-		return decoder.decode(bytes);
-	}
 
 	/**
 	 * Fetches releases from GitHub for the given category, for
@@ -252,43 +237,6 @@
 	let displaySvelteBetaReleases = persisted("displaySvelteBetaReleases", true);
 	let displayKitBetaReleases = persisted("displayKitBetaReleases", true);
 	let displayOtherBetaReleases = persisted("displayOtherBetaReleases", true);
-
-	// Date formatting
-	function toRelativeDateString(date: Date) {
-		let dateDiff = new Date().getTime() - date.getTime();
-		let relevantUnit: Intl.RelativeTimeFormatUnit;
-		switch (true) {
-			case dateDiff < 1000 * 60:
-				dateDiff /= 1000;
-				relevantUnit = "seconds";
-				break;
-			case dateDiff < 1000 * 60 * 60:
-				dateDiff /= 1000 * 60;
-				relevantUnit = "minutes";
-				break;
-			case dateDiff < 1000 * 60 * 60 * 24:
-				dateDiff /= 1000 * 60 * 60;
-				relevantUnit = "hours";
-				break;
-			default:
-				dateDiff /= 1000 * 60 * 60 * 24;
-				relevantUnit = "days";
-				break;
-		}
-		return new Intl.RelativeTimeFormat("en", {
-			style: "long"
-		}).format(-Math.ceil(dateDiff), relevantUnit);
-	}
-
-	// Types
-	type Entries<T> = {
-		[K in keyof T]: [K, T[K]];
-	}[keyof T][];
-
-	// https://stackoverflow.com/a/74823834/12070367
-	function typedEntries<T extends object>(obj: T) {
-		return Object.entries(obj) as Entries<T>;
-	}
 
 	onMount(() => {
 		// Remove previous settings (will be removed in a future update)

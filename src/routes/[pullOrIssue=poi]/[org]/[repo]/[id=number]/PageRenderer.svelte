@@ -38,7 +38,7 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
-	import BodyRenderer from "$lib/renderers/BodyRenderer.svelte";
+	import BodyRenderer from "$lib/components/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
 	const shikiPlugin: Plugin = {

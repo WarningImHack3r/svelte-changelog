@@ -16,12 +16,13 @@
 	import { getTabState, initTabState, plainTextSerializer } from "$lib/stores";
 	import { tokenKey } from "$lib/types";
 	import { cn } from "$lib/utils";
-	import ScreenSize from "$lib/ScreenSize.svelte";
+	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import { Progress } from "$lib/components/ui/progress";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import { typedEntries } from "$lib/util";
 
 	// State
 	initTabState();
@@ -31,15 +32,6 @@
 	$: ({ repos } = data);
 
 	let scrollY = 0;
-
-	// Types
-	type Entries<T> = {
-		[K in keyof T]: [K, T[K]];
-	}[keyof T][];
-
-	function typedEntries<T extends object>(obj: T) {
-		return Object.entries(obj) as Entries<T>;
-	}
 
 	// User dropdown
 	const token = persisted(tokenKey, "", {
