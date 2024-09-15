@@ -202,8 +202,8 @@
 								</Button>
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content class="max-w-60">
-								<DropdownMenu.Label>
-									Logged in as {user.login}
+								<DropdownMenu.Label class="font-normal">
+									<span class="font-semibold">Logged in as {user.login}</span>
 									{#if dev && env.PUBLIC_GITHUB_TOKEN}
 										<em class="mt-1 block text-xs font-light text-red-500">
 											Dev mode with custom token enabled, user token not used
