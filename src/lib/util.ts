@@ -1,6 +1,33 @@
 import type { Entries } from "./types";
 
 /**
+ * A `window.scrollTo` wrapper that scrolls to an element smoothly
+ * and returns a promise that resolves when the scrolling is done.
+ * Source: https://stackoverflow.com/a/55686711/12070367
+ *
+ * @param offset The offset from the top of the element to scroll to
+ */
+export function scrollToAsync(offset = 0) {
+	const { promise, resolve } = Promise.withResolvers<void>();
+
+	function onScroll() {
+		if (window.scrollY.toFixed() === offset.toFixed()) {
+			window.removeEventListener("scroll", onScroll);
+			resolve();
+		}
+	}
+
+	window.addEventListener("scroll", onScroll);
+	onScroll();
+	window.scrollTo({
+		top: offset,
+		behavior: "smooth" // TODO: replace this with auto (based on scroll-behavior) with reduced motion media query
+	});
+
+	return promise;
+}
+
+/**
  * Decodes a base64 string to a UTF-8 string
  * Source: https://stackoverflow.com/a/64752311/12070367
  * @param base64 The base64 string to decode

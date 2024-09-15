@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { get } from "svelte/store";
-	import { browser } from "$app/environment";
-	import { pushState } from "$app/navigation";
-	import { page } from "$app/stores";
 	import type { TabsProps } from "bits-ui";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import type { Octokit } from "octokit";
 	import semver from "semver";
 	import { MetaTags } from "svelte-meta-tags";
 	import { persisted } from "svelte-persisted-store";
+	import { queryParam } from "sveltekit-search-params";
 	import type { Snapshot } from "./$types";
 	import { availableTabs, type Tab } from "$lib/types";
 	import { FAVICON_PNG_URL, PROD_URL } from "$lib/config";
@@ -28,7 +25,7 @@
 	import BlinkingBadge from "$lib/components/BlinkingBadge.svelte";
 	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import { decodeBase64, toRelativeDateString, typedEntries } from "$lib/util";
+	import { decodeBase64, scrollToAsync, toRelativeDateString, typedEntries } from "$lib/util";
 
 	export let data;
 	$: ({ repos } = data);
@@ -37,50 +34,32 @@
 
 	let currentTab: Tab = "svelte";
 
-	function onTabChange(newTab: TabsProps["value"], fromUrlChange = false) {
+	function onTabChange(newTab: TabsProps["value"]) {
 		const toSet = new Set(visitedTabs);
 		toSet.add(previousTab);
 		visitedTabs = [...toSet];
 
 		if (!newTab) return;
 		previousTab = newTab as Tab;
-		if (fromUrlChange) return;
-		pushState(`?${tabQueryParam}=${newTab}`, {});
-		tabState.set(newTab as Tab);
+		tabParam.set(previousTab);
+		tabState.set(previousTab);
 	}
 
 	// Tab change from the store (layout)
-	let tabChangeAsked = false;
 	const tabState = getTabState();
-	tabState.subscribe(newTab => {
-		if (newTab === currentTab || !browser) return;
-		tabChangeAsked = true;
-		window.scrollTo({ top: 0, behavior: "smooth" });
-	});
-
-	let scrollY = 0;
-	$: if (tabChangeAsked && scrollY === 0) {
-		currentTab = get(tabState);
-		onTabChange(currentTab, true);
-		tabChangeAsked = false;
+	$: if ($tabState && $tabState !== currentTab) {
+		scrollToAsync().then(() => {
+			currentTab = $tabState;
+			onTabChange($tabState);
+		});
 	}
 
 	// Tab change from the URL
-	const tabQueryParam = "tab";
-	let shouldUnsubscribe = false;
-	const unsubscribe = page.subscribe(({ url }) => {
-		const tab = url.searchParams.get(tabQueryParam) as Tab | null;
-		if (!tab) {
-			shouldUnsubscribe = true;
-			return;
-		}
-		if (availableTabs.includes(tab)) {
-			tabState.set(tab);
-			currentTab = tab;
-			shouldUnsubscribe = true;
-		}
-	});
-	$: if (shouldUnsubscribe) unsubscribe();
+	const tabParam = queryParam<Tab>("tab");
+	$: if ($tabParam && availableTabs.includes($tabParam)) {
+		currentTab = $tabParam;
+		onTabChange($tabParam);
+	}
 
 	type Releases = Awaited<
 		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
@@ -254,8 +233,6 @@
 		return () => clearTimeout(timeout);
 	});
 </script>
-
-<svelte:window bind:scrollY />
 
 <MetaTags
 	title={repos[currentTab].name}
