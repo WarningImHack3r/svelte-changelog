@@ -1,13 +1,4 @@
-<script lang="ts">
-	import type { Issues, LinkedEntity, Pulls } from "./types";
-	import {
-		ArrowUpRight,
-		ChevronLeft,
-		FileDiff,
-		GitCommitVertical,
-		MessagesSquare
-	} from "lucide-svelte";
-	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
+<script context="module">
 	import { createHighlighterCoreSync, createJavaScriptRegexEngine } from "shiki";
 	import svelte from "shiki/langs/svelte.mjs";
 	import typescript from "shiki/langs/typescript.mjs";
@@ -18,6 +9,24 @@
 	import shell from "shiki/langs/shell.mjs";
 	import githubLight from "shiki/themes/github-light-default.mjs";
 	import githubDark from "shiki/themes/github-dark-default.mjs";
+
+	const highlighter = createHighlighterCoreSync({
+		langs: [svelte, typescript, javascript, html, css, json, shell],
+		themes: [githubLight, githubDark],
+		engine: createJavaScriptRegexEngine()
+	});
+</script>
+
+<script lang="ts">
+	import type { Issues, LinkedEntity, Pulls } from "./types";
+	import {
+		ArrowUpRight,
+		ChevronLeft,
+		FileDiff,
+		GitCommitVertical,
+		MessagesSquare
+	} from "lucide-svelte";
+	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import type { Plugin } from "svelte-exmarkdown";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
@@ -31,12 +40,6 @@
 	import Steps from "$lib/components/Steps.svelte";
 	import BodyRenderer from "$lib/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
-
-	const highlighter = createHighlighterCoreSync({
-		langs: [svelte, typescript, javascript, html, css, json, shell],
-		themes: [githubLight, githubDark],
-		engine: createJavaScriptRegexEngine()
-	});
 
 	const shikiPlugin: Plugin = {
 		rehypePlugin: [
@@ -186,7 +189,7 @@
 	</div>
 	<div class="mt-4 flex flex-col gap-4">
 		<!-- Info -->
-		<div class="mb-8 flex w-full flex-col gap-8 *:h-fit *:w-full *:rounded-xl *:border md:flex-row">
+		<div class="mb-8 flex w-full flex-col gap-8 *:h-fit *:rounded-xl *:border md:flex-row">
 			<!-- Left part - body -->
 			<div class="bg-muted/30">
 				<!-- Author -->
