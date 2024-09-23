@@ -25,6 +25,25 @@ Some computations are made to generate the badges, but everything else is a simp
 wrapper around GitHub releases.
 **No data alteration is performed by the site other than for styling and rendering purposes**.
 
+### What is that "Log in with GitHub" button?
+
+With the growing amount of features and supported packages, the site went from requesting the GitHub API
+very few times to requesting it a lot.  
+As such, the rate limit of the GitHub API was quickly reached, and the site became hard to browse.
+
+To solve this issue, I initially implemented a way to input a GitHub token in the website settings.
+This became the next week a full-fledged authentication system with GitHub OAuth, which is what you see today.
+
+**By logging in with GitHub, you will be able to browse the site without any rate limit issues**.
+You will also get access to more features, such as the ability to see the details of a pull request
+or issue directly on the site.
+
+The site does not store any data about you. The only thing the login system does is to store the token given
+by the GitHub authentication process in the browser's local storage to use it for the GitHub API requests.
+
+Logging in is entirely optional but highly recommended. You can remove the token from the website at any time
+by clicking the "Log out" button in your avatar dropdown.
+
 ## Missing a package?
 
 If you think I missed a package, you can either open an issue or directly contribute.
