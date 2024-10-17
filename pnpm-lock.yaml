@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@neoconfetti/svelte':
+        specifier: ^2.2.1
+        version: 2.2.1
       '@shikijs/rehype':
         specifier: ^1.22.0
         version: 1.22.0
@@ -390,6 +393,9 @@ packages:
     resolution: {integrity: sha512-7SbOa11tXUS95T3fReL+dwDs5FyJtCEqrqG3inRziDws346SYLsxOQ6HmX+4BkIsQh1R8U3XNa+EMmdMt38lMA==}
     peerDependencies:
       svelte: '>=3 <5'
+
+  '@neoconfetti/svelte@2.2.1':
+    resolution: {integrity: sha512-2Ts0Rxaf6clW2qG+AKhTwpl01AAyZEAe03XeuQ7Vp+qYIaM3ycuI94j546fmEkUxwACwGI3Zl2cZ/pncTuNcJg==}
 
   '@node-rs/argon2-android-arm-eabi@1.7.0':
     resolution: {integrity: sha512-udDqkr5P9E+wYX1SZwAVPdyfYvaF4ry9Tm+R9LkfSHbzWH0uhU6zjIwNRp7m+n4gx691rk+lqqDAIP8RLKwbhg==}
@@ -2761,6 +2767,8 @@ snapshots:
       focus-trap: 7.5.4
       nanoid: 5.0.7
       svelte: 4.2.19
+
+  '@neoconfetti/svelte@2.2.1': {}
 
   '@node-rs/argon2-android-arm-eabi@1.7.0':
     optional: true

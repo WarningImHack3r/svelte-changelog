@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { confetti } from "@neoconfetti/svelte";
 	import type { TabsProps } from "bits-ui";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import type { Octokit } from "octokit";
@@ -500,7 +501,7 @@
 									case "others":
 										return $displayOtherBetaReleases;
 								}
-							}) as release (release.id)}
+							}) as release, index (release.id)}
 							{@const releaseDate = new Date(release.created_at)}
 							{@const isOlderThanAWeek =
 								releaseDate.getTime() < new Date().getTime() - 1000 * 60 * 60 * 24 * 7}
@@ -556,7 +557,12 @@
 									}
 								);
 							})()}
-							<Accordion.Item value={release.id.toString()}>
+							<Accordion.Item
+								value={release.id.toString()}
+								class={isMajorRelease && id !== "others" && index < 3
+									? "rounded-xl border-2 border-primary px-4"
+									: undefined}
+							>
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
@@ -572,9 +578,38 @@
 											{/if}
 										{/key}
 										<div class="flex flex-col items-start gap-1">
-											<span class="text-left text-lg group-hover:underline">
-												{releaseName}
-											</span>
+											{#if isMajorRelease && id !== "others"}
+												{@const newReleaseMajor = releaseRepo
+													?.versionFromTag(release.tag_name)
+													?.split(".")[0]}
+												<Tooltip.Root openDelay={300}>
+													<Tooltip.Trigger>
+														{#if index === 0 && currentTab === id}
+															<div
+																class="mx-auto"
+																use:confetti={{
+																	duration: 5000,
+																	colors: ["orange", "white"]
+																}}
+															></div>
+														{/if}
+														<span class="majorGradient text-left text-xl">
+															{releaseName}
+														</span>
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														{#if newReleaseMajor}
+															{name} {newReleaseMajor} is available!
+														{:else}
+															A new major of {name} is available!
+														{/if}
+													</Tooltip.Content>
+												</Tooltip.Root>
+											{:else}
+												<span class="text-left text-lg group-hover:underline">
+													{releaseName}
+												</span>
+											{/if}
 											<div class="flex items-center gap-2 xs:hidden">
 												{#if isLatestRelease}
 													<Tooltip.Root openDelay={300}>
@@ -763,3 +798,32 @@
 		{/each}
 	</Tabs.Root>
 </div>
+
+<style>
+	.majorGradient {
+		background: linear-gradient(
+			135deg,
+			#ffcc80,
+			#ff9933,
+			#e67300,
+			#ff9933,
+			#ffcc80,
+			#fff5e6,
+			white
+		);
+		background-clip: text;
+		color: transparent;
+		animation: gradient 7s ease-in-out infinite;
+		background-size: 200% 200%;
+	}
+
+	@keyframes gradient {
+		0%,
+		100% {
+			background-position: 0 0;
+		}
+		50% {
+			background-position: 100% 0;
+		}
+	}
+</style>
