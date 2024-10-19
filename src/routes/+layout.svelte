@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy";
+
 	import "../app.pcss";
 	import { onMount, type SvelteComponent } from "svelte";
 	import type { SvelteHTMLElements } from "svelte/elements";
@@ -28,52 +30,64 @@
 	initTabState();
 	const tabState = getTabState();
 
-	export let data;
-	$: ({ repos } = data);
+	type Props = {
+		data: any;
+		children?: import("svelte").Snippet;
+	};
 
-	let scrollY = 0;
+	let { data, children }: Props = $props();
+	let { repos } = $derived(data);
+
+	let scrollY = $state(0);
 
 	// User dropdown
 	const token = persisted(tokenKey, "", {
 		serializer: plainTextSerializer
 	});
 	const toastedTokens = persisted<string[]>("toastedTokens", []);
-	let isAuthenticating = false;
-	let authenticatingToastId: string | number | undefined;
-	$: if (isAuthenticating && !$toastedTokens.includes($token)) {
-		authenticatingToastId = toast.loading("Authenticating...", {
-			description: "Logging you in with GitHub"
-		});
-	}
-	let user:
-		| Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
-		| undefined = undefined;
-	$: if (user && !$toastedTokens.includes($token)) {
-		if (authenticatingToastId) {
-			toast.info("Authenticated", {
-				id: authenticatingToastId
+	let isAuthenticating = $state(false);
+	let authenticatingToastId = $state<string | number>();
+	run(() => {
+		if (isAuthenticating && !$toastedTokens.includes($token)) {
+			authenticatingToastId = toast.loading("Authenticating...", {
+				description: "Logging you in with GitHub"
 			});
-			authenticatingToastId = undefined;
 		}
-		toast.success("Authenticated", {
-			description: `Welcome, ${user.login}!`
-		});
-		toastedTokens.update(toasted => [...new Set([...toasted, $token])]);
-	}
-	$: if ($token) {
-		isAuthenticating = true;
-		user = undefined;
-		new Octokit({ auth: $token }).rest.users
-			.getAuthenticated()
-			.then(({ data }) => {
-				isAuthenticating = false;
-				user = data;
-			})
-			.catch(() => {
-				isAuthenticating = false;
+	});
+	let user =
+		$state<
+			Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
+		>();
+	run(() => {
+		if (user && !$toastedTokens.includes($token)) {
+			if (authenticatingToastId) {
+				toast.info("Authenticated", {
+					id: authenticatingToastId
+				});
+				authenticatingToastId = undefined;
+			}
+			toast.success("Authenticated", {
+				description: `Welcome, ${user.login}!`
 			});
-	}
-	let userDropdownOpen = false;
+			toastedTokens.update(toasted => [...new Set([...toasted, $token])]);
+		}
+	});
+	run(() => {
+		if ($token) {
+			isAuthenticating = true;
+			user = undefined;
+			new Octokit({ auth: $token }).rest.users
+				.getAuthenticated()
+				.then(({ data }) => {
+					isAuthenticating = false;
+					user = data;
+				})
+				.catch(() => {
+					isAuthenticating = false;
+				});
+		}
+	});
+	let userDropdownOpen = $state(false);
 
 	// Theme selector
 	type Theme = {
@@ -98,11 +112,11 @@
 			icon: Monitor
 		}
 	];
-	let theme: "light" | "dark" | "system";
-	let themeSwitcherOpen = false;
+	let theme = $state<"light" | "dark" | "system">();
+	let themeSwitcherOpen = $state(false);
 
 	// News
-	let newsToDisplay: (typeof news)[number] | undefined;
+	let newsToDisplay = $state<(typeof news)[number]>();
 	const closedNewsKey = "closedNews";
 	function getClosedNewsIds() {
 		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
@@ -138,7 +152,7 @@
 	>
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
-			<a href="/" class="flex items-center gap-2" on:click={() => tabState.set("svelte")}>
+			<a href="/" class="flex items-center gap-2" onclick={() => tabState.set("svelte")}>
 				<img src={FAVICON_URL} alt="Svelte" class="size-8" />
 				<h2 class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
@@ -180,21 +194,23 @@
 						</Button>
 					{:else}
 						<DropdownMenu.Root bind:open={userDropdownOpen}>
-							<DropdownMenu.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
-									<Avatar.Root class="size-6">
-										<Avatar.Image src={user.avatar_url} alt={user.login} />
-										<Avatar.Fallback>
-											{user.login.charAt(0).toUpperCase()}
-										</Avatar.Fallback>
-									</Avatar.Root>
-									<ChevronDown
-										class="size-4 opacity-50 transition-transform {userDropdownOpen
-											? 'rotate-180'
-											: ''}"
-									/>
-									<span class="sr-only">Manage user</span>
-								</Button>
+							<DropdownMenu.Trigger asChild>
+								{#snippet children({ builder })}
+									<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
+										<Avatar.Root class="size-6">
+											<Avatar.Image src={user.avatar_url} alt={user.login} />
+											<Avatar.Fallback>
+												{user.login.charAt(0).toUpperCase()}
+											</Avatar.Fallback>
+										</Avatar.Root>
+										<ChevronDown
+											class="size-4 opacity-50 transition-transform {userDropdownOpen
+												? 'rotate-180'
+												: ''}"
+										/>
+										<span class="sr-only">Manage user</span>
+									</Button>
+								{/snippet}
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content class="max-w-60">
 								<DropdownMenu.Label class="font-normal">
@@ -271,23 +287,25 @@
 						<span class="sr-only">Visit the repository</span>
 					</Button>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
-								<div class="flex items-center">
-									<Sun
-										class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+						<DropdownMenu.Trigger asChild>
+							{#snippet children({ builder })}
+								<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
+									<div class="flex items-center">
+										<Sun
+											class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+										/>
+										<Moon
+											class="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+										/>
+									</div>
+									<ChevronDown
+										class="size-4 opacity-50 transition-transform {themeSwitcherOpen
+											? 'rotate-180'
+											: ''}"
 									/>
-									<Moon
-										class="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-									/>
-								</div>
-								<ChevronDown
-									class="size-4 opacity-50 transition-transform {themeSwitcherOpen
-										? 'rotate-180'
-										: ''}"
-								/>
-								<span class="sr-only">Change theme</span>
-							</Button>
+									<span class="sr-only">Change theme</span>
+								</Button>
+							{/snippet}
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
 							<DropdownMenu.Label>Theme</DropdownMenu.Label>
@@ -304,7 +322,7 @@
 												: setMode(availableTheme.value);
 										}}
 									>
-										<svelte:component this={availableTheme.icon} class="mr-2 size-4" />
+										<availableTheme.icon class="mr-2 size-4" />
 										<span>{availableTheme.label}</span>
 									</DropdownMenu.RadioItem>
 								{/each}
@@ -338,7 +356,7 @@
 
 <svelte:window bind:scrollY />
 
-<slot />
+{@render children?.()}
 
 <footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">
