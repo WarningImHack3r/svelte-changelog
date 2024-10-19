@@ -1,17 +1,18 @@
 <script lang="ts">
-	import { run } from "svelte/legacy";
-
+	import type { Snippet } from "svelte";
 	import { ArrowRight } from "lucide-svelte";
 	import { Button } from "$lib/components/ui/button";
 
-	let { children } = $props();
+	type Props = {
+		children?: Snippet;
+	};
+
+	let { children }: Props = $props();
 
 	let data = $state<HTMLLIElement>();
 	let pullsLinks: string[] = [];
 	let issuesLinks: string[] = [];
-	let allLinks = $state<string[]>([]);
-
-	run(() => {
+	let allLinks = $derived.by(() => {
 		if (data) {
 			const links = data.innerHTML.match(/https?:\/\/[^"]+/g) || [];
 			for (const link of links) {
@@ -21,8 +22,9 @@
 					issuesLinks.push(link);
 				}
 			}
-			allLinks = [...pullsLinks, ...issuesLinks];
+			return [...pullsLinks, ...issuesLinks];
 		}
+		return [];
 	});
 
 	/**

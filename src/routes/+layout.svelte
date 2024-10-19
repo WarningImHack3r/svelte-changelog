@@ -107,7 +107,7 @@
 			icon: Monitor
 		}
 	];
-	let theme = $state<"light" | "dark" | "system">();
+	let theme = $state<"light" | "dark" | "system">("system");
 	let themeSwitcherOpen = $state(false);
 
 	// News
