@@ -1,5 +1,6 @@
 <script context="module">
-	import { createHighlighterCoreSync, createJavaScriptRegexEngine } from "shiki";
+	import { createHighlighterCoreSync } from "shiki";
+	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 	import svelte from "shiki/langs/svelte.mjs";
 	import typescript from "shiki/langs/typescript.mjs";
 	import javascript from "shiki/langs/javascript.mjs";
