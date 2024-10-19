@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from "svelte/legacy";
-
 	import "../app.pcss";
 	import { onMount, type SvelteComponent } from "svelte";
 	import type { SvelteHTMLElements } from "svelte/elements";
@@ -42,19 +40,18 @@
 	const toastedTokens = persisted<string[]>("toastedTokens", []);
 	let isAuthenticating = $state(false);
 	let authenticatingToastId = $state<string | number>();
-	run(() => {
-		if (isAuthenticating && !$toastedTokens.includes($token)) {
-			authenticatingToastId = toast.loading("Authenticating...", {
-				description: "Logging you in with GitHub"
-			});
-		}
-	});
 	let user =
 		$state<
 			Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
 		>();
-	run(() => {
-		if (user && !$toastedTokens.includes($token)) {
+	toastedTokens.subscribe(tokens => {
+		if (tokens.includes($token)) return;
+		if (isAuthenticating) {
+			authenticatingToastId = toast.loading("Authenticating...", {
+				description: "Logging you in with GitHub"
+			});
+		}
+		if (user) {
 			if (authenticatingToastId) {
 				toast.info("Authenticated", {
 					id: authenticatingToastId
@@ -67,20 +64,19 @@
 			toastedTokens.update(toasted => [...new Set([...toasted, $token])]);
 		}
 	});
-	run(() => {
-		if ($token) {
-			isAuthenticating = true;
-			user = undefined;
-			new Octokit({ auth: $token }).rest.users
-				.getAuthenticated()
-				.then(({ data }) => {
-					isAuthenticating = false;
-					user = data;
-				})
-				.catch(() => {
-					isAuthenticating = false;
-				});
-		}
+	token.subscribe(newToken => {
+		if (!newToken) return;
+		isAuthenticating = true;
+		user = undefined;
+		new Octokit({ auth: newToken }).rest.users
+			.getAuthenticated()
+			.then(({ data }) => {
+				isAuthenticating = false;
+				user = data;
+			})
+			.catch(() => {
+				isAuthenticating = false;
+			});
 	});
 	let userDropdownOpen = $state(false);
 

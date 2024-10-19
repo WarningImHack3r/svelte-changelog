@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from "svelte/legacy";
-
 	import { LoaderCircle } from "lucide-svelte";
 	import { getOctokit } from "$lib/octokit";
 	import type { Issues, LinkedEntity, Pulls } from "./types";
@@ -80,7 +78,7 @@
 	let info = $derived(prInfo.info || issueInfo.info);
 
 	// Data fetching
-	run(() => {
+	$effect(() => {
 		if (pullOrIssue === "pull") {
 			linkedPRsOrIssues = [];
 			issueInfo = {
@@ -127,7 +125,7 @@
 			linkedIssuesForPR(owner, repo, id).then(response => (linkedPRsOrIssues = response));
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (pullOrIssue === "issues") {
 			linkedPRsOrIssues = [];
 			prInfo = {
@@ -202,7 +200,7 @@
 				.catch(() => (linkedPRsOrIssues = []));
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (prsToFetch.length > 0) {
 			Promise.all(
 				prsToFetch.map(prNumber =>
