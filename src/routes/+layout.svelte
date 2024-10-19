@@ -132,7 +132,10 @@
 <header
 	class="sticky top-0 z-40 w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
 >
-	<div class="border-b">
+	<div
+		class="border-b transition-colors duration-500"
+		class:border-transparent={!newsToDisplay && scrollY < 25}
+	>
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
 			<a href="/" class="flex items-center gap-2" on:click={() => tabState.set("svelte")}>
