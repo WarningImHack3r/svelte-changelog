@@ -1,10 +1,11 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
 	import { cn } from "$lib/utils";
 
 	type Props = {
 		class?: string | undefined | null;
-		stepIcon?: import("svelte").Snippet;
-		children?: import("svelte").Snippet;
+		stepIcon?: Snippet;
+		children?: Snippet;
 	};
 
 	let { class: className = undefined, stepIcon, children }: Props = $props();

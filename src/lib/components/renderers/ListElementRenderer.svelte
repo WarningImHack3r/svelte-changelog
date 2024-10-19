@@ -3,11 +3,8 @@
 
 	import { ArrowRight } from "lucide-svelte";
 	import { Button } from "$lib/components/ui/button";
-	type Props = {
-		children?: import("svelte").Snippet;
-	};
 
-	let { children }: Props = $props();
+	let { children } = $props();
 
 	let data = $state<HTMLLIElement>();
 	let pullsLinks: string[] = [];

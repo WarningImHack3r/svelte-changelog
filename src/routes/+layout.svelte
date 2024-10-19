@@ -30,12 +30,7 @@
 	initTabState();
 	const tabState = getTabState();
 
-	type Props = {
-		data: any;
-		children?: import("svelte").Snippet;
-	};
-
-	let { data, children }: Props = $props();
+	let { data, children } = $props();
 	let { repos } = $derived(data);
 
 	let scrollY = $state(0);
