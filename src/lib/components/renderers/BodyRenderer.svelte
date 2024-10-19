@@ -1,15 +1,18 @@
 <script lang="ts">
-	import { run } from "svelte/legacy";
-
+	import type { Snippet } from "svelte";
 	import { page } from "$app/stores";
 
-	let { children } = $props();
+	type Props = {
+		children?: Snippet;
+	};
+
+	let { children }: Props = $props();
 	let data = $state<HTMLParagraphElement>();
 
 	const org = $page.data.org;
 	const repo = $page.data.repo;
 
-	run(() => {
+	$effect(() => {
 		if (data) {
 			let replaced = data.innerHTML;
 			const issuesCandidates = replaced.matchAll(/ #(\d+)/g) || [];

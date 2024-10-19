@@ -6,11 +6,7 @@
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";
 
-	type Props = {
-		data: any;
-	};
-
-	let { data }: Props = $props();
+	let { data } = $props();
 	let { org: owner, id, repo, pullOrIssue } = $derived(data);
 
 	const octokit = getOctokit();

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from "svelte/legacy";
-
 	import { onMount } from "svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import type { TabsProps } from "bits-ui";
@@ -50,21 +48,21 @@
 
 	// Tab change from the store (layout)
 	const tabState = getTabState();
-	run(() => {
-		if ($tabState && $tabState !== currentTab) {
+	tabState.subscribe(newState => {
+		if (newState && newState !== currentTab) {
 			scrollToAsync().then(() => {
-				currentTab = $tabState;
-				onTabChange($tabState);
+				currentTab = newState;
+				onTabChange(newState);
 			});
 		}
 	});
 
 	// Tab change from the URL
 	const tabParam = queryParam<Tab>("tab");
-	run(() => {
-		if ($tabParam && availableTabs.includes($tabParam)) {
-			currentTab = $tabParam;
-			onTabChange($tabParam);
+	tabParam.subscribe(newParam => {
+		if (newParam && availableTabs.includes(newParam)) {
+			currentTab = newParam;
+			onTabChange(newParam);
 		}
 	});
 
@@ -209,15 +207,10 @@
 	};
 
 	// Badges
-	let previousTab: Tab = currentTab;
+	let previousTab: Tab = "svelte";
 	let visitedTabs = $state<Tab[]>([]);
 	let loadedTabs = $state<Tab[]>([]);
-	let isLoadingDone = $state(false);
-	run(() => {
-		if (loadedTabs.length === Object.keys(repos).length) {
-			isLoadingDone = true;
-		}
-	});
+	let isLoadingDone = $derived(loadedTabs.length === Object.keys(repos).length);
 	const lastVisitKey = "lastVisit" as const;
 	let lastVisitDateString = $state("");
 

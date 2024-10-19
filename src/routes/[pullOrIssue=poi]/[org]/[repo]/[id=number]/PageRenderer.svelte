@@ -19,8 +19,6 @@
 </script>
 
 <script lang="ts">
-	import { run } from "svelte/legacy";
-
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import {
 		ArrowUpRight,
@@ -70,25 +68,19 @@
 
 	let { info, comments, commits, files, linkedEntities }: Props = $props();
 
-	let type = $state<"issue" | "pull">();
-	let org = $state("");
-	let repo = $state("");
-	run(() => {
-		if (info.html_url) {
-			// https://github.com/ org/repo/[pull|issues]/number
-			const [urlOrg, urlRepo, urlType] = info.html_url
-				.replace("https://github.com/", "")
-				.split("/");
-			org = urlOrg ?? "";
-			repo = urlRepo ?? "";
-			type = urlType === "pull" ? "pull" : "issue";
-		}
+	// https://github.com/ org/repo/[pull|issues]/number
+	let org = $derived(info.html_url?.replace("https://github.com/", "").split("/")[0] ?? "");
+	let repo = $derived(info.html_url?.replace("https://github.com/", "").split("/")[1] ?? "");
+	let type = $derived.by(() => {
+		if (!info.html_url) return "issue" as const;
+		return (
+			info.html_url.replace("https://github.com/", "").split("/")[2] === "pull" ? "pull" : "issue"
+		) as const;
 	});
 
-	let rightPartInfo = $state<{ title: string; value: string }[]>([]);
-	run(() => {
+	let rightPartInfo = $derived.by(() => {
 		if (info) {
-			rightPartInfo = [
+			return [
 				...(info.closed_at
 					? [
 							{
@@ -113,6 +105,7 @@
 				{ title: "Milestone", value: info.milestone?.title || "None" }
 			];
 		}
+		return [];
 	});
 </script>
 
