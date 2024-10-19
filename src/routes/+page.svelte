@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy";
+
 	import { onMount } from "svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import type { TabsProps } from "bits-ui";
@@ -28,12 +30,12 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import { decodeBase64, scrollToAsync, toRelativeDateString, typedEntries } from "$lib/util";
 
-	export let data;
-	$: ({ repos } = data);
+	let { data } = $props();
+	let { repos } = $derived(data);
 
 	const octokit = getOctokit();
 
-	let currentTab: Tab = "svelte";
+	let currentTab = $state<Tab>("svelte");
 
 	function onTabChange(newTab: TabsProps["value"]) {
 		const toSet = new Set(visitedTabs);
@@ -48,19 +50,23 @@
 
 	// Tab change from the store (layout)
 	const tabState = getTabState();
-	$: if ($tabState && $tabState !== currentTab) {
-		scrollToAsync().then(() => {
-			currentTab = $tabState;
-			onTabChange($tabState);
-		});
-	}
+	run(() => {
+		if ($tabState && $tabState !== currentTab) {
+			scrollToAsync().then(() => {
+				currentTab = $tabState;
+				onTabChange($tabState);
+			});
+		}
+	});
 
 	// Tab change from the URL
 	const tabParam = queryParam<Tab>("tab");
-	$: if ($tabParam && availableTabs.includes($tabParam)) {
-		currentTab = $tabParam;
-		onTabChange($tabParam);
-	}
+	run(() => {
+		if ($tabParam && availableTabs.includes($tabParam)) {
+			currentTab = $tabParam;
+			onTabChange($tabParam);
+		}
+	});
 
 	type Releases = Awaited<
 		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
@@ -191,11 +197,11 @@
 	}
 
 	// Data caching
-	let cachedResponses: Record<Tab, Releases> = {
+	let cachedResponses = $state<Record<Tab, Releases>>({
 		svelte: [],
 		kit: [],
 		others: []
-	};
+	});
 
 	export const snapshot: Snapshot<typeof cachedResponses> = {
 		capture: () => cachedResponses,
@@ -204,14 +210,16 @@
 
 	// Badges
 	let previousTab: Tab = currentTab;
-	let visitedTabs: Tab[] = [];
-	let loadedTabs: Tab[] = [];
-	let isLoadingDone = false;
-	$: if (loadedTabs.length === Object.keys(repos).length) {
-		isLoadingDone = true;
-	}
+	let visitedTabs = $state<Tab[]>([]);
+	let loadedTabs = $state<Tab[]>([]);
+	let isLoadingDone = $state(false);
+	run(() => {
+		if (loadedTabs.length === Object.keys(repos).length) {
+			isLoadingDone = true;
+		}
+	});
 	const lastVisitKey = "lastVisit" as const;
-	let lastVisitDateString = "";
+	let lastVisitDateString = $state("");
 
 	// Settings
 	let displaySvelteBetaReleases = persisted("displaySvelteBetaReleases", true);
@@ -575,8 +583,8 @@
 												<div class="relative ml-1 mr-2 inline-flex">
 													<span
 														class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
-													/>
-													<span class="inline-flex size-2.5 rounded-full bg-primary" />
+													></span>
+													<span class="inline-flex size-2.5 rounded-full bg-primary"></span>
 												</div>
 											{/if}
 										{/key}

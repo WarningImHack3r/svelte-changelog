@@ -1,13 +1,18 @@
 <script lang="ts">
 	import { cn } from "$lib/utils";
 
-	let className: string | undefined | null = undefined;
-	export { className as class };
+	type Props = {
+		class?: string | undefined | null;
+		children?: import("svelte").Snippet;
+		[key: string]: any;
+	};
+
+	let { class: className = undefined, children, ...rest }: Props = $props();
 </script>
 
 <div
 	class={cn("ml-4 border-l pl-8 [counter-reset:step] [&>.step:not(:first-child)]:mt-8", className)}
-	{...$$restProps}
+	{...rest}
 >
-	<slot />
+	{@render children?.()}
 </div>

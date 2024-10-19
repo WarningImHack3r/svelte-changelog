@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 	import svelte from "shiki/langs/svelte.mjs";
@@ -19,6 +19,8 @@
 </script>
 
 <script lang="ts">
+	import { run } from "svelte/legacy";
+
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import {
 		ArrowUpRight,
@@ -58,52 +60,60 @@
 		}).format(new Date(date));
 	}
 
-	export let info:
-		| Awaited<ReturnType<Pulls["get"]>>["data"]
-		| Awaited<ReturnType<Issues["get"]>>["data"];
-	export let comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
-	export let commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
-	export let files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
-	export let linkedEntities: LinkedEntity[];
+	type Props = {
+		info: Awaited<ReturnType<Pulls["get"]>>["data"] | Awaited<ReturnType<Issues["get"]>>["data"];
+		comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
+		commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
+		files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
+		linkedEntities: LinkedEntity[];
+	};
 
-	let type: "issue" | "pull";
-	let org: string;
-	let repo: string;
-	$: if (info.html_url) {
-		// https://github.com/ org/repo/[pull|issues]/number
-		const [urlOrg, urlRepo, urlType] = info.html_url.replace("https://github.com/", "").split("/");
-		org = urlOrg ?? "";
-		repo = urlRepo ?? "";
-		type = urlType === "pull" ? "pull" : "issue";
-	}
+	let { info, comments, commits, files, linkedEntities }: Props = $props();
 
-	let rightPartInfo: { title: string; value: string }[] = [];
-	$: if (info) {
-		rightPartInfo = [
-			...(info.closed_at
-				? [
-						{
-							title: "merged" in info && info.merged ? "Merged at" : "Closed at",
-							value: formatToDateTime(info.closed_at)
-						}
-					]
-				: []),
-			{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
-			...("requested_reviewers" in info
-				? [
-						{
-							title: "Reviewers",
-							value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
-						}
-					]
-				: []),
-			{
-				title: "Labels",
-				value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
-			},
-			{ title: "Milestone", value: info.milestone?.title || "None" }
-		];
-	}
+	let type = $state<"issue" | "pull">();
+	let org = $state("");
+	let repo = $state("");
+	run(() => {
+		if (info.html_url) {
+			// https://github.com/ org/repo/[pull|issues]/number
+			const [urlOrg, urlRepo, urlType] = info.html_url
+				.replace("https://github.com/", "")
+				.split("/");
+			org = urlOrg ?? "";
+			repo = urlRepo ?? "";
+			type = urlType === "pull" ? "pull" : "issue";
+		}
+	});
+
+	let rightPartInfo = $state<{ title: string; value: string }[]>([]);
+	run(() => {
+		if (info) {
+			rightPartInfo = [
+				...(info.closed_at
+					? [
+							{
+								title: "merged" in info && info.merged ? "Merged at" : "Closed at",
+								value: formatToDateTime(info.closed_at)
+							}
+						]
+					: []),
+				{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
+				...("requested_reviewers" in info
+					? [
+							{
+								title: "Reviewers",
+								value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
+							}
+						]
+					: []),
+				{
+					title: "Labels",
+					value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
+				},
+				{ title: "Milestone", value: info.milestone?.title || "None" }
+			];
+		}
+	});
 </script>
 
 <div class="container py-8">
@@ -300,7 +310,9 @@
 					{#each commits as commit}
 						{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
 						<Step>
-							<GitCommitVertical class="size-4" slot="stepIcon" />
+							{#snippet stepIcon()}
+								<GitCommitVertical class="size-4" />
+							{/snippet}
 							<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 								<!-- Left part: commit message, description & author -->
 								<div class="flex flex-col gap-1">

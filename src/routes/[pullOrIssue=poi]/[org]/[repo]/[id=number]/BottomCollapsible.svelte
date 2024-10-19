@@ -5,10 +5,21 @@
 
 	const key = "collapsible";
 
-	export let icon: ComponentType<Icon> | null = null;
-	export let label: string;
-	export let secondaryLabel: string | undefined = undefined;
-	export let openByDefault = false;
+	type Props = {
+		icon?: ComponentType<Icon> | null;
+		label: string;
+		secondaryLabel?: string | undefined;
+		openByDefault?: boolean;
+		children?: import("svelte").Snippet;
+	};
+
+	let {
+		icon = null,
+		label,
+		secondaryLabel = undefined,
+		openByDefault = false,
+		children
+	}: Props = $props();
 </script>
 
 <div class="rounded-xl border px-4">
@@ -18,7 +29,8 @@
 				class="group hover:no-underline [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
 			>
 				{#if icon}
-					<svelte:component this={icon} class="mr-3 size-5 flex-shrink-0" />
+					{@const SvelteComponent = icon}
+					<SvelteComponent class="mr-3 size-5 flex-shrink-0" />
 				{/if}
 				<div class="flex w-full flex-col items-start justify-between xs:flex-row xs:items-center">
 					<span class="text-xl font-semibold">{label}</span>
@@ -28,7 +40,7 @@
 				</div>
 			</Accordion.Trigger>
 			<Accordion.Content>
-				<slot />
+				{@render children?.()}
 			</Accordion.Content>
 		</Accordion.Item>
 	</Accordion.Root>
