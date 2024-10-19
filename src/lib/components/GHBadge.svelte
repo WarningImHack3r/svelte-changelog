@@ -29,7 +29,7 @@
 
 	let { type, status }: Props = $props();
 
-	let icon = $state<ComponentType<Icon> | null>(null);
+	let icon = $state<ComponentType<Icon>>();
 	let label = $state("");
 	let color = $state("");
 

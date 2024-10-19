@@ -13,13 +13,12 @@
 			size: parseInt(configScreens[screen as keyof typeof configScreens].replace("px", ""))
 		}))
 		.sort((a, b) => a.size - b.size);
-	let matchingScreen: (typeof screens)[number] | undefined = $derived(screens.findLast(screen => screen.size <= width));
+	let matchingScreen = $derived(screens.findLast(screen => screen.size <= width));
 
 	let width = $state(0);
 	let height = $state(0);
 
 	let showAllScreens = $state(false);
-	
 </script>
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ComponentType } from "svelte";
+	import type { ComponentType, Snippet } from "svelte";
 	import type { Icon } from "lucide-svelte";
 	import * as Accordion from "$lib/components/ui/accordion";
 
@@ -10,7 +10,7 @@
 		label: string;
 		secondaryLabel?: string | undefined;
 		openByDefault?: boolean;
-		children?: import("svelte").Snippet;
+		children?: Snippet;
 	};
 
 	let {

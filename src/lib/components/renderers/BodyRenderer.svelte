@@ -2,11 +2,8 @@
 	import { run } from "svelte/legacy";
 
 	import { page } from "$app/stores";
-	type Props = {
-		children?: import("svelte").Snippet;
-	};
 
-	let { children }: Props = $props();
+	let { children } = $props();
 	let data = $state<HTMLParagraphElement>();
 
 	const org = $page.data.org;

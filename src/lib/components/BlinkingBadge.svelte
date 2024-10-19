@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, type Snippet } from "svelte";
 	import { get } from "svelte/store";
 	import { persisted } from "svelte-persisted-store";
 	import { plainTextSerializer } from "$lib/stores";
@@ -13,7 +13,7 @@
 		 * Whether to show the pulse animation.
 		 */
 		show?: boolean;
-		children?: import("svelte").Snippet;
+		children?: Snippet;
 	};
 
 	let { storedDateItem, show = false, children }: Props = $props();
