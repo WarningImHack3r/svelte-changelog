@@ -570,7 +570,7 @@
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
-										<!-- Trigger reactivity (please give me Svelte 5) -->
+										<!-- Trigger reactivity (is it needed?) -->
 										{#key isLoadingDone}
 											{#if releaseDate > new Date(lastVisitDateString) && !visitedTabs.includes(id)}
 												<div class="relative ml-1 mr-2 inline-flex">
