@@ -73,9 +73,9 @@
 	let repo = $derived(info.html_url?.replace("https://github.com/", "").split("/")[1] ?? "");
 	let type = $derived.by(() => {
 		if (!info.html_url) return "issue" as const;
-		return (
-			info.html_url.replace("https://github.com/", "").split("/")[2] === "pull" ? "pull" : "issue"
-		) as const;
+		return info.html_url.replace("https://github.com/", "").split("/")[2] === "pull"
+			? ("pull" as const)
+			: ("issue" as const);
 	});
 
 	let rightPartInfo = $derived.by(() => {
@@ -125,7 +125,7 @@
 		<h3 class="text-2xl font-semibold tracking-tight">
 			{type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1 ? "s" : ""}
 		</h3>
-		<Accordion.Root class="mb-12">
+		<Accordion.Root type="single" class="mb-12">
 			{#each linkedEntities as entity}
 				<Accordion.Item value={entity.number.toString()}>
 					<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:flex-shrink-0">
@@ -145,24 +145,28 @@
 							<div
 								class="mr-4 flex flex-shrink-0 flex-col items-end gap-1 text-right text-sm text-muted-foreground xs:ml-auto xs:flex-row xs:items-center"
 							>
-								<div class="flex items-center gap-2">
-									<Avatar.Root class="size-6">
-										<Avatar.Image src={entity.author.avatarUrl} alt={entity.author.login} />
-										<Avatar.Fallback>
-											{entity.author.login.charAt(0).toUpperCase()}
-										</Avatar.Fallback>
-									</Avatar.Root>
-									<span class="font-semibold">{entity.author.login}</span>
-								</div>
-								<span class="hidden xs:block">•</span>
-								<span>{formatToDateTime(entity.createdAt)}</span>
+								{#if "author" in entity}
+									<div class="flex items-center gap-2">
+										<Avatar.Root class="size-6">
+											<Avatar.Image src={entity.author?.avatarUrl} alt={entity.author?.login} />
+											<Avatar.Fallback>
+												{entity.author?.login.charAt(0).toUpperCase()}
+											</Avatar.Fallback>
+										</Avatar.Root>
+										<span class="font-semibold">{entity.author?.login}</span>
+									</div>
+									<span class="hidden xs:block">•</span>
+								{/if}
+								{#if "createdAt" in entity}
+									<span>{formatToDateTime(entity.createdAt)}</span>
+								{/if}
 							</div>
 						</div>
 					</Accordion.Trigger>
 					<!-- Body -->
 					<Accordion.Content class="mx-auto sm:w-3/4">
 						<MarkdownRenderer
-							markdown={entity.body}
+							markdown={entity.body || "_No description provided_"}
 							parseRawHtml
 							class="max-w-full text-base"
 							additionalPlugins={[shikiPlugin]}

@@ -2,7 +2,7 @@
 	import type { Issue, Repository } from "@octokit/graphql-schema";
 	import { LoaderCircle } from "lucide-svelte";
 	import { getOctokit } from "$lib/octokit";
-	import type { Issues, Pulls } from "./types";
+	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";
 
 	let { data } = $props();
@@ -48,7 +48,7 @@
 	}
 
 	// PR issues or issue PRs
-	let linkedPRsOrIssues = $state<(Issue | Awaited<ReturnType<Pulls["get"]>>["data"])[]>();
+	let linkedPRsOrIssues = $state<LinkedEntity[]>();
 
 	// PR
 	let prInfo = $state<{
