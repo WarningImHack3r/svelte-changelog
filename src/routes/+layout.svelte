@@ -160,7 +160,7 @@
 							<Button
 								variant="ghost"
 								class="hover:bg-accent/75"
-								on:click={() => tabState.set(id)}
+								onclick={() => tabState.set(id)}
 								disabled={$tabState === id}
 							>
 								{name}
@@ -185,13 +185,13 @@
 						</Button>
 					{:else}
 						<DropdownMenu.Root bind:open={userDropdownOpen}>
-							<DropdownMenu.Trigger asChild>
-								{#snippet children({ builder })}
-									<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
 										<Avatar.Root class="size-6">
-											<Avatar.Image src={user.avatar_url} alt={user.login} />
+											<Avatar.Image src={user?.avatar_url} alt={user?.login} />
 											<Avatar.Fallback>
-												{user.login.charAt(0).toUpperCase()}
+												{user?.login.charAt(0).toUpperCase()}
 											</Avatar.Fallback>
 										</Avatar.Root>
 										<ChevronDown
@@ -250,7 +250,7 @@
 								</DropdownMenu.Label>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item
-									on:click={() => {
+									onclick={() => {
 										toastedTokens.update(toasted => toasted.filter(t => t !== $token));
 										localStorage.removeItem(tokenKey);
 										user = undefined;
@@ -278,9 +278,9 @@
 						<span class="sr-only">Visit the repository</span>
 					</Button>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
-						<DropdownMenu.Trigger asChild>
-							{#snippet children({ builder })}
-								<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
+						<DropdownMenu.Trigger>
+							{#snippet child({ props })}
+								<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
 										<Sun
 											class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
@@ -307,7 +307,7 @@
 										class="cursor-pointer data-[disabled]:opacity-75"
 										value={availableTheme.value}
 										disabled={theme === availableTheme.value}
-										on:click={() => {
+										onclick={() => {
 											return availableTheme.value === "system"
 												? resetMode()
 												: setMode(availableTheme.value);
@@ -330,7 +330,7 @@
 			<Button
 				variant="ghost"
 				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:rotate-90 hover:scale-110 hover:bg-background/0"
-				on:click={() => {
+				onclick={() => {
 					if (!newsToDisplay) return;
 					localStorage.setItem(
 						closedNewsKey,

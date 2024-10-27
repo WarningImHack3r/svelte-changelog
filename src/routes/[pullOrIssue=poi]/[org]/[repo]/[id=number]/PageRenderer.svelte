@@ -354,7 +354,7 @@
 										<Badge variant="outline" class="text-green-500">Verified</Badge>
 									{/if}
 									{#if commit.sha}
-										<Tooltip.Root openDelay={300}>
+										<Tooltip.Root delayDuration={300}>
 											<Tooltip.Trigger>
 												<span class="font-mono text-muted-foreground">
 													{commit.sha.slice(0, 7)}

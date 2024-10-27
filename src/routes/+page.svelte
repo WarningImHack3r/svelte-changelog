@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { confetti } from "@neoconfetti/svelte";
-	import type { TabsProps } from "bits-ui";
+	import type { TabsRootProps } from "bits-ui";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import type { Octokit } from "octokit";
 	import semver from "semver";
@@ -35,7 +35,7 @@
 
 	let currentTab = $state<Tab>("svelte");
 
-	function onTabChange(newTab: TabsProps["value"]) {
+	function onTabChange(newTab: TabsRootProps["value"]) {
 		const toSet = new Set(visitedTabs);
 		toSet.add(previousTab);
 		visitedTabs = [...toSet];
@@ -478,7 +478,7 @@
 								)
 					).filter(Boolean)}
 					<Accordion.Root
-						multiple
+						type="multiple"
 						value={releases
 							// Only expand releases that are less than a week old
 							.filter(({ created_at }) => {
@@ -586,7 +586,7 @@
 												{@const newReleaseMajor = releaseRepo
 													?.versionFromTag(release.tag_name)
 													?.split(".")[0]}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														{#if index === 0 && currentTab === id}
 															<div
@@ -621,7 +621,7 @@
 											{/if}
 											<div class="flex items-center gap-2 xs:hidden">
 												{#if isLatestRelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge
 																class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
@@ -639,7 +639,7 @@
 													</Tooltip.Root>
 												{/if}
 												{#if isMajorRelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge>Major</Badge>
 														</Tooltip.Trigger>
@@ -648,7 +648,7 @@
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if release.prerelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge variant="outline" class="border-primary text-primary">
 																Prerelease
@@ -661,7 +661,7 @@
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if isMaintenanceRelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge variant="outline" class="border-blue-600 text-blue-600">
 																Maintenance
@@ -679,7 +679,7 @@
 											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
-											<Tooltip.Root openDelay={300}>
+											<Tooltip.Root delayDuration={300}>
 												<Tooltip.Trigger>
 													{isOlderThanAWeek
 														? releaseDate.toLocaleDateString("en")
@@ -697,7 +697,7 @@
 										</span>
 										<div class="hidden items-center gap-2 xs:flex">
 											{#if isLatestRelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge
 															class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
@@ -715,7 +715,7 @@
 												</Tooltip.Root>
 											{/if}
 											{#if isMajorRelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge>Major</Badge>
 													</Tooltip.Trigger>
@@ -724,7 +724,7 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if release.prerelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge variant="outline" class="border-primary text-primary">
 															Prerelease
@@ -737,7 +737,7 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if isMaintenanceRelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge variant="outline" class="border-blue-600 text-blue-600">
 															Maintenance
