@@ -25,7 +25,7 @@
 	type Props = {
 		type: PropsObj["type"];
 		status: PropsObj["status"];
-	}
+	};
 
 	let { type, status }: Props = $props();
 
