@@ -1,7 +1,8 @@
 <script lang="ts">
+	import type { Issue, Repository } from "@octokit/graphql-schema";
 	import { LoaderCircle } from "lucide-svelte";
 	import { getOctokit } from "$lib/octokit";
-	import type { Issues, LinkedEntity, Pulls } from "./types";
+	import type { Issues, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";
 
 	let { data } = $props();
@@ -9,13 +10,9 @@
 
 	const octokit = getOctokit();
 
-	async function linkedIssuesForPR(
-		owner: string,
-		repo: string,
-		pr: number
-	): Promise<LinkedEntity[]> {
+	async function linkedIssuesForPR(owner: string, repo: string, pr: number) {
 		return octokit
-			.graphql(
+			.graphql<{ repository: Repository }>(
 				`
 				query closingIssues($number: Int!, $owner: String!, $repo: String!) {
 					repository(owner: $owner, name: $repo) {
@@ -42,15 +39,16 @@
 					number: pr
 				}
 			)
-			.then(
-				/* eslint-disable @typescript-eslint/no-explicit-any */ (response: any) =>
-					response.repository.pullRequest.closingIssuesReferences.nodes
-			)
-			.catch(() => []);
+			.then(({ repository }) => {
+				const n = repository.pullRequest?.closingIssuesReferences?.nodes;
+				if (!n) return [] as Issue[];
+				return n.filter(Boolean);
+			})
+			.catch(() => [] as Issue[]);
 	}
 
 	// PR issues or issue PRs
-	let linkedPRsOrIssues = $state<LinkedEntity[]>();
+	let linkedPRsOrIssues = $state<(Issue | Awaited<ReturnType<Pulls["get"]>>["data"])[]>();
 
 	// PR
 	let prInfo = $state<{
@@ -123,10 +121,7 @@
 
 			// Fetch closing issues
 			linkedIssuesForPR(owner, repo, id).then(response => (linkedPRsOrIssues = response));
-		}
-	});
-	$effect(() => {
-		if (pullOrIssue === "issues") {
+		} else {
 			linkedPRsOrIssues = [];
 			prInfo = {
 				info: undefined,
@@ -172,22 +167,19 @@
 				.then(async crEvents => {
 					const prEvents = [];
 					for (let event of crEvents) {
-						const anyEvent = event as any;
+						if (!("source" in event)) continue;
+						if (!event.source.issue) continue;
 						const doesPRExist = await octokit.rest.pulls
 							.get({
 								owner,
 								repo,
-								pull_number: anyEvent.source.issue.number
+								pull_number: event.source.issue.number
 							})
 							.then(() => true)
 							.catch(() => false);
 						if (!doesPRExist) continue;
 
-						const containedInPr = await linkedIssuesForPR(
-							owner,
-							repo,
-							anyEvent.source.issue.number
-						);
+						const containedInPr = await linkedIssuesForPR(owner, repo, event.source.issue.number);
 						if (containedInPr.map(pr => pr.number).includes(id)) {
 							prEvents.push(event);
 						}
@@ -195,7 +187,9 @@
 					return prEvents;
 				})
 				.then(prEvents => {
-					prsToFetch = prEvents.map(event => (event as any).source.issue.number);
+					prsToFetch = prEvents
+						.map(event => event.source.issue?.number || -1)
+						.filter(pr => pr !== -1);
 				})
 				.catch(() => (linkedPRsOrIssues = []));
 		}
@@ -219,20 +213,8 @@
 						if (linkedPRsOrIssues.map(i => i.number).includes(data.number)) {
 							continue;
 						}
-						linkedPRsOrIssues.push({
-							title: data.title,
-							author: {
-								login: data.user.login,
-								avatarUrl: data.user.avatar_url
-							},
-							body: data.body ?? "",
-							createdAt: data.created_at,
-							number: data.number
-						});
+						linkedPRsOrIssues.push(data);
 					}
-					linkedPRsOrIssues = linkedPRsOrIssues.sort(
-						(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-					);
 					prsToFetch = prsToFetch.filter(
 						prNumber => !prs.map(pr => pr.data.number).includes(prNumber)
 					);
