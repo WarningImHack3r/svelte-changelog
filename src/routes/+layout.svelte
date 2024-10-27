@@ -6,16 +6,7 @@
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
 	import { page } from "$app/stores";
-	import {
-		ArrowUpRight,
-		ChevronDown,
-		LoaderCircle,
-		LogOut,
-		Monitor,
-		Moon,
-		Sun,
-		X
-	} from "lucide-svelte";
+	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { Octokit } from "octokit";
 	import { persisted } from "svelte-persisted-store";
@@ -157,11 +148,6 @@
 				<h2 class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
 					<span class="text-primary">Changelog</span>
-					<span
-						class="ml-2 rounded-lg p-1.5 text-xs font-light outline outline-[0.5] outline-primary"
-					>
-						Preview
-					</span>
 				</h2>
 			</a>
 
@@ -187,16 +173,6 @@
 			<!-- Right part -->
 			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
 				<nav class="flex items-center space-x-1">
-					<Button
-						href="https://svelte-changelog.vercel.app"
-						variant="ghost"
-						class="group mr-6 text-muted-foreground max-md:hidden"
-					>
-						Main website
-						<ArrowUpRight
-							class="ml-2 size-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary"
-						/>
-					</Button>
 					{#if isAuthenticating}
 						<Button variant="outline" size="icon" disabled>
 							<LoaderCircle class="size-4 animate-spin" />
