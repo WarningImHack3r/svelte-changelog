@@ -32,6 +32,10 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
 			},
 			{
+				repoName: "cli",
+				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
+			},
+			{
 				repoName: "vite-plugin-svelte",
 				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
 			},
