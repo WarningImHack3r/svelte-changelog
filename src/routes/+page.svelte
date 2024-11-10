@@ -609,8 +609,13 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else}
-												<span class="text-left text-lg group-hover:underline">
-													{releaseName}
+												<span class="flex flex-col text-left">
+													<span class="text-lg group-hover:underline">{releaseName}</span>
+													{#if releaseRepo && id === "others"}
+														<span class="text-sm text-muted-foreground">
+															{releaseRepo.repoName}
+														</span>
+													{/if}
 												</span>
 											{/if}
 											<div class="flex items-center gap-2 xs:hidden">
