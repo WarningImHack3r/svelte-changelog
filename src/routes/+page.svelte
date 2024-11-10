@@ -547,13 +547,16 @@
 							})()}
 							{@const releaseBody = (() => {
 								const body = release.body ?? "";
-								if (releaseRepo?.repoName !== "language-tools") return body;
+								if (!releaseRepo) return body;
 								// Add missing links to PRs in the release body
 								return body.replace(
-									/\(#(\d+)\)/g, // Match all `(#1234)` patterns
-									(_, prNumber) => {
-										const prUrl = `https://github.com/sveltejs/${releaseRepo.repoName}/pull/${prNumber}`;
-										return `([#${prNumber}](${prUrl}))`;
+									/[^[][#\d, ]*?#(\d+)(#issuecomment-\d+)?[#\d, ]*?[^\]]/g,
+									// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+									(match, prNumber, rest) => {
+										if (!rest) rest = "";
+										const prUrl = `https://github.com/sveltejs/${releaseRepo.repoName}/pull/${prNumber}${rest}`;
+										// replaceception
+										return match.replace(`#${prNumber}${rest}`, `[#${prNumber}${rest}](${prUrl})`);
 									}
 								);
 							})()}
