@@ -6,10 +6,10 @@ import globals from "globals";
 
 export default tseslint.config(
 	eslint.configs.recommended,
-	...tseslint.configs.recommended,
-	...svelte.configs["flat/recommended"],
+	tseslint.configs.recommended,
+	svelte.configs["flat/recommended"],
 	prettierConfig,
-	...svelte.configs["flat/prettier"],
+	svelte.configs["flat/prettier"],
 	{
 		languageOptions: {
 			globals: {
