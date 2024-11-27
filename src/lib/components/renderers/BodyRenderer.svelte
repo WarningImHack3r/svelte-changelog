@@ -1,11 +1,19 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
 	import { page } from "$app/stores";
-	let data: HTMLParagraphElement | undefined = undefined;
+
+	type Props = {
+		children?: Snippet;
+	};
+
+	let { children }: Props = $props();
+	let data = $state<HTMLParagraphElement>();
 
 	const org = $page.data.org;
 	const repo = $page.data.repo;
 
-	$: if (data) {
+	$effect(() => {
+		if (!data) return;
 		let replaced = data.innerHTML;
 		const issuesCandidates = replaced.matchAll(/ #(\d+)/g) || [];
 		for (let candidate of issuesCandidates) {
@@ -18,9 +26,9 @@
 			);
 		}
 		data.innerHTML = replaced;
-	}
+	});
 </script>
 
 <p bind:this={data}>
-	<slot />
+	{@render children?.()}
 </p>

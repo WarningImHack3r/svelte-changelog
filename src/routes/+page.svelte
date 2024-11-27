@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { confetti } from "@neoconfetti/svelte";
-	import type { TabsProps } from "bits-ui";
+	import type { TabsRootProps } from "bits-ui";
 	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
 	import type { Octokit } from "octokit";
 	import semver from "semver";
@@ -28,14 +28,14 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import { decodeBase64, scrollToAsync, toRelativeDateString, typedEntries } from "$lib/util";
 
-	export let data;
-	$: ({ repos } = data);
+	let { data } = $props();
+	let { repos } = $derived(data);
 
 	const octokit = getOctokit();
 
-	let currentTab: Tab = "svelte";
+	let currentTab = $state<Tab>("svelte");
 
-	function onTabChange(newTab: TabsProps["value"]) {
+	function onTabChange(newTab: TabsRootProps["value"]) {
 		const toSet = new Set(visitedTabs);
 		toSet.add(previousTab);
 		visitedTabs = [...toSet];
@@ -48,19 +48,23 @@
 
 	// Tab change from the store (layout)
 	const tabState = getTabState();
-	$: if ($tabState && $tabState !== currentTab) {
-		scrollToAsync().then(() => {
-			currentTab = $tabState;
-			onTabChange($tabState);
-		});
-	}
+	tabState.subscribe(newState => {
+		if (newState && newState !== currentTab) {
+			scrollToAsync().then(() => {
+				currentTab = newState;
+				onTabChange(newState);
+			});
+		}
+	});
 
 	// Tab change from the URL
 	const tabParam = queryParam<Tab>("tab");
-	$: if ($tabParam && availableTabs.includes($tabParam)) {
-		currentTab = $tabParam;
-		onTabChange($tabParam);
-	}
+	tabParam.subscribe(newParam => {
+		if (newParam && availableTabs.includes(newParam)) {
+			currentTab = newParam;
+			onTabChange(newParam);
+		}
+	});
 
 	type Releases = Awaited<
 		ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
@@ -191,11 +195,11 @@
 	}
 
 	// Data caching
-	let cachedResponses: Record<Tab, Releases> = {
+	let cachedResponses = $state<Record<Tab, Releases>>({
 		svelte: [],
 		kit: [],
 		others: []
-	};
+	});
 
 	export const snapshot: Snapshot<typeof cachedResponses> = {
 		capture: () => cachedResponses,
@@ -203,15 +207,12 @@
 	};
 
 	// Badges
-	let previousTab: Tab = currentTab;
-	let visitedTabs: Tab[] = [];
-	let loadedTabs: Tab[] = [];
-	let isLoadingDone = false;
-	$: if (loadedTabs.length === Object.keys(repos).length) {
-		isLoadingDone = true;
-	}
+	let previousTab: Tab = "svelte";
+	let visitedTabs = $state<Tab[]>([]);
+	let loadedTabs = $state<Tab[]>([]);
+	let isLoadingDone = $derived(loadedTabs.length === Object.keys(repos).length);
 	const lastVisitKey = "lastVisit" as const;
-	let lastVisitDateString = "";
+	let lastVisitDateString = $state("");
 
 	// Settings
 	let displaySvelteBetaReleases = persisted("displaySvelteBetaReleases", true);
@@ -477,7 +478,7 @@
 								)
 					).filter(Boolean)}
 					<Accordion.Root
-						multiple
+						type="multiple"
 						value={releases
 							// Only expand releases that are less than a week old
 							.filter(({ created_at }) => {
@@ -569,14 +570,14 @@
 								<!-- Trigger with release name, date and optional prerelease badge -->
 								<Accordion.Trigger class="group hover:no-underline">
 									<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
-										<!-- Trigger reactivity (please give me Svelte 5) -->
+										<!-- Trigger reactivity (is it needed?) -->
 										{#key isLoadingDone}
 											{#if releaseDate > new Date(lastVisitDateString) && !visitedTabs.includes(id)}
 												<div class="relative ml-1 mr-2 inline-flex">
 													<span
 														class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
-													/>
-													<span class="inline-flex size-2.5 rounded-full bg-primary" />
+													></span>
+													<span class="inline-flex size-2.5 rounded-full bg-primary"></span>
 												</div>
 											{/if}
 										{/key}
@@ -585,7 +586,7 @@
 												{@const newReleaseMajor = releaseRepo
 													?.versionFromTag(release.tag_name)
 													?.split(".")[0]}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														{#if index === 0 && currentTab === id}
 															<div
@@ -620,7 +621,7 @@
 											{/if}
 											<div class="flex items-center gap-2 xs:hidden">
 												{#if isLatestRelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge
 																class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
@@ -638,7 +639,7 @@
 													</Tooltip.Root>
 												{/if}
 												{#if isMajorRelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge>Major</Badge>
 														</Tooltip.Trigger>
@@ -647,7 +648,7 @@
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if release.prerelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge variant="outline" class="border-primary text-primary">
 																Prerelease
@@ -660,7 +661,7 @@
 														</Tooltip.Content>
 													</Tooltip.Root>
 												{:else if isMaintenanceRelease}
-													<Tooltip.Root openDelay={300}>
+													<Tooltip.Root delayDuration={300}>
 														<Tooltip.Trigger>
 															<Badge variant="outline" class="border-blue-600 text-blue-600">
 																Maintenance
@@ -678,7 +679,7 @@
 											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
-											<Tooltip.Root openDelay={300}>
+											<Tooltip.Root delayDuration={300}>
 												<Tooltip.Trigger>
 													{isOlderThanAWeek
 														? releaseDate.toLocaleDateString("en")
@@ -696,7 +697,7 @@
 										</span>
 										<div class="hidden items-center gap-2 xs:flex">
 											{#if isLatestRelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge
 															class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
@@ -714,7 +715,7 @@
 												</Tooltip.Root>
 											{/if}
 											{#if isMajorRelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge>Major</Badge>
 													</Tooltip.Trigger>
@@ -723,7 +724,7 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if release.prerelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge variant="outline" class="border-primary text-primary">
 															Prerelease
@@ -736,7 +737,7 @@
 													</Tooltip.Content>
 												</Tooltip.Root>
 											{:else if isMaintenanceRelease}
-												<Tooltip.Root openDelay={300}>
+												<Tooltip.Root delayDuration={300}>
 													<Tooltip.Trigger>
 														<Badge variant="outline" class="border-blue-600 text-blue-600">
 															Maintenance

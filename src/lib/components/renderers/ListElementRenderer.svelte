@@ -1,23 +1,31 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
 	import { ArrowRight } from "lucide-svelte";
 	import { Button } from "$lib/components/ui/button";
 
-	let data: HTMLLIElement | undefined = undefined;
+	type Props = {
+		children?: Snippet;
+	};
+
+	let { children }: Props = $props();
+
+	let data = $state<HTMLLIElement>();
 	let pullsLinks: string[] = [];
 	let issuesLinks: string[] = [];
-	let allLinks: string[] = [];
-
-	$: if (data) {
-		const links = data.innerHTML.match(/https?:\/\/[^"]+/g) || [];
-		for (const link of links) {
-			if (link.includes("/pull/")) {
-				pullsLinks.push(link);
-			} else if (link.includes("/issues/")) {
-				issuesLinks.push(link);
+	let allLinks = $derived.by(() => {
+		if (data) {
+			const links = data.innerHTML.match(/https?:\/\/[^"]+/g) || [];
+			for (const link of links) {
+				if (link.includes("/pull/")) {
+					pullsLinks.push(link);
+				} else if (link.includes("/issues/")) {
+					issuesLinks.push(link);
+				}
 			}
+			return [...pullsLinks, ...issuesLinks];
 		}
-		allLinks = [...pullsLinks, ...issuesLinks];
-	}
+		return [];
+	});
 
 	/**
 	 * Replaces a link with `https://github.com/username/repo/[pull|issues]/123`
@@ -39,7 +47,7 @@
 	class:font-semibold={data?.innerText.startsWith("breaking:")}
 	class="group *:inline"
 >
-	<slot />
+	{@render children?.()}
 	{#if allLinks.length > 0}
 		<Button
 			href={ghLinkToHref(allLinks[0] ?? "")}
