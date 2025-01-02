@@ -12,7 +12,7 @@
 	} from "lucide-svelte";
 
 	type CommonStatus = "open" | "closed";
-	type Props =
+	type PropsObj =
 		| {
 				type: "pull";
 				status: "draft" | CommonStatus | "merged";
@@ -22,12 +22,16 @@
 				status: CommonStatus | "solved";
 		  };
 
-	export let type: Props["type"];
-	export let status: Props["status"]; // NOT type-safe for now, waiting for Svelte 5 props declaration
+	type Props = {
+		type: PropsObj["type"];
+		status: PropsObj["status"];
+	};
 
-	let icon: ComponentType<Icon> | null = null;
-	let label = "";
-	let color = "";
+	let { type, status }: Props = $props();
+
+	let icon = $state<ComponentType<Icon>>();
+	let label = $state("");
+	let color = $state("");
 
 	switch (type) {
 		case "pull":
@@ -77,7 +81,8 @@
 
 <div class="flex items-center rounded-full px-4 py-2 text-white {color}">
 	{#if icon}
-		<svelte:component this={icon} class="mr-2 size-5" />
+		{@const SvelteComponent = icon}
+		<SvelteComponent class="mr-2 size-5" />
 	{/if}
 	<span class="font-semibold">{label}</span>
 </div>
