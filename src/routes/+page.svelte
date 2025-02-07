@@ -757,7 +757,7 @@
 										<MarkdownRenderer
 											markdown={releaseBody}
 											additionalPlugins={[{ renderer: { li: ListElementRenderer } }]}
-											class="prose-sm prose-p:my-0 max-w-full"
+											class="prose-sm max-w-full prose-p:my-0"
 										/>
 										<!-- Open the release on GitHub in a new tab, with a nice hover animation -->
 										<Button
