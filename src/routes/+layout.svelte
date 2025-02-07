@@ -29,7 +29,6 @@
 	const tabState = getTabState();
 
 	let { data, children } = $props();
-	let { repos } = $derived(data);
 
 	let scrollY = $state(0);
 
@@ -156,7 +155,7 @@
 			{#if scrollY > 150 && $page.route.id === "/"}
 				<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 					<li>
-						{#each typedEntries(repos) as [id, { name }]}
+						{#each typedEntries(data.repos) as [id, { name }]}
 							<Button
 								variant="ghost"
 								class="hover:bg-accent/75"

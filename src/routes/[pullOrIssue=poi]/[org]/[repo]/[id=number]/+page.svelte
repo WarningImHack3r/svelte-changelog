@@ -6,7 +6,6 @@
 	import PageRenderer from "./PageRenderer.svelte";
 
 	let { data } = $props();
-	let { org: owner, id, repo, pullOrIssue } = $derived(data);
 
 	const octokit = getOctokit();
 
@@ -77,7 +76,7 @@
 
 	// Data fetching
 	$effect(() => {
-		if (pullOrIssue === "pull") {
+		if (data.pullOrIssue === "pull") {
 			linkedPRsOrIssues = [];
 			issueInfo = {
 				info: undefined,
@@ -87,16 +86,16 @@
 			// Fetch PR info
 			octokit.rest.pulls
 				.get({
-					owner,
-					repo,
-					pull_number: id
+					owner: data.org,
+					repo: data.repo,
+					pull_number: data.id
 				})
 				.then(({ data }) => (prInfo.info = data));
 			octokit.rest.issues
 				.listComments({
-					owner,
-					repo,
-					issue_number: id
+					owner: data.org,
+					repo: data.repo,
+					issue_number: data.id
 				})
 				.then(
 					({ data }) =>
@@ -106,21 +105,23 @@
 				);
 			octokit.rest.pulls
 				.listCommits({
-					owner,
-					repo,
-					pull_number: id
+					owner: data.org,
+					repo: data.repo,
+					pull_number: data.id
 				})
 				.then(({ data }) => (prInfo.commits = data));
 			octokit.rest.pulls
 				.listFiles({
-					owner,
-					repo,
-					pull_number: id
+					owner: data.org,
+					repo: data.repo,
+					pull_number: data.id
 				})
 				.then(({ data }) => (prInfo.files = data));
 
 			// Fetch closing issues
-			linkedIssuesForPR(owner, repo, id).then(response => (linkedPRsOrIssues = response));
+			linkedIssuesForPR(data.org, data.repo, data.id).then(
+				response => (linkedPRsOrIssues = response)
+			);
 		} else {
 			linkedPRsOrIssues = [];
 			prInfo = {
@@ -132,16 +133,16 @@
 
 			octokit.rest.issues
 				.get({
-					owner,
-					repo,
-					issue_number: id
+					owner: data.org,
+					repo: data.repo,
+					issue_number: data.id
 				})
 				.then(({ data }) => (issueInfo.info = data));
 			octokit.rest.issues
 				.listComments({
-					owner,
-					repo,
-					issue_number: id
+					owner: data.org,
+					repo: data.repo,
+					issue_number: data.id
 				})
 				.then(
 					({ data }) =>
@@ -151,17 +152,17 @@
 				);
 			octokit.rest.issues
 				.listEventsForTimeline({
-					owner,
-					repo,
-					issue_number: id
+					owner: data.org,
+					repo: data.repo,
+					issue_number: data.id
 				})
 				.then(({ data: events }) =>
 					events.filter(
 						event =>
 							event.event === "cross-referenced" &&
 							"source" in event &&
-							event.source.issue?.repository?.owner.login === owner &&
-							event.source.issue?.repository?.name === repo
+							event.source.issue?.repository?.owner.login === data.org &&
+							event.source.issue?.repository?.name === data.repo
 					)
 				)
 				.then(async crEvents => {
@@ -171,16 +172,20 @@
 						if (!event.source.issue) continue;
 						const doesPRExist = await octokit.rest.pulls
 							.get({
-								owner,
-								repo,
+								owner: data.org,
+								repo: data.repo,
 								pull_number: event.source.issue.number
 							})
 							.then(() => true)
 							.catch(() => false);
 						if (!doesPRExist) continue;
 
-						const containedInPr = await linkedIssuesForPR(owner, repo, event.source.issue.number);
-						if (containedInPr.map(pr => pr.number).includes(id)) {
+						const containedInPr = await linkedIssuesForPR(
+							data.org,
+							data.repo,
+							event.source.issue.number
+						);
+						if (containedInPr.map(pr => pr.number).includes(data.id)) {
 							prEvents.push(event);
 						}
 					}
@@ -199,8 +204,8 @@
 			Promise.all(
 				prsToFetch.map(prNumber =>
 					octokit.rest.pulls.get({
-						owner,
-						repo,
+						owner: data.org,
+						repo: data.repo,
 						pull_number: prNumber
 					})
 				)
@@ -225,7 +230,7 @@
 </script>
 
 <svelte:head>
-	<title>Detail of {owner}/{repo}#{id} | Svelte Changelog</title>
+	<title>Detail of {data.org}/{data.repo}#{data.id} | Svelte Changelog</title>
 </svelte:head>
 
 {#if info}

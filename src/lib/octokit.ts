@@ -13,7 +13,7 @@ import { tokenKey } from "./types";
  */
 export function getOctokit() {
 	// TODO: Invert the condition to make the logged in token take precedence over the environment token
-	const hasTokenInDev = dev && env.PUBLIC_GITHUB_TOKEN;
+	const hasTokenInDev = dev && !!env.PUBLIC_GITHUB_TOKEN;
 	const octokit = new Octokit(
 		hasTokenInDev
 			? {

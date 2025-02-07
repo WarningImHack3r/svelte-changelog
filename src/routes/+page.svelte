@@ -29,7 +29,6 @@
 	import { decodeBase64, scrollToAsync, toRelativeDateString, typedEntries } from "$lib/util";
 
 	let { data } = $props();
-	let { repos } = $derived(data);
 
 	const octokit = getOctokit();
 
@@ -83,7 +82,7 @@
 			return Promise.resolve(cachedResponses[category]);
 		}
 		return Promise.all(
-			repos[category].repos.map(
+			data.repos[category].repos.map(
 				async (
 					{ changesMode, repoName, dataFilter, versionFromTag, changelogContentsReplacer },
 					repoIndex
@@ -210,7 +209,7 @@
 	let previousTab: Tab = "svelte";
 	let visitedTabs = $state<Tab[]>([]);
 	let loadedTabs = $state<Tab[]>([]);
-	let isLoadingDone = $derived(loadedTabs.length === Object.keys(repos).length);
+	let isLoadingDone = $derived(loadedTabs.length === Object.keys(data.repos).length);
 	const lastVisitKey = "lastVisit" as const;
 	let lastVisitDateString = $state("");
 
@@ -237,7 +236,7 @@
 </script>
 
 <MetaTags
-	title={repos[currentTab].name}
+	title={data.repos[currentTab].name}
 	titleTemplate="%s | Svelte Changelog"
 	description="A nice UI to stay up-to-date with Svelte releases"
 	canonical={PROD_URL}
@@ -267,7 +266,7 @@
 
 <div class="container py-8">
 	<h2 class="text-3xl font-bold">
-		<span class="text-primary">{repos[currentTab].name}</span>
+		<span class="text-primary">{data.repos[currentTab].name}</span>
 		Releases
 	</h2>
 	<Tabs.Root bind:value={currentTab} class="mt-8" onValueChange={onTabChange}>
@@ -275,7 +274,7 @@
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
-				{#each typedEntries(repos) as [id, { name }]}
+				{#each typedEntries(data.repos) as [id, { name }]}
 					<BlinkingBadge
 						storedDateItem="{id}MostRecentUpdate"
 						show={!visitedTabs.includes(id) && id !== currentTab}
@@ -315,12 +314,12 @@
 					for="beta-releases-{currentTab}"
 					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
-					Show {repos[currentTab].name} prereleases
+					Show {data.repos[currentTab].name} prereleases
 				</Label>
 			</div>
 		</div>
 		<!-- Tabs content creation -->
-		{#each typedEntries(repos) as [id, { name, repos: repoList }]}
+		{#each typedEntries(data.repos) as [id, { name, repos: repoList }]}
 			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
 				{#await fetchReleases(id)}
@@ -340,12 +339,13 @@
 					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{@const _ = (() => {
 						// Cache the response
-						cachedResponses[id] = releases;
+						// TODO: restore with refactor
+						// cachedResponses[id] = releases;
 
 						// Add tab to loaded tabs
-						const toSet = new Set(loadedTabs);
-						toSet.add(id);
-						loadedTabs = [...toSet];
+						// const toSet = new Set(loadedTabs);
+						// toSet.add(id);
+						// loadedTabs = [...toSet];
 
 						// Update the most recent date of a release of the list
 						const latestRelease = releases.sort(
@@ -561,6 +561,69 @@
 									}
 								);
 							})()}
+
+							{#snippet badges()}
+								{#if isLatestRelease}
+									<Tooltip.Provider>
+										<Tooltip.Root delayDuration={300}>
+											<Tooltip.Trigger>
+												<Badge
+													class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
+												>
+													Latest
+												</Badge>
+											</Tooltip.Trigger>
+											<Tooltip.Content>
+												{#if id === "others"}
+													This is a latest stable release
+												{:else}
+													This is the latest stable release of {name}
+												{/if}
+											</Tooltip.Content>
+										</Tooltip.Root>
+									</Tooltip.Provider>
+								{/if}
+								{#if isMajorRelease}
+									<Tooltip.Provider>
+										<Tooltip.Root delayDuration={300}>
+											<Tooltip.Trigger>
+												<Badge>Major</Badge>
+											</Tooltip.Trigger>
+											<Tooltip.Content>Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)</Tooltip.Content>
+										</Tooltip.Root>
+									</Tooltip.Provider>
+								{:else if release.prerelease}
+									<Tooltip.Provider>
+										<Tooltip.Root delayDuration={300}>
+											<Tooltip.Trigger>
+												<Badge variant="outline" class="border-primary text-primary">
+													Prerelease
+												</Badge>
+											</Tooltip.Trigger>
+											<Tooltip.Content>
+												This version is an alpha or a beta, unstable version{id === "others"
+													? ""
+													: ` of ${name}`}
+											</Tooltip.Content>
+										</Tooltip.Root>
+									</Tooltip.Provider>
+								{:else if isMaintenanceRelease}
+									<Tooltip.Provider>
+										<Tooltip.Root delayDuration={300}>
+											<Tooltip.Trigger>
+												<Badge variant="outline" class="border-blue-600 text-blue-600">
+													Maintenance
+												</Badge>
+											</Tooltip.Trigger>
+											<Tooltip.Content>
+												An update bringing bug fixes and minor improvements to an older major
+												version
+											</Tooltip.Content>
+										</Tooltip.Root>
+									</Tooltip.Provider>
+								{/if}
+							{/snippet}
+
 							<Accordion.Item
 								value={release.id.toString()}
 								class={isMajorRelease && id !== "others" && index < 3
@@ -586,29 +649,31 @@
 												{@const newReleaseMajor = releaseRepo
 													?.versionFromTag(release.tag_name)
 													?.split(".")[0]}
-												<Tooltip.Root delayDuration={300}>
-													<Tooltip.Trigger>
-														{#if index === 0 && currentTab === id}
-															<div
-																class="mx-auto"
-																use:confetti={{
-																	duration: 5000,
-																	colors: ["orange", "white"]
-																}}
-															></div>
-														{/if}
-														<span class="majorGradient text-left text-xl">
-															{releaseName}
-														</span>
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														{#if newReleaseMajor}
-															{name} {newReleaseMajor} is available!
-														{:else}
-															A new major of {name} is available!
-														{/if}
-													</Tooltip.Content>
-												</Tooltip.Root>
+												<Tooltip.Provider>
+													<Tooltip.Root delayDuration={300}>
+														<Tooltip.Trigger>
+															{#if index === 0 && currentTab === id}
+																<div
+																	class="mx-auto"
+																	use:confetti={{
+																		duration: 5000,
+																		colors: ["orange", "white"]
+																	}}
+																></div>
+															{/if}
+															<span class="majorGradient text-left text-xl">
+																{releaseName}
+															</span>
+														</Tooltip.Trigger>
+														<Tooltip.Content>
+															{#if newReleaseMajor}
+																{name} {newReleaseMajor} is available!
+															{:else}
+																A new major of {name} is available!
+															{/if}
+														</Tooltip.Content>
+													</Tooltip.Root>
+												</Tooltip.Provider>
 											{:else}
 												<span class="flex flex-col text-left">
 													<span class="text-lg group-hover:underline">{releaseName}</span>
@@ -620,135 +685,33 @@
 												</span>
 											{/if}
 											<div class="flex items-center gap-2 xs:hidden">
-												{#if isLatestRelease}
-													<Tooltip.Root delayDuration={300}>
-														<Tooltip.Trigger>
-															<Badge
-																class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
-															>
-																Latest
-															</Badge>
-														</Tooltip.Trigger>
-														<Tooltip.Content>
-															{#if id === "others"}
-																This is a latest stable release
-															{:else}
-																This is the latest stable release of {name}
-															{/if}
-														</Tooltip.Content>
-													</Tooltip.Root>
-												{/if}
-												{#if isMajorRelease}
-													<Tooltip.Root delayDuration={300}>
-														<Tooltip.Trigger>
-															<Badge>Major</Badge>
-														</Tooltip.Trigger>
-														<Tooltip.Content>
-															Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
-														</Tooltip.Content>
-													</Tooltip.Root>
-												{:else if release.prerelease}
-													<Tooltip.Root delayDuration={300}>
-														<Tooltip.Trigger>
-															<Badge variant="outline" class="border-primary text-primary">
-																Prerelease
-															</Badge>
-														</Tooltip.Trigger>
-														<Tooltip.Content>
-															This version is an alpha or a beta, unstable version{id === "others"
-																? ""
-																: ` of ${name}`}
-														</Tooltip.Content>
-													</Tooltip.Root>
-												{:else if isMaintenanceRelease}
-													<Tooltip.Root delayDuration={300}>
-														<Tooltip.Trigger>
-															<Badge variant="outline" class="border-blue-600 text-blue-600">
-																Maintenance
-															</Badge>
-														</Tooltip.Trigger>
-														<Tooltip.Content>
-															An update bringing bug fixes and minor improvements to an older major
-															version
-														</Tooltip.Content>
-													</Tooltip.Root>
-												{/if}
+												{@render badges()}
 											</div>
 										</div>
 										<span
 											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
-											<Tooltip.Root delayDuration={300}>
-												<Tooltip.Trigger>
-													{isOlderThanAWeek
-														? releaseDate.toLocaleDateString("en")
-														: toRelativeDateString(releaseDate)}
-												</Tooltip.Trigger>
-												<Tooltip.Content>
-													{isOlderThanAWeek
-														? toRelativeDateString(releaseDate)
-														: new Intl.DateTimeFormat("en", {
-																dateStyle: "medium",
-																timeStyle: "short"
-															}).format(releaseDate)}
-												</Tooltip.Content>
-											</Tooltip.Root>
+											<Tooltip.Provider>
+												<Tooltip.Root delayDuration={300}>
+													<Tooltip.Trigger>
+														{isOlderThanAWeek
+															? releaseDate.toLocaleDateString("en")
+															: toRelativeDateString(releaseDate)}
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														{isOlderThanAWeek
+															? toRelativeDateString(releaseDate)
+															: new Intl.DateTimeFormat("en", {
+																	dateStyle: "medium",
+																	timeStyle: "short"
+																}).format(releaseDate)}
+													</Tooltip.Content>
+												</Tooltip.Root>
+											</Tooltip.Provider>
 										</span>
 										<div class="hidden items-center gap-2 xs:flex">
-											{#if isLatestRelease}
-												<Tooltip.Root delayDuration={300}>
-													<Tooltip.Trigger>
-														<Badge
-															class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
-														>
-															Latest
-														</Badge>
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														{#if id === "others"}
-															This is a latest stable release
-														{:else}
-															This is the latest stable release of {name}
-														{/if}
-													</Tooltip.Content>
-												</Tooltip.Root>
-											{/if}
-											{#if isMajorRelease}
-												<Tooltip.Root delayDuration={300}>
-													<Tooltip.Trigger>
-														<Badge>Major</Badge>
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
-													</Tooltip.Content>
-												</Tooltip.Root>
-											{:else if release.prerelease}
-												<Tooltip.Root delayDuration={300}>
-													<Tooltip.Trigger>
-														<Badge variant="outline" class="border-primary text-primary">
-															Prerelease
-														</Badge>
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														This version is an alpha or a beta, unstable version{id === "others"
-															? ""
-															: ` of ${name}`}
-													</Tooltip.Content>
-												</Tooltip.Root>
-											{:else if isMaintenanceRelease}
-												<Tooltip.Root delayDuration={300}>
-													<Tooltip.Trigger>
-														<Badge variant="outline" class="border-blue-600 text-blue-600">
-															Maintenance
-														</Badge>
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														An update bringing bug fixes and minor improvements to an older major
-														version
-													</Tooltip.Content>
-												</Tooltip.Root>
-											{/if}
+											{@render badges()}
 										</div>
 									</div>
 								</Accordion.Trigger>

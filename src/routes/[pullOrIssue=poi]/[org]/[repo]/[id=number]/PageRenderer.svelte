@@ -358,16 +358,18 @@
 										<Badge variant="outline" class="text-green-500">Verified</Badge>
 									{/if}
 									{#if commit.sha}
-										<Tooltip.Root delayDuration={300}>
-											<Tooltip.Trigger>
-												<span class="font-mono text-muted-foreground">
-													{commit.sha.slice(0, 7)}
-												</span>
-											</Tooltip.Trigger>
-											<Tooltip.Content>
-												<span class="font-mono">{commit.sha}</span>
-											</Tooltip.Content>
-										</Tooltip.Root>
+										<Tooltip.Provider>
+											<Tooltip.Root delayDuration={300}>
+												<Tooltip.Trigger>
+													<span class="font-mono text-muted-foreground">
+														{commit.sha.slice(0, 7)}
+													</span>
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													<span class="font-mono">{commit.sha}</span>
+												</Tooltip.Content>
+											</Tooltip.Root>
+										</Tooltip.Provider>
 									{/if}
 								</div>
 							</div>
