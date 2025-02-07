@@ -115,7 +115,7 @@
 			<MarkdownRenderer
 				markdown={info.title}
 				inline
-				class="prose-xl xs:prose-2xl text-foreground group-hover:underline xs:text-3xl"
+				class="prose-xl text-foreground xs:prose-2xl group-hover:underline xs:text-3xl"
 			/>
 			<span class="ml-1 font-light text-muted-foreground group-hover:underline">#{info.number}</span
 			>
