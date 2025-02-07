@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
+import typography from "@tailwindcss/typography";
 import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
@@ -73,6 +74,15 @@ const config: Config = {
 			fontFamily: {
 				sans: [...defaultTheme.fontFamily.sans]
 			},
+			typography: {
+				DEFAULT: {
+					css: {
+						a: {
+							color: 'theme("colors.primary.DEFAULT")'
+						}
+					}
+				}
+			},
 			keyframes: {
 				"accordion-down": {
 					from: { height: "0" },
@@ -94,7 +104,7 @@ const config: Config = {
 			}
 		}
 	},
-	plugins: [tailwindcssAnimate]
+	plugins: [typography, tailwindcssAnimate]
 };
 
 export default config;

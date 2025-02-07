@@ -727,7 +727,7 @@
 										<Button
 											href={release.html_url}
 											target="_blank"
-											class="group mb-4 ml-auto mr-8 font-semibold dark:text-black sm:ml-4 sm:mt-auto"
+											class="group mb-4 ml-auto mr-8 gap-0 font-semibold dark:text-black sm:ml-4 sm:mt-auto"
 										>
 											Open on <img src="/github.svg" alt="GitHub" class="ml-1.5 size-5" />
 											<ArrowUpRight

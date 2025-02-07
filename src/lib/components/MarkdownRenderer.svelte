@@ -19,7 +19,7 @@
 	};
 
 	let {
-		markdown,
+		markdown: md,
 		inline = false,
 		parseRawHtml = false,
 		additionalPlugins = [],
@@ -38,7 +38,7 @@
 	)}
 >
 	<Markdown
-		md={markdown}
+		{md}
 		plugins={[
 			gfmPlugin(),
 			...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),
