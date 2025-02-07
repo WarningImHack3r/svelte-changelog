@@ -54,8 +54,8 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
       bits-ui:
-        specifier: ^1.0.0-next.64
-        version: 1.0.0-next.64(svelte@5.2.9)
+        specifier: 1.0.0-next.74
+        version: 1.0.0-next.74(svelte@5.2.9)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1245,11 +1245,11 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bits-ui@1.0.0-next.64:
-    resolution: {integrity: sha512-r1JThjUSKwTkaB1onwIs7ZQoqygSsWhjBaUElCS8m8CCbY1RxmTz0HnbN+Xp2oJgJ4YQgIfiXTG3170l80FEgg==}
+  bits-ui@1.0.0-next.74:
+    resolution: {integrity: sha512-cazru5+NBKBCeK9KCV/OFy5I/B1zxOJGl5WpInzPTEPla5G9qZK9nrnXr6BbExKdhgusTiMm3h4Yvq4E5WHGJA==}
     engines: {node: '>=18', pnpm: '>=8.7.0'}
     peerDependencies:
-      svelte: ^5.0.0-next.1
+      svelte: ^5.0.0
 
   bottleneck@2.19.5:
     resolution: {integrity: sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==}
@@ -1476,9 +1476,6 @@ packages:
 
   esm-env@1.0.0:
     resolution: {integrity: sha512-Cf6VksWPsTuW01vU9Mk/3vRue91Zevka5SjyNf3nEpokFRuqt/KjUQoGAwq9qMmhpLTHmXzSIrFRw8zxWzmFBA==}
-
-  esm-env@1.1.4:
-    resolution: {integrity: sha512-oO82nKPHKkzIj/hbtuDYy/JHqBHFlMIW36SDiPCVsj87ntDLcWN+sJ1erdVryd4NxODacFTsdrIE3b7IamqbOg==}
 
   esm-env@1.2.2:
     resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
@@ -3691,12 +3688,12 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
-  bits-ui@1.0.0-next.64(svelte@5.2.9):
+  bits-ui@1.0.0-next.74(svelte@5.2.9):
     dependencies:
       '@floating-ui/core': 1.6.8
       '@floating-ui/dom': 1.6.12
       '@internationalized/date': 3.6.0
-      esm-env: 1.1.4
+      esm-env: 1.2.2
       runed: 0.15.4(svelte@5.2.9)
       svelte: 5.2.9
       svelte-toolbelt: 0.4.6(svelte@5.2.9)
@@ -3968,8 +3965,6 @@ snapshots:
       - supports-color
 
   esm-env@1.0.0: {}
-
-  esm-env@1.1.4: {}
 
   esm-env@1.2.2: {}
 
@@ -4957,7 +4952,7 @@ snapshots:
 
   runed@0.15.4(svelte@5.2.9):
     dependencies:
-      esm-env: 1.1.4
+      esm-env: 1.2.2
       svelte: 5.2.9
 
   sade@1.8.1:
