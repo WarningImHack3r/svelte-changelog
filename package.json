@@ -15,9 +15,9 @@
 	"devDependencies": {
 		"@neoconfetti/svelte": "^2.2.1",
 		"@octokit/graphql-schema": "^15.25.0",
-        "@shikijs/langs": "^1.25.1",
-        "@shikijs/rehype": "^1.25.1",
-        "@shikijs/themes": "^1.25.1",
+		"@shikijs/langs": "^1.25.1",
+		"@shikijs/rehype": "^1.25.1",
+		"@shikijs/themes": "^1.25.1",
 		"@sveltejs/adapter-vercel": "^5.5.2",
 		"@sveltejs/kit": "^2.15.1",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
