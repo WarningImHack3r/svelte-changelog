@@ -1,15 +1,15 @@
 <script module>
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-	import svelte from "shiki/langs/svelte.mjs";
-	import typescript from "shiki/langs/typescript.mjs";
-	import javascript from "shiki/langs/javascript.mjs";
-	import html from "shiki/langs/html.mjs";
-	import css from "shiki/langs/css.mjs";
-	import json from "shiki/langs/json.mjs";
-	import shell from "shiki/langs/shell.mjs";
-	import githubLight from "shiki/themes/github-light-default.mjs";
-	import githubDark from "shiki/themes/github-dark-default.mjs";
+	import svelte from "@shikijs/langs/svelte";
+	import typescript from "@shikijs/langs/typescript";
+	import javascript from "@shikijs/langs/javascript";
+	import html from "@shikijs/langs/html";
+	import css from "@shikijs/langs/css";
+	import json from "@shikijs/langs/json";
+	import shell from "@shikijs/langs/shell";
+	import githubLight from "@shikijs/themes/github-light-default";
+	import githubDark from "@shikijs/themes/github-dark-default";
 
 	const highlighter = createHighlighterCoreSync({
 		langs: [svelte, typescript, javascript, html, css, json, shell],
