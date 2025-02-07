@@ -3,7 +3,7 @@ import defaultTheme from "tailwindcss/defaultTheme";
 import typography from "@tailwindcss/typography";
 import tailwindcssAnimate from "tailwindcss-animate";
 
-const config: Config = {
+export default {
 	darkMode: ["class"],
 	content: ["./src/**/*.{html,js,svelte,ts}"],
 	safelist: ["dark"],
@@ -105,6 +105,4 @@ const config: Config = {
 		}
 	},
 	plugins: [typography, tailwindcssAnimate]
-};
-
-export default config;
+} satisfies Config;
