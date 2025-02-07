@@ -282,10 +282,10 @@
 								<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
 										<Sun
-											class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+											class="!size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
 										/>
 										<Moon
-											class="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+											class="absolute !size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
 										/>
 									</div>
 									<ChevronDown
