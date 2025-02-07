@@ -1,19 +1,25 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
 	import { cn } from "$lib/utils";
 
-	let className: string | undefined | null = undefined;
-	export { className as class };
+	type Props = {
+		class?: string | undefined | null;
+		stepIcon?: Snippet;
+		children?: Snippet;
+	};
+
+	let { class: className = undefined, stepIcon, children }: Props = $props();
 </script>
 
 <div class={cn("step relative", className)}>
 	<span
 		class="absolute -ml-[50px] -mt-0.5 inline-flex size-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-[1px] font-mono text-base font-normal"
 	>
-		{#if $$slots.stepIcon}
-			<slot name="stepIcon" />
+		{#if stepIcon}
+			{@render stepIcon?.()}
 		{:else}
 			<span class="[counter-increment:step] before:content-[counter(step)]"></span>
 		{/if}
 	</span>
-	<slot />
+	{@render children?.()}
 </div>

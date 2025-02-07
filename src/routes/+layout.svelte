@@ -5,7 +5,7 @@
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { Octokit } from "octokit";
@@ -28,42 +28,46 @@
 	initTabState();
 	const tabState = getTabState();
 
-	export let data;
-	$: ({ repos } = data);
+	let { data, children } = $props();
 
-	let scrollY = 0;
+	let scrollY = $state(0);
 
 	// User dropdown
 	const token = persisted(tokenKey, "", {
 		serializer: plainTextSerializer
 	});
 	const toastedTokens = persisted<string[]>("toastedTokens", []);
-	let isAuthenticating = false;
-	let authenticatingToastId: string | number | undefined;
-	$: if (isAuthenticating && !$toastedTokens.includes($token)) {
-		authenticatingToastId = toast.loading("Authenticating...", {
-			description: "Logging you in with GitHub"
-		});
-	}
-	let user:
-		| Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
-		| undefined = undefined;
-	$: if (user && !$toastedTokens.includes($token)) {
-		if (authenticatingToastId) {
-			toast.info("Authenticated", {
-				id: authenticatingToastId
+	let isAuthenticating = $state(false);
+	let authenticatingToastId = $state<string | number>();
+	let user =
+		$state<
+			Awaited<ReturnType<InstanceType<typeof Octokit>["rest"]["users"]["getAuthenticated"]>>["data"]
+		>();
+	toastedTokens.subscribe(tokens => {
+		if (tokens.includes($token)) return;
+		if (isAuthenticating) {
+			authenticatingToastId = toast.loading("Authenticating...", {
+				description: "Logging you in with GitHub"
 			});
-			authenticatingToastId = undefined;
 		}
-		toast.success("Authenticated", {
-			description: `Welcome, ${user.login}!`
-		});
-		toastedTokens.update(toasted => [...new Set([...toasted, $token])]);
-	}
-	$: if ($token) {
+		if (user) {
+			if (authenticatingToastId) {
+				toast.info("Authenticated", {
+					id: authenticatingToastId
+				});
+				authenticatingToastId = undefined;
+			}
+			toast.success("Authenticated", {
+				description: `Welcome, ${user.login}!`
+			});
+			toastedTokens.update(toasted => [...new Set([...toasted, $token])]);
+		}
+	});
+	token.subscribe(newToken => {
+		if (!newToken) return;
 		isAuthenticating = true;
 		user = undefined;
-		new Octokit({ auth: $token }).rest.users
+		new Octokit({ auth: newToken }).rest.users
 			.getAuthenticated()
 			.then(({ data }) => {
 				isAuthenticating = false;
@@ -72,8 +76,8 @@
 			.catch(() => {
 				isAuthenticating = false;
 			});
-	}
-	let userDropdownOpen = false;
+	});
+	let userDropdownOpen = $state(false);
 
 	// Theme selector
 	type Theme = {
@@ -98,11 +102,11 @@
 			icon: Monitor
 		}
 	];
-	let theme: "light" | "dark" | "system";
-	let themeSwitcherOpen = false;
+	let theme = $state<"light" | "dark" | "system">("system");
+	let themeSwitcherOpen = $state(false);
 
 	// News
-	let newsToDisplay: (typeof news)[number] | undefined;
+	let newsToDisplay = $state<(typeof news)[number]>();
 	const closedNewsKey = "closedNews";
 	function getClosedNewsIds() {
 		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
@@ -138,7 +142,7 @@
 	>
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
-			<a href="/" class="flex items-center gap-2" on:click={() => tabState.set("svelte")}>
+			<a href="/" class="flex items-center gap-2" onclick={() => tabState.set("svelte")}>
 				<img src={FAVICON_URL} alt="Svelte" class="size-8" />
 				<h2 class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
@@ -148,14 +152,14 @@
 
 			<!-- Navigation -->
 			<!-- TODO: don't hardcode scrollY? -->
-			{#if scrollY > 150 && $page.route.id === "/"}
+			{#if scrollY > 150 && page.route.id === "/"}
 				<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 					<li>
-						{#each typedEntries(repos) as [id, { name }]}
+						{#each typedEntries(data.repos) as [id, { name }]}
 							<Button
 								variant="ghost"
 								class="hover:bg-accent/75"
-								on:click={() => tabState.set(id)}
+								onclick={() => tabState.set(id)}
 								disabled={$tabState === id}
 							>
 								{name}
@@ -180,21 +184,23 @@
 						</Button>
 					{:else}
 						<DropdownMenu.Root bind:open={userDropdownOpen}>
-							<DropdownMenu.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
-									<Avatar.Root class="size-6">
-										<Avatar.Image src={user.avatar_url} alt={user.login} />
-										<Avatar.Fallback>
-											{user.login.charAt(0).toUpperCase()}
-										</Avatar.Fallback>
-									</Avatar.Root>
-									<ChevronDown
-										class="size-4 opacity-50 transition-transform {userDropdownOpen
-											? 'rotate-180'
-											: ''}"
-									/>
-									<span class="sr-only">Manage user</span>
-								</Button>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
+										<Avatar.Root class="size-6">
+											<Avatar.Image src={user?.avatar_url} alt={user?.login} />
+											<Avatar.Fallback>
+												{user?.login.charAt(0).toUpperCase()}
+											</Avatar.Fallback>
+										</Avatar.Root>
+										<ChevronDown
+											class="size-4 opacity-50 transition-transform {userDropdownOpen
+												? 'rotate-180'
+												: ''}"
+										/>
+										<span class="sr-only">Manage user</span>
+									</Button>
+								{/snippet}
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content class="max-w-60">
 								<DropdownMenu.Label class="font-normal">
@@ -243,7 +249,7 @@
 								</DropdownMenu.Label>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item
-									on:click={() => {
+									onclick={() => {
 										toastedTokens.update(toasted => toasted.filter(t => t !== $token));
 										localStorage.removeItem(tokenKey);
 										user = undefined;
@@ -271,23 +277,25 @@
 						<span class="sr-only">Visit the repository</span>
 					</Button>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="ghost" size="icon" class="w-14 gap-1">
-								<div class="flex items-center">
-									<Sun
-										class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+						<DropdownMenu.Trigger>
+							{#snippet child({ props })}
+								<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
+									<div class="flex items-center">
+										<Sun
+											class="!size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+										/>
+										<Moon
+											class="absolute !size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+										/>
+									</div>
+									<ChevronDown
+										class="size-4 opacity-50 transition-transform {themeSwitcherOpen
+											? 'rotate-180'
+											: ''}"
 									/>
-									<Moon
-										class="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-									/>
-								</div>
-								<ChevronDown
-									class="size-4 opacity-50 transition-transform {themeSwitcherOpen
-										? 'rotate-180'
-										: ''}"
-								/>
-								<span class="sr-only">Change theme</span>
-							</Button>
+									<span class="sr-only">Change theme</span>
+								</Button>
+							{/snippet}
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
 							<DropdownMenu.Label>Theme</DropdownMenu.Label>
@@ -298,13 +306,13 @@
 										class="cursor-pointer data-[disabled]:opacity-75"
 										value={availableTheme.value}
 										disabled={theme === availableTheme.value}
-										on:click={() => {
+										onclick={() => {
 											return availableTheme.value === "system"
 												? resetMode()
 												: setMode(availableTheme.value);
 										}}
 									>
-										<svelte:component this={availableTheme.icon} class="mr-2 size-4" />
+										<availableTheme.icon class="mr-2 size-4" />
 										<span>{availableTheme.label}</span>
 									</DropdownMenu.RadioItem>
 								{/each}
@@ -321,7 +329,7 @@
 			<Button
 				variant="ghost"
 				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:rotate-90 hover:scale-110 hover:bg-background/0"
-				on:click={() => {
+				onclick={() => {
 					if (!newsToDisplay) return;
 					localStorage.setItem(
 						closedNewsKey,
@@ -338,7 +346,7 @@
 
 <svelte:window bind:scrollY />
 
-<slot />
+{@render children?.()}
 
 <footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">

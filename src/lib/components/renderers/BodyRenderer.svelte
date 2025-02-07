@@ -1,11 +1,16 @@
 <script lang="ts">
-	import { page } from "$app/stores";
-	let data: HTMLParagraphElement | undefined = undefined;
+	import type { Snippet } from "svelte";
+	import { page } from "$app/state";
 
-	const org = $page.data.org;
-	const repo = $page.data.repo;
+	type Props = {
+		children?: Snippet;
+	};
 
-	$: if (data) {
+	let { children }: Props = $props();
+	let data = $state<HTMLParagraphElement>();
+
+	$effect(() => {
+		if (!data) return;
 		let replaced = data.innerHTML;
 		const issuesCandidates = replaced.matchAll(/ #(\d+)/g) || [];
 		for (let candidate of issuesCandidates) {
@@ -14,13 +19,13 @@
 			if (!wholeMatch || !matchedGroup) continue;
 			replaced = replaced.replace(
 				wholeMatch,
-				` <a href="https://github.com/${org}/${repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
+				` <a href="https://github.com/${page.data.org}/${page.data.repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
 			);
 		}
 		data.innerHTML = replaced;
-	}
+	});
 </script>
 
 <p bind:this={data}>
-	<slot />
+	{@render children?.()}
 </p>

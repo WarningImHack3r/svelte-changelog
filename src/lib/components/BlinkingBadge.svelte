@@ -1,19 +1,24 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, type Snippet } from "svelte";
 	import { get } from "svelte/store";
 	import { persisted } from "svelte-persisted-store";
 	import { plainTextSerializer } from "$lib/stores";
 
-	/**
-	 * The name of the localStorage item to get the date from.
-	 */
-	export let storedDateItem: string;
-	/**
-	 * Whether to show the pulse animation.
-	 */
-	export let show = false;
+	type Props = {
+		/**
+		 * The name of the localStorage item to get the date from.
+		 */
+		storedDateItem: string;
+		/**
+		 * Whether to show the pulse animation.
+		 */
+		show?: boolean;
+		children?: Snippet;
+	};
 
-	let shouldShowPulse = false;
+	let { storedDateItem, show = false, children }: Props = $props();
+
+	let shouldShowPulse = $state(false);
 
 	onMount(() => {
 		if (!storedDateItem) return;
@@ -30,14 +35,14 @@
 
 {#if show && shouldShowPulse}
 	<div class="relative inline-flex">
-		<slot />
+		{@render children?.()}
 		<span class="absolute right-0 top-0 -mr-0.5 -mt-0.5 flex size-2.5">
 			<span
 				class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
-			/>
-			<span class="inline-flex size-2.5 rounded-full bg-primary" />
+			></span>
+			<span class="inline-flex size-2.5 rounded-full bg-primary"></span>
 		</span>
 	</div>
 {:else}
-	<slot />
+	{@render children?.()}
 {/if}

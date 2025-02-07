@@ -10,13 +10,21 @@
 	import rehypeRaw from "rehype-raw";
 	import { cn } from "$lib/utils";
 
-	export let markdown: string;
-	export let inline = false;
-	export let parseRawHtml = false;
-	export let additionalPlugins: Plugin[] = [];
+	type Props = {
+		markdown: string;
+		inline?: boolean;
+		parseRawHtml?: boolean;
+		additionalPlugins?: Plugin[];
+		class?: string | undefined | null;
+	};
 
-	let className: string | undefined | null = undefined;
-	export { className as class };
+	let {
+		markdown: md,
+		inline = false,
+		parseRawHtml = false,
+		additionalPlugins = [],
+		class: className = undefined
+	}: Props = $props();
 </script>
 
 <!-- TODO: actually figure out how to overflow-x-auto the code blocks -->
@@ -30,7 +38,7 @@
 	)}
 >
 	<Markdown
-		md={markdown}
+		{md}
 		plugins={[
 			gfmPlugin(),
 			...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),

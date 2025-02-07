@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 	import svelte from "@shikijs/langs/svelte";
@@ -58,52 +58,55 @@
 		}).format(new Date(date));
 	}
 
-	export let info:
-		| Awaited<ReturnType<Pulls["get"]>>["data"]
-		| Awaited<ReturnType<Issues["get"]>>["data"];
-	export let comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
-	export let commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
-	export let files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
-	export let linkedEntities: LinkedEntity[];
+	type Props = {
+		info: Awaited<ReturnType<Pulls["get"]>>["data"] | Awaited<ReturnType<Issues["get"]>>["data"];
+		comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
+		commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
+		files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
+		linkedEntities: LinkedEntity[];
+	};
 
-	let type: "issue" | "pull";
-	let org: string;
-	let repo: string;
-	$: if (info.html_url) {
-		// https://github.com/ org/repo/[pull|issues]/number
-		const [urlOrg, urlRepo, urlType] = info.html_url.replace("https://github.com/", "").split("/");
-		org = urlOrg ?? "";
-		repo = urlRepo ?? "";
-		type = urlType === "pull" ? "pull" : "issue";
-	}
+	let { info, comments, commits, files, linkedEntities }: Props = $props();
 
-	let rightPartInfo: { title: string; value: string }[] = [];
-	$: if (info) {
-		rightPartInfo = [
-			...(info.closed_at
-				? [
-						{
-							title: "merged" in info && info.merged ? "Merged at" : "Closed at",
-							value: formatToDateTime(info.closed_at)
-						}
-					]
-				: []),
-			{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
-			...("requested_reviewers" in info
-				? [
-						{
-							title: "Reviewers",
-							value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
-						}
-					]
-				: []),
-			{
-				title: "Labels",
-				value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
-			},
-			{ title: "Milestone", value: info.milestone?.title || "None" }
-		];
-	}
+	// https://github.com/ org/repo/[pull|issues]/number
+	let org = $derived(info.html_url?.replace("https://github.com/", "").split("/")[0] ?? "");
+	let repo = $derived(info.html_url?.replace("https://github.com/", "").split("/")[1] ?? "");
+	let type = $derived.by(() => {
+		if (!info.html_url) return "issue" as const;
+		return info.html_url.replace("https://github.com/", "").split("/")[2] === "pull"
+			? ("pull" as const)
+			: ("issue" as const);
+	});
+
+	let rightPartInfo = $derived.by(() => {
+		if (info) {
+			return [
+				...(info.closed_at
+					? [
+							{
+								title: "merged" in info && info.merged ? "Merged at" : "Closed at",
+								value: formatToDateTime(info.closed_at)
+							}
+						]
+					: []),
+				{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
+				...("requested_reviewers" in info
+					? [
+							{
+								title: "Reviewers",
+								value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
+							}
+						]
+					: []),
+				{
+					title: "Labels",
+					value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
+				},
+				{ title: "Milestone", value: info.milestone?.title || "None" }
+			];
+		}
+		return [];
+	});
 </script>
 
 <div class="container py-8">
@@ -122,7 +125,7 @@
 		<h3 class="text-2xl font-semibold tracking-tight">
 			{type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1 ? "s" : ""}
 		</h3>
-		<Accordion.Root class="mb-12">
+		<Accordion.Root type="single" class="mb-12">
 			{#each linkedEntities as entity}
 				<Accordion.Item value={entity.number.toString()}>
 					<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:flex-shrink-0">
@@ -142,24 +145,28 @@
 							<div
 								class="mr-4 flex flex-shrink-0 flex-col items-end gap-1 text-right text-sm text-muted-foreground xs:ml-auto xs:flex-row xs:items-center"
 							>
-								<div class="flex items-center gap-2">
-									<Avatar.Root class="size-6">
-										<Avatar.Image src={entity.author.avatarUrl} alt={entity.author.login} />
-										<Avatar.Fallback>
-											{entity.author.login.charAt(0).toUpperCase()}
-										</Avatar.Fallback>
-									</Avatar.Root>
-									<span class="font-semibold">{entity.author.login}</span>
-								</div>
-								<span class="hidden xs:block">•</span>
-								<span>{formatToDateTime(entity.createdAt)}</span>
+								{#if "author" in entity}
+									<div class="flex items-center gap-2">
+										<Avatar.Root class="size-6">
+											<Avatar.Image src={entity.author?.avatarUrl} alt={entity.author?.login} />
+											<Avatar.Fallback>
+												{entity.author?.login.charAt(0).toUpperCase()}
+											</Avatar.Fallback>
+										</Avatar.Root>
+										<span class="font-semibold">{entity.author?.login}</span>
+									</div>
+									<span class="hidden xs:block">•</span>
+								{/if}
+								{#if "createdAt" in entity}
+									<span>{formatToDateTime(entity.createdAt)}</span>
+								{/if}
 							</div>
 						</div>
 					</Accordion.Trigger>
 					<!-- Body -->
 					<Accordion.Content class="mx-auto sm:w-3/4">
 						<MarkdownRenderer
-							markdown={entity.body}
+							markdown={entity.body || "_No description provided_"}
 							parseRawHtml
 							class="max-w-full text-base"
 							additionalPlugins={[shikiPlugin]}
@@ -300,7 +307,9 @@
 					{#each commits as commit}
 						{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
 						<Step>
-							<GitCommitVertical class="size-4" slot="stepIcon" />
+							{#snippet stepIcon()}
+								<GitCommitVertical class="size-4" />
+							{/snippet}
 							<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 								<!-- Left part: commit message, description & author -->
 								<div class="flex flex-col gap-1">
@@ -349,16 +358,18 @@
 										<Badge variant="outline" class="text-green-500">Verified</Badge>
 									{/if}
 									{#if commit.sha}
-										<Tooltip.Root openDelay={300}>
-											<Tooltip.Trigger>
-												<span class="font-mono text-muted-foreground">
-													{commit.sha.slice(0, 7)}
-												</span>
-											</Tooltip.Trigger>
-											<Tooltip.Content>
-												<span class="font-mono">{commit.sha}</span>
-											</Tooltip.Content>
-										</Tooltip.Root>
+										<Tooltip.Provider>
+											<Tooltip.Root delayDuration={300}>
+												<Tooltip.Trigger>
+													<span class="font-mono text-muted-foreground">
+														{commit.sha.slice(0, 7)}
+													</span>
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													<span class="font-mono">{commit.sha}</span>
+												</Tooltip.Content>
+											</Tooltip.Root>
+										</Tooltip.Provider>
 									{/if}
 								</div>
 							</div>
