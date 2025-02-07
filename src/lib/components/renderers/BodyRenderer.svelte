@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 
 	type Props = {
 		children?: Snippet;
@@ -8,9 +8,6 @@
 
 	let { children }: Props = $props();
 	let data = $state<HTMLParagraphElement>();
-
-	const org = $page.data.org;
-	const repo = $page.data.repo;
 
 	$effect(() => {
 		if (!data) return;
@@ -22,7 +19,7 @@
 			if (!wholeMatch || !matchedGroup) continue;
 			replaced = replaced.replace(
 				wholeMatch,
-				` <a href="https://github.com/${org}/${repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
+				` <a href="https://github.com/${page.data.org}/${page.data.repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
 			);
 		}
 		data.innerHTML = replaced;

@@ -5,7 +5,7 @@
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { Octokit } from "octokit";
@@ -152,7 +152,7 @@
 
 			<!-- Navigation -->
 			<!-- TODO: don't hardcode scrollY? -->
-			{#if scrollY > 150 && $page.route.id === "/"}
+			{#if scrollY > 150 && page.route.id === "/"}
 				<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 					<li>
 						{#each typedEntries(data.repos) as [id, { name }]}
