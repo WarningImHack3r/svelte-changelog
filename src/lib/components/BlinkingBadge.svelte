@@ -36,7 +36,7 @@
 {#if show && shouldShowPulse}
 	<div class="relative inline-flex">
 		{@render children?.()}
-		<span class="absolute right-0 top-0 -mr-0.5 -mt-0.5 flex size-2.5">
+		<span class="absolute top-0 right-0 -mt-0.5 -mr-0.5 flex size-2.5">
 			<span
 				class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
 			></span>

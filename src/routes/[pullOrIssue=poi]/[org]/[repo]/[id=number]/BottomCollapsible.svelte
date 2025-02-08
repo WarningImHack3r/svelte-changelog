@@ -26,7 +26,7 @@
 	<Accordion.Root type="single" value={openByDefault ? key : undefined}>
 		<Accordion.Item value={key} class="border-b-0">
 			<Accordion.Trigger
-				class="group hover:no-underline [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg:last-child]:rotate-180 [&[data-state=open]>svg]:rotate-0"
+				class="group hover:no-underline [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180"
 			>
 				{#if icon}
 					{@const SvelteComponent = icon}

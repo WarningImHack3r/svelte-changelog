@@ -1,5 +1,5 @@
 <script lang="ts">
-	import "../app.pcss";
+	import "../app.css";
 	import { onMount, type SvelteComponent } from "svelte";
 	import type { SvelteHTMLElements } from "svelte/elements";
 	import { fade } from "svelte/transition";
@@ -137,8 +137,12 @@
 	class="sticky top-0 z-40 w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
 >
 	<div
-		class="border-b transition-colors duration-500"
-		class:border-transparent={!newsToDisplay && scrollY < 25}
+		class={[
+			"border-b transition-colors duration-500",
+			{
+				"border-transparent": !newsToDisplay && scrollY < 25
+			}
+		]}
 	>
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
@@ -282,10 +286,10 @@
 								<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
 										<Sun
-											class="!size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+											class="!size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
 										/>
 										<Moon
-											class="absolute !size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+											class="absolute !size-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
 										/>
 									</div>
 									<ChevronDown
@@ -328,7 +332,7 @@
 			<span class="mx-auto my-1 px-4 text-center">{newsToDisplay.content}</span>
 			<Button
 				variant="ghost"
-				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:rotate-90 hover:scale-110 hover:bg-background/0"
+				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-background/0"
 				onclick={() => {
 					if (!newsToDisplay) return;
 					localStorage.setItem(
