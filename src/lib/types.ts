@@ -46,3 +46,4 @@ export const availableTabs = ["svelte", "kit", "others"] as const;
 export type Tab = (typeof availableTabs)[number];
 
 export const tokenKey = "token";
+export const oauthCookieKey = "github_oauth_state";

@@ -10,9 +10,11 @@
 		"check:ci": "svelte-kit sync && svelte-check --no-tsconfig",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"prepare": "svelte-kit sync"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.20.0",
 		"@neoconfetti/svelte": "^2.2.1",
 		"@octokit/graphql-schema": "^15.25.0",
 		"@shikijs/langs": "^2.3.2",
@@ -26,7 +28,7 @@
 		"@types/eslint-config-prettier": "^6.11.3",
 		"@types/semver": "^7.5.8",
 		"@vercel/speed-insights": "^1.1.0",
-		"arctic": "^1.9.2",
+		"arctic": "^3.2.4",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "1.0.0-next.88",
 		"clsx": "^2.1.1",
@@ -62,6 +64,12 @@
 		"vite": "^6.1.0",
 		"vite-plugin-lucide-preprocess": "^1.2.4"
 	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@vercel/speed-insights",
+			"esbuild"
+		]
+	},
 	"type": "module",
-	"packageManager": "pnpm@9.15.5"
+	"packageManager": "pnpm@10.2.1"
 }

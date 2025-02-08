@@ -1,12 +1,13 @@
 import { redirect } from "@sveltejs/kit";
 import { generateState } from "arctic";
 import { github } from "$lib/server/auth";
+import { oauthCookieKey } from "$lib/types";
 
-export async function load({ cookies }) {
+export function load({ cookies }) {
 	const state = generateState();
-	const url = await github.createAuthorizationURL(state);
+	const url = github.createAuthorizationURL(state, ["public_repo"]);
 
-	cookies.set("github_oauth_state", state, {
+	cookies.set(oauthCookieKey, state, {
 		path: "/",
 		secure: import.meta.env.PROD,
 		httpOnly: true,
