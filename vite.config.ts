@@ -6,9 +6,6 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
 	plugins: [lucidePreprocess(), sveltekit(), tailwindcss()],
 	server: {
-		strictPort: true, // default port required for Login with GH workflow
-		fs: {
-			strict: false
-		}
+		strictPort: true // default port required for Login with GH workflow
 	}
 });
