@@ -280,7 +280,7 @@
 						show={!visitedTabs.includes(id) && id !== currentTab}
 					>
 						<Tabs.Trigger
-							class="data-[state=inactive]:text-foreground/60 data-[state=inactive]:hover:bg-background/50 data-[state=active]:hover:text-foreground/75 data-[state=inactive]:hover:text-foreground dark:data-[state=inactive]:hover:bg-background/25"
+							class="hover:data-[state=active]:text-foreground/75 data-[state=inactive]:text-foreground/60 hover:data-[state=inactive]:bg-background/50 hover:data-[state=inactive]:text-foreground hover:data-[state=inactive]:dark:bg-background/25"
 							value={id}
 						>
 							{name}
@@ -312,7 +312,7 @@
 				<Label
 					id="beta-releases-label-{currentTab}"
 					for="beta-releases-{currentTab}"
-					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
 					Show {data.repos[currentTab].name} prereleases
 				</Label>
@@ -325,7 +325,7 @@
 				{#await fetchReleases(id)}
 					<div class="relative w-full space-y-2">
 						<p
-							class="absolute left-1/2 top-[4.5rem] z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
+							class="absolute top-[4.5rem] left-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
 						>
 							<LoaderCircle class="mr-2 size-4 animate-spin" />
 							Loading...
@@ -568,7 +568,7 @@
 										<Tooltip.Root delayDuration={300}>
 											<Tooltip.Trigger>
 												<Badge
-													class="bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-700"
+													class="bg-green-600 hover:bg-green-600 dark:bg-green-700 hover:dark:bg-green-700"
 												>
 													Latest
 												</Badge>
@@ -636,7 +636,7 @@
 										<!-- Trigger reactivity (is it needed?) -->
 										{#key isLoadingDone}
 											{#if releaseDate > new Date(lastVisitDateString) && !visitedTabs.includes(id)}
-												<div class="relative ml-1 mr-2 inline-flex">
+												<div class="relative mr-2 ml-1 inline-flex">
 													<span
 														class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
 													></span>
@@ -689,7 +689,7 @@
 											</div>
 										</div>
 										<span
-											class="ml-auto mr-4 flex text-right text-sm text-muted-foreground xs:ml-0 xs:mr-2"
+											class="mr-4 ml-auto flex text-right text-sm text-muted-foreground xs:mr-2 xs:ml-0"
 										>
 											<span class="mr-1 hidden xs:block">•</span>
 											<Tooltip.Provider>
@@ -727,7 +727,7 @@
 										<Button
 											href={release.html_url}
 											target="_blank"
-											class="group mb-4 ml-auto mr-8 gap-0 font-semibold dark:text-black sm:ml-4 sm:mt-auto"
+											class="group mr-8 mb-4 ml-auto gap-0 font-semibold sm:mt-auto sm:ml-4 dark:text-black"
 										>
 											Open on <img src="/github.svg" alt="GitHub" class="ml-1.5 size-5" />
 											<ArrowUpRight

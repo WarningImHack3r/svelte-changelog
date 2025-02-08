@@ -115,7 +115,7 @@
 			<MarkdownRenderer
 				markdown={info.title}
 				inline
-				class="prose-xl text-foreground xs:prose-2xl group-hover:underline xs:text-3xl"
+				class="prose-xl text-foreground group-hover:underline xs:prose-2xl xs:text-3xl"
 			/>
 			<span class="ml-1 font-light text-muted-foreground group-hover:underline">#{info.number}</span
 			>
@@ -131,7 +131,7 @@
 					<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:flex-shrink-0">
 						<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
 							<!-- Title -->
-							<span class="text-left *:group-hover:underline">
+							<span class="text-left group-hover:*:underline">
 								<MarkdownRenderer
 									markdown={entity.title}
 									inline
@@ -237,8 +237,8 @@
 				</div>
 			</div>
 			<!-- Right part - info -->
-			<div class="px-4 pb-3 md:w-2/5 md:min-w-72 md:max-w-xs">
-				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pb-1 pt-2 text-xl font-semibold">Info</h4>
+			<div class="px-4 pb-3 md:w-2/5 md:max-w-xs md:min-w-72">
+				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pt-2 pb-1 text-xl font-semibold">Info</h4>
 				{#each rightPartInfo as { title, value }, i}
 					{#if i > 0}
 						<Separator class="my-2" />
@@ -391,7 +391,7 @@
 						<div
 							class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
 						>
-							<a href={file.blob_url} class="inline-block *:hover:underline">
+							<a href={file.blob_url} class="inline-block hover:*:underline">
 								<span class="[overflow-wrap:_anywhere]">{file.filename}</span>
 								{#if file.additions > 0}
 									<span class="font-semibold text-green-500">+{file.additions}</span>

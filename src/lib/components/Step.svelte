@@ -13,7 +13,7 @@
 
 <div class={cn("step relative", className)}>
 	<span
-		class="absolute -ml-[50px] -mt-0.5 inline-flex size-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-[1px] font-mono text-base font-normal"
+		class="absolute -mt-0.5 -ml-[50px] inline-flex size-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-[1px] font-mono text-base font-normal"
 	>
 		{#if stepIcon}
 			{@render stepIcon?.()}
