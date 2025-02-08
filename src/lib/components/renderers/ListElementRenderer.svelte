@@ -43,9 +43,13 @@
 
 <li
 	bind:this={data}
-	class:dark:font-bold={data?.innerText.startsWith("breaking:")}
-	class:font-semibold={data?.innerText.startsWith("breaking:")}
-	class="group *:inline"
+	class={[
+		"group *:inline",
+		{
+			"dark:font-bold": data?.innerText.startsWith("breaking:"),
+			"font-semibold": data?.innerText.startsWith("breaking:")
+		}
+	]}
 >
 	{@render children?.()}
 	{#if allLinks.length > 0}
