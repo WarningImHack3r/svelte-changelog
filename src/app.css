@@ -1,10 +1,15 @@
-@import "tailwindcss";
+@layer theme, base, components, utilites;
+
+@import "tailwindcss/theme" layer(theme) theme(static);
+@import "tailwindcss/preflight" layer(base);
+@import "tailwindcss/utilities" layer(utilities);
+
 @plugin "@tailwindcss/typography";
 @plugin "tailwindcss-animate";
 
 @variant dark (&:is(.dark *));
 
-@theme {
+@theme static {
 	--breakpoint-xs: 475px;
 	--breakpoint-2xl: 1400px;
 
