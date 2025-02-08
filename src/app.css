@@ -160,12 +160,3 @@
 		cursor: pointer;
 	}
 }
-
-@layer components {
-	.prose {
-		a {
-			/* Has to be important to override the default prose styles */
-			@apply !text-primary;
-		}
-	}
-}
