@@ -30,7 +30,7 @@
 		"@types/semver": "^7.5.8",
 		"@vercel/speed-insights": "^1.1.0",
 		"arctic": "^3.2.4",
-		"bits-ui": "1.0.0-next.88",
+		"bits-ui": "1.0.0-next.89",
 		"clsx": "^2.1.1",
 		"eslint": "^9.20.0",
 		"eslint-config-prettier": "^10.0.1",
