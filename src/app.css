@@ -8,6 +8,10 @@
 	--breakpoint-xs: 475px;
 	--breakpoint-2xl: 1400px;
 
+	--font-display: "GT Super Display", serif;
+	--font-sans: "Inter Tight Variable", sans-serif;
+	--font-mono: "Iosevka", monospace;
+
 	--color-background: hsl(var(--background));
 	--color-foreground: hsl(var(--foreground));
 
@@ -119,7 +123,7 @@
 		--radius: 0.5rem;
 	}
 	.dark {
-		--background: 20 14.3% 4.1%;
+		--background: 276 10.64% 9.22%;
 		--foreground: 60 9.1% 97.8%;
 		--card: 20 14.3% 4.1%;
 		--card-foreground: 60 9.1% 97.8%;

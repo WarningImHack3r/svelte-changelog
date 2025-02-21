@@ -265,7 +265,7 @@
 />
 
 <div class="container py-8">
-	<h2 class="text-3xl font-bold">
+	<h2 class="font-display text-[52px] font-medium">
 		<span class="text-primary">{data.repos[currentTab].name}</span>
 		Releases
 	</h2>

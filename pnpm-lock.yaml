@@ -7,6 +7,16 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@fontsource-variable/inter-tight':
+        specifier: ^5.1.1
+        version: 5.1.1
+      '@fontsource-variable/playfair-display':
+        specifier: ^5.1.1
+        version: 5.1.1
+      '@fontsource/iosevka':
+        specifier: ^5.1.0
+        version: 5.1.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.20.0
@@ -352,6 +362,15 @@ packages:
 
   '@floating-ui/utils@0.2.8':
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
+
+  '@fontsource-variable/inter-tight@5.1.1':
+    resolution: {integrity: sha512-uPBgjWbkau/7q/IGu/offWoaQqx9dky6shbqQFsBUsoosG6rhrX7azqh0tnrENpgjoE+CwgEotQ8eZaha1ni8w==}
+
+  '@fontsource-variable/playfair-display@5.1.1':
+    resolution: {integrity: sha512-89gLVOcVRIp0aayWwTcaLGQxhxDT2ZIv7cFU/BjxcWA8iALi8SrlT7dNHdhakb8MeXc0UUw9n8k6kG+jWvX61A==}
+
+  '@fontsource/iosevka@5.1.0':
+    resolution: {integrity: sha512-wfo4Tzbb3Lz3Zf+UMF5c/bEQL5enPJ7LT83q/UQxbgXtg+BtleIETkziIwP8lZsw8MwhSou8HVCmSZnY0sfiCw==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2466,6 +2485,12 @@ snapshots:
       '@floating-ui/utils': 0.2.8
 
   '@floating-ui/utils@0.2.8': {}
+
+  '@fontsource-variable/inter-tight@5.1.1': {}
+
+  '@fontsource-variable/playfair-display@5.1.1': {}
+
+  '@fontsource/iosevka@5.1.0': {}
 
   '@humanfs/core@0.19.1': {}
 
