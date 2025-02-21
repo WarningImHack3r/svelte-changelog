@@ -442,7 +442,7 @@
 			<Button href={info.html_url} target="_blank" class="group dark:text-black">
 				Open {type === "pull" ? "pull request" : "issue"} on GitHub
 				<ArrowUpRight
-					class="ml-2 size-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
+					class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 				/>
 			</Button>
 		</div>

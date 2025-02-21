@@ -731,7 +731,7 @@
 										>
 											Open on <img src="/github.svg" alt="GitHub" class="ml-1.5 size-5" />
 											<ArrowUpRight
-												class="ml-2 size-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
+												class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 											/>
 										</Button>
 									</div>
