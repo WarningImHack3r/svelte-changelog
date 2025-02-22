@@ -17,7 +17,7 @@ importers:
       '@octokit/graphql-schema':
         specifier: ^15.25.0
         version: 15.25.0
-      '@shikijs/langs-precompiled':
+      '@shikijs/langs':
         specifier: ^3.0.0
         version: 3.0.0
       '@shikijs/rehype':
@@ -669,10 +669,6 @@ packages:
 
   '@shikijs/engine-oniguruma@3.0.0':
     resolution: {integrity: sha512-uM9lqwMrlPHPVcdpAN/4pAzTJah1pY7mi9f1MxG887SDkjF/tdiQK+5200Y8N5Hg125sewdMQ1K2agoAo8hDiA==}
-
-  '@shikijs/langs-precompiled@3.0.0':
-    resolution: {integrity: sha512-/JtmKxPvjUpWnbHR/WzKa7ZzL58IXGXQt9aWLpKYa/AB1fpZBdjtdYY8zAoR2cQgf/ToscQeZcGSU5lm7XvEnw==}
-    engines: {node: '>=20'}
 
   '@shikijs/langs@3.0.0':
     resolution: {integrity: sha512-HBsZAukiYz7k3hzttPWa0en3PABEwK3cpxcAcERRwvwuKc5pn0Y+yPxAIYZtN9cFdtNqrbFJNhfcEu/xbG1u/A==}
@@ -2799,11 +2795,6 @@ snapshots:
     dependencies:
       '@shikijs/types': 3.0.0
       '@shikijs/vscode-textmate': 10.0.2
-
-  '@shikijs/langs-precompiled@3.0.0':
-    dependencies:
-      '@shikijs/types': 3.0.0
-      oniguruma-to-es: 3.1.0
 
   '@shikijs/langs@3.0.0':
     dependencies:
