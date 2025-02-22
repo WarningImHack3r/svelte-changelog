@@ -69,5 +69,10 @@
 		]
 	},
 	"type": "module",
-	"packageManager": "pnpm@10.4.1"
+	"packageManager": "pnpm@10.4.1",
+	"dependencies": {
+		"@fontsource-variable/inter-tight": "^5.1.1",
+		"@fontsource-variable/playfair-display": "^5.1.1",
+		"@fontsource/iosevka": "^5.1.0"
+	}
 }

@@ -1,34 +1,27 @@
 <script lang="ts">
-	import "../app.css";
 	import "@fontsource-variable/playfair-display";
-	import "@fontsource-variable/inter-tight";
-	import "@fontsource/iosevka/400.css";
-	import "@fontsource/iosevka/500.css";
-	import "@fontsource/iosevka/600.css";
+	import "../app.css";
 
-	import { onMount, type SvelteComponent } from "svelte";
-	import type { SvelteHTMLElements } from "svelte/elements";
-	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
-	import { env } from "$env/dynamic/public";
 	import { page } from "$app/state";
-	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
-	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import { Octokit } from "octokit";
-	import { persisted } from "svelte-persisted-store";
-	import { toast } from "svelte-sonner";
-	import { news } from "$lib/news/news.json";
+	import { env } from "$env/dynamic/public";
+	import * as Avatar from "$lib/components/ui/avatar";
+	import { Button } from "$lib/components/ui/button";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import { Progress } from "$lib/components/ui/progress";
 	import { FAVICON_URL } from "$lib/config";
+	import { news } from "$lib/news/news.json";
 	import { getTabState, initTabState, plainTextSerializer } from "$lib/stores";
 	import { tokenKey } from "$lib/types";
-	import { cn } from "$lib/utils";
-	import ScreenSize from "$lib/components/ScreenSize.svelte";
-	import { buttonVariants, Button } from "$lib/components/ui/button";
-	import { Progress } from "$lib/components/ui/progress";
-	import { Toaster } from "$lib/components/ui/sonner";
-	import * as Avatar from "$lib/components/ui/avatar";
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { typedEntries } from "$lib/util";
+	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
+	import { resetMode, setMode } from "mode-watcher";
+	import { Octokit } from "octokit";
+	import { onMount, type SvelteComponent } from "svelte";
+	import { persisted } from "svelte-persisted-store";
+	import { toast } from "svelte-sonner";
+	import type { SvelteHTMLElements } from "svelte/elements";
+	import { fade } from "svelte/transition";
 
 	// State
 	initTabState();
@@ -134,13 +127,8 @@
 	});
 </script>
 
-{#if dev}
-	<ScreenSize />
-{/if}
-<ModeWatcher />
-<Toaster />
 <header
-	class="top-0 z-40 hidden w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
+	class="sticky top-0 z-40 w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
 >
 	<div
 		class={[
@@ -353,26 +341,3 @@
 		</div>
 	{/if}
 </header>
-
-<svelte:window bind:scrollY />
-
-{@render children?.()}
-
-<footer class="mt-auto w-full border-t bg-background">
-	<div class="mx-auto flex h-12 w-full items-center px-8">
-		<p class="text-sm text-muted-foreground">
-			Built by <a
-				href="https://github.com/WarningImHack3r"
-				target="_blank"
-				class={cn(
-					buttonVariants({
-						variant: "link"
-					}),
-					"h-auto p-0"
-				)}
-			>
-				WarningImHack3r
-			</a>.
-		</p>
-	</div>
-</footer>

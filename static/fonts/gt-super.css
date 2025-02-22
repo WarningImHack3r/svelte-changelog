@@ -1,0 +1,81 @@
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-RegularItalic.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-RegularItalic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-Light.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-Bold.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-Regular.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-MediumItalic.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-MediumItalic.woff') format('woff');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-Medium.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-BoldItalic.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display Super';
+    src: url('/fonts/GTSuperDisplay-SuperItalic.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-SuperItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GT Super Display';
+    src: url('/fonts/GTSuperDisplay-LightItalic.woff2') format('woff2'),
+        url('/fonts/GTSuperDisplay-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+
