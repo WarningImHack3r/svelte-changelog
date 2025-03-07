@@ -6,7 +6,7 @@
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
 	import { page } from "$app/state";
-	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "lucide-svelte";
+	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { Octokit } from "octokit";
 	import { persisted } from "svelte-persisted-store";
@@ -159,7 +159,7 @@
 			{#if scrollY > 150 && page.route.id === "/"}
 				<ul transition:fade={{ duration: 200 }} class="ml-6 hidden sm:block">
 					<li>
-						{#each typedEntries(data.repos) as [id, { name }]}
+						{#each typedEntries(data.repos) as [id, { name }] (id)}
 							<Button
 								variant="ghost"
 								class="hover:bg-accent/75"
@@ -305,7 +305,7 @@
 							<DropdownMenu.Label>Theme</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.RadioGroup bind:value={theme}>
-								{#each themes as availableTheme}
+								{#each themes as availableTheme (availableTheme.value)}
 									<DropdownMenu.RadioItem
 										class="cursor-pointer data-[disabled]:opacity-75"
 										value={availableTheme.value}

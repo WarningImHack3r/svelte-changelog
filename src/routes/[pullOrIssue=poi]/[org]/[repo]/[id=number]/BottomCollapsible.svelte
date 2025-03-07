@@ -1,12 +1,10 @@
 <script lang="ts">
-	import type { ComponentType, Snippet } from "svelte";
-	import type { Icon } from "lucide-svelte";
+	import type { Snippet } from "svelte";
+	import type { Icon } from "@lucide/svelte";
 	import * as Accordion from "$lib/components/ui/accordion";
 
-	const key = "collapsible";
-
 	type Props = {
-		icon?: ComponentType<Icon> | null;
+		icon?: typeof Icon;
 		label: string;
 		secondaryLabel?: string | undefined;
 		openByDefault?: boolean;
@@ -14,17 +12,19 @@
 	};
 
 	let {
-		icon = null,
+		icon = undefined,
 		label,
 		secondaryLabel = undefined,
 		openByDefault = false,
 		children
 	}: Props = $props();
+
+	let id = $props.id();
 </script>
 
 <div class="rounded-xl border px-4">
-	<Accordion.Root type="single" value={openByDefault ? key : undefined}>
-		<Accordion.Item value={key} class="border-b-0">
+	<Accordion.Root type="single" value={openByDefault ? id : undefined}>
+		<Accordion.Item value={id} class="border-b-0">
 			<Accordion.Trigger
 				class="group hover:no-underline [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180"
 			>

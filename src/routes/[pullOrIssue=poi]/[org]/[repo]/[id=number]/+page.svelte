@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Issue, Repository } from "@octokit/graphql-schema";
-	import { LoaderCircle } from "lucide-svelte";
+	import { LoaderCircle } from "@lucide/svelte";
 	import { getOctokit } from "$lib/octokit";
 	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import PageRenderer from "./PageRenderer.svelte";

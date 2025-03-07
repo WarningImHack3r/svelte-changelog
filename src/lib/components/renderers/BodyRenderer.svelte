@@ -22,6 +22,8 @@
 				` <a href="https://github.com/${page.data.org}/${page.data.repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
 			);
 		}
+		// FIXME: change that mechanism to get rid of that warning
+		// eslint-disable-next-line svelte/no-dom-manipulating
 		data.innerHTML = replaced;
 	});
 </script>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { ComponentType } from "svelte";
 	import {
 		CircleCheck,
 		CircleDot,
@@ -9,7 +8,7 @@
 		GitPullRequestClosed,
 		GitPullRequestDraft,
 		type Icon
-	} from "lucide-svelte";
+	} from "@lucide/svelte";
 
 	type CommonStatus = "open" | "closed";
 	type PropsObj =
@@ -29,7 +28,7 @@
 
 	let { type, status }: Props = $props();
 
-	let icon = $state<ComponentType<Icon>>();
+	let icon = $state<typeof Icon>();
 	let label = $state("");
 	let color = $state("");
 

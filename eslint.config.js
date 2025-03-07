@@ -1,15 +1,16 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import svelte from "eslint-plugin-svelte";
-import prettierConfig from "eslint-config-prettier";
+import prettierConfig from "eslint-config-prettier/flat";
 import globals from "globals";
+import svelteConfig from "./svelte.config.js";
 
 export default tseslint.config(
 	eslint.configs.recommended,
 	tseslint.configs.recommended,
-	svelte.configs["flat/recommended"],
+	svelte.configs.recommended,
 	prettierConfig,
-	svelte.configs["flat/prettier"],
+	svelte.configs.prettier,
 	{
 		languageOptions: {
 			globals: {
@@ -19,10 +20,13 @@ export default tseslint.config(
 		}
 	},
 	{
-		files: ["**/*.svelte"],
+		files: ["**/*.svelte", "**/*.svelte.js", "**/*.svelte.ts"],
 		languageOptions: {
 			parserOptions: {
-				parser: tseslint.parser
+				parser: tseslint.parser,
+				extraFileExtensions: [".svelte"],
+				projectService: true,
+				svelteConfig
 			}
 		}
 	},

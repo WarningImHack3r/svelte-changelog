@@ -85,7 +85,7 @@
 	</div>
 	{#if showAllScreens}
 		<div class="bottom-12 left-5 z-40 rounded-xl duration-300" transition:slide>
-			{#each screens as screen}
+			{#each screens as screen (screen.name)}
 				<div
 					class={[
 						"flex justify-between gap-6",

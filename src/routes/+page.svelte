@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import type { TabsRootProps } from "bits-ui";
-	import { ArrowUpRight, LoaderCircle } from "lucide-svelte";
+	import { ArrowUpRight, LoaderCircle } from "@lucide/svelte";
 	import type { Octokit } from "octokit";
 	import semver from "semver";
 	import { MetaTags } from "svelte-meta-tags";
@@ -274,7 +274,7 @@
 			class="flex flex-col items-start gap-4 xs:flex-row xs:items-center xs:justify-between xs:gap-0"
 		>
 			<Tabs.List class="bg-input dark:bg-muted">
-				{#each typedEntries(data.repos) as [id, { name }]}
+				{#each typedEntries(data.repos) as [id, { name }] (id)}
 					<BlinkingBadge
 						storedDateItem="{id}MostRecentUpdate"
 						show={!visitedTabs.includes(id) && id !== currentTab}
@@ -319,7 +319,7 @@
 			</div>
 		</div>
 		<!-- Tabs content creation -->
-		{#each typedEntries(data.repos) as [id, { name, repos: repoList }]}
+		{#each typedEntries(data.repos) as [id, { name, repos: repoList }] (id)}
 			<Tabs.Content value={id}>
 				<!-- Fetch releases from GitHub -->
 				{#await fetchReleases(id)}

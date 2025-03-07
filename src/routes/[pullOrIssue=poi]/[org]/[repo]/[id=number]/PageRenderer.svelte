@@ -26,7 +26,7 @@
 		FileDiff,
 		GitCommitVertical,
 		MessagesSquare
-	} from "lucide-svelte";
+	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import type { Plugin } from "svelte-exmarkdown";
 	import { Badge } from "$lib/components/ui/badge";
@@ -126,7 +126,7 @@
 			{type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1 ? "s" : ""}
 		</h3>
 		<Accordion.Root type="single" class="mb-12">
-			{#each linkedEntities as entity}
+			{#each linkedEntities as entity (entity.number)}
 				<Accordion.Item value={entity.number.toString()}>
 					<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:flex-shrink-0">
 						<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
@@ -239,7 +239,7 @@
 			<!-- Right part - info -->
 			<div class="px-4 pb-3 md:w-2/5 md:max-w-xs md:min-w-72">
 				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pt-2 pb-1 text-xl font-semibold">Info</h4>
-				{#each rightPartInfo as { title, value }, i}
+				{#each rightPartInfo as { title, value }, i (title)}
 					{#if i > 0}
 						<Separator class="my-2" />
 					{/if}
@@ -256,7 +256,7 @@
 			label="Comments"
 			secondaryLabel="{info.comments} comment{info.comments > 1 ? 's' : ''}"
 		>
-			{#each comments as comment, i}
+			{#each comments as comment, i (comment.id)}
 				{#if i > 0}
 					<Separator class="my-2 h-1" />
 				{/if}
@@ -304,7 +304,7 @@
 				secondaryLabel="{commits.length} commit{commits.length > 1 ? 's' : ''}"
 			>
 				<Steps class="my-4">
-					{#each commits as commit}
+					{#each commits as commit (commit.sha)}
 						{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
 						<Step>
 							{#snippet stepIcon()}
@@ -387,7 +387,7 @@
 				secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			>
 				<div class="flex flex-col gap-2">
-					{#each files as file}
+					{#each files as file (file.sha)}
 						<div
 							class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
 						>
@@ -430,7 +430,7 @@
 		</Button>
 		<div class="flex flex-col-reverse items-end gap-4 md:flex-row md:items-center">
 			<div class="flex flex-wrap justify-end gap-4">
-				{#each linkedEntities as closingIssue}
+				{#each linkedEntities as closingIssue (closingIssue.id)}
 					<Button
 						href="/{type === 'pull' ? 'issues' : 'pull'}/{org}/{repo}/{closingIssue.number}"
 						variant="secondary"

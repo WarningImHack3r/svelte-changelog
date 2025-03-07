@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { ArrowRight } from "lucide-svelte";
+	import { ArrowRight } from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button";
 
 	type Props = {
