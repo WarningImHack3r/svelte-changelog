@@ -57,6 +57,10 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 				versionFromTag: tag => tag.substring(tag.lastIndexOf("-") + 1)
 			},
 			{
+				repoName: "acorn-typescript",
+				versionFromTag: tag => tag.replace(/^v/, "")
+			},
+			{
 				repoName: "svelte-devtools",
 				versionFromTag: tag => tag.replace(/^v/, "")
 			},
