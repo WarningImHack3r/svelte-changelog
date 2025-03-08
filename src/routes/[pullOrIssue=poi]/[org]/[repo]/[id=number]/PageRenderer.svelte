@@ -306,10 +306,7 @@
 				<Steps class="my-4">
 					{#each commits as commit (commit.sha)}
 						{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
-						<Step>
-							{#snippet stepIcon()}
-								<GitCommitVertical class="size-4" />
-							{/snippet}
+						<Step icon={GitCommitVertical}>
 							<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 								<!-- Left part: commit message, description & author -->
 								<div class="flex flex-col gap-1">
