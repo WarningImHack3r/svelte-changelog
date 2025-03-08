@@ -79,33 +79,39 @@
 	});
 
 	let rightPartInfo = $derived.by(() => {
-		if (info) {
-			return [
-				...(info.closed_at
-					? [
-							{
-								title: "merged" in info && info.merged ? "Merged at" : "Closed at",
-								value: formatToDateTime(info.closed_at)
-							}
-						]
-					: []),
-				{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
-				...("requested_reviewers" in info
-					? [
-							{
-								title: "Reviewers",
-								value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
-							}
-						]
-					: []),
-				{
-					title: "Labels",
-					value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
-				},
-				{ title: "Milestone", value: info.milestone?.title || "None" }
-			];
-		}
-		return [];
+		if (!info) return [];
+		return [
+			...(info.closed_at
+				? [
+						{
+							title: "merged" in info && info.merged ? "Merged at" : "Closed at",
+							value: formatToDateTime(info.closed_at)
+						}
+					]
+				: []),
+			...(info.closed_at && "merged" in info && info.merged
+				? [
+						{
+							title: "Merged by",
+							value: info.merged_by?.name ?? info.merged_by?.login ?? "Unknown"
+						}
+					]
+				: []),
+			{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
+			...("requested_reviewers" in info
+				? [
+						{
+							title: "Reviewers",
+							value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
+						}
+					]
+				: []),
+			{
+				title: "Labels",
+				value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
+			},
+			{ title: "Milestone", value: info.milestone?.title || "None" }
+		];
 	});
 </script>
 
@@ -291,6 +297,7 @@
 							markdown={comment.body || "_Empty comment_"}
 							parseRawHtml
 							class="w-full"
+							additionalPlugins={[shikiPlugin]}
 						/>
 					</div>
 				</div>
