@@ -15,8 +15,8 @@ importers:
         specifier: ^0.479.0
         version: 0.479.0(svelte@5.22.6)
       '@neoconfetti/svelte':
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2(svelte@5.22.6)
       '@octokit/graphql-schema':
         specifier: ^15.26.0
         version: 15.26.0
@@ -60,8 +60,8 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0
       bits-ui:
-        specifier: ^1.3.6
-        version: 1.3.6(svelte@5.22.6)
+        specifier: ^1.3.8
+        version: 1.3.8(svelte@5.22.6)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -72,8 +72,8 @@ importers:
         specifier: ^10.1.1
         version: 10.1.1(eslint@9.22.0(jiti@2.4.2))
       eslint-plugin-svelte:
-        specifier: ^3.0.3
-        version: 3.0.3(eslint@9.22.0(jiti@2.4.2))(svelte@5.22.6)
+        specifier: ^3.1.0
+        version: 3.1.0(eslint@9.22.0(jiti@2.4.2))(svelte@5.22.6)
       globals:
         specifier: ^16.0.0
         version: 16.0.0
@@ -562,8 +562,10 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@neoconfetti/svelte@2.2.1':
-    resolution: {integrity: sha512-2Ts0Rxaf6clW2qG+AKhTwpl01AAyZEAe03XeuQ7Vp+qYIaM3ycuI94j546fmEkUxwACwGI3Zl2cZ/pncTuNcJg==}
+  '@neoconfetti/svelte@2.2.2':
+    resolution: {integrity: sha512-E7xCFVEEm5Ctnj2udTJy1b9oaTvjz1zi1mYdEtE8rB5BVwq6kHisosDS+zdWN5PMfEMjtbsOV9Cl6tsNSAD1sA==}
+    peerDependencies:
+      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1160,8 +1162,8 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bits-ui@1.3.6:
-    resolution: {integrity: sha512-0Ee7Ox5KqIBdio/+TG387Xlj6QJ0S7tHVS2K4DYiBHxBRbm6ni13i/pOoNDjeME6NOGUZxbSe4dNZIW3pGlxZA==}
+  bits-ui@1.3.8:
+    resolution: {integrity: sha512-vmj0uQQqh7sEw5La4CXKjMszcDHeEwjUX5Q4/cX3UZ2aTY/HTEaMK5cJyCfA+2yMO7YNCx5mIM/THgFvphHt2w==}
     engines: {node: '>=18', pnpm: '>=8.7.0'}
     peerDependencies:
       svelte: ^5.11.0
@@ -1329,8 +1331,8 @@ packages:
     peerDependencies:
       eslint: '>=7.0.0'
 
-  eslint-plugin-svelte@3.0.3:
-    resolution: {integrity: sha512-R7HSKkLN33P6WwYhVbO+5xPT0YIpO+YAZfWxow7I1IvjVgZOxuI7zReqxFL3B7F028u16Megx+hn8SEXDNcDvw==}
+  eslint-plugin-svelte@3.1.0:
+    resolution: {integrity: sha512-hSQyLDkuuHPJby1ixZfUVrfLON42mT0Odf18MbwAgFUPuyIwJlhy3acUY1/bxt+Njucq/dQxR543zYDqkBNLmw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^8.57.1 || ^9.0.0
@@ -2745,7 +2747,9 @@ snapshots:
       - encoding
       - supports-color
 
-  '@neoconfetti/svelte@2.2.1': {}
+  '@neoconfetti/svelte@2.2.2(svelte@5.22.6)':
+    dependencies:
+      svelte: 5.22.6
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -3379,7 +3383,7 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
-  bits-ui@1.3.6(svelte@5.22.6):
+  bits-ui@1.3.8(svelte@5.22.6):
     dependencies:
       '@floating-ui/core': 1.6.8
       '@floating-ui/dom': 1.6.12
@@ -3558,7 +3562,7 @@ snapshots:
     dependencies:
       eslint: 9.22.0(jiti@2.4.2)
 
-  eslint-plugin-svelte@3.0.3(eslint@9.22.0(jiti@2.4.2))(svelte@5.22.6):
+  eslint-plugin-svelte@3.1.0(eslint@9.22.0(jiti@2.4.2))(svelte@5.22.6):
     dependencies:
       '@eslint-community/eslint-utils': 4.4.1(eslint@9.22.0(jiti@2.4.2))
       '@jridgewell/sourcemap-codec': 1.5.0
