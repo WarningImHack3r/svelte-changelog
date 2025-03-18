@@ -1,12 +1,20 @@
 <script lang="ts">
 	import "../app.css";
-	import { onMount, type SvelteComponent } from "svelte";
-	import type { SvelteHTMLElements } from "svelte/elements";
+	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
 	import { dev } from "$app/environment";
 	import { env } from "$env/dynamic/public";
 	import { page } from "$app/state";
-	import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, X } from "@lucide/svelte";
+	import {
+		ChevronDown,
+		type Icon,
+		LoaderCircle,
+		LogOut,
+		Monitor,
+		Moon,
+		Sun,
+		X
+	} from "@lucide/svelte";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { Octokit } from "octokit";
 	import { persisted } from "svelte-persisted-store";
@@ -83,7 +91,7 @@
 	type Theme = {
 		value: typeof theme;
 		label: string;
-		icon: typeof SvelteComponent<SvelteHTMLElements["svg"]>;
+		icon: typeof Icon;
 	};
 	const themes: Theme[] = [
 		{
