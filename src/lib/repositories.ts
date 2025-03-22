@@ -1,6 +1,6 @@
 import type { Repo, Tab } from "$lib/types";
 
-export const repos: Record<Tab, { name: string; repos: Repo[] }> = {
+const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 	svelte: {
 		name: "Svelte",
 		repos: [
@@ -80,3 +80,18 @@ export const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 		]
 	}
 };
+
+type Entries<T> = {
+	[K in keyof T]: [K, T[K]];
+}[keyof T][];
+
+/**
+ * Returns repositories as entries for ease of use
+ * and iterating.
+ *
+ * @example
+ * const [id, { name, repos }] = getRepositories();
+ */
+export function getRepositories() {
+	return Object.entries(repos) as unknown as Entries<typeof repos>;
+}
