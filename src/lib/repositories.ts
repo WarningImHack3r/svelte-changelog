@@ -128,9 +128,28 @@ type Entries<T> = {
 export const repositories = Object.entries(repos) as unknown as Entries<typeof repos>;
 
 /**
- * Get all a record of all GitHub repositories
- * from the collection.
+ * Get a record of all GitHub repositories
+ * from the collection, as an "owner-to-repo-names"
+ * map.
  */
 export const githubRepos = {
 	sveltejs: [...new Set(repositories.flatMap(([, { repos }]) => repos.map(r => r.repoName)))]
 };
+
+/**
+ * Get a list of objects containing
+ * the repo owner, the repo name, and the
+ * associated transformation function to
+ * transform a release tag name into a package
+ * name.
+ */
+export const transformationRepos = repositories.flatMap(([, { repos }]) =>
+	repos.map(r => ({
+		owner: "sveltejs",
+		repoName: r.repoName,
+		tagToName: (tag: string) => {
+			const [name] = r.metadataFromTag(tag);
+			return name;
+		}
+	}))
+);

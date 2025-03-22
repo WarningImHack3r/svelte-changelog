@@ -214,6 +214,13 @@ export class SvelteGitHubCache {
 	async deleteEntry(repo: string) {
 		await this.#cache.deleteEntry(this.#owner, repo);
 	}
+
+	/**
+	 * A convenience getter for the underlying cache
+	 */
+	get cache() {
+		return this.#cache;
+	}
 }
 
 export const svelteGitHubCache = new SvelteGitHubCache(
