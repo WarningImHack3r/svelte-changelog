@@ -137,19 +137,41 @@ export const githubRepos = {
 };
 
 /**
+ * A utility function to only keep unique items in
+ * an array, based on the uniqTransform parameter.
+ *
+ * @param arr the input array
+ * @param uniqTransform the transformation function
+ * to make items unique
+ * @returns the filtered array, containing only unique items
+ *
+ * @see {@link https://stackoverflow.com/a/70503699/12070367|Original implementation}
+ */
+function uniq<T, U>(arr: T[], uniqTransform: (item: T) => U) {
+	const track = new Set<U>();
+	return arr.filter(item => {
+		const value = uniqTransform(item);
+		return track.has(value) ? false : track.add(value);
+	});
+}
+
+/**
  * Get a list of objects containing
  * the repo owner, the repo name, and the
  * associated transformation function to
  * transform a release tag name into a package
  * name.
  */
-export const transformationRepos = repositories.flatMap(([, { repos }]) =>
-	repos.map(r => ({
-		owner: "sveltejs",
-		repoName: r.repoName,
-		tagToName: (tag: string) => {
-			const [name] = r.metadataFromTag(tag);
-			return name;
-		}
-	}))
+export const transformationRepos = uniq(
+	repositories.flatMap(([, { repos }]) =>
+		repos.map(r => ({
+			owner: "sveltejs",
+			repoName: r.repoName,
+			tagToName: (tag: string) => {
+				const [name] = r.metadataFromTag(tag);
+				return name;
+			}
+		}))
+	),
+	item => item.repoName
 );

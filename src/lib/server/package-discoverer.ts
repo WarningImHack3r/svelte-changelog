@@ -35,8 +35,8 @@ export class PackageDiscoverer {
 		const uniquePackages = [...new Set(releases.map(({ tag_name }) => repo.tagToName(tag_name)))];
 		// 3. Replace or add the value in the array
 		for (const [i, { owner: o, repoName: n }] of this.#packages.entries()) {
-			if (o === owner && repoName == n) {
-				this.#packages[i]!.packages = uniquePackages;
+			if (o === owner && repoName == n && this.#packages[i]) {
+				this.#packages[i].packages = uniquePackages;
 				return;
 			}
 		}
