@@ -1,8 +1,8 @@
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
-import { getRepositories } from "$lib/repositories";
+import { repositories } from "$lib/repositories";
 
 injectSpeedInsights();
 
 export function load() {
-	return { repos: getRepositories() };
+	return { repos: repositories };
 }

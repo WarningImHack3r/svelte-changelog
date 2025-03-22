@@ -1,12 +1,12 @@
-import type { Repo, Tab } from "$lib/types";
+import type { RepoInfo, Category } from "$lib/types";
 
-const repos: Record<Tab, { name: string; repos: Repo[] }> = {
+const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 	svelte: {
 		name: "Svelte",
 		repos: [
 			{
 				repoName: "svelte",
-				versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
+				metadataFromTag: splitByLastAt
 			}
 		]
 	},
@@ -16,7 +16,7 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 			{
 				repoName: "kit",
 				dataFilter: ({ tag_name }) => tag_name.includes("/kit@"),
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
+				metadataFromTag: splitByLastAt
 			}
 		]
 	},
@@ -26,72 +26,111 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
 			{
 				repoName: "kit",
 				dataFilter: ({ tag_name }) => !tag_name.includes("/kit@"),
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
+				metadataFromTag: splitByLastAt
 			},
 			{
 				repoName: "cli",
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
+				metadataFromTag: splitByLastAt
 			},
 			{
 				repoName: "vite-plugin-svelte",
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
+				metadataFromTag: splitByLastAt
 			},
 			{
 				repoName: "eslint-plugin-svelte",
-				versionFromTag: tag =>
-					tag.includes("@") ? tag.substring(tag.lastIndexOf("@") + 1) : tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					if (tag.includes("@")) {
+						return splitByLastAt(tag);
+					}
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			},
 			{
 				repoName: "eslint-config",
-				versionFromTag: tag => tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			},
 			{
 				repoName: "svelte-eslint-parser",
-				versionFromTag: tag => tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			},
 			{
 				repoName: "language-tools",
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("-") + 1)
+				metadataFromTag: tag => {
+					const lastIndex = tag.lastIndexOf("-");
+					return [tag.substring(0, lastIndex), tag.substring(lastIndex + 1)];
+				}
 			},
 			{
 				repoName: "acorn-typescript",
-				versionFromTag: tag => tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			},
 			{
 				repoName: "svelte-devtools",
-				versionFromTag: tag => tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			},
 			{
 				changesMode: "changelog",
 				repoName: "svelte-preprocess",
-				versionFromTag: tag => tag.replace(/^v/, ""),
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				},
 				changelogContentsReplacer: file => file.replace(/^# \[/gm, "## [")
 			},
 			{
 				changesMode: "changelog",
 				repoName: "rollup-plugin-svelte",
-				versionFromTag: tag => tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			},
 			{
 				changesMode: "changelog",
 				repoName: "prettier-plugin-svelte",
-				versionFromTag: tag => tag.replace(/^v/, "")
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			}
 		]
 	}
 };
+
+/**
+ * A convenience helper to split a string into two parts
+ * from its last occurrence of the `@` symbol.
+ *
+ * @param s the input string
+ * @returns an array of length 2 with the two split elements
+ */
+function splitByLastAt(s: string): [string, string] {
+	const lastIndex = s.lastIndexOf("@");
+	return [s.substring(0, lastIndex), s.substring(lastIndex + 1)];
+}
 
 type Entries<T> = {
 	[K in keyof T]: [K, T[K]];
 }[keyof T][];
 
 /**
- * Returns repositories as entries for ease of use
- * and iterating.
+ * Get all repositories as entries for ease of use
+ * and iteration.
  *
  * @example
- * const [id, { name, repos }] = getRepositories();
+ * const [id, { name, repos }] = repositories;
  */
-export function getRepositories() {
-	return Object.entries(repos) as unknown as Entries<typeof repos>;
-}
+export const repositories = Object.entries(repos) as unknown as Entries<typeof repos>;
+
+/**
+ * Get all a record of all GitHub repositories
+ * from the collection.
+ */
+export const githubRepos = {
+	sveltejs: [...new Set(repositories.flatMap(([, { repos }]) => repos.map(r => r.repoName)))]
+};
