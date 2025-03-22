@@ -1,4 +1,4 @@
-import type { Octokit } from "octokit";
+import type { GitHubRelease } from "$lib/server/github-cache";
 
 export type Repo = {
 	/**
@@ -17,11 +17,7 @@ export type Repo = {
 	 *
 	 * @param release The release to filter
 	 */
-	dataFilter?: (
-		release: Awaited<
-			ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
-		>["data"][number]
-	) => boolean;
+	dataFilter?: (release: GitHubRelease) => boolean;
 	/**
 	 * Extracts the version from the tag name.
 	 *
