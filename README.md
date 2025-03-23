@@ -63,7 +63,7 @@ Fork the repo, edit the `/src/lib/repositories.ts` file, and open a PR.
 The code architecture is made to be as flexible as possible, here's how it works:
 
 ```typescript
-const repos = {
+export const repos = {
     svelte: {/* ... */},
     kit: {/* ... */},
     others: {

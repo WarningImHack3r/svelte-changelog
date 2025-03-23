@@ -1,6 +1,6 @@
-import type { RepoInfo, Category } from "$lib/types";
+import type { Category, Entries, Prettify, RepoInfo } from "$lib/types";
 
-const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
+export const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 	svelte: {
 		name: "Svelte",
 		repos: [
@@ -114,10 +114,6 @@ function splitByLastAt(s: string): [string, string] {
 	return [s.substring(0, lastIndex), s.substring(lastIndex + 1)];
 }
 
-type Entries<T> = {
-	[K in keyof T]: [K, T[K]];
-}[keyof T][];
-
 /**
  * Get all repositories as entries for ease of use
  * and iteration.
@@ -125,16 +121,35 @@ type Entries<T> = {
  * @example
  * const [id, { name, repos }] = repositories;
  */
-export const repositories = Object.entries(repos) as unknown as Entries<typeof repos>;
+export const iterableRepos = Object.entries(repos) as unknown as Entries<typeof repos>;
 
 /**
- * Get a record of all GitHub repositories
- * from the collection, as an "owner-to-repo-names"
- * map.
+ * A type storing all the repo information
+ * in a standard format
  */
-export const githubRepos = {
-	sveltejs: [...new Set(repositories.flatMap(([, { repos }]) => repos.map(r => r.repoName)))]
-};
+export type Repository = Prettify<
+	{
+		category: {
+			slug: string;
+			name: string;
+		};
+		owner: string;
+	} & RepoInfo
+>;
+
+/**
+ * Get all the repositories in a standard format
+ */
+export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, repos }]) =>
+	repos.map(repo => ({
+		category: {
+			slug,
+			name
+		},
+		owner: "sveltejs",
+		...repo
+	}))
+);
 
 /**
  * A utility function to only keep unique items in
@@ -156,22 +171,15 @@ function uniq<T, U>(arr: T[], uniqTransform: (item: T) => U) {
 }
 
 /**
- * Get a list of objects containing
- * the repo owner, the repo name, and the
- * associated transformation function to
- * transform a release tag name into a package
- * name.
+ * Return a unique array of owner and name of
+ * the available repositories
  */
-export const transformationRepos = uniq(
-	repositories.flatMap(([, { repos }]) =>
-		repos.map(r => ({
+export const uniqueRepos = uniq(
+	iterableRepos.flatMap(([, { repos }]) =>
+		repos.map(({ repoName }) => ({
 			owner: "sveltejs",
-			repoName: r.repoName,
-			tagToName: (tag: string) => {
-				const [name] = r.metadataFromTag(tag);
-				return name;
-			}
+			name: repoName
 		}))
 	),
-	item => item.repoName
+	({ owner, name }) => `${owner}/${name}`
 );

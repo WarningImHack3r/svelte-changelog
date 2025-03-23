@@ -1,15 +1,19 @@
-import { GitHubCache, svelteGitHubCache } from "./github-cache";
-import { transformationRepos } from "$lib/repositories";
+import type { Prettify } from "$lib/types";
+import { GitHubCache, type GitHubRelease, svelteGitHubCache } from "./github-cache";
+import { publicRepos, type Repository } from "$lib/repositories";
+
+export type DiscoveredPackage = Prettify<
+	Repository & {
+		packages: string[];
+	}
+>;
 
 export class PackageDiscoverer {
 	readonly #cache: GitHubCache;
-	readonly #repos: { owner: string; repoName: string; tagToName: (name: string) => string }[];
-	#packages: { owner: string; repoName: string; packages: string[] }[] = [];
+	readonly #repos: Repository[] = [];
+	#packages: DiscoveredPackage[] = [];
 
-	constructor(
-		cache: GitHubCache,
-		repos: { owner: string; repoName: string; tagToName: (name: string) => string }[]
-	) {
+	constructor(cache: GitHubCache, repos: Repository[]) {
 		this.#cache = cache;
 		this.#repos = repos;
 	}
@@ -23,16 +27,26 @@ export class PackageDiscoverer {
 	 * @param repoName the name of the repository to use to populate the array
 	 * @param releases the releases to populate the array from
 	 */
-	async discoverReleases(
-		owner: string,
-		repoName: string,
-		releases: Awaited<ReturnType<InstanceType<typeof GitHubCache>["getReleases"]>>
-	) {
-		// 1. Find the transformation function in the existing repos, exit otherwise
-		const repo = this.#repos.find(({ owner: o, repoName: n }) => o == owner && repoName == n);
+	async discoverReleases(owner: string, repoName: string, releases: GitHubRelease[]) {
+		if (!releases.length) return;
+
+		// 1. Find the matching repo data in the existing repos, exit otherwise
+		const repo = this.#repos.find(
+			({ owner: o, repoName: n, dataFilter }) =>
+				o == owner && repoName == n && (dataFilter?.(releases[0]!) ?? true)
+		);
 		if (!repo) return;
 		// 2. Compute the unique packages
-		const uniquePackages = [...new Set(releases.map(({ tag_name }) => repo.tagToName(tag_name)))];
+		const uniquePackages = [
+			...new Set(
+				releases
+					.filter(release => repo.dataFilter?.(release) ?? true)
+					.map(({ tag_name }) => {
+						const [name] = repo.metadataFromTag(tag_name);
+						return name;
+					})
+			)
+		];
 		// 3. Replace or add the value in the array
 		for (const [i, { owner: o, repoName: n }] of this.#packages.entries()) {
 			if (o === owner && repoName == n && this.#packages[i]) {
@@ -40,7 +54,7 @@ export class PackageDiscoverer {
 				return;
 			}
 		}
-		this.#packages.push({ owner, repoName, packages: uniquePackages });
+		this.#packages.push({ ...repo, packages: uniquePackages });
 	}
 
 	/**
@@ -50,10 +64,19 @@ export class PackageDiscoverer {
 	 */
 	async discoverAll() {
 		this.#packages = await Promise.all(
-			this.#repos.map(async ({ owner, repoName, tagToName }) => {
-				const releases = await this.#cache.getReleases(owner, repoName);
-				const packages = [...new Set(releases.map(({ tag_name }) => tagToName(tag_name)))];
-				return { owner, repoName, packages };
+			this.#repos.map(async repo => {
+				const releases = await this.#cache.getReleases(repo.owner, repo.repoName);
+				const packages = [
+					...new Set(
+						releases
+							.filter(release => repo.dataFilter?.(release) ?? true)
+							.map(({ tag_name }) => {
+								const [name] = repo.metadataFromTag(tag_name);
+								return name;
+							})
+					)
+				];
+				return { ...repo, packages };
 			})
 		);
 	}
@@ -74,4 +97,4 @@ export class PackageDiscoverer {
 	}
 }
 
-export const discoverer = new PackageDiscoverer(svelteGitHubCache.cache, transformationRepos);
+export const discoverer = new PackageDiscoverer(svelteGitHubCache.cache, publicRepos);

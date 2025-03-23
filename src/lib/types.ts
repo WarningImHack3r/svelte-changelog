@@ -1,5 +1,13 @@
 import type { GitHubRelease } from "$lib/server/github-cache";
 
+export type Prettify<T> = {
+	[K in keyof T]: T[K];
+} & {};
+
+export type Entries<T> = {
+	[K in keyof T]: [K, T[K]];
+}[keyof T][];
+
 export type RepoInfo = {
 	/**
 	 * Mode to fetch the releases of the repo.
