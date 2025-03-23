@@ -169,7 +169,9 @@
 	{/if}
 </header>
 
-{@render children?.()}
+<div class="container py-8">
+	{@render children?.()}
+</div>
 
 <footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">
