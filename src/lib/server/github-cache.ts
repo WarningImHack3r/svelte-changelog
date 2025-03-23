@@ -6,6 +6,8 @@ export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 >["data"][number];
 
+const PER_PAGE = 100;
+
 /**
  * A fetch layer to reach the GitHub API
  * with an additional caching mechanism.
@@ -66,7 +68,7 @@ export class GitHubCache {
 		const { data: releases } = await this.#octokit.rest.repos.listReleases({
 			owner,
 			repo,
-			per_page: 50
+			per_page: PER_PAGE
 		});
 
 		await this.#redis.json.set(cacheKey, "$", releases);
@@ -124,7 +126,7 @@ export class GitHubCache {
 		const { data: releases } = await this.#octokit.rest.repos.listReleases({
 			owner,
 			repo,
-			per_page: 50
+			per_page: PER_PAGE
 		});
 
 		// Ajouter au cache pour le repo
