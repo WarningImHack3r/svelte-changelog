@@ -6,7 +6,7 @@
 </script>
 
 <ul class="space-y-8">
-	{#each data.categorizedPackages as { category, packages } (category)}
+	{#each data.displayablePackages as { category, packages } (category)}
 		<li>
 			<h3 class="text-2xl font-bold text-primary">{category.name}</h3>
 			<ul class="mt-2">

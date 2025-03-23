@@ -1,17 +1,28 @@
 import { error } from "@sveltejs/kit";
-import { discoverer } from "$lib/server/package-discoverer";
 import { svelteGitHubCache } from "$lib/server/github-cache";
+import { discoverer } from "$lib/server/package-discoverer";
 
 export async function load({ params }) {
-	const { package: pkg } = params;
+	const { package: slugPackage } = params;
+	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	// Discover packages, if this one doesn't exist, return 404
-	const discovered = await discoverer.getOrDiscover();
-	for (const { repoName, packages } of discovered) {
-		for (const pkgName of packages) {
-			if (pkgName.toLowerCase() === pkg.toLowerCase()) {
+	for (const { category, packages } of categorizedPackages) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		for (const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } of packages) {
+			if (rest.packageName.toLowerCase() === slugPackage.toLowerCase()) {
 				return {
-					releases: svelteGitHubCache.getReleases(repoName)
+					currentPackage: {
+						category,
+						...rest
+					},
+					releases: svelteGitHubCache.getReleases(rest.repoName).then(releases => {
+						const dataFiltered = releases.filter(release => dataFilter?.(release) ?? true);
+						const pkgTagFiltered = dataFiltered.filter(({ tag_name }) =>
+							tag_name.includes(slugPackage)
+						);
+						return pkgTagFiltered.length ? pkgTagFiltered : dataFiltered;
+					})
 				};
 			}
 		}

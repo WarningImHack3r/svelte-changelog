@@ -8,6 +8,12 @@ export type DiscoveredPackage = Prettify<
 	}
 >;
 
+export type CategorizedPackage = Prettify<
+	Pick<Repository, "category"> & {
+		packages: (Omit<Repository, "category"> & { packageName: string })[];
+	}
+>;
+
 export class PackageDiscoverer {
 	readonly #cache: GitHubCache;
 	readonly #repos: Repository[] = [];
@@ -82,9 +88,9 @@ export class PackageDiscoverer {
 	}
 
 	/**
-	 * Returns the saved #packages if they're not empty,
+	 * Returns the saved packages if they're not empty,
 	 * otherwise calls {@link discoverAll} then returns the
-	 * #packages.
+	 * packages.
 	 *
 	 * @returns all the discovered packages per repo name
 	 */
@@ -94,6 +100,43 @@ export class PackageDiscoverer {
 		}
 		await this.discoverAll();
 		return this.#packages;
+	}
+
+	/**
+	 * Returns all packages sorted by categories.
+	 * Calls {@link getOrDiscover} under the hood.
+	 *
+	 * @returns all the discovered packages in a
+	 * category-centric data structure
+	 */
+	async getOrDiscoverCategorized() {
+		return (await this.getOrDiscover()).reduce<CategorizedPackage[]>(
+			(acc, { category, ...rest }) => {
+				const formattedPackages = rest.packages.map(packageName => ({
+					...rest,
+					packageName
+				}));
+
+				for (const [i, item] of acc.entries()) {
+					if (item.category.slug === category.slug && acc[i]) {
+						acc[i].packages.push(...formattedPackages);
+						return acc;
+					}
+				}
+
+				// If the category doesn't exist in the accumulator, create it
+				acc.push({
+					category,
+					packages: rest.packages.map(packageName => ({
+						...rest,
+						packageName
+					}))
+				});
+
+				return acc;
+			},
+			[]
+		);
 	}
 }
 
