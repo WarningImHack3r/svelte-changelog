@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { svelteGitHubCache } from "$lib/server/github-cache";
+import { gitHubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 
 export async function load({ params }) {
@@ -16,7 +16,7 @@ export async function load({ params }) {
 						category,
 						...rest
 					},
-					releases: svelteGitHubCache.getReleases(rest.repoName).then(releases => {
+					releases: gitHubCache.getReleases(rest.owner, rest.repoName).then(releases => {
 						const dataFiltered = releases.filter(release => dataFilter?.(release) ?? true);
 						const pkgTagFiltered = dataFiltered.filter(({ tag_name }) =>
 							tag_name.includes(slugPackage)

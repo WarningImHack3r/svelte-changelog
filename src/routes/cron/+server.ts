@@ -1,6 +1,6 @@
 import { error, type RequestHandler } from "@sveltejs/kit";
 import { CRON_SECRET } from "$env/static/private";
-import { svelteGitHubCache } from "$lib/server/github-cache";
+import { gitHubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { uniqueRepos } from "$lib/repositories";
 
@@ -11,7 +11,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 	await Promise.all(
 		uniqueRepos.map(async ({ owner, name: repo }) => {
-			const releases = await svelteGitHubCache.fetchAndCacheReleases(repo);
+			const releases = await gitHubCache.fetchAndCacheReleases(owner, repo);
 			await discoverer.discoverReleases(owner, repo, releases);
 		})
 	);

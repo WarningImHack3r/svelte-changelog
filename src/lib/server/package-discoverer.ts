@@ -1,5 +1,5 @@
 import type { Prettify } from "$lib/types";
-import { GitHubCache, type GitHubRelease, svelteGitHubCache } from "./github-cache";
+import { GitHubCache, type GitHubRelease, gitHubCache } from "./github-cache";
 import { publicRepos, type Repository } from "$lib/repositories";
 
 export type DiscoveredPackage = Prettify<
@@ -140,4 +140,4 @@ export class PackageDiscoverer {
 	}
 }
 
-export const discoverer = new PackageDiscoverer(svelteGitHubCache.cache, publicRepos);
+export const discoverer = new PackageDiscoverer(gitHubCache, publicRepos);
