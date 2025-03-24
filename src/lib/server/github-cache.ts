@@ -1,6 +1,8 @@
 import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
 import { Redis } from "@upstash/redis";
 import { Octokit } from "octokit";
+import type { Repository } from "$lib/repositories";
+import parseChangelog from "$lib/changelog-parser";
 
 export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
@@ -61,12 +63,11 @@ export class GitHubCache {
 	/**
 	 * Get all the releases for a given repository
 	 *
-	 * @param owner the owner of the GitHub repository to get releases from
-	 * @param repo the name of the GitHub repository to get releases from
+	 * @param repository the repository to get the releases for
 	 * @returns the releases, either cached or fetched
 	 */
-	async getReleases(owner: string, repo: string) {
-		const cacheKey = this.#getRepoKey(owner, repo);
+	async getReleases(repository: Repository) {
+		const cacheKey = this.#getRepoKey(repository.owner, repository.repoName);
 
 		const cachedReleases = await this.#redis.json.get<GitHubRelease[]>(cacheKey);
 		if (cachedReleases) {
@@ -76,11 +77,7 @@ export class GitHubCache {
 
 		console.log(`Cache miss for ${cacheKey}, fetching from GitHub API`);
 
-		const { data: releases } = await this.#octokit.rest.repos.listReleases({
-			owner,
-			repo,
-			per_page
-		});
+		const releases = await this.#fetchReleases(repository);
 
 		await this.#redis.json.set(cacheKey, "$", releases);
 
@@ -144,6 +141,130 @@ export class GitHubCache {
 		await this.addReleases(owner, repo, releases);
 
 		return releases;
+	}
+
+	/**
+	 * A utility method to fetch the releases based on the
+	 * mode we want to use to get them
+	 *
+	 * @param repository the repository to fetch the releases for
+	 * @returns the fetched releases
+	 * @private
+	 */
+	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
+		const { owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
+		if (changesMode === "releases" || !changesMode) {
+			const { data: releases } = await this.#octokit.rest.repos.listReleases({
+				owner,
+				repo,
+				per_page
+			});
+			return releases;
+		}
+
+		// Changelog mode: we'll need to get the tags and re-build releases from them
+
+		// 1. Fetch tags
+		const { data: tags } = await this.#octokit.rest.repos.listTags({
+			owner,
+			repo,
+			per_page
+		});
+
+		// 2. Fetch changelog
+		const { data: changelogResult } = await this.#octokit.rest.repos.getContent({
+			owner,
+			repo,
+			ref:
+				owner === "sveltejs" &&
+				repo === "prettier-plugin-svelte" && // this repo is a bit of a mess
+				tags[0] &&
+				repository.metadataFromTag(tags[0].name)[1].startsWith("3")
+					? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
+					: undefined,
+			path: "CHANGELOG.md"
+		});
+
+		if (!("content" in changelogResult)) return []; // filter out empty or multiple results
+		const { content, encoding, type } = changelogResult;
+		if (type !== "file" || !content) return []; // filter out directories and empty files
+		const changelogFileContents =
+			encoding === "base64" ? Buffer.from(content, "base64").toString() : content;
+		// Actually parse the changelog file
+		const { versions } = await parseChangelog(
+			changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
+		);
+
+		/**
+		 * Returns a simili-hash for local ID creation purposes
+		 *
+		 * @param input the input string
+		 * @returns a (hopefully unique) and pure hashcode
+		 */
+		function simpleHash(input: string) {
+			return Math.abs(
+				input.split("").reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) & 0xffffffff, 0)
+			);
+		}
+
+		// 3. Return the recreated releases
+		return await Promise.all(
+			tags.map(
+				async (
+					{ name: tag_name, commit: { sha }, zipball_url, tarball_url, node_id },
+					tagIndex
+				) => {
+					const {
+						data: { author, committer }
+					} = await this.#octokit.rest.git.getCommit({ owner, repo, commit_sha: sha });
+					const [, cleanVersion] = repository.metadataFromTag(tag_name);
+					const changelogVersion = versions.find(
+						({ version }) => !!version?.includes(cleanVersion)
+					);
+					return {
+						url: "",
+						html_url: `https://github.com/${owner}/${repo}/releases/tag/${tag_name}`,
+						assets_url: "",
+						upload_url: "",
+						tarball_url,
+						zipball_url,
+						id: simpleHash(`${owner}/${repo}`) + tagIndex,
+						node_id,
+						tag_name,
+						target_commitish: "main",
+						name: `${repo}@${cleanVersion}`,
+						body: changelogVersion?.body ?? "_No changelog provided._",
+						draft: false,
+						prerelease: tag_name.includes("-"),
+						created_at: committer.date,
+						published_at: null,
+						author: {
+							name: author.name,
+							login: "",
+							email: author.email,
+							id: 0,
+							node_id: "",
+							avatar_url: "",
+							gravatar_id: null,
+							url: "",
+							html_url: "",
+							followers_url: "",
+							following_url: "",
+							gists_url: "",
+							starred_url: "",
+							subscriptions_url: "",
+							organizations_url: "",
+							repos_url: "",
+							events_url: "",
+							received_events_url: "",
+							type: "",
+							site_admin: false
+						},
+						assets: []
+					} satisfies GitHubRelease;
+				}
+			)
+		);
 	}
 
 	/**

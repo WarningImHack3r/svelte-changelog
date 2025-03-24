@@ -73,7 +73,7 @@ export class PackageDiscoverer {
 	async discoverAll() {
 		this.#packages = await Promise.all(
 			this.#repos.map(async repo => {
-				const releases = await this.#cache.getReleases(repo.owner, repo.repoName);
+				const releases = await this.#cache.getReleases(repo);
 				const packages = [
 					...new Set(
 						releases

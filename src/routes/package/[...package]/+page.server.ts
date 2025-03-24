@@ -9,20 +9,23 @@ export async function load({ params }) {
 
 	// Discover packages, if this one doesn't exist, return 404
 	for (const { category, packages } of categorizedPackages) {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		for (const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } of packages) {
-			if (rest.packageName.toLowerCase() === slugPackage.toLowerCase()) {
+		for (const fullPackage of packages) {
+			const { packageName, ...repo } = fullPackage;
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } = repo;
+			if (packageName.toLowerCase() === slugPackage.toLowerCase()) {
 				return {
 					currentPackage: {
 						category,
+						packageName,
 						...rest
 					},
-					releases: gitHubCache.getReleases(rest.owner, rest.repoName).then(releases => {
+					releases: gitHubCache.getReleases({ ...repo, category }).then(releases => {
 						const dataFiltered = releases
 							.filter(release => dataFilter?.(release) ?? true)
 							.sort((a, b) => {
-								const [, firstVersion] = metadataFromTag(a.tag_name);
-								const [, secondVersion] = metadataFromTag(b.tag_name);
+								const [, firstVersion] = repo.metadataFromTag(a.tag_name);
+								const [, secondVersion] = repo.metadataFromTag(b.tag_name);
 								return semver.rcompare(firstVersion, secondVersion);
 							});
 						const pkgTagFiltered = dataFiltered.filter(({ tag_name }) =>
