@@ -6,7 +6,18 @@ export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 >["data"][number];
 
-const PER_PAGE = 100;
+/**
+ * The maximum items amount to get per-page
+ * when fetching from GitHub API.
+ * Capped at 100.
+ *
+ * (Lowercased despite being a constant for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#property_definitions|Shorthand property names}
+ * usage purposes)
+ *
+ * @see {@link https://docs.github.com/en/rest/releases/releases#list-releases|GitHub Docs}
+ */
+const per_page = 100;
 
 /**
  * A fetch layer to reach the GitHub API
@@ -68,7 +79,7 @@ export class GitHubCache {
 		const { data: releases } = await this.#octokit.rest.repos.listReleases({
 			owner,
 			repo,
-			per_page: PER_PAGE
+			per_page
 		});
 
 		await this.#redis.json.set(cacheKey, "$", releases);
@@ -94,8 +105,8 @@ export class GitHubCache {
 		const existingReleases = (await this.#redis.json.get<GitHubRelease[]>(cacheKey)) ?? [];
 
 		// Dedupe them by ID
-		const existingIds = new Set(existingReleases.map(release => release.id));
-		const uniqueNewReleases = newReleases.filter(release => !existingIds.has(release.id));
+		const existingIds = new Set(existingReleases.map(({ id }) => id));
+		const uniqueNewReleases = newReleases.filter(({ id }) => !existingIds.has(id));
 
 		// Merge them all
 		const updatedReleases = [...existingReleases, ...uniqueNewReleases];
@@ -126,7 +137,7 @@ export class GitHubCache {
 		const { data: releases } = await this.#octokit.rest.repos.listReleases({
 			owner,
 			repo,
-			per_page: PER_PAGE
+			per_page
 		});
 
 		// Ajouter au cache pour le repo
