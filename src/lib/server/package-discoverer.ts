@@ -26,7 +26,7 @@ export class PackageDiscoverer {
 
 	/**
 	 * Discover the packages from the passed releases
-	 * and replaces/adds it to the #packages array from
+	 * and replaces/adds it to the packages array from
 	 * the owner and repo name.
 	 *
 	 * @param owner the owner of the repository to use to populate the array
@@ -42,6 +42,7 @@ export class PackageDiscoverer {
 				o == owner && repoName == n && (dataFilter?.(releases[0]!) ?? true)
 		);
 		if (!repo) return;
+
 		// 2. Compute the unique packages
 		const uniquePackages = [
 			...new Set(
@@ -53,6 +54,7 @@ export class PackageDiscoverer {
 					})
 			)
 		];
+
 		// 3. Replace or add the value in the array
 		for (const [i, { owner: o, repoName: n }] of this.#packages.entries()) {
 			if (o === owner && repoName == n && this.#packages[i]) {
@@ -65,8 +67,8 @@ export class PackageDiscoverer {
 
 	/**
 	 * A processing-heavy function that discovers all the
-	 * packages for the given #repos.
-	 * Populates the result into #packages.
+	 * packages for the repos.
+	 * Populates the result into packages.
 	 */
 	async discoverAll() {
 		this.#packages = await Promise.all(
