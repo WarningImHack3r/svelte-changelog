@@ -44,7 +44,7 @@
 <li
 	bind:this={data}
 	class={[
-		"group *:inline",
+		"group text-pretty *:inline",
 		{
 			"dark:font-bold": data?.innerText.startsWith("breaking:"),
 			"font-semibold": data?.innerText.startsWith("breaking:")
