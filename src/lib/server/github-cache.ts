@@ -20,6 +20,10 @@ export type GitHubRelease = Awaited<
  * @see {@link https://docs.github.com/en/rest/releases/releases#list-releases|GitHub Docs}
  */
 const per_page = 100;
+/**
+ * The TTL of the cached values, in seconds.
+ */
+const cacheTTL = 60 * 15;
 
 /**
  * A fetch layer to reach the GitHub API
@@ -80,65 +84,7 @@ export class GitHubCache {
 		const releases = await this.#fetchReleases(repository);
 
 		await this.#redis.json.set(cacheKey, "$", releases);
-
-		return releases;
-	}
-
-	/**
-	 * Add the given releases to the repository cache
-	 *
-	 * @param owner the owner of the cached GitHub repository to add the
-	 * new releases into
-	 * @param repo the name of the cached GitHub repository to add the
-	 * new releases into
-	 * @param newReleases the new releases to add to the cache; they will then be
-	 * de-duped from the already existing ones, and sorted from most recent to oldest
-	 * @returns all the cached releases after the new releases have been applied
-	 */
-	async addReleases(owner: string, repo: string, newReleases: GitHubRelease[]) {
-		const cacheKey = this.#getRepoKey(owner, repo);
-
-		// Get existing releases
-		const existingReleases = (await this.#redis.json.get<GitHubRelease[]>(cacheKey)) ?? [];
-
-		// Dedupe them by ID
-		const existingIds = new Set(existingReleases.map(({ id }) => id));
-		const uniqueNewReleases = newReleases.filter(({ id }) => !existingIds.has(id));
-
-		// Merge them all
-		const updatedReleases = [...existingReleases, ...uniqueNewReleases];
-
-		// Sort them by most recent
-		updatedReleases.sort(
-			(a, b) =>
-				new Date(b.published_at ?? b.created_at).getTime() -
-				new Date(a.published_at ?? a.created_at).getTime()
-		);
-
-		await this.#redis.json.set(cacheKey, "$", updatedReleases);
-
-		return updatedReleases;
-	}
-
-	/**
-	 * Fetch the latest releases for the given repository and add them
-	 * to the cache via {@link addReleases}
-	 *
-	 * @param owner the owner of the GitHub repository to fetch and cache
-	 * the releases for
-	 * @param repo the name of the GitHub repository to fetch and cache
-	 * the releases for
-	 * @returns the fetched releases
-	 */
-	async fetchAndCacheReleases(owner: string, repo: string) {
-		const { data: releases } = await this.#octokit.rest.repos.listReleases({
-			owner,
-			repo,
-			per_page
-		});
-
-		// Ajouter au cache pour le repo
-		await this.addReleases(owner, repo, releases);
+		await this.#redis.expire(cacheKey, cacheTTL);
 
 		return releases;
 	}

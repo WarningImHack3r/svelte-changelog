@@ -1,5 +1,5 @@
 import type { Prettify } from "$lib/types";
-import { GitHubCache, type GitHubRelease, gitHubCache } from "./github-cache";
+import { GitHubCache, gitHubCache } from "./github-cache";
 import { publicRepos, type Repository } from "$lib/repositories";
 
 export type DiscoveredPackage = Prettify<
@@ -22,47 +22,6 @@ export class PackageDiscoverer {
 	constructor(cache: GitHubCache, repos: Repository[]) {
 		this.#cache = cache;
 		this.#repos = repos;
-	}
-
-	/**
-	 * Discover the packages from the passed releases
-	 * and replaces/adds it to the packages array from
-	 * the owner and repo name.
-	 *
-	 * @param owner the owner of the repository to use to populate the array
-	 * @param repoName the name of the repository to use to populate the array
-	 * @param releases the releases to populate the array from
-	 */
-	async discoverReleases(owner: string, repoName: string, releases: GitHubRelease[]) {
-		if (!releases.length) return;
-
-		// 1. Find the matching repo data in the existing repos, exit otherwise
-		const repo = this.#repos.find(
-			({ owner: o, repoName: n, dataFilter }) =>
-				o == owner && repoName == n && (dataFilter?.(releases[0]!) ?? true)
-		);
-		if (!repo) return;
-
-		// 2. Compute the unique packages
-		const uniquePackages = [
-			...new Set(
-				releases
-					.filter(release => repo.dataFilter?.(release) ?? true)
-					.map(({ tag_name }) => {
-						const [name] = repo.metadataFromTag(tag_name);
-						return name;
-					})
-			)
-		];
-
-		// 3. Replace or add the value in the array
-		for (const [i, { owner: o, repoName: n }] of this.#packages.entries()) {
-			if (o === owner && repoName == n && this.#packages[i]) {
-				this.#packages[i].packages = uniquePackages;
-				return;
-			}
-		}
-		this.#packages.push({ ...repo, packages: uniquePackages });
 	}
 
 	/**
