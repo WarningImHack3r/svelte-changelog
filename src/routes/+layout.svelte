@@ -4,6 +4,7 @@
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
+	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { news } from "$lib/news/news.json";
 	import { FAVICON_URL } from "$lib/config";
@@ -67,6 +68,7 @@
 	<ScreenSize />
 {/if}
 <ModeWatcher />
+<ProgressBar class="text-primary" zIndex={100} />
 
 <header
 	class="sticky top-0 z-40 w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"

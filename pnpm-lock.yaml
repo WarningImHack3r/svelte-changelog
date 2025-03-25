@@ -20,6 +20,9 @@ importers:
       '@octokit/graphql-schema':
         specifier: ^15.26.0
         version: 15.26.0
+      '@prgm/sveltekit-progress-bar':
+        specifier: ^3.0.2
+        version: 3.0.2(@sveltejs/kit@2.20.1(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.23.2)(vite@6.2.2(@types/node@22.13.13)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.4.2)))(svelte@5.23.2)(vite@6.2.2(@types/node@22.13.13)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.4.2)))(svelte@5.23.2)
       '@shikijs/langs':
         specifier: ^3.2.1
         version: 3.2.1
@@ -692,6 +695,13 @@ packages:
 
   '@polka/url@1.0.0-next.25':
     resolution: {integrity: sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==}
+
+  '@prgm/sveltekit-progress-bar@3.0.2':
+    resolution: {integrity: sha512-RilKiPC2Lt/ahC1qmqvL5B8YJPmpwcz/PVebhOmGA7VRcU97xvbn83428r3pVfRNVlxKjHm9NatbIgQim/ccJA==}
+    engines: {node: ^20.5.0 || >=22.2.0}
+    peerDependencies:
+      '@sveltejs/kit': ^2.0.0
+      svelte: ^5.0.0
 
   '@rollup/pluginutils@5.1.4':
     resolution: {integrity: sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ==}
@@ -2863,6 +2873,11 @@ snapshots:
     optional: true
 
   '@polka/url@1.0.0-next.25': {}
+
+  '@prgm/sveltekit-progress-bar@3.0.2(@sveltejs/kit@2.20.1(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.23.2)(vite@6.2.2(@types/node@22.13.13)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.4.2)))(svelte@5.23.2)(vite@6.2.2(@types/node@22.13.13)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.4.2)))(svelte@5.23.2)':
+    dependencies:
+      '@sveltejs/kit': 2.20.1(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.23.2)(vite@6.2.2(@types/node@22.13.13)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.4.2)))(svelte@5.23.2)(vite@6.2.2(@types/node@22.13.13)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.4.2))
+      svelte: 5.23.2
 
   '@rollup/pluginutils@5.1.4(rollup@4.34.6)':
     dependencies:

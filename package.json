@@ -18,6 +18,7 @@
 		"@lucide/svelte": "^0.483.0",
 		"@neoconfetti/svelte": "^2.2.2",
 		"@octokit/graphql-schema": "^15.26.0",
+		"@prgm/sveltekit-progress-bar": "^3.0.2",
 		"@shikijs/langs": "^3.2.1",
 		"@shikijs/rehype": "^3.2.1",
 		"@shikijs/themes": "^3.2.1",
