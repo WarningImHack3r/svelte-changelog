@@ -8,10 +8,7 @@ export async function load() {
 		displayablePackages: categorizedPackages.map(res => ({
 			...res,
 			packages: res.packages
-				.map(
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					({ dataFilter, metadataFromTag, changelogContentsReplacer, ...rest }) => rest
-				)
+				.map(({ dataFilter, metadataFromTag, changelogContentsReplacer, ...rest }) => rest)
 				.toSorted((a, b) => a.packageName.localeCompare(b.packageName))
 		}))
 	};

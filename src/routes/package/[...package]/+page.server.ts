@@ -11,7 +11,6 @@ export async function load({ params }) {
 	for (const { category, packages } of categorizedPackages) {
 		for (const fullPackage of packages) {
 			const { packageName, ...repo } = fullPackage;
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } = repo;
 			if (packageName.toLowerCase() === slugPackage.toLowerCase()) {
 				return {
