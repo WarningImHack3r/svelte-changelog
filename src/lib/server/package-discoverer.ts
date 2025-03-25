@@ -43,6 +43,9 @@ export class PackageDiscoverer {
 							})
 					)
 				];
+				console.log(
+					`Discovered ${packages.length} packages for ${repo.owner}/${repo.repoName}: ${packages.join(", ")}`
+				);
 				return { ...repo, packages };
 			})
 		);
@@ -79,8 +82,8 @@ export class PackageDiscoverer {
 				}));
 
 				for (const [i, item] of acc.entries()) {
-					if (item.category.slug === category.slug && acc[i]) {
-						acc[i].packages.push(...formattedPackages);
+					if (item.category.slug === category.slug) {
+						acc[i]?.packages.push(...formattedPackages);
 						return acc;
 					}
 				}

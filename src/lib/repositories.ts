@@ -1,4 +1,5 @@
 import type { Category, Entries, Prettify, RepoInfo } from "$lib/types";
+import { uniq } from "$lib/array";
 
 export const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 	svelte: {
@@ -150,25 +151,6 @@ export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, r
 		...repo
 	}))
 );
-
-/**
- * A utility function to only keep unique items in
- * an array, based on the uniqTransform parameter.
- *
- * @param arr the input array
- * @param uniqTransform the transformation function
- * to make items unique
- * @returns the filtered array, containing only unique items
- *
- * @see {@link https://stackoverflow.com/a/70503699/12070367|Original implementation}
- */
-function uniq<T, U>(arr: T[], uniqTransform: (item: T) => U) {
-	const track = new Set<U>();
-	return arr.filter(item => {
-		const value = uniqTransform(item);
-		return track.has(value) ? false : track.add(value);
-	});
-}
 
 /**
  * Return a unique array of owner and name of

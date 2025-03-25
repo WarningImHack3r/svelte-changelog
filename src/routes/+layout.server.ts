@@ -1,4 +1,5 @@
 import { discoverer } from "$lib/server/package-discoverer";
+import { uniq } from "$lib/array";
 
 export async function load() {
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
@@ -7,9 +8,12 @@ export async function load() {
 		// The displayable data, available to load from clients
 		displayablePackages: categorizedPackages.map(res => ({
 			...res,
-			packages: res.packages
-				.map(({ dataFilter, metadataFromTag, changelogContentsReplacer, ...rest }) => rest)
-				.toSorted((a, b) => a.packageName.localeCompare(b.packageName))
+			packages: uniq(
+				res.packages
+					.map(({ dataFilter, metadataFromTag, changelogContentsReplacer, ...rest }) => rest)
+					.toSorted((a, b) => a.packageName.localeCompare(b.packageName)),
+				item => item.packageName
+			)
 		}))
 	};
 }
