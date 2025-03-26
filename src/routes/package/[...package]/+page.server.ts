@@ -2,16 +2,16 @@ import semver from "semver";
 import { error } from "@sveltejs/kit";
 import { gitHubCache, type GitHubRelease } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
+import type { Repository } from "$lib/repositories";
 
 export async function load({ params }) {
 	const { package: slugPackage } = params;
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	let currentPackage:
-		| (Omit<
-				(typeof categorizedPackages)[number]["packages"][number],
-				"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
-		  > & { category: (typeof categorizedPackages)[number]["category"] })
+		| (Omit<Repository, "dataFilter" | "metadataFromTag" | "changelogContentsReplacer"> & {
+				packageName: string;
+		  })
 		| undefined = undefined;
 	const foundVersions = new Set<string>();
 	const releases: (GitHubRelease & { cleanVersion: string })[] = [];
