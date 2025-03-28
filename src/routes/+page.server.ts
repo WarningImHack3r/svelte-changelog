@@ -6,5 +6,5 @@ export async function load({ parent }) {
 	if (!firstCategory) redirect(307, "/packages");
 	const firstPackage = firstCategory.packages[0];
 	if (!firstPackage) redirect(307, "/packages");
-	redirect(307, `/package/${firstPackage.packageName}`);
+	redirect(307, `/package/${firstPackage.pkg.name}`);
 }
