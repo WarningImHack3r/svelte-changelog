@@ -6,6 +6,7 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
+	import { ChevronRight } from "@lucide/svelte";
 
 	type Props = {
 		packageName?: string;
@@ -22,9 +23,16 @@
 </script>
 
 <div class={cn("flex flex-col *:shadow-lg *:shadow-black", className)}>
-	<Card.Root class="sticky bg-secondary">
-		<Card.Header>
+	<Card.Root class="z-10 border border-muted-foreground/50 bg-secondary">
+		<Card.Header class="flex-row items-start justify-between">
 			<Card.Title>Packages</Card.Title>
+			<a
+				href="/packages"
+				class="group inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+			>
+				See all
+				<ChevronRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+			</a>
 		</Card.Header>
 		<Card.Content>
 			<ul>
