@@ -25,7 +25,11 @@ const per_page = 100;
 /**
  * The TTL of the cached values, in seconds.
  */
-const cacheTTL = 60 * 15;
+const cacheTTL = 60 * 15; // 15 min
+/**
+ * The TTL of the cached values, in seconds.
+ */
+const longCacheTTL = 60 * 60 * 24 * 10; // 10 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -252,7 +256,9 @@ export class GitHubCache {
 			.filter(path => path !== undefined)
 			.filter(
 				path =>
-					!path.includes("/test/") && (path === "package.json" || path.endsWith("/package.json"))
+					!path.includes("/test/") &&
+					!path.includes("/e2e-tests/") &&
+					(path === "package.json" || path.endsWith("/package.json"))
 			);
 
 		const descriptions = new Map<string, string>();
@@ -278,6 +284,7 @@ export class GitHubCache {
 		}
 
 		await this.#redis.json.set(cacheKey, "$", Object.fromEntries(descriptions));
+		await this.#redis.expire(cacheKey, longCacheTTL);
 
 		return Object.fromEntries(descriptions);
 	}
