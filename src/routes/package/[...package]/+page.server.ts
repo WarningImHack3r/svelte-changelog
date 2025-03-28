@@ -27,21 +27,22 @@ export async function load({ params }) {
 				);
 
 				// 2. Filter out invalid ones
-				const dataFiltered = cachedReleases
-					.filter(release => repo.dataFilter?.(release) ?? true)
+				const validReleases = cachedReleases
+					.filter(release => {
+						const [name] = repo.metadataFromTag(release.tag_name);
+						return (
+							(repo.dataFilter?.(release) ?? true) &&
+							slugPackage.localeCompare(name, undefined, { sensitivity: "base" }) === 0
+						);
+					})
 					.sort((a, b) => {
 						const [, firstVersion] = repo.metadataFromTag(a.tag_name);
 						const [, secondVersion] = repo.metadataFromTag(b.tag_name);
 						return semver.rcompare(firstVersion, secondVersion);
 					});
-				console.log("Length after filtering:", dataFiltered.length);
-				const pkgTagFiltered = dataFiltered.filter(({ tag_name }) =>
-					tag_name.toLowerCase().includes(slugPackage.toLowerCase())
-				);
-				console.log(`Got ${pkgTagFiltered.length} releases after filtering by package name`);
+				console.log("Length after filtering:", validReleases.length);
 				// Get the releases matching the slug, or all of them if none
 				// (the latter case for repos with no package in names)
-				const validReleases = pkgTagFiltered.length ? pkgTagFiltered : dataFiltered;
 				console.log("Final filtered count:", validReleases.length);
 
 				// 3. For each release, check if it is already found, searching by versions
