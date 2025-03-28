@@ -9,9 +9,8 @@ export async function load({ params }) {
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	let currentPackage:
-		| (Omit<Repository, "dataFilter" | "metadataFromTag" | "changelogContentsReplacer"> & {
-				packageName: string;
-		  })
+		| (Omit<Repository, "dataFilter" | "metadataFromTag" | "changelogContentsReplacer"> &
+				Pick<(typeof categorizedPackages)[number]["packages"][number], "pkg">)
 		| undefined = undefined;
 	const foundVersions = new Set<string>();
 	const releases: (GitHubRelease & { cleanVersion: string })[] = [];
@@ -19,8 +18,8 @@ export async function load({ params }) {
 	// Discover releases
 	console.log("Starting loading releases...");
 	for (const { category, packages } of categorizedPackages) {
-		for (const { packageName, ...repo } of packages) {
-			if (packageName.toLowerCase() === slugPackage.toLowerCase()) {
+		for (const { pkg, ...repo } of packages) {
+			if (pkg.name.toLowerCase() === slugPackage.toLowerCase()) {
 				// 1. Get releases
 				const cachedReleases = await gitHubCache.getReleases({ ...repo, category });
 				console.log(
@@ -65,7 +64,7 @@ export async function load({ params }) {
 						);
 						currentPackage = {
 							category,
-							packageName,
+							pkg,
 							...rest
 						};
 					}

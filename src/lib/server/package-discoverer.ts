@@ -2,15 +2,20 @@ import type { Prettify } from "$lib/types";
 import { GitHubCache, gitHubCache } from "./github-cache";
 import { publicRepos, type Repository } from "$lib/repositories";
 
+type Package = {
+	name: string;
+	description: string;
+};
+
 export type DiscoveredPackage = Prettify<
 	Repository & {
-		packages: string[];
+		packages: Package[];
 	}
 >;
 
 export type CategorizedPackage = Prettify<
 	Pick<Repository, "category"> & {
-		packages: (Omit<Repository, "category"> & { packageName: string })[];
+		packages: (Omit<Repository, "category"> & { pkg: Package })[];
 	}
 >;
 
@@ -33,6 +38,7 @@ export class PackageDiscoverer {
 		this.#packages = await Promise.all(
 			this.#repos.map(async repo => {
 				const releases = await this.#cache.getReleases(repo);
+				const descriptions = await this.#cache.getDescriptions(repo);
 				const packages = [
 					...new Set(
 						releases
@@ -46,9 +52,46 @@ export class PackageDiscoverer {
 				console.log(
 					`Discovered ${packages.length} packages for ${repo.owner}/${repo.repoName}: ${packages.join(", ")}`
 				);
-				return { ...repo, packages };
+				return {
+					...repo,
+					packages: packages.map(pkg => {
+						const ghName = this.#gitHubDirectoryFromName(pkg);
+						return {
+							name: pkg,
+							description:
+								descriptions[`packages/${ghName}/package.json`] ??
+								descriptions[
+									`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
+								] ??
+								descriptions["package.json"] ??
+								""
+						};
+					})
+				};
 			})
 		);
+	}
+
+	/**
+	 * Returns the directory on GitHub from the name
+	 * of the package.
+	 * Useful to retrieve the correct `package.json` file.
+	 *
+	 * @param name the package name
+	 * @returns the directory name in GitHub for that package
+	 * @private
+	 */
+	#gitHubDirectoryFromName(name: string): string {
+		switch (name) {
+			case "extensions":
+				return "svelte-vscode";
+			case "sv":
+				return "cli";
+			case "svelte-migrate":
+				return "migrate";
+			default:
+				return name;
+		}
 	}
 
 	/**
@@ -76,9 +119,9 @@ export class PackageDiscoverer {
 	async getOrDiscoverCategorized() {
 		return (await this.getOrDiscover()).reduce<CategorizedPackage[]>(
 			(acc, { category, ...rest }) => {
-				const formattedPackages = rest.packages.map(packageName => ({
+				const formattedPackages = rest.packages.map(pkg => ({
 					...rest,
-					packageName
+					pkg
 				}));
 
 				for (const [i, item] of acc.entries()) {
@@ -91,9 +134,9 @@ export class PackageDiscoverer {
 				// If the category doesn't exist in the accumulator, create it
 				acc.push({
 					category,
-					packages: rest.packages.map(packageName => ({
+					packages: rest.packages.map(pkg => ({
 						...rest,
-						packageName
+						pkg
 					}))
 				});
 

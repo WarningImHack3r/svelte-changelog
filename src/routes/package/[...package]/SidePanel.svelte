@@ -35,10 +35,10 @@
 					<li class="space-y-2">
 						<h3 class="text-xl font-bold text-primary">{category.name}</h3>
 						<ul class="space-y-2">
-							{#each packages as { packageName } (packageName)}
+							{#each packages as { pkg } (pkg.name)}
 								<li>
-									<a href="/package/{packageName}" class="underline-offset-4 hover:underline">
-										{packageName}
+									<a href="/package/{pkg.name}" class="underline-offset-4 hover:underline">
+										{pkg.name}
 									</a>
 								</li>
 							{/each}

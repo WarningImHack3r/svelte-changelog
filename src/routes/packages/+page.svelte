@@ -10,17 +10,17 @@
 		<li>
 			<h3 class="text-2xl font-bold text-primary">{category.name}</h3>
 			<ul class="mt-2">
-				{#each packages as { owner, repoName, packageName }, index (packageName)}
+				{#each packages as { owner, repoName, pkg }, index (pkg.name)}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}
 					<li>
 						<a
-							href="/package/{packageName}"
+							href="/package/{pkg.name}"
 							class="group flex items-center rounded-lg px-4 py-3 transition-colors hover:bg-neutral-800"
 						>
 							<div class="flex flex-col">
-								<h4 class="font-medium">{packageName}</h4>
+								<h4 class="font-medium">{pkg.name}</h4>
 								{#if category.slug === "others"}
 									<span class="text-muted-foreground">
 										{owner}/{repoName}

@@ -11,8 +11,8 @@ export async function load() {
 			packages: uniq(
 				res.packages
 					.map(({ dataFilter, metadataFromTag, changelogContentsReplacer, ...rest }) => rest)
-					.toSorted((a, b) => a.packageName.localeCompare(b.packageName)),
-				item => item.packageName
+					.toSorted((a, b) => a.pkg.name.localeCompare(b.pkg.name)),
+				item => item.pkg.name
 			)
 		}))
 	};

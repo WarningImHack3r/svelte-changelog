@@ -8,6 +8,8 @@ export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 >["data"][number];
 
+type KeyType = "releases" | "descriptions";
+
 /**
  * The maximum items amount to get per-page
  * when fetching from GitHub API.
@@ -57,11 +59,12 @@ export class GitHubCache {
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
+	 * @param type the kind of cache to use
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(owner: string, repo: string) {
-		return `repo:${owner}/${repo}:releases`;
+	#getRepoKey(owner: string, repo: string, type: KeyType) {
+		return `repo:${owner}/${repo}:${type}`;
 	}
 
 	/**
@@ -71,15 +74,15 @@ export class GitHubCache {
 	 * @returns the releases, either cached or fetched
 	 */
 	async getReleases(repository: Repository) {
-		const cacheKey = this.#getRepoKey(repository.owner, repository.repoName);
+		const cacheKey = this.#getRepoKey(repository.owner, repository.repoName, "releases");
 
 		const cachedReleases = await this.#redis.json.get<GitHubRelease[]>(cacheKey);
 		if (cachedReleases) {
-			console.log(`Cache hit for ${cacheKey}`);
+			console.log(`Cache hit for releases for ${cacheKey}`);
 			return cachedReleases;
 		}
 
-		console.log(`Cache miss for ${cacheKey}, fetching from GitHub API`);
+		console.log(`Cache miss for releases for ${cacheKey}, fetching from GitHub API`);
 
 		const releases = await this.#fetchReleases(repository);
 
@@ -214,6 +217,72 @@ export class GitHubCache {
 	}
 
 	/**
+	 * Get a map that contains the descriptions
+	 * of all the packages in the given repository.
+	 * Irrelevant paths (e.g., tests) or empty descriptions
+	 * are excluded.
+	 *
+	 * @param repository the repository to fetch the
+	 * descriptions in
+	 * @returns a map of paths to descriptions.
+	 * @private
+	 */
+	async getDescriptions(repository: Repository) {
+		const cacheKey = this.#getRepoKey(repository.owner, repository.repoName, "descriptions");
+
+		const cachedDescriptions = await this.#redis.json.get<{ [key: string]: string }>(cacheKey);
+		if (cachedDescriptions) {
+			console.log(`Cache hit for descriptions for ${cacheKey}`);
+			return cachedDescriptions;
+		}
+
+		console.log(`Cache miss for releases for ${cacheKey}, fetching from GitHub API`);
+
+		const { owner, repoName: repo } = repository;
+
+		const { data: allFiles } = await this.#octokit.rest.git.getTree({
+			owner,
+			repo,
+			tree_sha: "HEAD",
+			recursive: "true"
+		});
+
+		const allPackageJson = allFiles.tree
+			.map(({ path }) => path)
+			.filter(path => path !== undefined)
+			.filter(
+				path =>
+					!path.includes("/test/") && (path === "package.json" || path.endsWith("/package.json"))
+			);
+
+		const descriptions = new Map<string, string>();
+		for (const path of allPackageJson) {
+			const { data: packageJson } = await this.#octokit.rest.repos.getContent({
+				owner,
+				repo,
+				path
+			});
+
+			if (!("content" in packageJson)) continue; // filter out empty or multiple results
+			const { content, encoding, type } = packageJson;
+			if (type !== "file" || !content) continue; // filter out directories and empty files
+			const packageFile =
+				encoding === "base64" ? Buffer.from(content, "base64").toString() : content;
+
+			try {
+				const { description } = JSON.parse(packageFile) as { description: string };
+				if (description) descriptions.set(path, description);
+			} catch {
+				// ignore
+			}
+		}
+
+		await this.#redis.json.set(cacheKey, "$", Object.fromEntries(descriptions));
+
+		return Object.fromEntries(descriptions);
+	}
+
+	/**
 	 * Checks if releases are present in the cache for the
 	 * given GitHub info
 	 *
@@ -221,10 +290,11 @@ export class GitHubCache {
 	 * existence in the cache for
 	 * @param repo the name of the GitHub repository to check the
 	 * existence in the cache for
+	 * @param type the kind of cache to target
 	 * @returns whether the repository is cached or not
 	 */
-	async exists(owner: string, repo: string) {
-		const cacheKey = this.#getRepoKey(owner, repo);
+	async exists(owner: string, repo: string, type: KeyType) {
+		const cacheKey = this.#getRepoKey(owner, repo, type);
 		const result = await this.#redis.exists(cacheKey);
 		return result === 1;
 	}
@@ -236,9 +306,10 @@ export class GitHubCache {
 	 * from the cache
 	 * @param repo the name of the GitHub repository to remove
 	 * from the cache
+	 * @param type the kind of cache to target
 	 */
-	async deleteEntry(owner: string, repo: string) {
-		const cacheKey = this.#getRepoKey(owner, repo);
+	async deleteEntry(owner: string, repo: string, type: KeyType) {
+		const cacheKey = this.#getRepoKey(owner, repo, type);
 		await this.#redis.del(cacheKey);
 	}
 }

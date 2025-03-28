@@ -23,10 +23,13 @@
 		{@render loading()}
 	{:then}
 		<div class="my-8">
-			<h1 class="text-5xl font-semibold text-primary">{data.currentPackage.packageName}</h1>
+			<h1 class="text-5xl font-semibold text-primary">{data.currentPackage.pkg.name}</h1>
 			<h2 class="text-xl text-muted-foreground">
 				{data.currentPackage.owner}/{data.currentPackage.repoName}
 			</h2>
+			{#if data.currentPackage.pkg.description}
+				<h3 class="mt-4 italic">{data.currentPackage.pkg.description}</h3>
+			{/if}
 		</div>
 		<div class="flex gap-8">
 			<Accordion.Root
@@ -41,14 +44,14 @@
 			>
 				{#each data.releases as release (release.id)}
 					<ReleaseCard
-						packageName={data.currentPackage.packageName}
+						packageName={data.currentPackage.pkg.name}
 						repo={{ owner: data.currentPackage.owner, name: data.currentPackage.repoName }}
 						{release}
 					/>
 				{/each}
 			</Accordion.Root>
 			<SidePanel
-				packageName={data.currentPackage.packageName}
+				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
 				class="h-fit w-2/5"
 			/>
