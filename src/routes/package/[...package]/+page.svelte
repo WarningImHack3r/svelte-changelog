@@ -4,15 +4,31 @@
 	import ReleaseCard from "./ReleaseCard.svelte";
 	import SidePanel from "./SidePanel.svelte";
 	import * as Accordion from "$lib/components/ui/accordion";
+	import { Skeleton } from "$lib/components/ui/skeleton";
 
 	let { data } = $props();
 </script>
 
 {#snippet loading()}
-	<span class="inline-flex items-center justify-center">
-		<LoaderCircle class="mr-2 size-4 animate-spin" />
-		Loading...
-	</span>
+	<div class="my-8 space-y-2">
+		<Skeleton class="h-16 w-64" />
+		<Skeleton class="h-8 w-32" />
+	</div>
+	<div class="flex gap-8">
+		<div class="relative w-full space-y-2">
+			<p
+				class="absolute top-[4.5rem] left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
+			>
+				<LoaderCircle class="mr-2 size-4 animate-spin" />
+				Loading...
+			</p>
+			<Skeleton class="h-36 w-full" />
+			<Skeleton class="h-44 w-full" />
+			<Skeleton class="h-16 w-full" />
+			<Skeleton class="h-80 w-full" />
+		</div>
+		<Skeleton class="h-96 w-1/3" />
+	</div>
 {/snippet}
 
 {#if navigating.to}
