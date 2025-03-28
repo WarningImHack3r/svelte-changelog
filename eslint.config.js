@@ -31,6 +31,11 @@ export default tseslint.config(
 		}
 	},
 	{
+		rules: {
+			"@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }]
+		}
+	},
+	{
 		ignores: ["build/", ".svelte-kit/", "dist/", "src/lib/components/ui/", "src/lib/utils.[jt]s"]
 	}
 );

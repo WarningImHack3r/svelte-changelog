@@ -57,15 +57,15 @@ If you think I missed a package, you can either open an issue or directly contri
 
 ### How to contribute
 
-Fork the repo, edit the `/src/routes/+layout.ts` file, and open a PR.  
+Fork the repo, edit the `/src/lib/repositories.ts` file, and open a PR.  
 **If the repo is not in the `sveltejs` GitHub organization, please open an issue instead.**
 
 The code architecture is made to be as flexible as possible, here's how it works:
 
 ```typescript
-const repos: Record<Tab, { name: string; repos: Repo[] }> = {
-    svelte: ...,
-    kit: ...,
+export const repos = {
+    svelte: {/* ... */},
+    kit: {/* ... */},
     others: {
         name: "Other",
         repos: [
@@ -76,7 +76,7 @@ const repos: Record<Tab, { name: string; repos: Repo[] }> = {
                 changesMode: "releases", // Optional line, the way to get the changes; either "releases" or "changelog", defaults to "releases"
                 repoName: "your-repo", // The name of the repo on GitHub, as it appears in the URL: https://github.com/sveltejs/your-repo
                 dataFilter: ({ tag_name }) => true, // Optional line, return false to exclude a version from its tag name
-                versionFromTag: tag => "...", // Return the version from the tag name; must be a valid semver
+                metadataFromTag: tag => ["package-name", "2.4.3"], // Return the package name and version from the tag name; the version must be a valid semver without any leading "v"
                 changelogContentsReplacer: contents => contents, // Optional line, replace the contents of the changelog file before parsing it; only used if `changesMode` is "changelog"
             }
         ]
