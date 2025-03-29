@@ -69,7 +69,7 @@
 			<SidePanel
 				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
-				class="h-fit w-2/5"
+				class="h-fit w-[35rem]"
 			/>
 		</div>
 	{/await}

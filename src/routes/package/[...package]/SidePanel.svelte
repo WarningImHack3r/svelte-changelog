@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
+	import { ChevronRight } from "@lucide/svelte";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import { cn } from "$lib/utils";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
-	import { ChevronRight } from "@lucide/svelte";
 
 	type Props = {
 		packageName?: string;
@@ -23,7 +23,7 @@
 </script>
 
 <div class={cn("flex flex-col *:shadow-lg *:shadow-black", className)}>
-	<Card.Root class="z-10 border border-muted-foreground/50 bg-secondary">
+	<Card.Root class="z-10 border border-muted-foreground/25 bg-secondary">
 		<Card.Header class="flex-row items-start justify-between">
 			<Card.Title>Packages</Card.Title>
 			<a
@@ -31,26 +31,44 @@
 				class="group inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
 			>
 				See all
-				<ChevronRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+				<ChevronRight class="size-4 transition-transform group-hover:translate-x-1" />
 			</a>
 		</Card.Header>
 		<Card.Content>
 			<ul>
 				{#each allPackages as { category, packages }, index (category)}
 					{#if index > 0}
-						<Separator class="mt-3 mb-2 rounded-full bg-muted-foreground" />
+						<Separator class="my-2 rounded-full bg-muted-foreground" />
 					{/if}
 					<li class="space-y-2">
-						<h3 class="text-xl font-bold text-primary">{category.name}</h3>
-						<ul class="space-y-2">
-							{#each packages as { pkg } (pkg.name)}
-								<li>
-									<a href="/package/{pkg.name}" class="underline-offset-4 hover:underline">
-										{pkg.name}
-									</a>
-								</li>
-							{/each}
-						</ul>
+						{#if packages.length > 1}
+							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
+							<ul class="space-y-2">
+								{#each packages as { pkg } (pkg.name)}
+									<li>
+										<a
+											href="/package/{pkg.name}"
+											class="group inline-flex w-full items-center underline-offset-4 hover:underline"
+										>
+											{pkg.name}
+											<ChevronRight
+												class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
+											/>
+										</a>
+									</li>
+								{/each}
+							</ul>
+						{:else}
+							<a
+								href="/package/{packages[0]?.pkg.name}"
+								class="group inline-flex w-full items-center text-xl font-bold text-primary underline-offset-4 hover:underline"
+							>
+								{category.name}
+								<ChevronRight
+									class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
+								/>
+							</a>
+						{/if}
 					</li>
 				{/each}
 			</ul>
