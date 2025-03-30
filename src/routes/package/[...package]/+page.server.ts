@@ -76,7 +76,7 @@ export async function load({ params }) {
 	}
 
 	if (currentPackage) {
-		// Return the final sorted results and filter back out the clean version
+		// Return the final sorted results
 		return {
 			currentPackage,
 			releases: releases.toSorted(

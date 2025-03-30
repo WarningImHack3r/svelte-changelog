@@ -63,32 +63,30 @@
 	 * e.g., "2 days ago", "3 hours ago", "1 minute ago"
 	 *
 	 * @param date The date to convert
+	 * @param locale the locale to use for formatting
 	 * @returns the relative date
 	 */
-	export function toRelativeDateString(date: Date) {
-		let dateDiff = new Date().getTime() - date.getTime();
-		let relevantUnit: Intl.RelativeTimeFormatUnit;
-		switch (true) {
-			case dateDiff < 1000 * 60:
-				dateDiff /= 1000;
-				relevantUnit = "seconds";
-				break;
-			case dateDiff < 1000 * 60 * 60:
-				dateDiff /= 1000 * 60;
-				relevantUnit = "minutes";
-				break;
-			case dateDiff < 1000 * 60 * 60 * 24:
-				dateDiff /= 1000 * 60 * 60;
-				relevantUnit = "hours";
-				break;
-			default:
-				dateDiff /= 1000 * 60 * 60 * 24;
-				relevantUnit = "days";
-				break;
+	function timeAgo(date: Date, locale = "en") {
+		const diff = (new Date().getTime() - date.getTime()) / 1000;
+		const minutes = Math.floor(diff / 60);
+		const hours = Math.floor(minutes / 60);
+		const days = Math.floor(hours / 24);
+		const months = Math.floor(days / 30);
+		const years = Math.floor(months / 12);
+		const formatter = new Intl.RelativeTimeFormat(locale);
+
+		if (years > 0) {
+			return formatter.format(0 - years, "year");
+		} else if (months > 0) {
+			return formatter.format(0 - months, "month");
+		} else if (days > 0) {
+			return formatter.format(0 - days, "day");
+		} else if (hours > 0) {
+			return formatter.format(0 - hours, "hour");
+		} else if (minutes > 0) {
+			return formatter.format(0 - minutes, "minute");
 		}
-		return new Intl.RelativeTimeFormat("en", {
-			style: "long"
-		}).format(-Math.ceil(dateDiff), relevantUnit);
+		return formatter.format(0 - diff, "second");
 	}
 </script>
 
@@ -185,11 +183,11 @@
 										month: "long",
 										day: "numeric"
 									})
-								: toRelativeDateString(releaseDate)}
+								: timeAgo(releaseDate)}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
 							{isOlderThanAWeek
-								? toRelativeDateString(releaseDate)
+								? timeAgo(releaseDate)
 								: new Intl.DateTimeFormat("en", {
 										dateStyle: "long",
 										timeStyle: "short"
