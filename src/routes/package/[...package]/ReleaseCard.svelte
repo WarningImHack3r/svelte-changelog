@@ -169,14 +169,21 @@
 					<Tooltip.Root delayDuration={300}>
 						<Tooltip.Trigger>
 							{isOlderThanAWeek
-								? releaseDate.toLocaleDateString("en")
+								? releaseDate.toLocaleDateString("en", {
+										year:
+											releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15
+												? "numeric"
+												: undefined,
+										month: "long",
+										day: "numeric"
+									})
 								: toRelativeDateString(releaseDate)}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
 							{isOlderThanAWeek
 								? toRelativeDateString(releaseDate)
 								: new Intl.DateTimeFormat("en", {
-										dateStyle: "medium",
+										dateStyle: "long",
 										timeStyle: "short"
 									}).format(releaseDate)}
 						</Tooltip.Content>
