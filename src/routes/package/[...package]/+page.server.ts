@@ -1,5 +1,5 @@
-import semver from "semver";
 import { error } from "@sveltejs/kit";
+import semver from "semver";
 import { gitHubCache, type GitHubRelease } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { Repository } from "$lib/repositories";
@@ -13,7 +13,7 @@ export async function load({ params }) {
 				Pick<(typeof categorizedPackages)[number]["packages"][number], "pkg">)
 		| undefined = undefined;
 	const foundVersions = new Set<string>();
-	const releases: (GitHubRelease & { cleanVersion: string })[] = [];
+	const releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] = [];
 
 	// Discover releases
 	console.log("Starting loading releases...");
@@ -48,7 +48,7 @@ export async function load({ params }) {
 				// 3. For each release, check if it is already found, searching by versions
 				const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } = repo;
 				for (const release of validReleases) {
-					const [, cleanVersion] = repo.metadataFromTag(release.tag_name);
+					const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
 					console.log(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
 					if (foundVersions.has(cleanVersion)) continue;
 
@@ -56,7 +56,7 @@ export async function load({ params }) {
 					const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
 					console.log("Current newest version", currentNewestVersion);
 					foundVersions.add(cleanVersion);
-					releases.push({ ...release, cleanVersion });
+					releases.push({ cleanName, cleanVersion, ...release });
 
 					// If it is newer than the newest we got, set this repo as the "final repo"
 					if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
@@ -79,9 +79,11 @@ export async function load({ params }) {
 		// Return the final sorted results and filter back out the clean version
 		return {
 			currentPackage,
-			releases: releases
-				.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))
-				.filter(({ cleanVersion, ...release }) => release)
+			releases: releases.toSorted(
+				(a, b) =>
+					new Date(b.published_at ?? b.created_at).getTime() -
+					new Date(a.published_at ?? a.created_at).getTime()
+			)
 		};
 	}
 

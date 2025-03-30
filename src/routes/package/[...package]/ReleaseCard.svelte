@@ -11,20 +11,27 @@
 	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
 
 	type Props = {
+		index?: number;
 		packageName: string;
 		repo: {
 			owner: string;
 			name: string;
 		};
-		release: GitHubRelease;
+		release: { cleanName: string; cleanVersion: string } & GitHubRelease;
+		isLatest?: boolean;
+		isMaintenance?: boolean;
 	};
-	let { packageName, repo, release }: Props = $props();
+	let {
+		index = 0,
+		packageName,
+		repo,
+		release,
+		isLatest: isLatestRelease = false,
+		isMaintenance: isMaintenanceRelease = false
+	}: Props = $props();
 
-	let releaseVersion = $derived.by(() => {
-		let tag = release.tag_name;
-		if (tag.includes("@")) tag = tag.substring(tag.lastIndexOf("@"));
-		return semver.coerce(tag.replace(/^v/, ""));
-	});
+	let releaseVersion = $derived(release.cleanVersion);
+	let semVersion = $derived(semver.coerce(releaseVersion));
 	let releaseDate = $derived(new Date(release.published_at ?? release.created_at));
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
@@ -40,15 +47,15 @@
 			}
 		);
 	});
-	let isMajorRelease = $derived(release.tag_name.includes(".0.0") && !release.prerelease);
+	let isMajorRelease = $derived(
+		!release.prerelease &&
+			semVersion?.minor === 0 &&
+			semVersion?.patch === 0 &&
+			!semVersion?.prerelease.length
+	);
 	let isOlderThanAWeek = $derived(
 		releaseDate.getTime() < new Date().getTime() - 1000 * 60 * 60 * 24 * 7
 	);
-
-	// TODO: figure this out
-	let index = 0;
-	let isLatestRelease = false;
-	let isMaintenanceRelease = false;
 
 	/**
 	 * Converts a date to a relative date string.
@@ -152,7 +159,7 @@
 							</Tooltip.Trigger>
 							<Tooltip.Content>
 								{packageName}
-								{releaseVersion?.major} is available!
+								{semVersion?.major} is available!
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>

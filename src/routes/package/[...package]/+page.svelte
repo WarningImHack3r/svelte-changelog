@@ -1,12 +1,26 @@
 <script lang="ts">
 	import { navigating } from "$app/state";
 	import { LoaderCircle } from "@lucide/svelte";
+	import semver from "semver";
 	import ReleaseCard from "./ReleaseCard.svelte";
 	import SidePanel from "./SidePanel.svelte";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Skeleton } from "$lib/components/ui/skeleton";
 
 	let { data } = $props();
+	let latestRelease = $derived(
+		data.releases.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
+	);
+	let earliestOfLatestMajor = $derived(
+		data.releases
+			.filter(
+				({ prerelease, cleanVersion }) =>
+					(latestRelease
+						? semver.major(cleanVersion) === semver.major(latestRelease.cleanVersion)
+						: false) && !prerelease
+			)
+			.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
+	);
 </script>
 
 {#snippet loading()}
@@ -58,11 +72,29 @@
 					.map(({ id }) => id.toString())}
 				class="w-full"
 			>
-				{#each data.releases as release (release.id)}
+				{#each data.releases as release, index (release.id)}
+					{@const semVersion = semver.coerce(release.cleanVersion)}
+					{@const isMajorRelease =
+						!release.prerelease &&
+						semVersion?.minor === 0 &&
+						semVersion?.patch === 0 &&
+						!semVersion?.prerelease.length}
+					{@const releaseDate = new Date(release.published_at ?? release.created_at)}
+					{@const isLatest = release.id === latestRelease?.id}
+					{@const isMaintenance = earliestOfLatestMajor
+						? !isMajorRelease &&
+							/* `semVersion` and `latestRelease` can't be undefined here */
+							semVersion!.major < semver.major(latestRelease!.cleanVersion) &&
+							releaseDate >
+								new Date(earliestOfLatestMajor.published_at ?? earliestOfLatestMajor.created_at)
+						: false}
 					<ReleaseCard
+						{index}
 						packageName={data.currentPackage.pkg.name}
 						repo={{ owner: data.currentPackage.owner, name: data.currentPackage.repoName }}
 						{release}
+						{isLatest}
+						{isMaintenance}
 					/>
 				{/each}
 			</Accordion.Root>
