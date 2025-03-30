@@ -21,6 +21,7 @@
 			)
 			.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
 	);
+	let showPrereleases = $state(true);
 </script>
 
 {#snippet loading()}
@@ -52,6 +53,9 @@
 	{#await Promise.resolve()}
 		{@render loading()}
 	{:then}
+		{@const displayableReleases = data.releases.filter(release =>
+			showPrereleases ? true : !release.prerelease
+		)}
 		<div class="my-8">
 			<h1 class="text-5xl font-semibold text-primary">{data.currentPackage.pkg.name}</h1>
 			<h2 class="text-xl text-muted-foreground">
@@ -64,7 +68,7 @@
 		<div class="flex gap-8">
 			<Accordion.Root
 				type="multiple"
-				value={data.releases
+				value={displayableReleases
 					// Only expand releases that are less than a week old
 					.filter(({ created_at }) => {
 						return new Date(created_at).getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
@@ -72,7 +76,7 @@
 					.map(({ id }) => id.toString())}
 				class="w-full"
 			>
-				{#each data.releases as release, index (release.id)}
+				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
 					{@const isMajorRelease =
 						!release.prerelease &&
@@ -102,6 +106,7 @@
 				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
 				class="h-fit w-[35rem]"
+				bind:showPrereleases
 			/>
 		</div>
 	{/await}

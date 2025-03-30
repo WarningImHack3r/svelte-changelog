@@ -3,6 +3,7 @@
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
+	import { persisted } from "$lib/persisted.svelte";
 	import { cn } from "$lib/utils";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
@@ -17,10 +18,21 @@
 				"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
 			>[];
 		})[];
+		showPrereleases?: boolean;
 		class?: ClassValue;
 	};
-	let { packageName = "", allPackages = [], class: className }: Props = $props();
+	let {
+		packageName = "",
+		allPackages = [],
+		showPrereleases = $bindable(true),
+		class: className
+	}: Props = $props();
 	let id = $props.id();
+
+	let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
+	$effect(() => {
+		storedPrereleaseState.value = showPrereleases;
+	});
 </script>
 
 <div class={cn("flex flex-col *:shadow-lg *:shadow-black", className)}>
@@ -89,7 +101,11 @@
 	<div
 		class="-mt-2 flex items-center gap-2 rounded-b-xl border-x border-b bg-card px-4 pt-5 pb-2.5"
 	>
-		<Checkbox id="beta-releases-{id}" aria-labelledby="beta-releases-label-{id}" />
+		<Checkbox
+			id="beta-releases-{id}"
+			aria-labelledby="beta-releases-label-{id}"
+			bind:checked={showPrereleases}
+		/>
 		<Label
 			id="beta-releases-label-{id}"
 			for="beta-releases-{id}"
