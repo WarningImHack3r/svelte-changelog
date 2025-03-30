@@ -59,7 +59,7 @@
 							<ul class="space-y-2">
 								{#each packages as { pkg } (pkg.name)}
 									<li>
-										{#if page.url.pathname.endsWith(pkg.name)}
+										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
 											<span class="font-semibold">{pkg.name}</span>
 										{:else}
 											<a
@@ -77,7 +77,7 @@
 							</ul>
 						{:else}
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
-							{#if page.url.pathname.endsWith(firstPackageName)}
+							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<span class="text-xl font-bold text-primary underline underline-offset-4">
 									{category.name}
 								</span>
