@@ -135,26 +135,34 @@
 	{/if}
 {/snippet}
 
-<Accordion.Item value={release.id.toString()}>
-	<Accordion.Trigger class="group hover:no-underline">
+<Accordion.Item
+	value={release.id.toString()}
+	class={["border-b-0", { "rounded-xl border border-primary": isMajorRelease && index < 3 }]}
+>
+	<Accordion.Trigger
+		class="group rounded-t-xl bg-secondary px-4 py-3 hover:no-underline data-[state=closed]:rounded-b-xl"
+	>
 		<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
 			<div class="flex flex-col items-start gap-1">
 				{#if isMajorRelease}
 					<Tooltip.Provider>
 						<Tooltip.Root delayDuration={300}>
 							<Tooltip.Trigger>
+								<span
+									style="--major-gradient: 135deg, #ffcc80, #ff9933, #e67300, #ff9933, #ffcc80, #fff5e6, white; background-size: 200% 200%"
+									class="animate-major-gradient bg-linear-(--major-gradient) bg-clip-text text-left text-xl text-transparent"
+								>
+									{packageName}@{releaseVersion}
+								</span>
 								{#if index === 0}
 									<div
-										class="mx-auto"
+										class="ml-auto"
 										use:confetti={{
 											duration: 5000,
 											colors: ["orange", "white"]
 										}}
 									></div>
 								{/if}
-								<span class="majorGradient text-left text-xl">
-									{packageName}@{releaseVersion}
-								</span>
 							</Tooltip.Trigger>
 							<Tooltip.Content>
 								{packageName}
@@ -165,7 +173,7 @@
 				{:else}
 					<span class="text-lg group-hover:underline">{packageName}@{releaseVersion}</span>
 				{/if}
-				<div class="flex items-center gap-2 xs:hidden">
+				<div class="mb-auto flex items-center gap-2 xs:hidden">
 					{@render badges()}
 				</div>
 			</div>
@@ -196,25 +204,26 @@
 					</Tooltip.Root>
 				</Tooltip.Provider>
 			</span>
-			<div class="hidden items-center gap-2 xs:flex">
+			<div class="mb-auto hidden items-center gap-2 xs:flex">
 				{@render badges()}
 			</div>
 		</div>
 	</Accordion.Trigger>
-	<Accordion.Content>
-		<div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
+	<Accordion.Content class="rounded-b-xl bg-accent/30 pl-6">
+		<div class="relative mt-4 flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
 			<MarkdownRenderer
 				markdown={releaseBody}
 				additionalPlugins={[{ renderer: { li: ListElementRenderer } }]}
 				class="prose-sm max-w-full prose-p:my-0"
 			/>
-			<!-- Open the release on GitHub in a new tab, with a nice hover animation -->
+			<!-- Open the release on GitHub in a new tab -->
+			<Button variant="outline" size="sm" class="invisible mr-6">this is a long long text</Button>
 			<Button
 				href={release.html_url}
 				variant="outline"
 				size="sm"
 				target="_blank"
-				class="group mr-8 mb-2 ml-auto shrink-0 gap-0 transition-colors duration-500 sm:mt-auto sm:ml-4"
+				class="group absolute right-6 bottom-1 shrink-0 gap-0 transition-colors duration-500"
 			>
 				<span class="-mr-6 hidden group-hover:block">Open on GitHub</span>
 				<img

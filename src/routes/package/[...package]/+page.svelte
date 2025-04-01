@@ -74,7 +74,7 @@
 						return new Date(created_at).getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
 					})
 					.map(({ id }) => id.toString())}
-				class="w-full"
+				class="w-full space-y-2"
 			>
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
