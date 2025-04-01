@@ -140,7 +140,7 @@
 	class={["border-b-0", { "rounded-xl border border-primary": isMajorRelease && index < 3 }]}
 >
 	<Accordion.Trigger
-		class="group rounded-t-xl bg-secondary px-4 py-3 hover:no-underline data-[state=closed]:rounded-b-xl"
+		class="group rounded-t-xl bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=closed]:rounded-b-xl"
 	>
 		<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
 			<div class="flex flex-col items-start gap-1">
