@@ -71,7 +71,12 @@
 <ProgressBar class="text-primary" zIndex={100} />
 
 <header
-	class="sticky top-0 z-40 w-full bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
+	class={[
+		"sticky top-0 z-40 w-full bg-background/95 backdrop-blur transition-shadow duration-500 supports-[backdrop-filter]:bg-background/60",
+		{
+			"shadow-sm": newsToDisplay || (scrollY.current ?? 0) >= 25
+		}
+	]}
 >
 	<div
 		class={[
