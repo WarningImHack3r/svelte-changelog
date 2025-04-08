@@ -38,7 +38,7 @@
 <div class={cn("flex flex-col *:shadow-lg *:shadow-black", className)}>
 	<Card.Root class="z-10 border border-muted-foreground/25 bg-secondary">
 		<Card.Header class="flex-row items-start justify-between">
-			<Card.Title>Packages</Card.Title>
+			<Card.Title class="font-display">Packages</Card.Title>
 			<a
 				href="/packages"
 				class="group inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
@@ -55,7 +55,7 @@
 					{/if}
 					<li class="space-y-2">
 						{#if packages.length > 1}
-							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
+							<h3 class="font-display text-xl font-bold text-primary">{category.name}</h3>
 							<ul class="space-y-2">
 								{#each packages as { pkg } (pkg.name)}
 									<li>
@@ -78,13 +78,15 @@
 						{:else}
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
-								<span class="text-xl font-bold text-primary underline underline-offset-4">
+								<h3
+									class="font-display text-xl font-bold text-primary underline underline-offset-4"
+								>
 									{category.name}
-								</span>
+								</h3>
 							{:else}
 								<a
 									href="/package/{firstPackageName}"
-									class="group inline-flex w-full items-center text-xl font-bold text-primary underline-offset-4 hover:underline"
+									class="group inline-flex w-full items-center font-display text-xl font-bold text-primary underline-offset-4 hover:underline"
 								>
 									{category.name}
 									<ChevronRight

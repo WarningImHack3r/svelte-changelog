@@ -11,6 +11,12 @@ importers:
       '@eslint/js':
         specifier: ^9.22.0
         version: 9.22.0
+      '@fontsource/dm-serif-display':
+        specifier: ^5.2.5
+        version: 5.2.5
+      '@fontsource/pretendard':
+        specifier: ^5.2.5
+        version: 5.2.5
       '@lucide/svelte':
         specifier: ^0.483.0
         version: 0.483.0(svelte@5.23.2)
@@ -502,6 +508,12 @@ packages:
 
   '@floating-ui/utils@0.2.8':
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
+
+  '@fontsource/dm-serif-display@5.2.5':
+    resolution: {integrity: sha512-yhhRKyfXgRPJLwD1+BDAVAERTlYegqSV+l7+FTj7R5lq1G3etXcSR9dg+Age1p6kD2YWM108MUQhikSLlIzyDw==}
+
+  '@fontsource/pretendard@5.2.5':
+    resolution: {integrity: sha512-UAj3l+Exfx6Sq5hySbhTQhNzkZnhzBxQdHySmjo2lifXyXpMAHv7GD7hAQTLgZfBd1WixJJkmynfJbOp+TAckg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2636,6 +2648,10 @@ snapshots:
       '@floating-ui/utils': 0.2.8
 
   '@floating-ui/utils@0.2.8': {}
+
+  '@fontsource/dm-serif-display@5.2.5': {}
+
+  '@fontsource/pretendard@5.2.5': {}
 
   '@humanfs/core@0.19.1': {}
 

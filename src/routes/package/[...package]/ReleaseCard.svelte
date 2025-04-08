@@ -171,7 +171,9 @@
 						</Tooltip.Root>
 					</Tooltip.Provider>
 				{:else}
-					<span class="text-lg group-hover:underline">{packageName}@{releaseVersion}</span>
+					<span class="font-display text-lg group-hover:underline">
+						{packageName}@{releaseVersion}
+					</span>
 				{/if}
 				<div class="mb-auto flex items-center gap-2 xs:hidden">
 					{@render badges()}

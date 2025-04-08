@@ -85,10 +85,10 @@
 			<!-- Left part -->
 			<a href="/" class="flex items-center gap-2">
 				<img src={FAVICON_URL} alt="Svelte" class="size-8" />
-				<h2 class="hidden text-xl font-semibold xs:inline-block">
+				<span class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
 					<span class="text-primary">Changelog</span>
-				</h2>
+				</span>
 			</a>
 
 			<!-- Right part -->

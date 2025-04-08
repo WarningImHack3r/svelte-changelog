@@ -1,6 +1,8 @@
 @import "tailwindcss" theme(static);
+
 @plugin "@tailwindcss/typography";
 @import "tw-animate-css";
+@import "./fonts.css";
 
 @variant dark (&:is(.dark *));
 
@@ -41,16 +43,15 @@
 	--color-ring: hsl(var(--ring));
 
 	/*
-	--color-sidebar: hsl(var(--sidebar-background));
-	--color-sidebar-foreground: hsl(var(--sidebar-foreground));
-	--color-sidebar-primary: hsl(var(--sidebar-primary));
-	--color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-	--color-sidebar-accent: hsl(var(--sidebar-accent));
-	--color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-	--color-sidebar-border: hsl(var(--sidebar-border));
-	--color-sidebar-ring: hsl(var(--sidebar-ring));
-	 */
-
+    --color-sidebar: hsl(var(--sidebar-background));
+    --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+    --color-sidebar-primary: hsl(var(--sidebar-primary));
+    --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+    --color-sidebar-accent: hsl(var(--sidebar-accent));
+    --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+    --color-sidebar-border: hsl(var(--sidebar-border));
+    --color-sidebar-ring: hsl(var(--sidebar-ring));
+     */
 	--radius-xl: calc(var(--radius) + 4px);
 	--radius-lg: var(--radius);
 	--radius-md: calc(var(--radius) - 2px);
@@ -68,11 +69,11 @@
 /* shadcn theme */
 @layer base {
 	:root {
-		--background: 0 0% 100%;
+		--background: 17.14 100% 98.63%;
 		--foreground: 20 14.3% 4.1%;
-		--card: 0 0% 100%;
+		--card: 17.14 100% 98.68%;
 		--card-foreground: 20 14.3% 4.1%;
-		--popover: 0 0% 100%;
+		--popover: 17.14 100% 98.63%;
 		--popover-foreground: 20 14.3% 4.1%;
 		--primary: 24.6 95% 53.1%;
 		--primary-foreground: 60 9.1% 97.8%;
@@ -82,19 +83,20 @@
 		--muted-foreground: 25 5.3% 44.7%;
 		--accent: 60 4.8% 95.9%;
 		--accent-foreground: 24 9.8% 10%;
-		--destructive: 0 72.22% 50.59%;
+		--destructive: 0 84.2% 60.2%;
 		--destructive-foreground: 60 9.1% 97.8%;
 		--border: 20 5.9% 90%;
 		--input: 20 5.9% 90%;
 		--ring: 24.6 95% 53.1%;
 		--radius: 0.5rem;
 	}
+
 	.dark {
-		--background: 20 14.3% 4.1%;
+		--background: 20 32.17% 6.4%;
 		--foreground: 60 9.1% 97.8%;
-		--card: 20 14.3% 4.1%;
+		--card: 20 33.72% 4.6%;
 		--card-foreground: 60 9.1% 97.8%;
-		--popover: 20 14.3% 4.1%;
+		--popover: 20 31.41% 4.68%;
 		--popover-foreground: 60 9.1% 97.8%;
 		--primary: 20.5 90.2% 48.2%;
 		--primary-foreground: 60 9.1% 97.8%;
@@ -114,6 +116,9 @@
 
 /* custom themes */
 @theme {
+	--font-sans: "Pretendard", sans-serif;
+	--font-display: "DM Serif Display", serif;
+
 	--animate-major-gradient: major-gradient 7s ease-in-out infinite;
 	@keyframes major-gradient {
 		from,
@@ -133,6 +138,11 @@
 
 	* {
 		@apply border-border;
+	}
+
+	h1,
+	h2 {
+		@apply font-display;
 	}
 
 	body {
