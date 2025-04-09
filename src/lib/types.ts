@@ -1,3 +1,4 @@
+import type { Octokit } from "octokit";
 import type { GitHubRelease } from "$lib/server/github-cache";
 
 export type Prettify<T> = {
@@ -47,3 +48,6 @@ export type RepoInfo = {
 
 export const availableCategory = ["svelte", "kit", "others"] as const;
 export type Category = (typeof availableCategory)[number];
+
+export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
+export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];

@@ -1,14 +1,50 @@
 import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
 import { Redis } from "@upstash/redis";
 import { Octokit } from "octokit";
+import type { Repository as GQLRepository } from "@octokit/graphql-schema";
 import type { Repository } from "$lib/repositories";
+import type { Issues, Pulls } from "$lib/types";
 import parseChangelog from "$lib/changelog-parser";
+
+/**
+ * A strict version of Extract.
+ *
+ * @see {@link https://github.com/sindresorhus/type-fest/issues/222#issuecomment-940597759|Original implementation}
+ */
+type ExtractStrict<T, U extends T> = U;
 
 export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 >["data"][number];
 
-type KeyType = "releases" | "descriptions";
+type KeyType = "releases" | "descriptions" | "issue" | "pr";
+
+export type ItemDetails = {
+	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
+};
+
+export type IssueDetails = ItemDetails & {
+	info: Awaited<ReturnType<Issues["get"]>>["data"];
+	linkedPrs: LinkedItem[];
+};
+
+export type PullRequestDetails = ItemDetails & {
+	info: Awaited<ReturnType<Pulls["get"]>>["data"];
+	commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
+	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
+	linkedIssues: LinkedItem[];
+};
+
+export type LinkedItem = {
+	number: number;
+	title: string;
+	author?: {
+		avatarUrl: string;
+		login: string;
+	} | null;
+	createdAt: string;
+	body: string;
+};
 
 /**
  * The maximum items amount to get per-page
@@ -23,13 +59,17 @@ type KeyType = "releases" | "descriptions";
  */
 const per_page = 100;
 /**
- * The TTL of the cached values, in seconds.
+ * The TTL of the cached releases, in seconds.
  */
-const cacheTTL = 60 * 15; // 15 min
+const RELEASES_TTL = 60 * 15; // 15 min
 /**
- * The TTL of the cached values, in seconds.
+ * The TTL of the full issue/pr details, in seconds.
  */
-const longCacheTTL = 60 * 60 * 24 * 10; // 10 days
+const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
+/**
+ * The TTL of the cached descriptions, in seconds.
+ */
+const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -64,11 +104,251 @@ export class GitHubCache {
 	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
 	 * @param type the kind of cache to use
+	 * @param args the optional additional values to append
+	 * at the end of the key; every element will be interpolated
+	 * in a string
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(owner: string, repo: string, type: KeyType) {
-		return `repo:${owner}/${repo}:${type}`;
+	#getRepoKey(owner: string, repo: string, type: KeyType, ...args: unknown[]) {
+		const strArgs = args.map(a => `:${a}`);
+		return `repo:${owner}/${repo}:${type}${strArgs}`;
+	}
+
+	/**
+	 * Get the item (issue or pr) with the given information.
+	 * Return the appropriate value if the type is defined, or
+	 * try to coerce it otherwise.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param id the issue/pr number
+	 * @param type the item to fetch
+	 * @returns the matching or specified item, or `null` if not found
+	 */
+	async getItemDetails(
+		owner: string,
+		repo: string,
+		id: number,
+		type: ExtractStrict<KeyType, "issue" | "pr"> | undefined = undefined
+	) {
+		// Known type we assume the existence of
+		switch (type) {
+			case "issue":
+				return await this.getIssueDetails(owner, repo, id);
+			case "pr":
+				return await this.getPullRequestDetails(owner, repo, id);
+		}
+
+		// Unknown type, try to find or null otherwise
+		try {
+			return await this.getPullRequestDetails(owner, repo, id);
+		} catch (err: unknown) {
+			console.error(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
+		}
+
+		try {
+			// comes last because issues will also resolve for prs
+			return await this.getIssueDetails(owner, repo, id);
+		} catch (err: unknown) {
+			console.error(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the issue from the specified info.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param id the issue number
+	 * @returns the matching issue
+	 * @throws Error if the issue is not found
+	 */
+	async getIssueDetails(owner: string, repo: string, id: number) {
+		const cacheKey = this.#getRepoKey(owner, repo, "issue", id);
+
+		const cachedDetails = await this.#redis.json.get<IssueDetails>(cacheKey);
+		if (cachedDetails) {
+			console.log(`Cache hit for issue details for ${cacheKey}`);
+			return cachedDetails;
+		}
+
+		console.log(`Cache miss for issue details for ${cacheKey}, fetching from the GitHub API`);
+
+		const [{ data: info }, { data: comments }, linkedPrs] = await Promise.all([
+			this.#octokit.rest.issues.get({ owner, repo, issue_number: id }),
+			this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
+			this.#getLinkedPullRequests(owner, repo, id)
+		]);
+
+		const details: IssueDetails = { info, comments, linkedPrs };
+
+		await this.#redis.json.set(cacheKey, "$", details);
+		await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
+
+		return details;
+	}
+
+	/**
+	 * Get the pull request from the specified info.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param id the PR number
+	 * @returns the matching pull request
+	 * @throws Error if the PR is not found
+	 */
+	async getPullRequestDetails(owner: string, repo: string, id: number) {
+		const cacheKey = this.#getRepoKey(owner, repo, "pr", id);
+
+		const cachedDetails = await this.#redis.json.get<PullRequestDetails>(cacheKey);
+		if (cachedDetails) {
+			console.log(`Cache hit for PR details for ${cacheKey}`);
+			return cachedDetails;
+		}
+
+		console.log(`Cache miss for PR details for ${id}, fetching from the GitHub API`);
+
+		const [{ data: info }, { data: comments }, { data: commits }, { data: files }, linkedIssues] =
+			await Promise.all([
+				this.#octokit.rest.pulls.get({ owner, repo, pull_number: id }),
+				this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
+				this.#octokit.rest.pulls.listCommits({ owner, repo, pull_number: id }),
+				this.#octokit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
+				this.#getLinkedIssues(owner, repo, id)
+			]);
+
+		const details: PullRequestDetails = { info, comments, commits, files, linkedIssues };
+
+		// Cache the result
+		await this.#redis.json.set(cacheKey, "$", details);
+		await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
+
+		return details;
+	}
+
+	/**
+	 * Get the pull requests linked to the given issue number.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param issueNumber the issue number
+	 * @returns the linked pull requests
+	 * @private
+	 */
+	async #getLinkedPullRequests(owner: string, repo: string, issueNumber: number) {
+		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
+			`
+        query($owner: String!, $repo: String!, $issueNumber: Int!) {
+            repository(owner: $owner, name: $repo) {
+                issue(number: $issueNumber) {
+                    timelineItems(first: 100, itemTypes: [CONNECTED_EVENT, CROSS_REFERENCED_EVENT]) {
+                        nodes {
+                            ... on ConnectedEvent {
+                                subject {
+                                    ... on PullRequest {
+                                        number
+                                        title
+																				author {
+																						avatarUrl
+																						login
+                                        }
+                                        createdAt
+																				body
+                                    }
+                                }
+                            }
+                            ... on CrossReferencedEvent {
+                                source {
+                                    ... on PullRequest {
+                                        number
+                                        title
+																				author {
+																						avatarUrl
+																						login
+                                        }
+																				createdAt
+																				body
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+		`,
+			{
+				owner,
+				repo,
+				issueNumber
+			}
+		);
+
+		// Extract and deduplicate PRs
+		const linkedPRs = new Map<number, LinkedItem>();
+		const timelineItems = result?.repository?.issue?.timelineItems?.nodes ?? [];
+
+		for (const item of timelineItems) {
+			if (!item) continue;
+			if (!("subject" in item) && !("source" in item)) continue;
+			const pr = item.subject || item.source;
+			linkedPRs.set(pr.number, pr);
+		}
+
+		return Array.from(linkedPRs.values());
+	}
+
+	/**
+	 * Get the issues linked to the given PR number.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param prNumber the PR number
+	 * @returns the linked issues
+	 * @private
+	 */
+	async #getLinkedIssues(owner: string, repo: string, prNumber: number) {
+		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
+			`
+        query($owner: String!, $repo: String!, $prNumber: Int!) {
+            repository(owner: $owner, name: $repo) {
+                pullRequest(number: $prNumber) {
+                    closingIssuesReferences(first: 50) {
+                        nodes {
+                            number
+                            title
+														author {
+																login
+																avatarUrl
+														}
+														createdAt
+                            body
+                        }
+                    }
+                }
+            }
+        }
+		`,
+			{
+				owner,
+				repo,
+				prNumber
+			}
+		);
+
+		// Extract and deduplicate issues
+		const linkedIssues = new Map<number, LinkedItem>();
+
+		const closingIssues = result?.repository?.pullRequest?.closingIssuesReferences?.nodes ?? [];
+		for (const issue of closingIssues) {
+			if (!issue) continue;
+			linkedIssues.set(issue.number, issue);
+		}
+
+		return Array.from(linkedIssues.values());
 	}
 
 	/**
@@ -91,7 +371,7 @@ export class GitHubCache {
 		const releases = await this.#fetchReleases(repository);
 
 		await this.#redis.json.set(cacheKey, "$", releases);
-		await this.#redis.expire(cacheKey, cacheTTL);
+		await this.#redis.expire(cacheKey, RELEASES_TTL);
 
 		return releases;
 	}
@@ -284,7 +564,7 @@ export class GitHubCache {
 		}
 
 		await this.#redis.json.set(cacheKey, "$", Object.fromEntries(descriptions));
-		await this.#redis.expire(cacheKey, longCacheTTL);
+		await this.#redis.expire(cacheKey, DESCRIPTIONS_TTL);
 
 		return Object.fromEntries(descriptions);
 	}
