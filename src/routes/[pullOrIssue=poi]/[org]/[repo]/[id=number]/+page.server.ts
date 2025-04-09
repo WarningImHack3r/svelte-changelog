@@ -19,6 +19,7 @@ export async function load({ params }) {
 		itemMetadata: {
 			org,
 			repo,
+			id: numId,
 			type: type === "issues" ? ("issue" as const) : ("pull" as const)
 		},
 		item

@@ -12,13 +12,17 @@
 </script>
 
 <svelte:head>
-	<title
-		>Detail of {data.itemMetadata.org}/{data.itemMetadata.repo}#{data.itemMetadata.id} | Svelte Changelog</title
-	>
+	<title>
+		Detail of {data.itemMetadata.org}/{data.itemMetadata.repo}#{data.itemMetadata.id} | Svelte Changelog
+	</title>
 </svelte:head>
 
 <PageRenderer
-	metadata={data.itemMetadata}
+	metadata={{
+		org: data.itemMetadata.org,
+		repo: data.itemMetadata.repo,
+		type: data.itemMetadata.type
+	}}
 	info={data.item.info}
 	{comments}
 	{commits}
