@@ -125,9 +125,6 @@ importers:
       svelte-meta-tags:
         specifier: ^4.2.0
         version: 4.2.0(svelte@5.23.2)
-      svelte-persisted-store:
-        specifier: ^0.12.0
-        version: 0.12.0(svelte@5.23.2)
       svelte-sonner:
         specifier: ^0.3.28
         version: 0.3.28(svelte@5.23.2)
@@ -2207,12 +2204,6 @@ packages:
     resolution: {integrity: sha512-VFnbdN4CNLeGaiRK++mhHKm/otgId3qM0hY6fu6vhh+e+jGE9Xr3kSUjgKAEnquktskEjUEo7W0ek7EANsyTHw==}
     peerDependencies:
       svelte: ^5.0.0
-
-  svelte-persisted-store@0.12.0:
-    resolution: {integrity: sha512-BdBQr2SGSJ+rDWH8/aEV5GthBJDapVP0GP3fuUCA7TjYG5ctcB+O9Mj9ZC0+Jo1oJMfZUd1y9H68NFRR5MyIJA==}
-    engines: {node: '>=0.14'}
-    peerDependencies:
-      svelte: ^3.48.0 || ^4 || ^5
 
   svelte-sonner@0.3.28:
     resolution: {integrity: sha512-K3AmlySeFifF/cKgsYNv5uXqMVNln0NBAacOYgmkQStLa/UoU0LhfAACU6Gr+YYC8bOCHdVmFNoKuDbMEsppJg==}
@@ -4577,10 +4568,6 @@ snapshots:
   svelte-meta-tags@4.2.0(svelte@5.23.2):
     dependencies:
       schema-dts: 1.1.5
-      svelte: 5.23.2
-
-  svelte-persisted-store@0.12.0(svelte@5.23.2):
-    dependencies:
       svelte: 5.23.2
 
   svelte-sonner@0.3.28(svelte@5.23.2):
