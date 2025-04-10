@@ -1,19 +1,22 @@
 <script lang="ts">
 	import "../app.css";
-	import { onMount } from "svelte";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
+	import { page } from "$app/state";
+	import { deepMerge, MetaTags } from "svelte-meta-tags";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { news } from "$lib/news/news.json";
-	import { FAVICON_URL } from "$lib/config";
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
-	let { children } = $props();
+	let { data, children } = $props();
+
+	// SEO
+	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
 	type Theme = {
@@ -48,7 +51,7 @@
 		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
 	}
 
-	onMount(() => {
+	$effect(() => {
 		// Theme
 		theme =
 			"mode-watcher-mode" in localStorage
@@ -69,6 +72,7 @@
 {/if}
 <ModeWatcher />
 <ProgressBar class="text-primary" zIndex={100} />
+<MetaTags {...metaTags} />
 
 <header
 	class={[
@@ -89,7 +93,11 @@
 		<div class="mx-auto flex h-14 w-full items-center px-8">
 			<!-- Left part -->
 			<a href="/" class="flex items-center gap-2">
-				<img src={FAVICON_URL} alt="Svelte" class="size-8" />
+				<img
+					src="https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg"
+					alt="Svelte"
+					class="size-8"
+				/>
 				<span class="hidden text-xl font-semibold xs:inline-block">
 					Svelte
 					<span class="text-primary">Changelog</span>

@@ -11,12 +11,6 @@
 	);
 </script>
 
-<svelte:head>
-	<title>
-		Detail of {data.itemMetadata.org}/{data.itemMetadata.repo}#{data.itemMetadata.id} | Svelte Changelog
-	</title>
-</svelte:head>
-
 <PageRenderer
 	metadata={{
 		org: data.itemMetadata.org,
