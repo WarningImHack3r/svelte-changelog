@@ -137,7 +137,10 @@
 
 <Accordion.Item
 	value={release.id.toString()}
-	class={["border-b-0", { "rounded-xl border border-primary": isMajorRelease && index < 3 }]}
+	class={[
+		"rounded-xl border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20",
+		{ "rounded-xl border border-primary": isMajorRelease && index < 3 }
+	]}
 >
 	<Accordion.Trigger
 		class="group rounded-t-xl bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=closed]:rounded-b-xl"

@@ -35,7 +35,7 @@
 	});
 </script>
 
-<div class={cn("flex flex-col *:shadow-lg *:shadow-black", className)}>
+<div class={cn("flex flex-col *:shadow-lg dark:*:shadow-black", className)}>
 	<Card.Root class="z-10 border border-muted-foreground/25 bg-secondary">
 		<Card.Header class="flex-row items-start justify-between">
 			<Card.Title class="font-display">Packages</Card.Title>

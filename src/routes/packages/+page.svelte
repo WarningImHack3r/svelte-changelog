@@ -17,7 +17,7 @@
 					<li>
 						<a
 							href="/package/{pkg.name}"
-							class="group flex items-center rounded-xl px-4 py-3 transition-colors hover:bg-neutral-800"
+							class="group flex items-center rounded-xl px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						>
 							<div class="flex flex-col">
 								<h4 class="font-medium">{pkg.name}</h4>
