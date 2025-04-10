@@ -4,6 +4,7 @@
 	import { dev } from "$app/environment";
 	import { page } from "$app/state";
 	import { deepMerge, MetaTags } from "svelte-meta-tags";
+	import { toast } from "svelte-sonner";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
@@ -11,6 +12,7 @@
 	import { cn } from "$lib/utils";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
+	import { Toaster } from "$lib/components/ui/sonner";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
 	let { data, children } = $props();
@@ -58,6 +60,25 @@
 				? localStorage["mode-watcher-mode"].replace(/"/g, "")
 				: "system";
 
+		// v2 migration
+		if ("token" in localStorage) {
+			toast.success("Welcome to svelte-changelog v2!", {
+				description: "Thanks for visiting this site since v1 :)",
+				duration: 7_500
+			});
+			localStorage.removeItem("token");
+		}
+		for (const key of [
+			"displaySvelteBetaReleases",
+			"displayKitBetaReleases",
+			"displayOtherBetaReleases",
+			"svelteMostRecentUpdate",
+			"kitMostRecentUpdate",
+			"othersMostRecentUpdate"
+		]) {
+			localStorage.removeItem(key);
+		}
+
 		// News
 		const closedNews = getClosedNewsIds();
 		const now = new Date();
@@ -72,6 +93,7 @@
 {/if}
 <ModeWatcher />
 <ProgressBar class="text-primary" zIndex={100} />
+<Toaster />
 <MetaTags {...metaTags} />
 
 <header

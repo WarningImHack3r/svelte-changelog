@@ -54,6 +54,7 @@
 		"svelte-exmarkdown": "^4.0.3",
 		"svelte-meta-tags": "^4.2.0",
 		"svelte-persisted-store": "^0.12.0",
+		"svelte-sonner": "^0.3.28",
 		"tailwind-merge": "^3.0.2",
 		"tailwind-variants": "^1.0.0",
 		"tailwindcss": "^4.0.14",
