@@ -1,3 +1,5 @@
+import { browser } from "$app/environment";
+import posthog from "posthog-js";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 import type { MetaTagsProps } from "svelte-meta-tags";
 
@@ -6,6 +8,14 @@ injectSpeedInsights();
 const siteName = "Svelte Changelog";
 
 export function load({ url, data }) {
+	if (browser) {
+		posthog.init("phc_mikNRIemcxWqXq0a4Pj9WPIWpbl815sf8VoMLJlFNYT", {
+			api_host: `${url.origin}/ingest`,
+			ui_host: "https://eu.posthog.com",
+			person_profiles: "always"
+		});
+	}
+
 	return {
 		...data,
 		siteName,
