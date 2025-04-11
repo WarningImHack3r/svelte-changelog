@@ -21,7 +21,6 @@
 		isLatest?: boolean;
 		isMaintenance?: boolean;
 	};
-	// eslint-disable-next-line svelte/no-unused-props
 	let {
 		index = 0,
 		packageName,

@@ -32,6 +32,7 @@ export default tseslint.config(
 	},
 	{
 		rules: {
+			"svelte/no-unused-props": ["error", { allowUnusedNestedProps: true }],
 			"@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }]
 		}
 	},
