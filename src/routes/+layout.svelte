@@ -53,6 +53,11 @@
 	function getClosedNewsIds() {
 		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
 	}
+	function markCurrentNewsAsRead() {
+		if (!newsToDisplay) return;
+		localStorage.setItem(closedNewsKey, JSON.stringify([...getClosedNewsIds(), newsToDisplay.id]));
+		newsToDisplay = undefined;
+	}
 
 	$effect(() => {
 		// Theme
@@ -212,7 +217,19 @@
 		</div>
 	</div>
 	{#if newsToDisplay}
-		<div class="flex items-center bg-primary/90">
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<div
+			role="banner"
+			class="flex items-center bg-primary/90"
+			onclick={e => {
+				// Event bubbling from children of MarkdownRenderer
+				if (!e.target || !(e.target instanceof HTMLAnchorElement)) return;
+				if (e.target.tagName.toLowerCase() === "a") {
+					markCurrentNewsAsRead();
+				}
+			}}
+		>
 			<MarkdownRenderer
 				markdown={newsToDisplay.content}
 				inline
@@ -221,14 +238,7 @@
 			<Button
 				variant="ghost"
 				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-background/0"
-				onclick={() => {
-					if (!newsToDisplay) return;
-					localStorage.setItem(
-						closedNewsKey,
-						JSON.stringify([...getClosedNewsIds(), newsToDisplay.id])
-					);
-					newsToDisplay = undefined;
-				}}
+				onclick={markCurrentNewsAsRead}
 			>
 				<X class="size-4" />
 			</Button>
