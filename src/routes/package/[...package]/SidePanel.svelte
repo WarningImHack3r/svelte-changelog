@@ -19,12 +19,14 @@
 			>[];
 		})[];
 		showPrereleases?: boolean;
+		headless?: boolean;
 		class?: ClassValue;
 	};
 	let {
 		packageName = "",
 		allPackages = [],
 		showPrereleases = $bindable(true),
+		headless = false,
 		class: className
 	}: Props = $props();
 	let id = $props.id();
@@ -35,19 +37,26 @@
 	});
 </script>
 
-<div class={cn("flex flex-col *:shadow-lg dark:*:shadow-black", className)}>
-	<Card.Root class="z-10 border border-muted-foreground/25 bg-secondary">
-		<Card.Header class="flex-row items-start justify-between">
-			<Card.Title class="font-display">Packages</Card.Title>
-			<a
-				href="/packages"
-				class="group inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
-			>
-				See all
-				<ChevronRight class="size-4 transition-transform group-hover:translate-x-1" />
-			</a>
-		</Card.Header>
-		<Card.Content>
+<div class={cn("flex flex-col", !headless && "*:shadow-lg dark:*:shadow-black", className)}>
+	<Card.Root
+		class={{
+			"z-10 border border-muted-foreground/25 bg-secondary": !headless,
+			"border-0 bg-inherit": headless
+		}}
+	>
+		{#if !headless}
+			<Card.Header class="flex-row items-start justify-between">
+				<Card.Title class="font-display">Packages</Card.Title>
+				<a
+					href="/packages"
+					class="group inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+				>
+					See all
+					<ChevronRight class="size-4 transition-transform group-hover:translate-x-1" />
+				</a>
+			</Card.Header>
+		{/if}
+		<Card.Content class={{ "p-0": headless }}>
 			<ul>
 				{#each allPackages as { category, packages }, index (category)}
 					{#if index > 0}
@@ -98,8 +107,14 @@
 			</ul>
 		</Card.Content>
 	</Card.Root>
+	{#if headless}
+		<Separator class="my-4" />
+	{/if}
 	<div
-		class="-mt-2 flex items-center gap-2 rounded-b-xl border-x border-b bg-card px-4 pt-5 pb-2.5"
+		class={[
+			"flex items-center gap-2",
+			!headless && "-mt-2 rounded-b-xl border-x border-b bg-card px-4 pt-5 pb-2.5"
+		]}
 	>
 		<Checkbox
 			id="beta-releases-{id}"

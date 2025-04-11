@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { navigating } from "$app/state";
-	import { LoaderCircle } from "@lucide/svelte";
+	import { LoaderCircle, Menu } from "@lucide/svelte";
 	import semver from "semver";
 	import ReleaseCard from "./ReleaseCard.svelte";
 	import SidePanel from "./SidePanel.svelte";
 	import * as Accordion from "$lib/components/ui/accordion";
+	import * as Sheet from "$lib/components/ui/sheet";
+	import { Button } from "$lib/components/ui/button";
 	import { Skeleton } from "$lib/components/ui/skeleton";
 
 	let { data } = $props();
@@ -56,14 +58,40 @@
 		{@const displayableReleases = data.releases.filter(release =>
 			showPrereleases ? true : !release.prerelease
 		)}
-		<div class="my-8">
-			<h1 class="text-5xl font-semibold text-primary">{data.currentPackage.pkg.name}</h1>
-			<h2 class="text-xl text-muted-foreground">
-				{data.currentPackage.owner}/{data.currentPackage.repoName}
-			</h2>
-			{#if data.currentPackage.pkg.description}
-				<h3 class="mt-4 italic">{data.currentPackage.pkg.description}</h3>
-			{/if}
+		<div class="my-8 flex gap-8">
+			<div>
+				<h1 class="text-3xl font-semibold text-primary md:text-5xl">
+					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
+				</h1>
+				<h2 class="text-xl text-muted-foreground">
+					{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
+				</h2>
+				{#if data.currentPackage.pkg.description}
+					<h3 class="mt-4 italic">{data.currentPackage.pkg.description}</h3>
+				{/if}
+			</div>
+			<Sheet.Root>
+				<Sheet.Trigger>
+					{#snippet child({ props })}
+						<Button {...props} variant="secondary" class="ml-auto lg:hidden">
+							<Menu />
+							<span class="sr-only">Menu</span>
+						</Button>
+					{/snippet}
+				</Sheet.Trigger>
+				<Sheet.Content class="overflow-y-auto">
+					<Sheet.Header>
+						<Sheet.Title>Packages</Sheet.Title>
+					</Sheet.Header>
+					<SidePanel
+						headless
+						packageName={data.currentPackage.pkg.name}
+						allPackages={data.displayablePackages}
+						bind:showPrereleases
+						class="my-8"
+					/>
+				</Sheet.Content>
+			</Sheet.Root>
 		</div>
 		<div class="flex gap-8">
 			<Accordion.Root
@@ -105,7 +133,7 @@
 			<SidePanel
 				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
-				class="h-fit w-[35rem]"
+				class="hidden h-fit w-[35rem] lg:block"
 				bind:showPrereleases
 			/>
 		</div>

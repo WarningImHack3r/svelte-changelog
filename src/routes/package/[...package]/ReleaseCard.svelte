@@ -152,7 +152,7 @@
 							<Tooltip.Trigger>
 								<span
 									style="--major-gradient: 135deg, #ffcc80, #ff9933, #e67300, #ff9933, #ffcc80, #fff5e6, white; background-size: 200% 200%"
-									class="animate-major-gradient bg-linear-(--major-gradient) bg-clip-text text-left text-xl text-transparent"
+									class="animate-major-gradient bg-linear-(--major-gradient) bg-clip-text text-left font-display text-xl text-transparent"
 								>
 									{packageName}@{releaseVersion}
 								</span>
@@ -213,7 +213,7 @@
 			</div>
 		</div>
 	</Accordion.Trigger>
-	<Accordion.Content class="rounded-b-xl bg-accent/30 pl-6">
+	<Accordion.Content class="rounded-b-xl bg-accent/30 px-6">
 		<div class="relative mt-4 flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
 			<MarkdownRenderer
 				markdown={releaseBody}
@@ -227,7 +227,7 @@
 				variant="outline"
 				size="sm"
 				target="_blank"
-				class="group absolute right-6 bottom-1 shrink-0 gap-0 transition-colors duration-500"
+				class="group absolute right-0 bottom-1 shrink-0 gap-0 transition-colors duration-500"
 			>
 				<span class="-mr-6 hidden group-hover:block">Open on GitHub</span>
 				<img
