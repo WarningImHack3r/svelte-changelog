@@ -1,8 +1,8 @@
 @import "tailwindcss" theme(static);
-
-@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 @import "./fonts.css";
+
+@plugin "@tailwindcss/typography";
 
 @variant dark (&:is(.dark *));
 
