@@ -133,6 +133,25 @@
 				<span class="text-xl font-semibold">Blog</span>
 			{/if}
 
+			<!-- Navigation -->
+			{#if !page.route.id?.startsWith("/blog")}
+				<ul class="ml-6 hidden sm:flex">
+					{#each [{ link: "/package/svelte", title: "Home" }, { link: "/packages", title: "Packages" }, { link: "/blog", title: "Blog" }] as { link, title } (link)}
+						{@const disabled = page.url.pathname.startsWith(link)}
+						<li>
+							<Button
+								href={disabled ? undefined : link}
+								variant="ghost"
+								class="hover:bg-accent/75"
+								{disabled}
+							>
+								{title}
+							</Button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+
 			<!-- Right part -->
 			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
 				<nav class="flex items-center space-x-1">
