@@ -20,6 +20,11 @@
 			"id": 3,
 			"content": "New! Improved engine brings support for svelte-preprocess, rollup-plugin-svelte and prettier-plugin-svelte",
 			"endDate": "2024-09-09"
+		},
+		{
+			"id": 4,
+			"content": "Svelte Changelog v2 is here. [Read the announcement](/blog/v2).",
+			"endDate": "2025-05-01"
 		}
 	]
 }

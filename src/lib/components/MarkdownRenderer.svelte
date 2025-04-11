@@ -5,6 +5,7 @@
 	 *
 	 * @component
 	 */
+	import type { ClassValue } from "svelte/elements";
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import rehypeRaw from "rehype-raw";
@@ -15,7 +16,7 @@
 		inline?: boolean;
 		parseRawHtml?: boolean;
 		additionalPlugins?: Plugin[];
-		class?: string | undefined | null;
+		class?: ClassValue;
 	};
 
 	let {

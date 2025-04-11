@@ -10,6 +10,7 @@
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { news } from "$lib/news/news.json";
 	import { cn } from "$lib/utils";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import { buttonVariants, Button } from "$lib/components/ui/button";
 	import { Toaster } from "$lib/components/ui/sonner";
@@ -193,7 +194,11 @@
 	</div>
 	{#if newsToDisplay}
 		<div class="flex items-center bg-primary/90">
-			<span class="mx-auto my-1 px-4 text-center">{newsToDisplay.content}</span>
+			<MarkdownRenderer
+				markdown={newsToDisplay.content}
+				inline
+				class="mx-auto my-1 px-4 text-center text-foreground prose-a:font-semibold prose-a:text-foreground prose-a:underline"
+			/>
 			<Button
 				variant="ghost"
 				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-background/0"
