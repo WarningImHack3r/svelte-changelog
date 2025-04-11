@@ -34,7 +34,7 @@
 	<div class="flex gap-8">
 		<div class="relative w-full space-y-2">
 			<p
-				class="absolute top-[4.5rem] left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
+				class="absolute top-18 left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
 			>
 				<LoaderCircle class="mr-2 size-4 animate-spin" />
 				Loading...
@@ -133,7 +133,7 @@
 			<SidePanel
 				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
-				class="hidden h-fit w-[35rem] lg:block"
+				class="hidden h-fit w-140 lg:block"
 				bind:showPrereleases
 			/>
 		</div>

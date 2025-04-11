@@ -104,7 +104,7 @@
 
 <header
 	class={[
-		"sticky top-0 z-40 w-full bg-background/95 backdrop-blur transition-shadow duration-500 supports-[backdrop-filter]:bg-background/60",
+		"sticky top-0 z-40 w-full bg-background/95 backdrop-blur transition-shadow duration-500 supports-backdrop-filter:bg-background/60",
 		{
 			"shadow-sm": newsToDisplay || (scrollY.current ?? 0) >= 25
 		}
@@ -196,7 +196,7 @@
 							<DropdownMenu.RadioGroup bind:value={theme}>
 								{#each themes as availableTheme (availableTheme.value)}
 									<DropdownMenu.RadioItem
-										class="cursor-pointer data-[disabled]:opacity-75"
+										class="cursor-pointer data-disabled:opacity-75"
 										value={availableTheme.value}
 										disabled={theme === availableTheme.value}
 										onclick={() => {
