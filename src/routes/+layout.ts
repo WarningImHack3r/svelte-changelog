@@ -1,89 +1,53 @@
-import type { Repo, Tab } from "$lib/types";
+import { browser } from "$app/environment";
+import { PUBLIC_POSTHOG_TOKEN } from "$env/static/public";
+import posthog from "posthog-js";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
+import type { MetaTagsProps } from "svelte-meta-tags";
 
 injectSpeedInsights();
 
-const repos: Record<Tab, { name: string; repos: Repo[] }> = {
-	svelte: {
-		name: "Svelte",
-		repos: [
-			{
-				repoName: "svelte",
-				versionFromTag: tag => tag.substring(tag.indexOf("@") + 1)
-			}
-		]
-	},
-	kit: {
-		name: "SvelteKit",
-		repos: [
-			{
-				repoName: "kit",
-				dataFilter: ({ tag_name }) => tag_name.includes("/kit@"),
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-			}
-		]
-	},
-	others: {
-		name: "Other",
-		repos: [
-			{
-				repoName: "kit",
-				dataFilter: ({ tag_name }) => !tag_name.includes("/kit@"),
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-			},
-			{
-				repoName: "cli",
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-			},
-			{
-				repoName: "vite-plugin-svelte",
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("@") + 1)
-			},
-			{
-				repoName: "eslint-plugin-svelte",
-				versionFromTag: tag =>
-					tag.includes("@") ? tag.substring(tag.lastIndexOf("@") + 1) : tag.replace(/^v/, "")
-			},
-			{
-				repoName: "eslint-config",
-				versionFromTag: tag => tag.replace(/^v/, "")
-			},
-			{
-				repoName: "svelte-eslint-parser",
-				versionFromTag: tag => tag.replace(/^v/, "")
-			},
-			{
-				repoName: "language-tools",
-				versionFromTag: tag => tag.substring(tag.lastIndexOf("-") + 1)
-			},
-			{
-				repoName: "acorn-typescript",
-				versionFromTag: tag => tag.replace(/^v/, "")
-			},
-			{
-				repoName: "svelte-devtools",
-				versionFromTag: tag => tag.replace(/^v/, "")
-			},
-			{
-				changesMode: "changelog",
-				repoName: "svelte-preprocess",
-				versionFromTag: tag => tag.replace(/^v/, ""),
-				changelogContentsReplacer: file => file.replace(/^# \[/gm, "## [")
-			},
-			{
-				changesMode: "changelog",
-				repoName: "rollup-plugin-svelte",
-				versionFromTag: tag => tag.replace(/^v/, "")
-			},
-			{
-				changesMode: "changelog",
-				repoName: "prettier-plugin-svelte",
-				versionFromTag: tag => tag.replace(/^v/, "")
-			}
-		]
-	}
-};
+const siteName = "Svelte Changelog";
 
-export function load() {
-	return { repos };
+export function load({ url, data }) {
+	if (browser) {
+		posthog.init(PUBLIC_POSTHOG_TOKEN, {
+			api_host: `${url.origin}/ingest`,
+			ui_host: "https://eu.posthog.com",
+			person_profiles: "always"
+		});
+	}
+
+	return {
+		...data,
+		siteName,
+		baseMetaTags: Object.freeze({
+			title: "Loading...",
+			titleTemplate: `%s | ${siteName}`,
+			description: "A nice UI to stay up-to-date with Svelte releases",
+			canonical: new URL(url.pathname, url.origin).href,
+			openGraph: {
+				type: "website",
+				url: new URL(url.pathname, url.origin).href,
+				locale: "en_US",
+				siteName,
+				images: [
+					{
+						url: "https://svelte.dev/favicon.png",
+						width: 128,
+						height: 128,
+						alt: "Svelte logo"
+					}
+				]
+			},
+			twitter: {
+				creator: "@probably_coding",
+				cardType: "summary" as const,
+				description: "A nice UI to stay up-to-date with Svelte releases"
+			},
+			keywords: ["svelte", "changelog", "svelte changelog", "sveltekit"],
+			additionalRobotsProps: {
+				noarchive: true
+			}
+		}) satisfies MetaTagsProps
+	};
 }

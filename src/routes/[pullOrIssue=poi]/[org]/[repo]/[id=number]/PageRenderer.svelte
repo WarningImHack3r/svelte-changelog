@@ -19,7 +19,6 @@
 </script>
 
 <script lang="ts">
-	import type { Issues, LinkedEntity, Pulls } from "./types";
 	import {
 		ArrowUpRight,
 		ChevronLeft,
@@ -40,6 +39,7 @@
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BodyRenderer from "$lib/components/renderers/BodyRenderer.svelte";
+	import type { IssueDetails, LinkedItem, PullRequestDetails } from "$lib/server/github-cache";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
 	const shikiPlugin: Plugin = {
@@ -59,60 +59,52 @@
 	}
 
 	type Props = {
-		info: Awaited<ReturnType<Pulls["get"]>>["data"] | Awaited<ReturnType<Issues["get"]>>["data"];
-		comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
-		commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
-		files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
-		linkedEntities: LinkedEntity[];
+		metadata: {
+			org: string;
+			repo: string;
+			type: "pull" | "issue";
+		};
+		info: IssueDetails["info"] | PullRequestDetails["info"];
+		comments: IssueDetails["comments"];
+		commits: PullRequestDetails["commits"];
+		files: PullRequestDetails["files"];
+		linkedEntities: LinkedItem[];
 	};
 
-	let { info, comments, commits, files, linkedEntities }: Props = $props();
+	let { metadata, info, comments, commits, files, linkedEntities }: Props = $props();
 
-	// https://github.com/ org/repo/[pull|issues]/number
-	let org = $derived(info.html_url?.replace("https://github.com/", "").split("/")[0] ?? "");
-	let repo = $derived(info.html_url?.replace("https://github.com/", "").split("/")[1] ?? "");
-	let type = $derived.by(() => {
-		if (!info.html_url) return "issue" as const;
-		return info.html_url.replace("https://github.com/", "").split("/")[2] === "pull"
-			? ("pull" as const)
-			: ("issue" as const);
-	});
-
-	let rightPartInfo = $derived.by(() => {
-		if (!info) return [];
-		return [
-			...(info.closed_at
-				? [
-						{
-							title: "merged" in info && info.merged ? "Merged at" : "Closed at",
-							value: formatToDateTime(info.closed_at)
-						}
-					]
-				: []),
-			...(info.closed_at && "merged" in info && info.merged
-				? [
-						{
-							title: "Merged by",
-							value: info.merged_by?.name ?? info.merged_by?.login ?? "Unknown"
-						}
-					]
-				: []),
-			{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
-			...("requested_reviewers" in info
-				? [
-						{
-							title: "Reviewers",
-							value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
-						}
-					]
-				: []),
-			{
-				title: "Labels",
-				value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
-			},
-			{ title: "Milestone", value: info.milestone?.title || "None" }
-		];
-	});
+	let rightPartInfo = $derived([
+		...(info.closed_at
+			? [
+					{
+						title: "merged" in info && info.merged ? "Merged at" : "Closed at",
+						value: formatToDateTime(info.closed_at)
+					}
+				]
+			: []),
+		...(info.closed_at && "merged" in info && info.merged
+			? [
+					{
+						title: "Merged by",
+						value: info.merged_by?.name ?? info.merged_by?.login ?? "Unknown"
+					}
+				]
+			: []),
+		{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
+		...("requested_reviewers" in info
+			? [
+					{
+						title: "Reviewers",
+						value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
+					}
+				]
+			: []),
+		{
+			title: "Labels",
+			value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
+		},
+		{ title: "Milestone", value: info.milestone?.title || "None" }
+	]);
 </script>
 
 <div class="container py-8">
@@ -129,7 +121,9 @@
 	</h2>
 	{#if linkedEntities.length > 0}
 		<h3 class="text-2xl font-semibold tracking-tight">
-			{type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1 ? "s" : ""}
+			{metadata.type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1
+				? "s"
+				: ""}
 		</h3>
 		<Accordion.Root type="single" class="mb-12">
 			{#each linkedEntities as entity (entity.number)}
@@ -184,10 +178,10 @@
 	{/if}
 	<div class="flex items-center justify-between">
 		<h3 class="text-2xl font-semibold tracking-tight">
-			{type === "pull" ? "Pull request" : "Issue"}
+			{metadata.type === "pull" ? "Pull request" : "Issue"}
 		</h3>
 		<GHBadge
-			{type}
+			type={metadata.type}
 			status={info.state === "closed"
 				? "merged" in info
 					? info.merged
@@ -304,7 +298,7 @@
 			{/each}
 		</BottomCollapsible>
 		<!-- Commits -->
-		{#if type === "pull"}
+		{#if metadata.type === "pull"}
 			<BottomCollapsible
 				icon={GitCommitVertical}
 				label="Commits"
@@ -383,7 +377,7 @@
 			</BottomCollapsible>
 		{/if}
 		<!-- Files -->
-		{#if type === "pull"}
+		{#if metadata.type === "pull"}
 			<!-- TODO: detailed diff? -->
 			<BottomCollapsible
 				icon={FileDiff}
@@ -434,17 +428,19 @@
 		</Button>
 		<div class="flex flex-col-reverse items-end gap-4 md:flex-row md:items-center">
 			<div class="flex flex-wrap justify-end gap-4">
-				{#each linkedEntities as closingIssue (closingIssue.id)}
+				{#each linkedEntities as closingIssue (closingIssue.number)}
 					<Button
-						href="/{type === 'pull' ? 'issues' : 'pull'}/{org}/{repo}/{closingIssue.number}"
+						href="/{metadata.type === 'pull'
+							? 'issues'
+							: 'pull'}/{metadata.org}/{metadata.repo}/{closingIssue.number}"
 						variant="secondary"
 					>
-						Open {type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
+						Open {metadata.type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
 					</Button>
 				{/each}
 			</div>
 			<Button href={info.html_url} target="_blank" class="group dark:text-black">
-				Open {type === "pull" ? "pull request" : "issue"} on GitHub
+				Open {metadata.type === "pull" ? "pull request" : "issue"} on GitHub
 				<ArrowUpRight
 					class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 				/>

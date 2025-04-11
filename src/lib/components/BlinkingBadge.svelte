@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { onMount, type Snippet } from "svelte";
-	import { get } from "svelte/store";
-	import { persisted } from "svelte-persisted-store";
-	import { plainTextSerializer } from "$lib/stores";
+	import { type Snippet } from "svelte";
+	import { persisted } from "$lib/persisted.svelte";
 
 	type Props = {
 		/**
@@ -20,12 +18,9 @@
 
 	let shouldShowPulse = $state(false);
 
-	onMount(() => {
+	$effect(() => {
 		if (!storedDateItem) return;
-		const storedDateStore = persisted(storedDateItem, "", {
-			serializer: plainTextSerializer
-		});
-		const storedDate = get(storedDateStore).replace(/"/g, "");
+		const storedDate = persisted(storedDateItem, "").value;
 		const lastVisitItem = localStorage.getItem("lastVisit");
 		if (storedDate && lastVisitItem) {
 			shouldShowPulse = new Date(storedDate) > new Date(lastVisitItem);

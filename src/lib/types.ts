@@ -1,10 +1,15 @@
 import type { Octokit } from "octokit";
+import type { GitHubRelease } from "$lib/server/github-cache";
+
+export type Prettify<T> = {
+	[K in keyof T]: T[K];
+} & {};
 
 export type Entries<T> = {
 	[K in keyof T]: [K, T[K]];
 }[keyof T][];
 
-export type Repo = {
+export type RepoInfo = {
 	/**
 	 * Mode to fetch the releases of the repo.
 	 * - `releases`: Fetches from the Releases page
@@ -20,30 +25,29 @@ export type Repo = {
 	 * If it returns false, the release is filtered out.
 	 *
 	 * @param release The release to filter
+	 * @returns whether we want to keep the release
 	 */
-	dataFilter?: (
-		release: Awaited<
-			ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
-		>["data"][number]
-	) => boolean;
+	dataFilter?: (release: GitHubRelease) => boolean;
 	/**
-	 * Extracts the version from the tag name.
+	 * Extracts the package name and version from the tag name.
 	 *
-	 * @param tag The tag name to extract the version from
+	 * @param tag The tag name to extract the name and version from
+	 * @returns an array with the package name, and the package version
 	 */
-	versionFromTag: (tag: string) => string;
+	metadataFromTag: (tag: string) => [string, string];
 	/**
 	 * Replaces the contents of the changelog file.
 	 * Only used when `changesMode` is set to `changelog`.
 	 * By default, no replacement is performed.
 	 *
 	 * @param file The contents of the changelog file
+	 * @returns the modified contents
 	 */
 	changelogContentsReplacer?: (file: string) => string;
 };
 
-export const availableTabs = ["svelte", "kit", "others"] as const;
-export type Tab = (typeof availableTabs)[number];
+export const availableCategory = ["svelte", "kit", "others"] as const;
+export type Category = (typeof availableCategory)[number];
 
-export const tokenKey = "token";
-export const oauthCookieKey = "github_oauth_state";
+export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
+export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
