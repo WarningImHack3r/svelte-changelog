@@ -120,11 +120,17 @@
 					alt="Svelte"
 					class="size-8"
 				/>
-				<span class="hidden text-xl font-semibold xs:inline-block">
-					Svelte
-					<span class="text-primary">Changelog</span>
-				</span>
+				{#if !page.route.id?.startsWith("/blog")}
+					<span class="hidden text-xl font-semibold xs:inline-block">
+						Svelte
+						<span class="text-primary">Changelog</span>
+					</span>
+				{/if}
 			</a>
+			{#if page.route.id?.startsWith("/blog")}
+				<div class="mx-4 h-8 w-0.5 rotate-25 rounded-full bg-muted-foreground/40"></div>
+				<span class="text-xl font-semibold">Blog</span>
+			{/if}
 
 			<!-- Right part -->
 			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
