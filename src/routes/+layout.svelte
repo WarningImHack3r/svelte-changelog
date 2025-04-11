@@ -141,7 +141,7 @@
 			<!-- Navigation -->
 			{#if !page.route.id?.startsWith("/blog")}
 				<ul class="ml-6 hidden sm:flex">
-					{#each [{ link: "/package/svelte", title: "Home" }, { link: "/packages", title: "Packages" }, { link: "/blog", title: "Blog" }] as { link, title } (link)}
+					{#each [{ link: "/packages", title: "Packages" }, { link: "/blog", title: "Blog" }] as { link, title } (link)}
 						{@const disabled = page.url.pathname.startsWith(link)}
 						<li>
 							<Button
