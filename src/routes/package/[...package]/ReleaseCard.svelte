@@ -144,12 +144,12 @@
 	<Accordion.Trigger
 		class="group rounded-t-xl bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=closed]:rounded-b-xl"
 	>
-		<div class="flex w-full items-center gap-2 xs:items-baseline xs:gap-1">
+		<div class="flex w-full items-center gap-2 xs:gap-1">
 			<div class="flex flex-col items-start gap-1">
 				{#if isMajorRelease}
 					<Tooltip.Provider>
 						<Tooltip.Root delayDuration={300}>
-							<Tooltip.Trigger>
+							<Tooltip.Trigger class="w-min text-left sm:w-auto">
 								<span
 									style="--major-gradient: 135deg, #ffcc80, #ff9933, #e67300, #ff9933, #ffcc80, #fff5e6, white; background-size: 200% 200%"
 									class="animate-major-gradient bg-linear-(--major-gradient) bg-clip-text text-left font-display text-xl text-transparent"
@@ -173,7 +173,7 @@
 						</Tooltip.Root>
 					</Tooltip.Provider>
 				{:else}
-					<span class="font-display text-lg group-hover:underline">
+					<span class="w-min text-left font-display text-lg group-hover:underline sm:w-auto">
 						{packageName}@{releaseVersion}
 					</span>
 				{/if}
@@ -185,7 +185,7 @@
 				<span class="mr-1 hidden xs:block">•</span>
 				<Tooltip.Provider>
 					<Tooltip.Root delayDuration={300}>
-						<Tooltip.Trigger>
+						<Tooltip.Trigger class="text-right">
 							{isOlderThanAWeek
 								? releaseDate.toLocaleDateString("en", {
 										year:
@@ -208,7 +208,7 @@
 					</Tooltip.Root>
 				</Tooltip.Provider>
 			</span>
-			<div class="mb-auto hidden items-center gap-2 xs:flex">
+			<div class="hidden items-center gap-2 xs:flex sm:mb-auto">
 				{@render badges()}
 			</div>
 		</div>
