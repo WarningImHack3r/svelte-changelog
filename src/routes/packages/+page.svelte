@@ -8,7 +8,7 @@
 <ul class="space-y-8">
 	{#each data.displayablePackages as { category, packages } (category)}
 		<li>
-			<h3 class="font-display text-3xl text-primary">{category.name}</h3>
+			<h3 class="font-display text-3xl text-primary text-shadow-md">{category.name}</h3>
 			<ul class="mt-2">
 				{#each packages as { owner, repoName, pkg }, index (pkg.name)}
 					{#if index > 0}
