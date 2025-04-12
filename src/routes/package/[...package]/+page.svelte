@@ -60,10 +60,10 @@
 		)}
 		<div class="my-8 flex gap-8">
 			<div>
-				<h1 class="text-3xl font-semibold text-primary text-shadow-md md:text-5xl">
+				<h1 class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl">
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
-				<h2 class="text-xl text-muted-foreground text-shadow-sm">
+				<h2 class="text-xl text-muted-foreground text-shadow-sm/5">
 					{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
 				</h2>
 				{#if data.currentPackage.pkg.description}

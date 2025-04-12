@@ -41,7 +41,7 @@
 	<Card.Root
 		class={{
 			"z-10 border border-muted-foreground/25 bg-secondary": !headless,
-			"border-0 bg-inherit": headless
+			"border-0 bg-inherit shadow-none": headless
 		}}
 	>
 		{#if !headless}

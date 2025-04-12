@@ -127,7 +127,7 @@
 					class="size-8"
 				/>
 				{#if !page.route.id?.startsWith("/blog")}
-					<span class="hidden text-xl font-semibold text-shadow-2xs xs:inline-block">
+					<span class="hidden text-xl font-semibold text-shadow-xs/10 xs:inline-block">
 						Svelte
 						<span class="text-primary">Changelog</span>
 					</span>
