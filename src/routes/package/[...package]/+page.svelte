@@ -61,6 +61,7 @@
 		<div class="my-8 flex gap-8">
 			<div>
 				<h1 class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
 				<h2 class="text-xl text-muted-foreground text-shadow-sm/5">

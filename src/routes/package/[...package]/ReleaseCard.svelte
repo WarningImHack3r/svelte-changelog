@@ -72,7 +72,7 @@
 		const days = Math.floor(hours / 24);
 		const months = Math.floor(days / 30);
 		const years = Math.floor(months / 12);
-		const formatter = new Intl.RelativeTimeFormat(locale);
+		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		if (years > 0) {
 			return formatter.format(0 - years, "year");
