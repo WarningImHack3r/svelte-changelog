@@ -59,7 +59,6 @@
 			awaitedOtherReleases = await otherReleases;
 		})();
 	});
-	let isExpanded = $state(false);
 
 	let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
 	$effect(() => {
