@@ -2,22 +2,41 @@
 	import type { ClassValue } from "svelte/elements";
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
+	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
+	import type { Prettify } from "$lib/types";
 	import { persisted } from "$lib/persisted.svelte";
 	import { cn } from "$lib/utils";
+	import { Badge } from "$lib/components/ui/badge";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
 
+	type MaybePromise<T> = Promise<T> | T;
+
 	type Props = {
 		packageName?: string;
-		allPackages?: (Omit<CategorizedPackage, "packages"> & {
-			packages: Omit<
-				CategorizedPackage["packages"][number],
-				"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
-			>[];
-		})[];
+		allPackages?: Prettify<
+			Omit<CategorizedPackage, "packages"> & {
+				packages: Omit<
+					CategorizedPackage["packages"][number],
+					"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
+				>[];
+			}
+		>[];
+		otherReleases?: MaybePromise<
+			{
+				releasesRepo: Prettify<
+					Pick<CategorizedPackage, "category"> &
+						Omit<
+							CategorizedPackage["packages"][number],
+							"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
+						>
+				>;
+				releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[];
+			}[]
+		>;
 		showPrereleases?: boolean;
 		headless?: boolean;
 		class?: ClassValue;
@@ -26,16 +45,33 @@
 		packageName = "",
 		allPackages = [],
 		showPrereleases = $bindable(true),
+		otherReleases = [],
 		headless = false,
 		class: className
 	}: Props = $props();
 	let id = $props.id();
+
+	let awaitedOtherReleases = $state<Awaited<typeof otherReleases>>([]);
+	$effect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		otherReleases;
+		(async () => {
+			awaitedOtherReleases = await otherReleases;
+		})();
+	});
+	let isExpanded = $state(false);
 
 	let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
 	$effect(() => {
 		storedPrereleaseState.value = showPrereleases;
 	});
 </script>
+
+{#snippet newBadge(count: number)}
+	{#if count > 0}
+		<Badge class="px-1 py-0">{count} new</Badge>
+	{/if}
+{/snippet}
 
 <div class={cn("flex flex-col", !headless && "*:shadow-lg dark:*:shadow-black", className)}>
 	<Card.Root
@@ -67,6 +103,9 @@
 							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
 							<ul class="space-y-2">
 								{#each packages as { pkg } (pkg.name)}
+									{@const linkedBadgeData =
+										awaitedOtherReleases.find(r => r.releasesRepo.pkg.name === pkg.name)
+											?.releases ?? []}
 									<li>
 										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
 											<span class="font-semibold">{pkg.name}</span>
@@ -76,6 +115,7 @@
 												class="group inline-flex w-full items-center underline-offset-4 hover:underline"
 											>
 												{pkg.name}
+												{@render newBadge(linkedBadgeData.length)}
 												<ChevronRight
 													class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
 												/>
@@ -86,6 +126,9 @@
 							</ul>
 						{:else}
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
+							{@const linkedBadgeData =
+								awaitedOtherReleases.find(r => r.releasesRepo.pkg.name === firstPackageName)
+									?.releases ?? []}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<h3 class="text-xl font-bold text-primary underline underline-offset-4">
 									{category.name}
@@ -96,6 +139,7 @@
 									class="group inline-flex w-full items-center text-xl font-bold text-primary underline-offset-4 hover:underline"
 								>
 									{category.name}
+									{@render newBadge(linkedBadgeData.length)}
 									<ChevronRight
 										class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
 									/>

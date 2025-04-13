@@ -88,6 +88,7 @@
 						headless
 						packageName={data.currentPackage.pkg.name}
 						allPackages={data.displayablePackages}
+						otherReleases={data.otherReleases}
 						bind:showPrereleases
 						class="my-8"
 					/>
@@ -134,6 +135,7 @@
 			<SidePanel
 				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
+				otherReleases={data.otherReleases}
 				class="hidden h-fit w-140 lg:block"
 				bind:showPrereleases
 			/>
