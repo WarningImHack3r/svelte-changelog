@@ -13,8 +13,6 @@
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
 
-	type MaybePromise<T> = Promise<T> | T;
-
 	type Props = {
 		packageName?: string;
 		allPackages?: Prettify<
@@ -25,18 +23,21 @@
 				>[];
 			}
 		>[];
-		otherReleases?: MaybePromise<
-			{
-				releasesRepo: Prettify<
-					Pick<CategorizedPackage, "category"> &
-						Omit<
-							CategorizedPackage["packages"][number],
-							"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
-						>
-				>;
-				releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[];
-			}[]
-		>;
+		otherReleases?: {
+			[key: string]: Promise<
+				| {
+						releasesRepo: Prettify<
+							Pick<CategorizedPackage, "category"> &
+								Omit<
+									CategorizedPackage["packages"][number],
+									"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
+								>
+						>;
+						releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] | undefined;
+				  }
+				| undefined
+			>;
+		};
 		showPrereleases?: boolean;
 		headless?: boolean;
 		class?: ClassValue;
@@ -45,20 +46,11 @@
 		packageName = "",
 		allPackages = [],
 		showPrereleases = $bindable(true),
-		otherReleases = [],
+		otherReleases = {},
 		headless = false,
 		class: className
 	}: Props = $props();
 	let id = $props.id();
-
-	let awaitedOtherReleases = $state<Awaited<typeof otherReleases>>([]);
-	$effect(() => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		otherReleases;
-		(async () => {
-			awaitedOtherReleases = await otherReleases;
-		})();
-	});
 
 	let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
 	$effect(() => {
@@ -102,9 +94,9 @@
 							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
 							<ul class="space-y-2">
 								{#each packages as { pkg } (pkg.name)}
-									{@const linkedBadgeData =
-										awaitedOtherReleases.find(r => r.releasesRepo.pkg.name === pkg.name)
-											?.releases ?? []}
+									{@const linkedBadgeData = Object.entries(otherReleases).find(
+										([k]) => k.localeCompare(pkg.name, undefined, { sensitivity: "base" }) === 0
+									)}
 									<li>
 										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
 											<span class="font-semibold">{pkg.name}</span>
@@ -114,7 +106,14 @@
 												class="group inline-flex w-full items-center underline-offset-4 hover:underline"
 											>
 												{pkg.name}
-												{@render newBadge(linkedBadgeData.length)}
+												{#if linkedBadgeData}
+													{@const [, p] = linkedBadgeData}
+													{#await p then d}
+														{#if d?.releases}
+															{@render newBadge(d.releases.length)}
+														{/if}
+													{/await}
+												{/if}
 												<ChevronRight
 													class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
 												/>
@@ -125,9 +124,9 @@
 							</ul>
 						{:else}
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
-							{@const linkedBadgeData =
-								awaitedOtherReleases.find(r => r.releasesRepo.pkg.name === firstPackageName)
-									?.releases ?? []}
+							{@const linkedBadgeData = Object.entries(otherReleases).find(
+								([k]) => k.localeCompare(firstPackageName, undefined, { sensitivity: "base" }) === 0
+							)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<h3 class="text-xl font-bold text-primary underline underline-offset-4">
 									{category.name}
@@ -138,7 +137,14 @@
 									class="group inline-flex w-full items-center text-xl font-bold text-primary underline-offset-4 hover:underline"
 								>
 									{category.name}
-									{@render newBadge(linkedBadgeData.length)}
+									{#if linkedBadgeData}
+										{@const [, p] = linkedBadgeData}
+										{#await p then d}
+											{#if d?.releases}
+												{@render newBadge(d.releases.length)}
+											{/if}
+										{/await}
+									{/if}
 									<ChevronRight
 										class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
 									/>
