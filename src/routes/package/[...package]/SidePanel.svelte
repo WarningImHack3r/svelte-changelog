@@ -60,7 +60,7 @@
 
 {#snippet newBadge(count: number)}
 	{#if count > 0}
-		<Badge class="px-1 py-0">{count} new</Badge>
+		<Badge class="shrink-0 px-1 py-0">{count} new</Badge>
 	{/if}
 {/snippet}
 
@@ -103,18 +103,20 @@
 										{:else}
 											<a
 												href="/package/{pkg.name}"
-												class="group inline-flex w-full items-center underline-offset-4 hover:underline"
+												class="group inline-flex w-full items-center gap-1 underline-offset-4 hover:underline"
 											>
 												{pkg.name}
-												{#if linkedBadgeData}
-													{@const [, p] = linkedBadgeData}
-													{#await p then d}
-														{@render newBadge(d?.releases?.length ?? 0)}
-													{/await}
-												{/if}
-												<ChevronRight
-													class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
-												/>
+												<span class="ml-auto flex items-center gap-1">
+													{#if linkedBadgeData}
+														{@const [, p] = linkedBadgeData}
+														{#await p then d}
+															{@render newBadge(d?.releases?.length ?? 0)}
+														{/await}
+													{/if}
+													<ChevronRight
+														class="size-4 text-primary transition-transform group-hover:translate-x-1"
+													/>
+												</span>
 											</a>
 										{/if}
 									</li>
@@ -132,18 +134,20 @@
 							{:else}
 								<a
 									href="/package/{firstPackageName}"
-									class="group inline-flex w-full items-center text-xl font-bold text-primary underline-offset-4 hover:underline"
+									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary underline-offset-4 hover:underline"
 								>
 									{category.name}
-									{#if linkedBadgeData}
-										{@const [, p] = linkedBadgeData}
-										{#await p then d}
-											{@render newBadge(d?.releases?.length ?? 0)}
-										{/await}
-									{/if}
-									<ChevronRight
-										class="ml-auto size-4 text-primary transition-transform group-hover:translate-x-1"
-									/>
+									<span class="ml-auto flex items-center gap-1">
+										{#if linkedBadgeData}
+											{@const [, p] = linkedBadgeData}
+											{#await p then d}
+												{@render newBadge(d?.releases?.length ?? 0)}
+											{/await}
+										{/if}
+										<ChevronRight
+											class="size-4 text-primary transition-transform group-hover:translate-x-1"
+										/>
+									</span>
 								</a>
 							{/if}
 						{/if}
