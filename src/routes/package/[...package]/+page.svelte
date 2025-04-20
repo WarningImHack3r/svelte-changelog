@@ -44,7 +44,7 @@
 			<Skeleton class="h-16 w-full" />
 			<Skeleton class="h-80 w-full" />
 		</div>
-		<Skeleton class="h-96 w-1/3" />
+		<Skeleton class="hidden h-96 w-140 lg:block" />
 	</div>
 {/snippet}
 
@@ -99,9 +99,10 @@
 				type="multiple"
 				value={displayableReleases
 					// Only expand releases that are less than a week old
-					.filter(({ created_at }) => {
-						return new Date(created_at).getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7;
-					})
+					.filter(
+						({ created_at }) =>
+							new Date(created_at).getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+					)
 					.map(({ id }) => id.toString())}
 				class="w-full space-y-2"
 			>
