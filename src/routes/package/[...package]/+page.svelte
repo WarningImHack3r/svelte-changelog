@@ -65,7 +65,13 @@
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
 				<h2 class="text-xl text-muted-foreground text-shadow-sm/5">
-					{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
+					<a
+						href="https://github.com/{data.currentPackage.owner}/{data.currentPackage.repoName}"
+						target="_blank"
+						class="underline-offset-2 after:ml-0.5 after:inline-block after:-translate-x-2 after:font-sans after:text-sm after:opacity-0 after:transition after:content-['↗'] hover:underline hover:after:translate-x-0 hover:after:opacity-100"
+					>
+						{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
+					</a>
 				</h2>
 				{#if data.currentPackage.pkg.description}
 					<h3 class="mt-4 italic">{data.currentPackage.pkg.description}</h3>
