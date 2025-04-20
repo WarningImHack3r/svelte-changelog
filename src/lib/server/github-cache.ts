@@ -293,9 +293,14 @@ export class GitHubCache {
 
 		for (const item of timelineItems) {
 			if (!item) continue;
-			if (!("subject" in item) && !("source" in item)) continue;
-			const pr = item.subject || item.source;
-			linkedPRs.set(pr.number, pr);
+			if ("subject" in item) {
+				const issueOrPr = item.subject;
+				if (!issueOrPr || !("number" in issueOrPr)) continue;
+				linkedPRs.set(issueOrPr.number, issueOrPr);
+			} else if ("source" in item) {
+				const referencedSubject = item.source;
+				linkedPRs.set(referencedSubject.number, referencedSubject);
+			}
 		}
 
 		return Array.from(linkedPRs.values());
