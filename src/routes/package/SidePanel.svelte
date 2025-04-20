@@ -52,9 +52,11 @@
 	}: Props = $props();
 	let id = $props.id();
 
-	let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
 	$effect(() => {
-		storedPrereleaseState.value = showPrereleases;
+		let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
+		$effect(() => {
+			storedPrereleaseState.value = showPrereleases;
+		});
 	});
 </script>
 

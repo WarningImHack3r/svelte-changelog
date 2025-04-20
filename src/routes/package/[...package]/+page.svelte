@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { navigating } from "$app/state";
-	import { LoaderCircle, Menu } from "@lucide/svelte";
+	import { LoaderCircle } from "@lucide/svelte";
 	import semver from "semver";
 	import ReleaseCard from "./ReleaseCard.svelte";
-	import SidePanel from "./SidePanel.svelte";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import * as Sheet from "$lib/components/ui/sheet";
-	import { Button } from "$lib/components/ui/button";
 	import { Skeleton } from "$lib/components/ui/skeleton";
+	import * as Accordion from "$lib/components/ui/accordion";
 
 	let { data } = $props();
 	let latestRelease = $derived(
@@ -27,11 +24,11 @@
 </script>
 
 {#snippet loading()}
-	<div class="my-8 space-y-2">
-		<Skeleton class="h-16 w-64" />
-		<Skeleton class="h-8 w-32" />
-	</div>
-	<div class="flex gap-8">
+	<div class="flex flex-col">
+		<div class="my-8 space-y-2">
+			<Skeleton class="h-16 w-64" />
+			<Skeleton class="h-8 w-32" />
+		</div>
 		<div class="relative w-full space-y-2">
 			<p
 				class="absolute top-18 left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
@@ -44,7 +41,6 @@
 			<Skeleton class="h-16 w-full" />
 			<Skeleton class="h-80 w-full" />
 		</div>
-		<Skeleton class="hidden h-96 w-140 lg:block" />
 	</div>
 {/snippet}
 
@@ -58,8 +54,8 @@
 		{@const displayableReleases = data.releases.filter(release =>
 			showPrereleases ? true : !release.prerelease
 		)}
-		<div class="my-8 flex gap-8">
-			<div>
+		<div class="flex flex-col">
+			<div class="my-8">
 				<h1 class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
@@ -77,31 +73,6 @@
 					<h3 class="mt-4 italic">{data.currentPackage.pkg.description}</h3>
 				{/if}
 			</div>
-			<Sheet.Root>
-				<Sheet.Trigger>
-					{#snippet child({ props })}
-						<Button {...props} variant="secondary" class="ml-auto lg:hidden">
-							<Menu />
-							<span class="sr-only">Menu</span>
-						</Button>
-					{/snippet}
-				</Sheet.Trigger>
-				<Sheet.Content class="overflow-y-auto">
-					<Sheet.Header>
-						<Sheet.Title>Packages</Sheet.Title>
-					</Sheet.Header>
-					<SidePanel
-						headless
-						packageName={data.currentPackage.pkg.name}
-						allPackages={data.displayablePackages}
-						otherReleases={data.allReleases}
-						bind:showPrereleases
-						class="my-8"
-					/>
-				</Sheet.Content>
-			</Sheet.Root>
-		</div>
-		<div class="flex gap-8">
 			<Accordion.Root
 				type="multiple"
 				value={displayableReleases
@@ -139,13 +110,6 @@
 					/>
 				{/each}
 			</Accordion.Root>
-			<SidePanel
-				packageName={data.currentPackage.pkg.name}
-				allPackages={data.displayablePackages}
-				otherReleases={data.allReleases}
-				class="hidden h-fit w-140 lg:block"
-				bind:showPrereleases
-			/>
 		</div>
 	{/await}
 {/if}
