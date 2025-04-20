@@ -91,21 +91,25 @@
 					{/if}
 					<li class="space-y-2">
 						{#if packages.length > 1}
+							<!-- Categories with sub-items -->
 							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
 							<ul class="space-y-2">
+								<!-- Sub-items -->
 								{#each packages as { pkg } (pkg.name)}
 									{@const linkedBadgeData = Object.entries(otherReleases).find(
 										([k]) => k.localeCompare(pkg.name, undefined, { sensitivity: "base" }) === 0
 									)}
 									<li>
 										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
+											<!-- Active sub-item -->
 											<span class="font-semibold">{pkg.name}</span>
 										{:else}
+											<!-- Clickable sub-items -->
 											<a
 												href="/package/{pkg.name}"
-												class="group inline-flex w-full items-center gap-1 underline-offset-4 hover:underline"
+												class="group inline-flex w-full items-center gap-1"
 											>
-												{pkg.name}
+												<span class="underline-offset-4 group-hover:underline">{pkg.name}</span>
 												<span class="ml-auto flex items-center gap-1">
 													{#if linkedBadgeData}
 														{@const [, p] = linkedBadgeData}
@@ -123,20 +127,23 @@
 								{/each}
 							</ul>
 						{:else}
+							<!-- Categories with 1 sub-item -->
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
 							{@const linkedBadgeData = Object.entries(otherReleases).find(
 								([k]) => k.localeCompare(firstPackageName, undefined, { sensitivity: "base" }) === 0
 							)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
+								<!-- Active category -->
 								<h3 class="text-xl font-bold text-primary underline underline-offset-4">
 									{category.name}
 								</h3>
 							{:else}
+								<!-- Clickable category -->
 								<a
 									href="/package/{firstPackageName}"
-									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary underline-offset-4 hover:underline"
+									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary"
 								>
-									{category.name}
+									<span class="underline-offset-4 group-hover:underline">{category.name}</span>
 									<span class="ml-auto flex items-center gap-1">
 										{#if linkedBadgeData}
 											{@const [, p] = linkedBadgeData}
