@@ -109,9 +109,7 @@
 												{#if linkedBadgeData}
 													{@const [, p] = linkedBadgeData}
 													{#await p then d}
-														{#if d?.releases}
-															{@render newBadge(d.releases.length)}
-														{/if}
+														{@render newBadge(d?.releases?.length ?? 0)}
 													{/await}
 												{/if}
 												<ChevronRight
@@ -140,9 +138,7 @@
 									{#if linkedBadgeData}
 										{@const [, p] = linkedBadgeData}
 										{#await p then d}
-											{#if d?.releases}
-												{@render newBadge(d.releases.length)}
-											{/if}
+											{@render newBadge(d?.releases?.length ?? 0)}
 										{/await}
 									{/if}
 									<ChevronRight
