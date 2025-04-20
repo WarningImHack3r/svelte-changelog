@@ -290,7 +290,7 @@
 						<MarkdownRenderer
 							markdown={comment.body || "_Empty comment_"}
 							parseRawHtml
-							class="w-full"
+							class="max-w-none"
 							additionalPlugins={[shikiPlugin]}
 						/>
 					</div>
