@@ -9,6 +9,7 @@
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { news } from "$lib/news/news.json";
+	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
@@ -22,29 +23,26 @@
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
+	type Mode = Parameters<typeof setMode>[0];
 	type Theme = {
-		value: typeof theme;
 		label: string;
 		icon: typeof Icon;
 	};
-	const themes: Theme[] = [
-		{
-			value: "light",
+	const themes: Record<Mode, Theme> = {
+		light: {
 			label: "Light",
 			icon: Sun
 		},
-		{
-			value: "dark",
+		dark: {
 			label: "Dark",
 			icon: Moon
 		},
-		{
-			value: "system",
+		system: {
 			label: "System",
 			icon: Monitor
 		}
-	];
-	let theme = $state<"light" | "dark" | "system">("system");
+	};
+	let theme = $state<keyof typeof themes>("system");
 	let themeSwitcherOpen = $state(false);
 
 	// News
@@ -194,15 +192,13 @@
 							<DropdownMenu.Label>Theme</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.RadioGroup bind:value={theme}>
-								{#each themes as availableTheme (availableTheme.value)}
+								{#each Object.entries(themes) as Entries<typeof themes> as [mode, availableTheme] (mode)}
 									<DropdownMenu.RadioItem
 										class="cursor-pointer data-disabled:opacity-75"
-										value={availableTheme.value}
-										disabled={theme === availableTheme.value}
+										value={mode}
+										disabled={theme === mode}
 										onclick={() => {
-											return availableTheme.value === "system"
-												? resetMode()
-												: setMode(availableTheme.value);
+											return mode === "system" ? resetMode() : setMode(mode);
 										}}
 									>
 										<availableTheme.icon class="mr-2 size-4" />
