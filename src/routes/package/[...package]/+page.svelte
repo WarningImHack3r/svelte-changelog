@@ -51,8 +51,8 @@
 	{#await Promise.resolve()}
 		{@render loading()}
 	{:then}
-		{@const displayableReleases = data.releases.filter(release =>
-			showPrereleases ? true : !release.prerelease
+		{@const displayableReleases = data.releases.filter(
+			release => showPrereleases || !release.prerelease
 		)}
 		<div class="flex flex-col">
 			<div class="my-8">
