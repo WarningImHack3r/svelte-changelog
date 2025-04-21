@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
+	import type { Action } from "svelte/action";
 	import { page } from "$app/state";
 
 	type Props = {
@@ -7,27 +8,21 @@
 	};
 
 	let { children }: Props = $props();
-	let data = $state<HTMLParagraphElement>();
 
-	$effect(() => {
-		if (!data) return;
-		let replaced = data.innerHTML;
+	const linkify: Action = node => {
+		let replaced = node.innerHTML;
 		const issuesCandidates = replaced.matchAll(/ #(\d+)/g) || [];
-		for (let candidate of issuesCandidates) {
-			const wholeMatch = candidate[0];
-			const matchedGroup = candidate[1];
-			if (!wholeMatch || !matchedGroup) continue;
+		for (let [wholeMatch, matchedGroup] of issuesCandidates) {
+			if (!matchedGroup) continue;
 			replaced = replaced.replace(
 				wholeMatch,
-				` <a href="https://github.com/${page.data.org}/${page.data.repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
+				` <a href="https://github.com/${page.data.itemMetadata.org}/${page.data.itemMetadata.repo}/issues/${matchedGroup}">${wholeMatch.trim()}</a>`
 			);
 		}
-		// FIXME: change that mechanism to get rid of that warning
-		// eslint-disable-next-line svelte/no-dom-manipulating
-		data.innerHTML = replaced;
-	});
+		node.innerHTML = replaced;
+	};
 </script>
 
-<p bind:this={data}>
+<p use:linkify>
 	{@render children?.()}
 </p>
