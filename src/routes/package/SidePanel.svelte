@@ -175,6 +175,7 @@
 		]}
 	>
 		<Checkbox
+			disabled
 			id="beta-releases-{id}"
 			aria-labelledby="beta-releases-label-{id}"
 			bind:checked={showPrereleases}
