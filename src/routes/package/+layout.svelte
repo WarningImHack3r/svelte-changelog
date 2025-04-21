@@ -44,7 +44,7 @@
 		allPackages={data.displayablePackages}
 		otherReleases={data.allReleases}
 		class={[
-			"mt-35 hidden h-fit w-100 shrink-0 lg:block",
+			"mt-35 hidden h-fit w-100 shrink-0 lg:flex",
 			page.data.currentPackage.pkg.description?.length && "mt-45"
 		]}
 		bind:showPrereleases
