@@ -139,6 +139,13 @@ export type Repository = Prettify<
 >;
 
 /**
+ * The repository owner of all the repositories in
+ * {@link RepoInfo repos} if the {@link RepoInfo.repoOwner|repoOwner}
+ * property is not set.
+ */
+const DEFAULT_OWNER = "sveltejs";
+
+/**
  * Get all the repositories in a standard format
  */
 export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, repos }]) =>
@@ -147,7 +154,7 @@ export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, r
 			slug,
 			name
 		},
-		owner: "sveltejs",
+		owner: repo.repoOwner || DEFAULT_OWNER,
 		...repo
 	}))
 );
@@ -158,8 +165,8 @@ export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, r
  */
 export const uniqueRepos = uniq(
 	iterableRepos.flatMap(([, { repos }]) =>
-		repos.map(({ repoName }) => ({
-			owner: "sveltejs",
+		repos.map(({ repoOwner, repoName }) => ({
+			owner: repoOwner || DEFAULT_OWNER,
 			name: repoName
 		}))
 	),

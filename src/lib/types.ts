@@ -14,8 +14,16 @@ export type RepoInfo = {
 	 * Mode to fetch the releases of the repo.
 	 * - `releases`: Fetches from the Releases page
 	 * - `changelog`: Fetches the changelog of the repo, if available
+	 *
+	 * @default "releases"
 	 */
 	changesMode?: "releases" | "changelog";
+	/**
+	 * Repository organization/owner on GitHub
+	 *
+	 * @default "sveltejs"
+	 */
+	repoOwner?: string;
 	/**
 	 * Repository name on GitHub
 	 */
