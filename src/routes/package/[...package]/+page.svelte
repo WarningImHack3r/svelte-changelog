@@ -55,8 +55,8 @@
 	{#await Promise.resolve()}
 		{@render loading()}
 	{:then}
-		{@const displayableReleases = data.releases.filter(release =>
-			showPrereleases ? true : !release.prerelease
+		{@const displayableReleases = data.releases.filter(
+			release => showPrereleases || !release.prerelease
 		)}
 		<div class="my-8 flex gap-8">
 			<div>
@@ -141,7 +141,7 @@
 			<SidePanel
 				packageName={data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
-				class="hidden h-fit w-140 lg:block"
+				class="hidden h-fit w-140 lg:flex"
 				bind:showPrereleases
 			/>
 		</div>
