@@ -10,7 +10,7 @@
 	let showPrereleases = $state(true);
 </script>
 
-<div class="mt-8 flex gap-8 lg:mt-0">
+<div class="relative mt-8 flex gap-8 lg:mt-0">
 	<div class="flex-1">
 		{@render children()}
 	</div>
@@ -18,7 +18,14 @@
 	<Sheet.Root>
 		<Sheet.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} variant="secondary" class="ml-auto lg:hidden">
+				<Button
+					{...props}
+					variant="secondary"
+					class={[
+						"absolute right-0 mt-12 ml-auto lg:hidden",
+						page.data.currentPackage.pkg.description?.length && "mt-16"
+					]}
+				>
 					<Menu />
 					<span class="sr-only">Menu</span>
 				</Button>
