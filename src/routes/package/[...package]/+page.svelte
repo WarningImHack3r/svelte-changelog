@@ -21,6 +21,10 @@
 			.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
 	);
 	let showPrereleases = $state(true);
+
+	$effect(() => {
+		localStorage.setItem(`last-visited-${data.currentPackage.pkg.name}`, new Date().toISOString());
+	});
 </script>
 
 {#snippet loading()}

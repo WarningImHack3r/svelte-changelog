@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
+	import { browser } from "$app/environment";
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
 	import type { GitHubRelease } from "$lib/server/github-cache";
@@ -12,6 +13,8 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
+
+	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
 	type Props = {
 		packageName?: string;
@@ -33,7 +36,7 @@
 									"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
 								>
 						>;
-						releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] | undefined;
+						releases: CleanRelease[] | undefined;
 				  }
 				| undefined
 			>;
@@ -58,6 +61,41 @@
 			storedPrereleaseState.value = showPrereleases;
 		});
 	});
+
+	/**
+	 * Extract the data from the {@link Props.otherReleases|otherReleases}
+	 * props.
+	 *
+	 * @param pkgName the package name to extract releases fo
+	 * @returns the {@link Promise} of releases, or `undefined`
+	 */
+	function getBadgeDataFromOther(pkgName: string) {
+		const data = Object.entries(otherReleases).find(
+			([k]) => k.localeCompare(pkgName, undefined, { sensitivity: "base" }) === 0
+		);
+		if (!data) return undefined;
+		const [, v] = data;
+		return v;
+	}
+
+	/**
+	 * Filter the releases to exclude those that have already been seen
+	 *
+	 * @param pkgName the package name for the releases
+	 * @param releases the releases to filter
+	 * @returns the filtered releases
+	 */
+	function getUnvisitedReleases(pkgName: string, releases: CleanRelease[] | undefined) {
+		if (!releases || !browser) return [];
+
+		const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
+		if (!lastVisitedItem) return [];
+		const lastVisitedDate = new Date(lastVisitedItem);
+
+		return releases.filter(
+			({ created_at, published_at }) => new Date(published_at ?? created_at) > lastVisitedDate
+		);
+	}
 </script>
 
 {#snippet newBadge(count: number)}
@@ -98,9 +136,7 @@
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each packages as { pkg } (pkg.name)}
-									{@const linkedBadgeData = Object.entries(otherReleases).find(
-										([k]) => k.localeCompare(pkg.name, undefined, { sensitivity: "base" }) === 0
-									)}
+									{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
 									<li>
 										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
 											<!-- Active sub-item -->
@@ -114,9 +150,10 @@
 												<span class="underline-offset-4 group-hover:underline">{pkg.name}</span>
 												<span class="ml-auto flex items-center gap-1">
 													{#if linkedBadgeData}
-														{@const [, p] = linkedBadgeData}
-														{#await p then d}
-															{@render newBadge(d?.releases?.length ?? 0)}
+														{#await linkedBadgeData then data}
+															{@render newBadge(
+																getUnvisitedReleases(pkg.name, data?.releases).length
+															)}
 														{/await}
 													{/if}
 													<ChevronRight
@@ -131,9 +168,7 @@
 						{:else}
 							<!-- Categories with 1 sub-item -->
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
-							{@const linkedBadgeData = Object.entries(otherReleases).find(
-								([k]) => k.localeCompare(firstPackageName, undefined, { sensitivity: "base" }) === 0
-							)}
+							{@const linkedBadgeData = getBadgeDataFromOther(firstPackageName)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<!-- Active category -->
 								<h3 class="text-xl font-bold text-primary underline underline-offset-4">
@@ -148,9 +183,10 @@
 									<span class="underline-offset-4 group-hover:underline">{category.name}</span>
 									<span class="ml-auto flex items-center gap-1">
 										{#if linkedBadgeData}
-											{@const [, p] = linkedBadgeData}
-											{#await p then d}
-												{@render newBadge(d?.releases?.length ?? 0)}
+											{#await linkedBadgeData then data}
+												{@render newBadge(
+													getUnvisitedReleases(firstPackageName, data?.releases).length
+												)}
 											{/await}
 										{/if}
 										<ChevronRight
