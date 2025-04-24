@@ -89,7 +89,13 @@
 		if (!releases || !browser) return [];
 
 		const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
-		if (!lastVisitedItem) return [];
+		if (!lastVisitedItem) {
+			return releases.filter(
+				({ created_at, published_at }) =>
+					new Date(published_at ?? created_at).getTime() >
+					new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+			);
+		}
 		const lastVisitedDate = new Date(lastVisitedItem);
 
 		return releases.filter(
