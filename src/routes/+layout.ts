@@ -1,5 +1,5 @@
 import { browser, dev } from "$app/environment";
-import { PUBLIC_POSTHOG_TOKEN } from "$env/static/public";
+import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import posthog from "posthog-js";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 import type { MetaTagsProps } from "svelte-meta-tags";
@@ -10,7 +10,7 @@ const siteName = "Svelte Changelog";
 
 export function load({ url, data }) {
 	if (browser && !dev) {
-		posthog.init(PUBLIC_POSTHOG_TOKEN, {
+		posthog.init(PUBLIC_POSTHOG_KEY, {
 			api_host: `${url.origin}/ingest`,
 			ui_host: "https://eu.posthog.com",
 			person_profiles: "always"
