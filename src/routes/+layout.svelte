@@ -47,7 +47,7 @@
 
 	// News
 	let newsToDisplay = $state<(typeof news)[number]>();
-	const closedNewsKey = "closedNews";
+	const closedNewsKey = "closed-news";
 	function getClosedNewsIds() {
 		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
 	}
@@ -81,6 +81,14 @@
 			"othersMostRecentUpdate"
 		]) {
 			localStorage.removeItem(key);
+		}
+
+		// Legacy news key
+		const oldLsNewsKey = "closedNews";
+		const oldLsNewsValue = localStorage.getItem(oldLsNewsKey);
+		if (oldLsNewsValue) {
+			localStorage.setItem(closedNewsKey, oldLsNewsValue);
+			localStorage.removeItem(oldLsNewsKey);
 		}
 
 		// News
