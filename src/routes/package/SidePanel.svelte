@@ -13,6 +13,7 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
@@ -216,18 +217,27 @@
 			!headless && "-mt-2 rounded-b-xl border-x border-b bg-card px-4 pt-5 pb-2.5"
 		]}
 	>
-		<Checkbox
-			disabled
-			id="beta-releases-{id}"
-			aria-labelledby="beta-releases-label-{id}"
-			bind:checked={showPrereleases}
-		/>
-		<Label
-			id="beta-releases-label-{id}"
-			for="beta-releases-{id}"
-			class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-		>
-			Show {packageName} prereleases
-		</Label>
+		<Tooltip.Provider>
+			<Tooltip.Root delayDuration={300}>
+				<Tooltip.Trigger>
+					<Checkbox
+						disabled
+						id="beta-releases-{id}"
+						aria-labelledby="beta-releases-label-{id}"
+						bind:checked={showPrereleases}
+					/>
+					<Label
+						id="beta-releases-label-{id}"
+						for="beta-releases-{id}"
+						class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					>
+						Show {packageName} prereleases
+					</Label>
+				</Tooltip.Trigger>
+				<Tooltip.Content side={headless ? undefined : "bottom"}>
+					Coming back soon, unavailable for now :/
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</Tooltip.Provider>
 	</div>
 </div>

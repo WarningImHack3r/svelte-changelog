@@ -111,6 +111,10 @@ function getAllPackagesReleases(
 
 	return packages.reduce<Record<string, ReturnType<typeof getPackageReleases>>>(
 		(acc, { pkg: { name } }) => {
+			if (acc[name])
+				console.warn(
+					`Duplicate package "${name}" while aggregating packages releases; this should not happen!`
+				);
 			acc[name] = getPackageReleases(name, allPackages);
 			return acc;
 		},
