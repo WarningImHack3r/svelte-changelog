@@ -9,7 +9,9 @@
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import rehypeRaw from "rehype-raw";
+	import posthog from "posthog-js";
 	import { cn } from "$lib/utils";
+	import { Button } from "$lib/components/ui/button";
 
 	type Props = {
 		markdown: string;
@@ -38,12 +40,44 @@
 		className
 	)}
 >
-	<Markdown
-		{md}
-		plugins={[
-			gfmPlugin(),
-			...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),
-			...additionalPlugins
-		]}
-	/>
+	<svelte:boundary onerror={e => posthog.captureException(e, { caughtInBoundary: true })}>
+		{#snippet failed(error, reset)}
+			{@const message = (() => {
+				if (error instanceof Error) return error.message.trim();
+				return `${error}`;
+			})()}
+			{#if !inline}
+				<div
+					class="flex flex-col rounded-xl border-[0.5px] border-primary bg-red-500/25 px-5 pt-3 pb-4"
+				>
+					<span>An error occurred while rendering this Markdown content:</span>
+					<pre
+						class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">
+						{message}
+					</pre>
+					<span>
+						It's now rendered with a minimal look to avoid further errors. Please <a
+							href="https://github.com/WarningImHack3r/svelte-changelog/issues"
+							target="_blank"
+						>
+							report this issue
+						</a> if it's not already known.
+					</span>
+					<Button variant="outline" class="ml-auto border-primary/50 bg-red-300/30" onclick={reset}>
+						Retry
+					</Button>
+				</div>
+			{/if}
+			<Markdown {md} />
+		{/snippet}
+
+		<Markdown
+			{md}
+			plugins={[
+				gfmPlugin(),
+				...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),
+				...additionalPlugins
+			]}
+		/>
+	</svelte:boundary>
 </svelte:element>
