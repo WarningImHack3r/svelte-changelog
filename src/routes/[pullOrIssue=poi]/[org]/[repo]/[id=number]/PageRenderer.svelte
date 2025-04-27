@@ -108,7 +108,7 @@
 </script>
 
 <div class="container py-8">
-	<h2 class="group mb-8 scroll-m-20 border-b pb-2 font-semibold tracking-tight xs:text-3xl">
+	<h2 class="group mb-8 scroll-m-20 border-b pb-2 font-semibold xs:text-3xl">
 		<a href={info.html_url}>
 			<MarkdownRenderer
 				markdown={info.title}
