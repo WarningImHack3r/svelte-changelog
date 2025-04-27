@@ -169,7 +169,7 @@
 							markdown={entity.body || "_No description provided_"}
 							parseRawHtml
 							class="max-w-full text-base"
-							additionalPlugins={[shikiPlugin]}
+							additionalPlugins={[{ renderer: { p: BodyRenderer } }, shikiPlugin]}
 						/>
 					</Accordion.Content>
 				</Accordion.Item>
