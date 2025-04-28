@@ -4,6 +4,7 @@
 	import semver from "semver";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { Entries } from "$lib/types";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import * as Accordion from "$lib/components/ui/accordion";
@@ -87,6 +88,28 @@
 		}
 		return formatter.format(0 - diff, "second");
 	}
+
+	type Reaction = Exclude<keyof NonNullable<(typeof release)["reactions"]>, "url" | "total_count">;
+	const reactionsEmojis: Record<Reaction, string> = {
+		"+1": "👍",
+		"-1": "👎",
+		laugh: "😄",
+		confused: "😕",
+		heart: "❤️",
+		hooray: "🎉",
+		rocket: "🚀",
+		eyes: "👀"
+	};
+	const sortedEmojis: Reaction[] = [
+		"+1",
+		"-1",
+		"laugh",
+		"hooray",
+		"confused",
+		"heart",
+		"rocket",
+		"eyes"
+	];
 </script>
 
 {#snippet badges()}
@@ -216,31 +239,46 @@
 		</div>
 	</Accordion.Trigger>
 	<Accordion.Content class="rounded-b-xl bg-accent/30 px-6">
-		<div class="relative mt-4 flex flex-col gap-4 sm:flex-row sm:justify-between sm:gap-0">
+		<div class="relative mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
 				additionalPlugins={[{ renderer: { li: ListElementRenderer } }]}
 				class="prose-sm max-w-full prose-p:my-0"
 			/>
-			<!-- Open the release on GitHub in a new tab -->
-			<Button variant="outline" size="sm" class="invisible mr-6">this is a long long text</Button>
-			<Button
-				href={release.html_url}
-				variant="outline"
-				size="sm"
-				target="_blank"
-				class="group absolute right-0 bottom-1 shrink-0 gap-0 transition-colors duration-500"
-			>
-				<span class="-mr-6 hidden group-hover:block">Open on GitHub</span>
-				<img
-					src="/github.svg"
-					alt="GitHub"
-					class="size-5 transition-opacity duration-300 group-hover:opacity-0 dark:invert"
-				/>
-				<ArrowUpRight
-					class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-				/>
-			</Button>
+			<div class="flex items-end-safe justify-between gap-8">
+				<!-- Reactions -->
+				{#if release.reactions}
+					{@const reactionEntries = Object.entries(release.reactions)
+						.filter(([k, v]) => !["url", "total_count"].includes(k) && !!v)
+						.toSorted(([a], [b]) => sortedEmojis.indexOf(a) - sortedEmojis.indexOf(b)) as Entries<
+						Record<Reaction, number>
+					>}
+					<div class="flex flex-wrap gap-1.5">
+						{#each reactionEntries as [key, value] (key)}
+							<Badge variant="outline" class="text-sm">{reactionsEmojis[key]} {value}</Badge>
+						{/each}
+					</div>
+				{/if}
+				<!-- Open the release on GitHub in a new tab -->
+				<Button variant="outline" size="sm" class="invisible w-16 sm:w-36" />
+				<Button
+					href={release.html_url}
+					variant="outline"
+					size="sm"
+					target="_blank"
+					class="group absolute right-0 bottom-0 shrink-0 gap-0 transition-colors duration-500"
+				>
+					<span class="-mr-6 hidden sm:group-hover:block">Open on GitHub</span>
+					<img
+						src="/github.svg"
+						alt="GitHub"
+						class="size-5 transition-opacity duration-300 sm:group-hover:opacity-0 dark:invert"
+					/>
+					<ArrowUpRight
+						class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
+					/>
+				</Button>
+			</div>
 		</div>
 	</Accordion.Content>
 </Accordion.Item>
