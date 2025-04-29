@@ -299,6 +299,7 @@ export class GitHubCache {
 				linkedPRs.set(issueOrPr.number, issueOrPr);
 			} else if ("source" in item) {
 				const referencedSubject = item.source;
+				if (!referencedSubject || !("number" in referencedSubject)) continue;
 				linkedPRs.set(referencedSubject.number, referencedSubject);
 			}
 		}
