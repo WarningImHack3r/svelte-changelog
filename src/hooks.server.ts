@@ -13,3 +13,8 @@ export async function handleError({ error, status, event }) {
 		await client.shutdown();
 	}
 }
+
+export async function handle({ event, resolve }) {
+	event.locals.posthog = client;
+	return await resolve(event);
+}

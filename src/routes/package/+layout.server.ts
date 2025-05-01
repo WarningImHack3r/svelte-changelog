@@ -3,18 +3,21 @@ import { gitHubCache, type GitHubRelease } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { Repository } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
+import type { PostHog } from "posthog-node";
 
 /**
  * Get all the releases for a single package.
  *
  * @param packageName the package to get the releases for
  * @param allPackages all the known packages
+ * @param posthog the optional PostHog instance
  * @returns the package's repository alongside its releases, or
  * undefined if not found
  */
 async function getPackageReleases(
 	packageName: string,
-	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>
+	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
+	posthog?: PostHog
 ) {
 	let currentPackage:
 		| Prettify<
@@ -40,6 +43,13 @@ async function getPackageReleases(
 			// 2. Filter out invalid ones
 			const validReleases = cachedReleases
 				.filter(release => {
+					if (!release.tag_name) {
+						posthog?.captureException(new Error("Release with null tag_name"), undefined, {
+							release
+						});
+						console.warn(`Empty release tag name: ${release}`);
+						return false;
+					}
 					const [name] = repo.metadataFromTag(release.tag_name);
 					return (
 						(repo.dataFilter?.(release) ?? true) &&
@@ -51,14 +61,18 @@ async function getPackageReleases(
 					const [, secondVersion] = repo.metadataFromTag(b.tag_name);
 					return semver.rcompare(firstVersion, secondVersion);
 				});
-			console.log("Length after filtering:", validReleases.length);
-			// Get the releases matching the slug, or all of them if none
-			// (the latter case for repos with no package in names)
 			console.log("Final filtered count:", validReleases.length);
 
 			// 3. For each release, check if it is already found, searching by versions
 			const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } = repo;
 			for (const release of validReleases) {
+				if (!release.tag_name) {
+					posthog?.captureException(new Error("Release with null tag_name"), undefined, {
+						release
+					});
+					console.warn(`Empty release tag name: ${release}`);
+					continue;
+				}
 				const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
 				console.log(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
 				if (foundVersions.has(cleanVersion)) continue;
@@ -72,7 +86,7 @@ async function getPackageReleases(
 				// If it is newer than the newest we got, set this repo as the "final repo"
 				if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
 					console.log(
-						`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${rest.owner}/${rest.repoName} as final repo`
+						`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.owner}/${repo.repoName} as final repo`
 					);
 					currentPackage = {
 						category,
@@ -102,10 +116,12 @@ async function getPackageReleases(
  * known packages.
  *
  * @param allPackages all the known packages
+ * @param posthog the optional PostHog instance
  * @returns a map of package names to their awaitable result
  */
 function getAllPackagesReleases(
-	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>
+	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
+	posthog?: PostHog
 ) {
 	const packages = allPackages.flatMap(({ packages }) => packages);
 
@@ -115,7 +131,7 @@ function getAllPackagesReleases(
 				console.warn(
 					`Duplicate package "${name}" while aggregating packages releases; this should not happen!`
 				);
-			acc[name] = getPackageReleases(name, allPackages);
+			acc[name] = getPackageReleases(name, allPackages, posthog);
 			return acc;
 		},
 		{}
@@ -129,12 +145,12 @@ function getAllPackagesReleases(
  * doesn't have to re-run the data loading every time we switch from
  * a package to another.
  */
-export async function load() {
+export async function load({ locals }) {
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	// 2. Use them to get a map of packages to promises of releases
-	const allReleases = getAllPackagesReleases(categorizedPackages);
+	const allReleases = getAllPackagesReleases(categorizedPackages, locals.posthog);
 
 	// 3. Send all that down to the page's load function
 	return { allReleases };
