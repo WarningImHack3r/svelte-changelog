@@ -8,11 +8,12 @@
 	import css from "@shikijs/langs/css";
 	import json from "@shikijs/langs/json";
 	import shell from "@shikijs/langs/shell";
+	import diff from "@shikijs/langs/diff";
 	import githubLight from "@shikijs/themes/github-light-default";
 	import githubDark from "@shikijs/themes/github-dark-default";
 
 	const highlighter = createHighlighterCoreSync({
-		langs: [svelte, typescript, javascript, html, css, json, shell],
+		langs: [svelte, typescript, javascript, html, css, json, shell, diff],
 		themes: [githubLight, githubDark],
 		engine: createJavaScriptRegexEngine()
 	});
