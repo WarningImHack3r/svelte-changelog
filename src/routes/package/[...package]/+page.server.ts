@@ -1,22 +1,21 @@
 import { error } from "@sveltejs/kit";
+import { getPackageReleases } from "../releases";
+import { discoverer } from "$lib/server/package-discoverer";
 
-export async function load({ params, parent }) {
+export async function load({ params, locals }) {
 	const { package: slugPackage } = params;
-	// 1. Get the promise array from the layout
-	const { allReleases } = await parent();
+	// 1. Get all the discovered packages
+	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
-	// 2. Find the package slug in there
-	const matchingEntry = Object.entries(allReleases).find(
-		([p]) => p.localeCompare(slugPackage, undefined, { sensitivity: "base" }) === 0
+	// 2. Get the releases and package info
+	const packageReleases = await getPackageReleases(
+		slugPackage,
+		categorizedPackages,
+		locals.posthog
 	);
-	if (!matchingEntry) error(404);
+	if (!packageReleases) error(404);
 
-	// 3. Try to await the releases
-	const [, matchingPromise] = matchingEntry;
-	const computedReleases = await matchingPromise;
-	if (!computedReleases) error(404);
-
-	// 4. Return the right data
-	const { releasesRepo: currentPackage, releases } = computedReleases;
+	// 3. Return the data
+	const { releasesRepo: currentPackage, releases } = packageReleases;
 	return { currentPackage, releases };
 }
