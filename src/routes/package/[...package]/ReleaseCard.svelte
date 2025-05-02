@@ -2,6 +2,7 @@
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import semver from "semver";
+	import { toast } from "svelte-sonner";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { Entries } from "$lib/types";
@@ -10,6 +11,7 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
+	import ReactionToast from "$lib/components/ReactionToast.svelte";
 
 	type Props = {
 		index?: number;
@@ -255,7 +257,18 @@
 					>}
 					<div class="flex flex-wrap gap-1.5">
 						{#each reactionEntries as [key, value] (key)}
-							<Badge variant="outline" class="text-sm">{reactionsEmojis[key]} {value}</Badge>
+							<Badge
+								variant="outline"
+								class="text-sm select-none"
+								onclick={() =>
+									toast(ReactionToast, {
+										duration: 5_000,
+										componentProps: { href: release.html_url }
+									})}
+							>
+								{reactionsEmojis[key]}
+								{value}
+							</Badge>
 						{/each}
 					</div>
 				{/if}

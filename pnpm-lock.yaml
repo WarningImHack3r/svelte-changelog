@@ -132,8 +132,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0(svelte@5.28.2)
       svelte-sonner:
-        specifier: ^0.3.28
-        version: 0.3.28(svelte@5.28.2)
+        specifier: https://pkg.pr.new/wobsoriano/svelte-sonner@126
+        version: https://pkg.pr.new/wobsoriano/svelte-sonner@126(svelte@5.28.2)
       tailwind-merge:
         specifier: ^3.2.0
         version: 3.2.0
@@ -2341,10 +2341,11 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  svelte-sonner@0.3.28:
-    resolution: {integrity: sha512-K3AmlySeFifF/cKgsYNv5uXqMVNln0NBAacOYgmkQStLa/UoU0LhfAACU6Gr+YYC8bOCHdVmFNoKuDbMEsppJg==}
+  svelte-sonner@https://pkg.pr.new/wobsoriano/svelte-sonner@126:
+    resolution: {tarball: https://pkg.pr.new/wobsoriano/svelte-sonner@126}
+    version: 0.3.26
     peerDependencies:
-      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0-next.1
+      svelte: ^5.0.0
 
   svelte-toolbelt@0.7.1:
     resolution: {integrity: sha512-HcBOcR17Vx9bjaOceUvxkY3nGmbBmCBBbuWLLEWO6jtmWH8f/QoWmbyUfQZrpDINH39en1b8mptfPQT9VKQ1xQ==}
@@ -4834,7 +4835,7 @@ snapshots:
       schema-dts: 1.1.5
       svelte: 5.28.2
 
-  svelte-sonner@0.3.28(svelte@5.28.2):
+  svelte-sonner@https://pkg.pr.new/wobsoriano/svelte-sonner@126(svelte@5.28.2):
     dependencies:
       svelte: 5.28.2
 
