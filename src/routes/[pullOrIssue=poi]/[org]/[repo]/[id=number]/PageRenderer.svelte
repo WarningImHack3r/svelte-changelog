@@ -386,7 +386,7 @@
 				secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			>
 				<div class="flex flex-col gap-2">
-					{#each files as file (file.sha)}
+					{#each files as file (file.filename)}
 						<div
 							class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
 						>
