@@ -67,6 +67,9 @@
 		"vite-plugin-lucide-preprocess": "^1.3.0"
 	},
 	"pnpm": {
+		"overrides": {
+			"oniguruma-to-es": "^4.3.2"
+		},
 		"onlyBuiltDependencies": [
 			"@vercel/speed-insights",
 			"core-js",
