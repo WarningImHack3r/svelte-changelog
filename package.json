@@ -40,6 +40,7 @@
 		"eslint": "^9.25.1",
 		"eslint-config-prettier": "^10.1.2",
 		"eslint-plugin-svelte": "^3.5.1",
+		"feed": "^4.2.2",
 		"globals": "^16.0.0",
 		"mode-watcher": "^1.0.2",
 		"octokit": "^4.1.3",
