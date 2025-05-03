@@ -10,7 +10,7 @@
 	let showPrereleases = $state(true);
 </script>
 
-<div class="relative mt-8 flex gap-8 lg:mt-0">
+<div class="relative flex gap-8">
 	<div class="flex-1">
 		{@render children()}
 	</div>
@@ -23,7 +23,7 @@
 					variant="secondary"
 					class={[
 						"absolute right-0 mt-12 ml-auto lg:hidden",
-						page.data.currentPackage.pkg.description?.length && "mt-16"
+						page.data.currentPackage.pkg.description?.length && "mt-12 sm:mt-16"
 					]}
 				>
 					<Menu />

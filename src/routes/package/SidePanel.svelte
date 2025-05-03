@@ -217,27 +217,19 @@
 			!headless && "-mt-2 rounded-b-xl border-x border-b bg-card px-4 pt-5 pb-2.5"
 		]}
 	>
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
-				<Tooltip.Trigger>
-					<Checkbox
-						disabled
-						id="beta-releases-{id}"
-						aria-labelledby="beta-releases-label-{id}"
-						bind:checked={showPrereleases}
-					/>
-					<Label
-						id="beta-releases-label-{id}"
-						for="beta-releases-{id}"
-						class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					>
-						Show {packageName} prereleases
-					</Label>
-				</Tooltip.Trigger>
-				<Tooltip.Content side={headless ? undefined : "bottom"}>
-					Coming back soon, unavailable for now :/
-				</Tooltip.Content>
-			</Tooltip.Root>
-		</Tooltip.Provider>
+		<Checkbox
+			disabled
+			id="beta-releases-{id}"
+			aria-labelledby="beta-releases-label-{id}"
+			bind:checked={showPrereleases}
+		/>
+		<Label
+			id="beta-releases-label-{id}"
+			for="beta-releases-{id}"
+			class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+		>
+			Show {packageName} prereleases
+			<span class="text-muted-foreground">(Unavailable)</span>
+		</Label>
 	</div>
 </div>
