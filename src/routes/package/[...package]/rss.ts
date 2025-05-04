@@ -62,8 +62,8 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 			feed.addItem({
 				author: [
 					{
-						name: release.author.name ?? undefined,
-						link: release.author.url,
+						name: release.author.name ?? release.author.login ?? undefined,
+						link: release.author.html_url,
 						email: release.author.email ?? undefined
 					}
 				],
