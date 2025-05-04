@@ -68,7 +68,7 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"oniguruma-to-es": "^4.3.2"
+			"oniguruma-to-es": "4.3.2"
 		},
 		"onlyBuiltDependencies": [
 			"@vercel/speed-insights",
