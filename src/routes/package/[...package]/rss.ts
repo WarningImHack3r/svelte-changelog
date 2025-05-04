@@ -1,5 +1,6 @@
 import { error, type RequestHandler } from "@sveltejs/kit";
 import { Feed } from "feed";
+import { marked } from "marked";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
@@ -31,6 +32,17 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 		link: "https://github.com/WarningImHack3r"
 	});
 	return feed;
+}
+
+/**
+ * Convert a raw Markdown into a basic HTML structure
+ * @param md the Markdown text
+ * @return the HTML conversion
+ */
+function mdToHtml(md: string | null | undefined) {
+	if (!md) return undefined;
+	// we'll assume GH content doesn't need to be sanitized *wink wink*
+	return marked(md) as string; // can only be a Promise if the `async` option is set to true, not the case here
 }
 
 /**
@@ -79,7 +91,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 						email: release.author.email ?? undefined
 					}
 				],
-				content: release.body_html ?? release.body ?? undefined,
+				content: release.body_html ?? mdToHtml(release.body),
 				date: new Date(release.published_at ?? release.created_at),
 				description: `${release.cleanName} ${release.cleanVersion} release`,
 				id: release.id.toString(),
