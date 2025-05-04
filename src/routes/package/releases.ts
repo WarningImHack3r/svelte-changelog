@@ -110,3 +110,30 @@ export async function getPackageReleases(
 			}
 		: undefined;
 }
+
+/**
+ * Get all the releases from all the packages.
+ *
+ * @param allPackages all the known packages
+ * @param posthog the optional PostHog instance
+ * @return a list of all the package releases
+ */
+export async function getAllPackagesReleases(
+	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
+	posthog?: PostHog
+) {
+	const packages = allPackages.flatMap(({ packages }) => packages);
+
+	const awaitedResult = await Promise.all(
+		packages.map(async ({ pkg }) => getPackageReleases(pkg.name, allPackages, posthog))
+	);
+
+	return awaitedResult
+		.filter(r => r !== undefined)
+		.flatMap(r => r.releases)
+		.toSorted(
+			(a, b) =>
+				new Date(b.published_at ?? b.created_at).getTime() -
+				new Date(a.published_at ?? a.created_at).getTime()
+		);
+}
