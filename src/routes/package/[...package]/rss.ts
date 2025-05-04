@@ -1,12 +1,12 @@
 import { error, type RequestHandler } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { discoverer } from "$lib/server/package-discoverer";
-import { getPackageReleases } from "../releases";
+import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
-function getBaseFeed(url: URL, title: string) {
+function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single") {
 	const feed = new Feed({
 		copyright: "",
-		description: `The releases feed for ${title}, brought by Svelte Changelog.`,
+		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by Svelte Changelog.`,
 		favicon: "https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg",
 		feedLinks: {
 			xml: url.toString().replace(/[A-z\d]+\.[A-z\d]+$/, "rss.xml"),
@@ -35,15 +35,30 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 		// 2. Get the releases and package info
-		const packageReleases = await getPackageReleases(
-			slugPackage,
-			categorizedPackages,
-			locals.posthog
-		);
-		if (!packageReleases) error(404);
+		let packageName: string;
+		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"];
+		if (slugPackage.toLowerCase() === "all") {
+			// All releases
+			packageName = "All";
+			releases = await getAllPackagesReleases(categorizedPackages, locals.posthog);
+		} else {
+			// This package releases
+			const packageReleases = await getPackageReleases(
+				slugPackage,
+				categorizedPackages,
+				locals.posthog
+			);
+			if (!packageReleases) error(404);
+			packageName = packageReleases.releasesRepo.pkg.name;
+			releases = packageReleases.releases;
+		}
 
-		const feed = getBaseFeed(url, `${packageReleases.releasesRepo.pkg.name} releases`);
-		for (const release of packageReleases.releases) {
+		const feed = getBaseFeed(
+			url,
+			`${packageName} releases`,
+			packageName.toLowerCase() === "all" ? "all" : "single"
+		);
+		for (const release of releases) {
 			feed.addItem({
 				author: [
 					{
