@@ -3,9 +3,16 @@ import { Feed } from "feed";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
+/**
+ * Get the base info to build an RSS feed upon
+ * @param url the page URL; must be an RSS feed
+ * @param title the feed title
+ * @param mode whether it is a feed for a single or all the packages
+ * @return a new {@link Feed} object
+ */
 function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single") {
 	const feed = new Feed({
-		copyright: "",
+		copyright: "Antoine Lethimonnier & GitHub Inc.",
 		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by Svelte Changelog.`,
 		favicon: "https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg",
 		feedLinks: {
@@ -26,6 +33,11 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 	return feed;
 }
 
+/**
+ * A SvelteKit request handler utility to create an RSS feed for packages
+ * @param response the handler converting the final feed object into a response
+ * @return the response gotten from the callback parameter
+ */
 export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 	return async ({ params, url, locals }) => {
 		const { package: slugPackage } = params;
@@ -67,7 +79,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 						email: release.author.email ?? undefined
 					}
 				],
-				content: release.body ?? undefined,
+				content: release.body_html ?? release.body ?? undefined,
 				date: new Date(release.published_at ?? release.created_at),
 				description: `${release.cleanName} ${release.cleanVersion} release`,
 				id: release.id.toString(),
