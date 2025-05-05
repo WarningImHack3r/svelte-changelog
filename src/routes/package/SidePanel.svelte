@@ -13,7 +13,6 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Card from "$lib/components/ui/card";
-	import * as Tooltip from "$lib/components/ui/tooltip";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
