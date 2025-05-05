@@ -68,7 +68,7 @@
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
-				<div class="flex items-center">
+				<div class="flex flex-col items-start xs:flex-row xs:items-center">
 					<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
 						<a
 							href="https://github.com/{data.currentPackage.owner}/{data.currentPackage.repoName}"
@@ -78,7 +78,10 @@
 							{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
 						</a>
 					</h2>
-					<Separator orientation="vertical" class="mx-2 h-lh bg-muted-foreground/50" />
+					<Separator
+						orientation="vertical"
+						class="mx-2 hidden h-lh bg-muted-foreground/50 xs:block"
+					/>
 					<Collapsible.Root class="flex items-center">
 						<Collapsible.Trigger>
 							{#snippet child({ props })}

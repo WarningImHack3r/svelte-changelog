@@ -24,7 +24,7 @@ Based on https://bits-ui.com/docs/components/collapsible#best-practices
 <Collapsible.Content forceMount bind:ref {...restProps}>
 	{#snippet child({ props, open })}
 		{#if open}
-			<div {...props} transition:slide={{ duration, axis }} class="flex">
+			<div {...props} transition:slide={{ duration, axis }} class={[axis === "x" && "flex"]}>
 				{@render children?.()}
 			</div>
 		{/if}
