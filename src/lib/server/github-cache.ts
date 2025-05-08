@@ -17,19 +17,28 @@ export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 >["data"][number];
 
-type KeyType = "releases" | "descriptions" | "issue" | "pr";
+export type Member = Awaited<
+	ReturnType<InstanceType<typeof Octokit>["rest"]["orgs"]["listMembers"]>
+>["data"][number];
+
+type OwnerKeyType = "members";
+
+type RepoKeyType = "releases" | "descriptions" | "issue" | "issues" | "pr" | "prs";
 
 export type ItemDetails = {
 	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
 };
 
+export type Issue = Awaited<ReturnType<Issues["get"]>>["data"];
 export type IssueDetails = ItemDetails & {
-	info: Awaited<ReturnType<Issues["get"]>>["data"];
+	info: Issue;
 	linkedPrs: LinkedItem[];
 };
 
+export type PullRequest = Awaited<ReturnType<Pulls["get"]>>["data"];
+export type ListedPullRequest = Awaited<ReturnType<Pulls["list"]>>["data"][number];
 export type PullRequestDetails = ItemDetails & {
-	info: Awaited<ReturnType<Pulls["get"]>>["data"];
+	info: PullRequest;
 	commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
 	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
@@ -70,6 +79,10 @@ const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
  * The TTL of the cached descriptions, in seconds.
  */
 const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
+/**
+ * The TTL of organization members, in seconds.
+ */
+const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -102,6 +115,22 @@ export class GitHubCache {
 	 * Generates a Redis key from the passed info.
 	 *
 	 * @param owner the GitHub repository owner
+	 * @param type the kind of cache to use
+	 * @param args the optional additional values to append
+	 * at the end of the key; every element will be interpolated
+	 * in a string
+	 * @returns the pure computed key
+	 * @private
+	 */
+	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: unknown[]) {
+		const strArgs = args.map(a => `:${a}`);
+		return `owner:${owner}:${type}${strArgs}`;
+	}
+
+	/**
+	 * Generates a Redis key from the passed info.
+	 *
+	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
 	 * @param type the kind of cache to use
 	 * @param args the optional additional values to append
@@ -110,7 +139,7 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(owner: string, repo: string, type: KeyType, ...args: unknown[]) {
+	#getRepoKey(owner: string, repo: string, type: RepoKeyType, ...args: unknown[]) {
 		const strArgs = args.map(a => `:${a}`);
 		return `repo:${owner}/${repo}:${type}${strArgs}`;
 	}
@@ -130,7 +159,7 @@ export class GitHubCache {
 		owner: string,
 		repo: string,
 		id: number,
-		type: ExtractStrict<KeyType, "issue" | "pr"> | undefined = undefined
+		type: ExtractStrict<RepoKeyType, "issue" | "pr"> | undefined = undefined
 	) {
 		// Known type we assume the existence of
 		switch (type) {
@@ -576,6 +605,115 @@ export class GitHubCache {
 	}
 
 	/**
+	 * Get the list of members for a given organization.
+	 *
+	 * @param owner the GitHub organization name
+	 * @returns a list of members, or `undefined` if not existing
+	 */
+	async getOrganizationMembers(owner: string): Promise<Member[] | undefined> {
+		const cacheKey = this.#getOwnerKey(owner, "members");
+
+		const cachedMembers = await this.#redis.json.get<Member[]>(cacheKey);
+		if (cachedMembers) {
+			console.log(`Cache hit for members of ${owner}`);
+			return cachedMembers.length ? cachedMembers : undefined; // technically we can have a real empty list, but we ignore this case here
+		}
+
+		console.log(`Cache miss for members of ${owner}, fetching from GitHub API`);
+
+		try {
+			const { data: members } = await this.#octokit.rest.orgs.listPublicMembers({
+				org: owner,
+				per_page
+			});
+
+			await this.#redis.json.set(cacheKey, "$", members);
+			await this.#redis.expire(cacheKey, MEMBERS_TTL);
+
+			return members;
+		} catch {
+			await this.#redis.json.set(cacheKey, "$", []);
+			await this.#redis.expire(cacheKey, MEMBERS_TTL);
+
+			return undefined;
+		}
+	}
+
+	/**
+	 * Get all the issues for a given GitHub repository.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @returns a list of issues, or `undefined` if not existing
+	 */
+	async getAllIssues(owner: string, repo: string): Promise<Issue[] | undefined> {
+		const cacheKey = this.#getRepoKey(owner, repo, "issues");
+
+		const cachedIssues = await this.#redis.json.get<Issue[]>(cacheKey);
+		if (cachedIssues) {
+			console.log(`Cache hit for issues for ${owner}`);
+			return cachedIssues.length ? cachedIssues : undefined;
+		}
+
+		console.log(`Cache miss for issues for ${owner}`);
+
+		try {
+			const { data: issues } = await this.#octokit.rest.issues.listForRepo({
+				owner,
+				repo,
+				per_page
+			});
+
+			await this.#redis.json.set(cacheKey, "$", issues);
+			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
+
+			return issues;
+		} catch {
+			await this.#redis.json.set(cacheKey, "$", []);
+			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
+
+			return undefined;
+		}
+	}
+
+	/**
+	 * Get all the pull requests for a given GitHub repository.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @returns a list of pull requests, or `undefined` if not existing
+	 */
+	async getAllPRs(owner: string, repo: string): Promise<ListedPullRequest[] | undefined> {
+		const cacheKey = this.#getRepoKey(owner, repo, "prs");
+
+		const cachedPrs = await this.#redis.json.get<ListedPullRequest[]>(cacheKey);
+		if (cachedPrs) {
+			console.log(`Cache hit for PRs for ${owner}`);
+			return cachedPrs.length ? cachedPrs : undefined;
+		}
+
+		console.log(`Cache miss for PRs for PRs for ${owner}`);
+
+		try {
+			const { data: prs } = await this.#octokit.rest.pulls.list({
+				owner,
+				repo,
+				per_page
+			});
+
+			await this.#redis.json.set(cacheKey, "$", prs);
+			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
+
+			return prs;
+		} catch {
+			await this.#redis.json.set(cacheKey, "$", []);
+			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
+
+			return undefined;
+		}
+	}
+
+	/**
 	 * Checks if releases are present in the cache for the
 	 * given GitHub info
 	 *
@@ -586,7 +724,7 @@ export class GitHubCache {
 	 * @param type the kind of cache to target
 	 * @returns whether the repository is cached or not
 	 */
-	async exists(owner: string, repo: string, type: KeyType) {
+	async exists(owner: string, repo: string, type: RepoKeyType) {
 		const cacheKey = this.#getRepoKey(owner, repo, type);
 		const result = await this.#redis.exists(cacheKey);
 		return result === 1;
@@ -601,7 +739,7 @@ export class GitHubCache {
 	 * from the cache
 	 * @param type the kind of cache to target
 	 */
-	async deleteEntry(owner: string, repo: string, type: KeyType) {
+	async deleteEntry(owner: string, repo: string, type: RepoKeyType) {
 		const cacheKey = this.#getRepoKey(owner, repo, type);
 		await this.#redis.del(cacheKey);
 	}
