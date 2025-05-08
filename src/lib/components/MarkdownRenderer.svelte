@@ -5,6 +5,7 @@
 	 *
 	 * @component
 	 */
+	import type { ComponentProps } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
@@ -13,20 +14,23 @@
 	import { cn } from "$lib/utils";
 	import { Button } from "$lib/components/ui/button";
 
+	type MdSnippets = Omit<ComponentProps<typeof Markdown>, "md" | "plugins">;
+
 	type Props = {
 		markdown: string;
 		inline?: boolean;
 		parseRawHtml?: boolean;
 		additionalPlugins?: Plugin[];
 		class?: ClassValue;
-	};
+	} & MdSnippets;
 
 	let {
 		markdown: md,
 		inline = false,
 		parseRawHtml = false,
 		additionalPlugins = [],
-		class: className = undefined
+		class: className = undefined,
+		...snippets
 	}: Props = $props();
 </script>
 
@@ -68,7 +72,7 @@
 					</Button>
 				</div>
 			{/if}
-			<Markdown {md} />
+			<Markdown {md} {...snippets} />
 		{/snippet}
 
 		<Markdown
@@ -78,6 +82,7 @@
 				...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),
 				...additionalPlugins
 			]}
+			{...snippets}
 		/>
 	</svelte:boundary>
 </svelte:element>

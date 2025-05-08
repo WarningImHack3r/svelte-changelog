@@ -78,17 +78,17 @@
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		if (years > 0) {
-			return formatter.format(0 - years, "year");
+			return formatter.format(-years, "year");
 		} else if (months > 0) {
-			return formatter.format(0 - months, "month");
+			return formatter.format(-months, "month");
 		} else if (days > 0) {
-			return formatter.format(0 - days, "day");
+			return formatter.format(-days, "day");
 		} else if (hours > 0) {
-			return formatter.format(0 - hours, "hour");
+			return formatter.format(-hours, "hour");
 		} else if (minutes > 0) {
-			return formatter.format(0 - minutes, "minute");
+			return formatter.format(-minutes, "minute");
 		}
-		return formatter.format(0 - diff, "second");
+		return formatter.format(-diff, "second");
 	}
 
 	type Reaction = Exclude<keyof NonNullable<(typeof release)["reactions"]>, "url" | "total_count">;

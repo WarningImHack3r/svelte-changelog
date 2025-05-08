@@ -117,7 +117,7 @@ export class GitHubCache {
 
 	/**
 	 * Get the item (issue or pr) with the given information.
-	 * Return the appropriate value if the type is defined, or
+	 * Return the appropriate value if the type is defined or
 	 * try to coerce it otherwise.
 	 *
 	 * @param owner the GitHub repository owner
@@ -512,13 +512,15 @@ export class GitHubCache {
 	 * Irrelevant paths (e.g., tests) or empty descriptions
 	 * are excluded.
 	 *
-	 * @param repository the repository to fetch the
+	 * @param owner the GitHub repository owner to fetch the
+	 * descriptions in
+	 * @param repo the GitHub repository name to fetch the
 	 * descriptions in
 	 * @returns a map of paths to descriptions.
 	 * @private
 	 */
-	async getDescriptions(repository: Repository) {
-		const cacheKey = this.#getRepoKey(repository.owner, repository.repoName, "descriptions");
+	async getDescriptions(owner: string, repo: string) {
+		const cacheKey = this.#getRepoKey(owner, repo, "descriptions");
 
 		const cachedDescriptions = await this.#redis.json.get<{ [key: string]: string }>(cacheKey);
 		if (cachedDescriptions) {
@@ -527,8 +529,6 @@ export class GitHubCache {
 		}
 
 		console.log(`Cache miss for releases for ${cacheKey}, fetching from GitHub API`);
-
-		const { owner, repoName: repo } = repository;
 
 		const { data: allFiles } = await this.#octokit.rest.git.getTree({
 			owner,
