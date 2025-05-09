@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ClassValue } from "svelte/elements";
 	import {
 		CircleCheck,
 		CircleDot,
@@ -22,15 +23,18 @@
 		  };
 
 	type Props = {
+		mode: "regular" | "minimal";
 		type: PropsObj["type"];
 		status: PropsObj["status"];
+		class?: ClassValue;
 	};
 
-	let { type, status }: Props = $props();
+	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
 
 	let icon = $state<typeof Icon>();
 	let label = $state("");
-	let color = $state("");
+	let textColor = $state("");
+	let bgColor = $state("");
 
 	switch (type) {
 		case "pull":
@@ -38,22 +42,26 @@
 				case "draft":
 					icon = GitPullRequestDraft;
 					label = "Draft";
-					color = "bg-neutral-500";
+					textColor = "text-neutral-500";
+					bgColor = "bg-neutral-500";
 					break;
 				case "open":
 					icon = GitPullRequestArrow;
 					label = "Open";
-					color = "bg-green-600";
+					textColor = "text-green-600";
+					bgColor = "bg-green-600";
 					break;
 				case "merged":
 					icon = GitMerge;
 					label = "Merged";
-					color = "bg-purple-500";
+					textColor = "text-purple-500";
+					bgColor = "bg-purple-500";
 					break;
 				case "closed":
 					icon = GitPullRequestClosed;
 					label = "Closed";
-					color = "bg-red-500";
+					textColor = "text-red-500";
+					bgColor = "bg-red-500";
 					break;
 			}
 			break;
@@ -62,26 +70,34 @@
 				case "open":
 					icon = CircleDot;
 					label = "Open";
-					color = "bg-green-600";
+					textColor = "text-green-600";
+					bgColor = "bg-green-600";
 					break;
 				case "closed":
 					icon = CircleSlash;
 					label = "Closed";
-					color = "bg-neutral-500";
+					textColor = "text-neutral-500";
+					bgColor = "bg-neutral-500";
 					break;
 				case "solved":
 					icon = CircleCheck;
 					label = "Solved";
-					color = "bg-purple-500";
+					textColor = "text-purple-500";
+					bgColor = "bg-purple-500";
 					break;
 			}
 	}
 </script>
 
-<div class="flex items-center rounded-full px-4 py-2 text-white {color}">
-	{#if icon}
-		{@const SvelteComponent = icon}
-		<SvelteComponent class="mr-2 size-5" />
-	{/if}
-	<span class="font-semibold">{label}</span>
-</div>
+{#if mode === "regular"}
+	<div class={["flex items-center rounded-full px-4 py-2 text-white", bgColor, className]}>
+		{#if icon}
+			{@const SvelteComponent = icon}
+			<SvelteComponent class="mr-2 size-5" />
+		{/if}
+		<span class="font-semibold">{label}</span>
+	</div>
+{:else if icon}
+	{@const Component = icon}
+	<Component class={["size-6", textColor, className]} />
+{/if}

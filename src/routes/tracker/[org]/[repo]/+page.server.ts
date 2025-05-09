@@ -44,7 +44,9 @@ export async function load({ params }) {
 			.toSorted((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 			.slice(0, 10),
 		issues: unfilteredIssues
-			?.filter(({ user }) => membersNames.includes(user?.login ?? ""))
+			?.filter(
+				({ user, pull_request }) => !pull_request && membersNames.includes(user?.login ?? "")
+			)
 			.toSorted((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 			.slice(0, 10)
 	};
