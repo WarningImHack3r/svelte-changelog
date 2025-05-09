@@ -23,7 +23,7 @@
 {#snippet list(title: string, items: Item[], itemToLink: (item: any) => string)}
 	<!-- {#snippet list<T extends Item>(title: string, items: T[], itemToLink: (item: T) => string)} -->
 	<div>
-		<h2 class="mt-12 mb-2 text-3xl font-semibold tracking-tight">{title}</h2>
+		<h2 class="mt-12 mb-4 text-3xl font-semibold tracking-tight">{title}</h2>
 		{#each items as item, i (item.id)}
 			{#if i > 0}
 				<Separator class="my-1" />
