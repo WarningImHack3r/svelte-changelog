@@ -23,7 +23,7 @@
 		  };
 
 	type Props = {
-		mode: "regular" | "minimal";
+		mode?: "regular" | "minimal";
 		type: PropsObj["type"];
 		status: PropsObj["status"];
 		class?: ClassValue;
