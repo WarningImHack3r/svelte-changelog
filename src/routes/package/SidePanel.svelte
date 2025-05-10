@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { browser } from "$app/environment";
 	import { page } from "$app/state";
@@ -60,7 +61,9 @@
 		showPrereleases
 	);
 	$effect(() => {
-		storedPrereleaseState.current = showPrereleases;
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		showPrereleases;
+		untrack(() => (storedPrereleaseState.current = showPrereleases));
 	});
 
 	/**
