@@ -5,6 +5,7 @@ import { GitHubCache, gitHubCache } from "./github-cache";
 type Package = {
 	name: string;
 	description: string;
+	deprecated?: string;
 };
 
 export type DiscoveredPackage = Prettify<
@@ -54,19 +55,22 @@ export class PackageDiscoverer {
 				);
 				return {
 					...repo,
-					packages: packages.map(pkg => {
-						const ghName = this.#gitHubDirectoryFromName(pkg);
-						return {
-							name: pkg,
-							description:
-								descriptions[`packages/${ghName}/package.json`] ??
-								descriptions[
-									`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
-								] ??
-								descriptions["package.json"] ??
-								""
-						};
-					})
+					packages: await Promise.all(
+						packages.map(async (pkg): Promise<Package> => {
+							const ghName = this.#gitHubDirectoryFromName(pkg);
+							return {
+								name: pkg,
+								description:
+									descriptions[`packages/${ghName}/package.json`] ??
+									descriptions[
+										`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
+									] ??
+									descriptions["package.json"] ??
+									"",
+								deprecated: (await this.#cache.getPackageDeprecation(pkg)) || undefined
+							};
+						})
+					)
 				};
 			})
 		);
