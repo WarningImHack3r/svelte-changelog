@@ -18,7 +18,6 @@ export type GitHubRelease = Awaited<
 >["data"][number];
 
 type KeyType = "releases" | "descriptions" | "issue" | "pr";
-type CachedValue<T> = { value: T; cache: boolean };
 
 export type ItemDetails = {
 	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
@@ -144,10 +143,6 @@ export class GitHubCache {
 	 * @private
 	 */
 	#processCached<RType extends Parameters<InstanceType<typeof Redis>["json"]["set"]>[2]>() {
-		function isCachedValue<T>(item: T | CachedValue<T>): item is CachedValue<T> {
-			return typeof item === "object" && item !== null && "value" in item && "cache" in item;
-		}
-
 		/**
 		 * Inner currying function to circumvent unsupported partial inference
 		 *
@@ -161,9 +156,7 @@ export class GitHubCache {
 		return async <PromiseType>(
 			cacheKey: string,
 			promise: () => Promise<PromiseType>,
-			transformer: (
-				from: Awaited<PromiseType>
-			) => RType | CachedValue<RType> | Promise<RType> | Promise<CachedValue<RType>>,
+			transformer: (from: Awaited<PromiseType>) => RType | Promise<RType>,
 			ttl: number | ((value: RType) => number | undefined) | undefined = undefined
 		): Promise<RType> => {
 			const cachedValue = await this.#redis.json.get<RType>(cacheKey);
@@ -174,24 +167,17 @@ export class GitHubCache {
 
 			console.log(`Cache miss for ${cacheKey}`);
 
-			let newValue = await transformer(await promise());
-			let wantsCache = true;
-			if (isCachedValue(newValue)) {
-				wantsCache = newValue.cache;
-				newValue = newValue.value;
-			}
+			const newValue = await transformer(await promise());
 
-			if (wantsCache) {
-				await this.#redis.json.set(cacheKey, "$", newValue);
-				if (ttl !== undefined) {
-					if (typeof ttl === "function") {
-						const ttlResult = ttl(newValue);
-						if (ttlResult !== undefined) {
-							await this.#redis.expire(cacheKey, ttlResult);
-						}
-					} else {
-						await this.#redis.expire(cacheKey, ttl);
+			await this.#redis.json.set(cacheKey, "$", newValue);
+			if (ttl !== undefined) {
+				if (typeof ttl === "function") {
+					const ttlResult = ttl(newValue);
+					if (ttlResult !== undefined) {
+						await this.#redis.expire(cacheKey, ttlResult);
 					}
+				} else {
+					await this.#redis.expire(cacheKey, ttl);
 				}
 			}
 
@@ -633,10 +619,12 @@ export class GitHubCache {
 	 * @returns the deprecation status message if any, `false` otherwise
 	 */
 	async getPackageDeprecation(packageName: string) {
-		return await this.#processCached<string | false>()(
+		return await this.#processCached<{ value: string | false }>()(
 			this.#getPackageKey(packageName, "deprecation"),
 			async () => {
 				try {
+					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that
+					// GitHub owns npmjs.org okay??
 					const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
 					if (res.status !== 200) return {};
 					return (await res.json()) as { deprecated?: boolean | string };
@@ -646,12 +634,12 @@ export class GitHubCache {
 				}
 			},
 			({ deprecated }) => {
-				if (deprecated === undefined) return false;
+				if (deprecated === undefined) return { value: false };
 				if (typeof deprecated === "boolean")
-					return { value: "This package is deprecated", cache: false };
-				return { value: deprecated || "This package is deprecated", cache: false };
+					return { value: deprecated && "This package is deprecated" };
+				return { value: deprecated || "This package is deprecated" };
 			},
-			item => (item === false ? DEPRECATIONS_TTL : undefined)
+			item => (item.value === false ? DEPRECATIONS_TTL : undefined)
 		);
 	}
 }

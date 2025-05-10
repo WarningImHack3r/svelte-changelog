@@ -67,7 +67,7 @@ export class PackageDiscoverer {
 									] ??
 									descriptions["package.json"] ??
 									"",
-								deprecated: (await this.#cache.getPackageDeprecation(pkg)) || undefined
+								deprecated: (await this.#cache.getPackageDeprecation(pkg)).value || undefined
 							};
 						})
 					)
