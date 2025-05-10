@@ -3,16 +3,16 @@
 	import { browser } from "$app/environment";
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
+	import { PersistedState } from "runed";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import type { Prettify } from "$lib/types";
-	import { persisted } from "$lib/persisted.svelte";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
+	import * as Card from "$lib/components/ui/card";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
-	import * as Card from "$lib/components/ui/card";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
@@ -55,11 +55,12 @@
 	}: Props = $props();
 	let id = $props.id();
 
+	let storedPrereleaseState = new PersistedState(
+		`show-${packageName}-prereleases`,
+		showPrereleases
+	);
 	$effect(() => {
-		let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
-		$effect(() => {
-			storedPrereleaseState.value = showPrereleases;
-		});
+		storedPrereleaseState.current = showPrereleases;
 	});
 
 	/**

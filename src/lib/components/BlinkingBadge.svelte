@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from "svelte";
-	import { persisted } from "$lib/persisted.svelte";
+	import { PersistedState } from "runed";
 
 	type Props = {
 		/**
@@ -18,12 +18,13 @@
 
 	let shouldShowPulse = $state(false);
 
+	let storedDate: PersistedState<string>;
 	$effect(() => {
 		if (!storedDateItem) return;
-		const storedDate = persisted(storedDateItem, "").value;
+		storedDate = new PersistedState(storedDateItem, "");
 		const lastVisitItem = localStorage.getItem("lastVisit");
-		if (storedDate && lastVisitItem) {
-			shouldShowPulse = new Date(storedDate) > new Date(lastVisitItem);
+		if (storedDate.current && lastVisitItem) {
+			shouldShowPulse = new Date(storedDate.current) > new Date(lastVisitItem);
 		}
 	});
 </script>
