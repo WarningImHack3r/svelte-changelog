@@ -116,6 +116,50 @@ export class GitHubCache {
 	}
 
 	/**
+	 * An abstraction over general processing that:
+	 * 1. tries getting stuff from Redis cache
+	 * 2. calls the promise to get new data if no value is found in cache
+	 * 3. store this new value back in the cache with an optional TTL before returning the value.
+	 *
+	 * @private
+	 */
+	#processCached<RType extends Parameters<InstanceType<typeof Redis>["json"]["set"]>[2]>() {
+		/**
+		 * Inner currying function to circumvent unsupported partial inference
+		 *
+		 * @param cacheKey the cache key to fetch Redis with
+		 * @param promise the promise to call to get new data if the cache is empty
+		 * @param transformer the function that transforms the return from the promise to the target return value
+		 * @param ttl the optional TTL to use for the newly cached data
+		 *
+		 * @see {@link https://github.com/microsoft/TypeScript/issues/26242|Partial type inference discussion}
+		 */
+		return async <PromiseType>(
+			cacheKey: string,
+			promise: () => Promise<PromiseType>,
+			transformer: (from: Awaited<PromiseType>) => RType | Promise<RType>,
+			ttl: number | undefined = undefined
+		): Promise<RType> => {
+			const cachedValue = await this.#redis.json.get<RType>(cacheKey);
+			if (cachedValue) {
+				console.log(`Cache hit for ${cacheKey}`);
+				return cachedValue;
+			}
+
+			console.log(`Cache miss for ${cacheKey}`);
+
+			const newValue = await transformer(await promise());
+
+			await this.#redis.json.set(cacheKey, "$", newValue);
+			if (ttl !== undefined) {
+				await this.#redis.expire(cacheKey, ttl);
+			}
+
+			return newValue;
+		};
+	}
+
+	/**
 	 * Get the item (issue or pr) with the given information.
 	 * Return the appropriate value if the type is defined or
 	 * try to coerce it otherwise.
@@ -167,28 +211,21 @@ export class GitHubCache {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		const cacheKey = this.#getRepoKey(owner, repo, "issue", id);
-
-		const cachedDetails = await this.#redis.json.get<IssueDetails>(cacheKey);
-		if (cachedDetails) {
-			console.log(`Cache hit for issue details for ${cacheKey}`);
-			return cachedDetails;
-		}
-
-		console.log(`Cache miss for issue details for ${cacheKey}, fetching from the GitHub API`);
-
-		const [{ data: info }, { data: comments }, linkedPrs] = await Promise.all([
-			this.#octokit.rest.issues.get({ owner, repo, issue_number: id }),
-			this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
-			this.#getLinkedPullRequests(owner, repo, id)
-		]);
-
-		const details: IssueDetails = { info, comments, linkedPrs };
-
-		await this.#redis.json.set(cacheKey, "$", details);
-		await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
-
-		return details;
+		return await this.#processCached<IssueDetails>()(
+			this.#getRepoKey(owner, repo, "issue", id),
+			() =>
+				Promise.all([
+					this.#octokit.rest.issues.get({ owner, repo, issue_number: id }),
+					this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
+					this.#getLinkedPullRequests(owner, repo, id)
+				]),
+			([{ data: info }, { data: comments }, linkedPrs]) => ({
+				info,
+				comments,
+				linkedPrs
+			}),
+			FULL_DETAILS_TTL
+		);
 	}
 
 	/**
@@ -201,32 +238,25 @@ export class GitHubCache {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		const cacheKey = this.#getRepoKey(owner, repo, "pr", id);
-
-		const cachedDetails = await this.#redis.json.get<PullRequestDetails>(cacheKey);
-		if (cachedDetails) {
-			console.log(`Cache hit for PR details for ${cacheKey}`);
-			return cachedDetails;
-		}
-
-		console.log(`Cache miss for PR details for ${id}, fetching from the GitHub API`);
-
-		const [{ data: info }, { data: comments }, { data: commits }, { data: files }, linkedIssues] =
-			await Promise.all([
-				this.#octokit.rest.pulls.get({ owner, repo, pull_number: id }),
-				this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
-				this.#octokit.rest.pulls.listCommits({ owner, repo, pull_number: id }),
-				this.#octokit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
-				this.#getLinkedIssues(owner, repo, id)
-			]);
-
-		const details: PullRequestDetails = { info, comments, commits, files, linkedIssues };
-
-		// Cache the result
-		await this.#redis.json.set(cacheKey, "$", details);
-		await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
-
-		return details;
+		return await this.#processCached<PullRequestDetails>()(
+			this.#getRepoKey(owner, repo, "pr", id),
+			() =>
+				Promise.all([
+					this.#octokit.rest.pulls.get({ owner, repo, pull_number: id }),
+					this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
+					this.#octokit.rest.pulls.listCommits({ owner, repo, pull_number: id }),
+					this.#octokit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
+					this.#getLinkedIssues(owner, repo, id)
+				]),
+			([{ data: info }, { data: comments }, { data: commits }, { data: files }, linkedIssues]) => ({
+				info,
+				comments,
+				commits,
+				files,
+				linkedIssues
+			}),
+			FULL_DETAILS_TTL
+		);
 	}
 
 	/**
@@ -364,22 +394,12 @@ export class GitHubCache {
 	 * @returns the releases, either cached or fetched
 	 */
 	async getReleases(repository: Repository) {
-		const cacheKey = this.#getRepoKey(repository.owner, repository.repoName, "releases");
-
-		const cachedReleases = await this.#redis.json.get<GitHubRelease[]>(cacheKey);
-		if (cachedReleases) {
-			console.log(`Cache hit for releases for ${cacheKey}`);
-			return cachedReleases;
-		}
-
-		console.log(`Cache miss for releases for ${cacheKey}, fetching from GitHub API`);
-
-		const releases = await this.#fetchReleases(repository);
-
-		await this.#redis.json.set(cacheKey, "$", releases);
-		await this.#redis.expire(cacheKey, RELEASES_TTL);
-
-		return releases;
+		return await this.#processCached<GitHubRelease[]>()(
+			this.#getRepoKey(repository.owner, repository.repoName, "releases"),
+			() => this.#fetchReleases(repository),
+			releases => releases,
+			RELEASES_TTL
+		);
 	}
 
 	/**
@@ -520,90 +540,51 @@ export class GitHubCache {
 	 * @private
 	 */
 	async getDescriptions(owner: string, repo: string) {
-		const cacheKey = this.#getRepoKey(owner, repo, "descriptions");
+		return await this.#processCached<{ [key: string]: string }>()(
+			this.#getRepoKey(owner, repo, "descriptions"),
+			() =>
+				this.#octokit.rest.git.getTree({
+					owner,
+					repo,
+					tree_sha: "HEAD",
+					recursive: "true"
+				}),
+			async ({ data: allFiles }) => {
+				const allPackageJson = allFiles.tree
+					.map(({ path }) => path)
+					.filter(path => path !== undefined)
+					.filter(
+						path =>
+							!path.includes("/test/") &&
+							!path.includes("/e2e-tests/") &&
+							(path === "package.json" || path.endsWith("/package.json"))
+					);
 
-		const cachedDescriptions = await this.#redis.json.get<{ [key: string]: string }>(cacheKey);
-		if (cachedDescriptions) {
-			console.log(`Cache hit for descriptions for ${cacheKey}`);
-			return cachedDescriptions;
-		}
+				const descriptions = new Map<string, string>();
+				for (const path of allPackageJson) {
+					const { data: packageJson } = await this.#octokit.rest.repos.getContent({
+						owner,
+						repo,
+						path
+					});
 
-		console.log(`Cache miss for releases for ${cacheKey}, fetching from GitHub API`);
+					if (!("content" in packageJson)) continue; // filter out empty or multiple results
+					const { content, encoding, type } = packageJson;
+					if (type !== "file" || !content) continue; // filter out directories and empty files
+					const packageFile =
+						encoding === "base64" ? Buffer.from(content, "base64").toString() : content;
 
-		const { data: allFiles } = await this.#octokit.rest.git.getTree({
-			owner,
-			repo,
-			tree_sha: "HEAD",
-			recursive: "true"
-		});
-
-		const allPackageJson = allFiles.tree
-			.map(({ path }) => path)
-			.filter(path => path !== undefined)
-			.filter(
-				path =>
-					!path.includes("/test/") &&
-					!path.includes("/e2e-tests/") &&
-					(path === "package.json" || path.endsWith("/package.json"))
-			);
-
-		const descriptions = new Map<string, string>();
-		for (const path of allPackageJson) {
-			const { data: packageJson } = await this.#octokit.rest.repos.getContent({
-				owner,
-				repo,
-				path
-			});
-
-			if (!("content" in packageJson)) continue; // filter out empty or multiple results
-			const { content, encoding, type } = packageJson;
-			if (type !== "file" || !content) continue; // filter out directories and empty files
-			const packageFile =
-				encoding === "base64" ? Buffer.from(content, "base64").toString() : content;
-
-			try {
-				const { description } = JSON.parse(packageFile) as { description: string };
-				if (description) descriptions.set(path, description);
-			} catch {
-				// ignore
-			}
-		}
-
-		await this.#redis.json.set(cacheKey, "$", Object.fromEntries(descriptions));
-		await this.#redis.expire(cacheKey, DESCRIPTIONS_TTL);
-
-		return Object.fromEntries(descriptions);
-	}
-
-	/**
-	 * Checks if releases are present in the cache for the
-	 * given GitHub info
-	 *
-	 * @param owner the owner of the GitHub repository to check the
-	 * existence in the cache for
-	 * @param repo the name of the GitHub repository to check the
-	 * existence in the cache for
-	 * @param type the kind of cache to target
-	 * @returns whether the repository is cached or not
-	 */
-	async exists(owner: string, repo: string, type: KeyType) {
-		const cacheKey = this.#getRepoKey(owner, repo, type);
-		const result = await this.#redis.exists(cacheKey);
-		return result === 1;
-	}
-
-	/**
-	 * Delete a repository from the cache
-	 *
-	 * @param owner the owner of the GitHub repository to remove
-	 * from the cache
-	 * @param repo the name of the GitHub repository to remove
-	 * from the cache
-	 * @param type the kind of cache to target
-	 */
-	async deleteEntry(owner: string, repo: string, type: KeyType) {
-		const cacheKey = this.#getRepoKey(owner, repo, type);
-		await this.#redis.del(cacheKey);
+					try {
+						const { description } = JSON.parse(packageFile) as { description: string };
+						if (description) descriptions.set(path, description);
+					} catch {
+						// ignore
+					}
+				}
+				return Object.fromEntries(descriptions);
+			},
+			DESCRIPTIONS_TTL
+		);
 	}
 }
 
