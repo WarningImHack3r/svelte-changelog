@@ -1,16 +1,16 @@
 <script module>
-	import { createHighlighterCoreSync } from "shiki";
-	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-	import svelte from "@shikijs/langs/svelte";
-	import typescript from "@shikijs/langs/typescript";
-	import javascript from "@shikijs/langs/javascript";
-	import html from "@shikijs/langs/html";
 	import css from "@shikijs/langs/css";
+	import diff from "@shikijs/langs/diff";
+	import html from "@shikijs/langs/html";
+	import javascript from "@shikijs/langs/javascript";
 	import json from "@shikijs/langs/json";
 	import shell from "@shikijs/langs/shell";
-	import diff from "@shikijs/langs/diff";
-	import githubLight from "@shikijs/themes/github-light-default";
+	import svelte from "@shikijs/langs/svelte";
+	import typescript from "@shikijs/langs/typescript";
 	import githubDark from "@shikijs/themes/github-dark-default";
+	import githubLight from "@shikijs/themes/github-light-default";
+	import { createHighlighterCoreSync } from "shiki";
+	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
 	const highlighter = createHighlighterCoreSync({
 		langs: [svelte, typescript, javascript, html, css, json, shell, diff],
@@ -29,18 +29,18 @@
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import type { Plugin } from "svelte-exmarkdown";
+	import type { IssueDetails, LinkedItem, PullRequestDetails } from "$lib/server/github-cache";
+	import * as Accordion from "$lib/components/ui/accordion";
+	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import * as Avatar from "$lib/components/ui/avatar";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BodyRenderer from "$lib/components/renderers/BodyRenderer.svelte";
-	import type { IssueDetails, LinkedItem, PullRequestDetails } from "$lib/server/github-cache";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
 	const shikiPlugin: Plugin = {

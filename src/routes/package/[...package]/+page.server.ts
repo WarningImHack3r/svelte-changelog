@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
-import { getPackageReleases } from "../releases";
 import { discoverer } from "$lib/server/package-discoverer";
+import { getPackageReleases } from "../releases";
 
 export async function load({ params, locals }) {
 	const { package: slugPackage } = params;

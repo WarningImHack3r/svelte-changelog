@@ -1,7 +1,7 @@
 <script lang="ts">
 	// From https://gist.github.com/WarningImHack3r/375c559c5ee120408f9df2390ec2747a
 	// Inspired by https://gist.github.com/Sh4yy/0300299ae60af4910bcb341703946330
-	import { innerWidth, innerHeight } from "svelte/reactivity/window";
+	import { innerHeight, innerWidth } from "svelte/reactivity/window";
 	import { slide } from "svelte/transition";
 
 	let screens = $state<{ name: string; size: number }[]>([]);

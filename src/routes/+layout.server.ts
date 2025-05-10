@@ -1,5 +1,5 @@
-import { discoverer } from "$lib/server/package-discoverer";
 import { uniq } from "$lib/array";
+import { discoverer } from "$lib/server/package-discoverer";
 
 export async function load() {
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();

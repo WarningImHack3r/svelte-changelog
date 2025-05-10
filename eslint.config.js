@@ -1,8 +1,8 @@
 import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
-import svelte from "eslint-plugin-svelte";
 import prettierConfig from "eslint-config-prettier/flat";
+import svelte from "eslint-plugin-svelte";
 import globals from "globals";
+import tseslint from "typescript-eslint";
 import svelteConfig from "./svelte.config.js";
 
 export default tseslint.config(

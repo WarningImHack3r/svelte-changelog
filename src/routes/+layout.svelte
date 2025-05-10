@@ -3,19 +3,19 @@
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { page } from "$app/state";
-	import { deepMerge, MetaTags } from "svelte-meta-tags";
-	import { toast } from "svelte-sonner";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
+	import { MetaTags, deepMerge } from "svelte-meta-tags";
+	import { toast } from "svelte-sonner";
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
+	import { Button, buttonVariants } from "$lib/components/ui/button";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import { Toaster } from "$lib/components/ui/sonner";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
-	import { buttonVariants, Button } from "$lib/components/ui/button";
-	import { Toaster } from "$lib/components/ui/sonner";
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
 	let { data, children } = $props();
 

@@ -4,9 +4,9 @@
 Based on https://bits-ui.com/docs/components/collapsible#best-practices
 -->
 <script lang="ts">
-	import { Collapsible, type WithoutChildrenOrChild } from "bits-ui";
-	import { slide, type SlideParams } from "svelte/transition";
 	import type { Snippet } from "svelte";
+	import { type SlideParams, slide } from "svelte/transition";
+	import { Collapsible, type WithoutChildrenOrChild } from "bits-ui";
 
 	let {
 		ref = $bindable(null),

@@ -1,9 +1,9 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
-import { gitHubCache, type GitHubRelease } from "$lib/server/github-cache";
+import type { Repository } from "$lib/repositories";
+import { type GitHubRelease, gitHubCache } from "$lib/server/github-cache";
 import type { discoverer } from "$lib/server/package-discoverer";
 import type { Prettify } from "$lib/types";
-import type { Repository } from "$lib/repositories";
 
 /**
  * Get all the releases for a single package.

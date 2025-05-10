@@ -1,4 +1,4 @@
-import { error, type RequestHandler } from "@sveltejs/kit";
+import { type RequestHandler, error } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { marked } from "marked";
 import { discoverer } from "$lib/server/package-discoverer";

@@ -1,7 +1,7 @@
 import { sveltekit } from "@sveltejs/kit/vite";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import lucidePreprocess from "vite-plugin-lucide-preprocess";
-import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
 	plugins: [lucidePreprocess(), sveltekit(), tailwindcss()],

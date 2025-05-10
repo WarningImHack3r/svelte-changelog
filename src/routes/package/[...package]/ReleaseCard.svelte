@@ -3,15 +3,15 @@
 	import { confetti } from "@neoconfetti/svelte";
 	import semver from "semver";
 	import { toast } from "svelte-sonner";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { Entries } from "$lib/types";
+	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
-	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Tooltip from "$lib/components/ui/tooltip";
-	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ReactionToast from "$lib/components/ReactionToast.svelte";
+	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
 
 	type Props = {
 		index?: number;

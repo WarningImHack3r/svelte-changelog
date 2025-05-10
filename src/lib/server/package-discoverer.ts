@@ -1,6 +1,6 @@
+import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
 import { GitHubCache, gitHubCache } from "./github-cache";
-import { publicRepos, type Repository } from "$lib/repositories";
 
 type Package = {
 	name: string;

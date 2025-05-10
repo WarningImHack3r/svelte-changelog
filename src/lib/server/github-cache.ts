@@ -1,10 +1,10 @@
 import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
+import type { Repository as GQLRepository } from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
 import { Octokit } from "octokit";
-import type { Repository as GQLRepository } from "@octokit/graphql-schema";
+import parseChangelog from "$lib/changelog-parser";
 import type { Repository } from "$lib/repositories";
 import type { Issues, Pulls } from "$lib/types";
-import parseChangelog from "$lib/changelog-parser";
 
 /**
  * A strict version of Extract.

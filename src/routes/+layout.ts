@@ -1,7 +1,7 @@
 import { browser, dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
-import posthog from "posthog-js";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
+import posthog from "posthog-js";
 import type { MetaTagsProps } from "svelte-meta-tags";
 
 injectSpeedInsights();

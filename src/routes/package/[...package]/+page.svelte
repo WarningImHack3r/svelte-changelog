@@ -2,13 +2,13 @@
 	import { navigating, page } from "$app/state";
 	import { ChevronRight, LoaderCircle, Rss } from "@lucide/svelte";
 	import semver from "semver";
-	import ReleaseCard from "./ReleaseCard.svelte";
+	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
+	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import * as Collapsible from "$lib/components/ui/collapsible";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
+	import ReleaseCard from "./ReleaseCard.svelte";
 
 	let { data } = $props();
 	let latestRelease = $derived(
