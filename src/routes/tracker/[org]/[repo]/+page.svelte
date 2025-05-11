@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state";
 	import { Transparent } from "svelte-exmarkdown";
 	import { Separator } from "$lib/components/ui/separator";
 	import GHBadge from "$lib/components/GHBadge.svelte";
@@ -91,6 +92,21 @@
 		</div>
 	</a>
 {/snippet}
+
+<div class="my-8">
+	<h1 class="text-3xl font-semibold text-shadow-sm md:text-5xl">
+		<a
+			href="https://github.com/{page.params.org}/{page.params.repo}"
+			target="_blank"
+			class="group *:underline-offset-4 after:ml-0.5 after:inline-block after:-translate-x-2 after:font-sans after:text-2xl after:opacity-0 after:transition after:content-['↗'] hover:after:translate-x-0 hover:after:opacity-100"
+		>
+			<span class="text-primary group-hover:underline">{page.params.org}</span><span
+				class="text-foreground no-underline">/</span
+			><wbr /><span class="text-primary group-hover:underline">{page.params.repo}</span>
+		</a>
+	</h1>
+	<h3 class="text-xl text-muted-foreground font-display text-shadow-sm/5">Repository tracker</h3>
+</div>
 
 {#if data.prs.length}
 	{@render list(
