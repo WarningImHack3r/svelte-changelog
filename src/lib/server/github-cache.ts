@@ -715,7 +715,7 @@ export class GitHubCache {
 					return [] as ListedPullRequest[];
 				}
 			},
-			issues => issues,
+			prs => prs,
 			FULL_DETAILS_TTL
 		);
 	}
