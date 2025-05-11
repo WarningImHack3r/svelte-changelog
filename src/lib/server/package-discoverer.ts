@@ -58,16 +58,18 @@ export class PackageDiscoverer {
 					packages: await Promise.all(
 						packages.map(async (pkg): Promise<Package> => {
 							const ghName = this.#gitHubDirectoryFromName(pkg);
+							const deprecated = (await this.#cache.getPackageDeprecation(pkg)).value || undefined;
 							return {
 								name: pkg,
-								description:
-									descriptions[`packages/${ghName}/package.json`] ??
-									descriptions[
-										`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
-									] ??
-									descriptions["package.json"] ??
-									"",
-								deprecated: (await this.#cache.getPackageDeprecation(pkg)).value || undefined
+								description: deprecated
+									? ""
+									: (descriptions[`packages/${ghName}/package.json`] ??
+										descriptions[
+											`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
+										] ??
+										descriptions["package.json"] ??
+										""),
+								deprecated
 							};
 						})
 					)

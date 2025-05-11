@@ -157,7 +157,15 @@
 												href="/package/{pkg.name}"
 												class="group inline-flex w-full items-center gap-1"
 											>
-												<span class="underline-offset-4 group-hover:underline">{pkg.name}</span>
+												<span
+													class={[
+														"underline-offset-4 group-hover:underline",
+														pkg.deprecated &&
+															"transition-opacity duration-300 line-through opacity-75 group-hover:opacity-100"
+													]}
+												>
+													{pkg.name}
+												</span>
 												<span class="ml-auto flex items-center gap-1">
 													{#if linkedBadgeData}
 														{#await linkedBadgeData then data}
