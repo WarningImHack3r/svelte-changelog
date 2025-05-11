@@ -9,13 +9,40 @@
 
 	type Item = NonNullable<typeof data.issues>[number] | NonNullable<typeof data.prs>[number];
 
+	/**
+	 * Checks whether a date is more recent than a month.
+	 *
+	 * @param date the date to check
+	 * @returns if it is more recent than a month
+	 */
 	function isNew(date: Date) {
 		return date.getTime() >= new Date().getTime() - 1000 * 60 * 60 * 24 * 30;
 	}
 
+	/**
+	 * Formats a date into "N days ago" format.
+	 *
+	 * @param date the input date
+	 * @returns the formatted string output
+	 */
 	function daysAgo(date: Date) {
 		const days = Math.floor((new Date().getTime() - date.getTime()) / 1000 / 60 / 60 / 24);
 		return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(-days, "day");
+	}
+
+	/**
+	 * Checks if 2 dates are the same day.
+	 *
+	 * @param a the first date to compare
+	 * @param b the second date to compare
+	 * @returns if both dates are the same day
+	 */
+	function areSameDay(a: Date, b: Date) {
+		return (
+			a.getDate() === b.getDate() &&
+			a.getMonth() === b.getMonth() &&
+			a.getFullYear() === b.getFullYear()
+		);
 	}
 </script>
 
@@ -35,7 +62,8 @@
 {/snippet}
 
 {#snippet listItem(item: Item, link: string)}
-	{@const date = new Date(item.created_at)}
+	{@const lastUpdate = new Date(item.updated_at)}
+	{@const isUpdated = !areSameDay(lastUpdate, new Date(item.created_at))}
 	<a
 		href={link}
 		class="flex items-center gap-6 rounded-xl px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -63,12 +91,14 @@
 					<span class="text-muted-foreground">#{item.number}</span>
 				</span>
 				<span>
-					{#if isNew(date)}
-						{daysAgo(date)} •
+					{#if isNew(lastUpdate)}
+						{daysAgo(lastUpdate)} •
 					{/if}
-					{new Intl.DateTimeFormat("en", {
-						dateStyle: "medium"
-					}).format(date)}
+					<span class={{ italic: isUpdated }}>
+						{new Intl.DateTimeFormat("en", {
+							dateStyle: "medium"
+						}).format(lastUpdate)}
+					</span>
 				</span>
 			</div>
 			<MarkdownRenderer
@@ -82,6 +112,10 @@
 							h1: "h4",
 							h2: "h4",
 							h3: "h2",
+							h4: "strong",
+							sup: Transparent,
+							blockquote: Transparent,
+							p: Transparent,
 							pre: Transparent,
 							a: Transparent,
 							ul: Transparent
