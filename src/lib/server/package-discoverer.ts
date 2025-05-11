@@ -62,8 +62,9 @@ export class PackageDiscoverer {
 							return {
 								name: pkg,
 								description: deprecated
-									? ""
-									: (descriptions[`packages/${ghName}/package.json`] ??
+									? "" // descriptions of deprecated packages are often wrong as their code might be deleted,
+									: // thus falling back to a higher hierarchy description, often a mismatch
+										(descriptions[`packages/${ghName}/package.json`] ??
 										descriptions[
 											`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
 										] ??

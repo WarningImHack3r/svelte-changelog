@@ -163,6 +163,7 @@
 														pkg.deprecated &&
 															"transition-opacity duration-300 line-through opacity-75 group-hover:opacity-100"
 													]}
+													title={pkg.deprecated ? "Deprecated: " + pkg.deprecated : undefined}
 												>
 													{pkg.name}
 												</span>
