@@ -1,5 +1,5 @@
-import type { Category, Entries, Prettify, RepoInfo } from "$lib/types";
 import { uniq } from "$lib/array";
+import type { Category, Entries, Prettify, RepoInfo } from "$lib/types";
 
 export const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 	svelte: {

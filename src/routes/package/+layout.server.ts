@@ -1,5 +1,5 @@
-import { discoverer } from "$lib/server/package-discoverer";
 import type { PostHog } from "posthog-node";
+import { discoverer } from "$lib/server/package-discoverer";
 import { getPackageReleases } from "./releases";
 
 /**

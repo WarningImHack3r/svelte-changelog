@@ -3,19 +3,18 @@
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { page } from "$app/state";
-	import { deepMerge, MetaTags } from "svelte-meta-tags";
-	import { toast } from "svelte-sonner";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
+	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
+	import { Button, buttonVariants } from "$lib/components/ui/button";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import { Toaster } from "$lib/components/ui/sonner";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
-	import { buttonVariants, Button } from "$lib/components/ui/button";
-	import { Toaster } from "$lib/components/ui/sonner";
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
 	let { data, children } = $props();
 
@@ -63,25 +62,6 @@
 			"mode-watcher-mode" in localStorage
 				? localStorage["mode-watcher-mode"].replace(/"/g, "")
 				: "system";
-
-		// v2 migration
-		if ("token" in localStorage) {
-			toast.success("Welcome to svelte-changelog v2!", {
-				description: "Thanks for visiting this site since v1 :)",
-				duration: 7_500
-			});
-			localStorage.removeItem("token");
-		}
-		for (const key of [
-			"displaySvelteBetaReleases",
-			"displayKitBetaReleases",
-			"displayOtherBetaReleases",
-			"svelteMostRecentUpdate",
-			"kitMostRecentUpdate",
-			"othersMostRecentUpdate"
-		]) {
-			localStorage.removeItem(key);
-		}
 
 		// Legacy news key
 		const oldLsNewsKey = "closedNews";

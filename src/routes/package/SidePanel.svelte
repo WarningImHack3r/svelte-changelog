@@ -1,18 +1,19 @@
 <script lang="ts">
+	import { untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { browser } from "$app/environment";
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
+	import { PersistedState } from "runed";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import type { Prettify } from "$lib/types";
-	import { persisted } from "$lib/persisted.svelte";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
+	import * as Card from "$lib/components/ui/card";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
-	import * as Card from "$lib/components/ui/card";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
@@ -55,11 +56,14 @@
 	}: Props = $props();
 	let id = $props.id();
 
+	let storedPrereleaseState = new PersistedState(
+		`show-${packageName}-prereleases`,
+		showPrereleases
+	);
 	$effect(() => {
-		let storedPrereleaseState = persisted(`show-${packageName}-prereleases`, showPrereleases);
-		$effect(() => {
-			storedPrereleaseState.value = showPrereleases;
-		});
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		showPrereleases;
+		untrack(() => (storedPrereleaseState.current = showPrereleases));
 	});
 
 	/**
@@ -153,7 +157,16 @@
 												href="/package/{pkg.name}"
 												class="group inline-flex w-full items-center gap-1"
 											>
-												<span class="underline-offset-4 group-hover:underline">{pkg.name}</span>
+												<span
+													class={[
+														"underline-offset-4 group-hover:underline",
+														pkg.deprecated &&
+															"transition-opacity duration-300 line-through opacity-75 group-hover:opacity-100"
+													]}
+													title={pkg.deprecated ? "Deprecated: " + pkg.deprecated : undefined}
+												>
+													{pkg.name}
+												</span>
 												<span class="ml-auto flex items-center gap-1">
 													{#if linkedBadgeData}
 														{#await linkedBadgeData then data}

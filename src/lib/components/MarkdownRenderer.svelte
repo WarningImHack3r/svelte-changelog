@@ -7,10 +7,10 @@
 	 */
 	import type { ComponentProps } from "svelte";
 	import type { ClassValue } from "svelte/elements";
+	import posthog from "posthog-js";
+	import rehypeRaw from "rehype-raw";
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
-	import rehypeRaw from "rehype-raw";
-	import posthog from "posthog-js";
 	import { cn } from "$lib/utils";
 	import { Button } from "$lib/components/ui/button";
 
