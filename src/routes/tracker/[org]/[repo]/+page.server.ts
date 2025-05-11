@@ -34,7 +34,7 @@ export async function load({ params }) {
 					if (
 						lowerBody.includes(`${keyword} #`) ||
 						lowerBody.includes(`${keyword} https://github.com`) ||
-						new RegExp(`${keyword} [A-z0-9]+/[A-z0-9]+#[0-9]+`).test(lowerBody)
+                        new RegExp(`${keyword} [A-Za-z0-9_-]+/[A-Za-z0-9_-]+#[0-9]+`).test(lowerBody)
 					) {
 						return false;
 					}
