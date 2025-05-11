@@ -70,6 +70,10 @@ const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
  * The TTL of the cached descriptions, in seconds.
  */
 const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
+/**
+ * The TTL for non-deprecated packages, in seconds
+ */
+const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -116,6 +120,21 @@ export class GitHubCache {
 	}
 
 	/**
+	 * Generates a Redis key from the passed info.
+	 *
+	 * @param packageName the package name
+	 * @param args the optional additional values to append
+	 * at the end of the key; every element will be interpolated
+	 * in a string
+	 * @returns the pure computed key
+	 * @private
+	 */
+	#getPackageKey(packageName: string, ...args: unknown[]) {
+		const strArgs = args.map(a => `:${a}`);
+		return `package:${packageName}${strArgs}`;
+	}
+
+	/**
 	 * An abstraction over general processing that:
 	 * 1. tries getting stuff from Redis cache
 	 * 2. calls the promise to get new data if no value is found in cache
@@ -138,7 +157,7 @@ export class GitHubCache {
 			cacheKey: string,
 			promise: () => Promise<PromiseType>,
 			transformer: (from: Awaited<PromiseType>) => RType | Promise<RType>,
-			ttl: number | undefined = undefined
+			ttl: number | ((value: RType) => number | undefined) | undefined = undefined
 		): Promise<RType> => {
 			const cachedValue = await this.#redis.json.get<RType>(cacheKey);
 			if (cachedValue) {
@@ -152,7 +171,14 @@ export class GitHubCache {
 
 			await this.#redis.json.set(cacheKey, "$", newValue);
 			if (ttl !== undefined) {
-				await this.#redis.expire(cacheKey, ttl);
+				if (typeof ttl === "function") {
+					const ttlResult = ttl(newValue);
+					if (ttlResult !== undefined) {
+						await this.#redis.expire(cacheKey, ttlResult);
+					}
+				} else {
+					await this.#redis.expire(cacheKey, ttl);
+				}
 			}
 
 			return newValue;
@@ -537,7 +563,6 @@ export class GitHubCache {
 	 * @param repo the GitHub repository name to fetch the
 	 * descriptions in
 	 * @returns a map of paths to descriptions.
-	 * @private
 	 */
 	async getDescriptions(owner: string, repo: string) {
 		return await this.#processCached<{ [key: string]: string }>()(
@@ -584,6 +609,37 @@ export class GitHubCache {
 				return Object.fromEntries(descriptions);
 			},
 			DESCRIPTIONS_TTL
+		);
+	}
+
+	/**
+	 * Get the deprecation state of a package from its name.
+	 *
+	 * @param packageName the name of the package to search
+	 * @returns the deprecation status message if any, `false` otherwise
+	 */
+	async getPackageDeprecation(packageName: string) {
+		return await this.#processCached<{ value: string | false }>()(
+			this.#getPackageKey(packageName, "deprecation"),
+			async () => {
+				try {
+					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that
+					// GitHub owns npmjs.org okay??
+					const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
+					if (res.status !== 200) return {};
+					return (await res.json()) as { deprecated?: boolean | string };
+				} catch (error) {
+					console.error(`Error fetching npmjs.org for package ${packageName}:`, error);
+					return {};
+				}
+			},
+			({ deprecated }) => {
+				if (deprecated === undefined) return { value: false };
+				if (typeof deprecated === "boolean")
+					return { value: deprecated && "This package is deprecated" };
+				return { value: deprecated || "This package is deprecated" };
+			},
+			item => (item.value === false ? DEPRECATIONS_TTL : undefined)
 		);
 	}
 }

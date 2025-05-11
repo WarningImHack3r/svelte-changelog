@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { navigating, page } from "$app/state";
-	import { ChevronRight, LoaderCircle, Rss } from "@lucide/svelte";
+	import { ChevronRight, CircleAlert, LoaderCircle, Rss } from "@lucide/svelte";
 	import semver from "semver";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
+	import * as Card from "$lib/components/ui/card";
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
 
 	let { data } = $props();
@@ -128,6 +130,29 @@
 					.map(({ id }) => id.toString())}
 				class="w-full space-y-2"
 			>
+				{#if data.currentPackage.pkg.deprecated}
+					<Card.Root class="border-amber-500 bg-amber-400/10 rounded-xl">
+						<Card.Header class="pb-6">
+							<Card.Title class="text-xl inline-flex items-center gap-2">
+								<CircleAlert class="size-5" />
+								Deprecated
+							</Card.Title>
+							<Card.Description>
+								<MarkdownRenderer
+									markdown={data.currentPackage.pkg.deprecated}
+									inline
+									class="text-sm text-muted-foreground"
+								>
+									{#snippet a({ style, children, class: className, title, href, hidden, type })}
+										<a {style} class={className} {title} {href} {hidden} {type} target="_blank">
+											{@render children?.()}
+										</a>
+									{/snippet}
+								</MarkdownRenderer>
+							</Card.Description>
+						</Card.Header>
+					</Card.Root>
+				{/if}
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
 					{@const isMajorRelease =
