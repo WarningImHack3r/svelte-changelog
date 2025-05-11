@@ -25,6 +25,7 @@
 		ChevronLeft,
 		FileDiff,
 		GitCommitVertical,
+		Lock,
 		MessagesSquare
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
@@ -109,12 +110,12 @@
 </script>
 
 <div class="container py-8">
-	<h2 class="group mb-8 scroll-m-20 border-b pb-2 font-semibold xs:text-3xl">
+	<h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
 		<a href={info.html_url}>
 			<MarkdownRenderer
 				markdown={info.title}
 				inline
-				class="prose-xl text-foreground group-hover:underline xs:prose-2xl xs:text-3xl"
+				class="prose-xl text-2xl text-foreground group-hover:underline xs:prose-2xl xs:text-3xl"
 			/>
 			<span class="ml-1 font-light text-muted-foreground group-hover:underline">#{info.number}</span
 			>
@@ -177,10 +178,18 @@
 			{/each}
 		</Accordion.Root>
 	{/if}
-	<div class="flex items-center justify-between">
+	<div class="flex items-center">
 		<h3 class="text-2xl font-semibold tracking-tight">
 			{metadata.type === "pull" ? "Pull request" : "Issue"}
 		</h3>
+		{#if info.locked}
+			<div
+				class="flex ml-auto items-center rounded-full px-2 xs:px-4 py-2 text-white bg-neutral-500/70 dark:bg-neutral-500/50"
+			>
+				<Lock class="size-5" />
+				<span class="font-semibold ml-2 hidden xs:inline">Locked</span>
+			</div>
+		{/if}
 		<GHBadge
 			type={metadata.type}
 			status={info.state === "closed"
@@ -194,6 +203,7 @@
 				: info.draft
 					? "draft"
 					: "open"}
+			class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked }}
 		/>
 	</div>
 	<div class="mt-4 flex flex-col gap-4">
