@@ -647,33 +647,23 @@ export class GitHubCache {
 	 * @param owner the GitHub organization name
 	 * @returns a list of members, or `undefined` if not existing
 	 */
-	async getOrganizationMembers(owner: string): Promise<Member[] | undefined> {
-		const cacheKey = this.#getOwnerKey(owner, "members");
-
-		const cachedMembers = await this.#redis.json.get<Member[]>(cacheKey);
-		if (cachedMembers) {
-			console.log(`Cache hit for members of ${owner}`);
-			return cachedMembers.length ? cachedMembers : undefined; // technically we can have a real empty list, but we ignore this case here
-		}
-
-		console.log(`Cache miss for members of ${owner}, fetching from GitHub API`);
-
-		try {
-			const { data: members } = await this.#octokit.rest.orgs.listPublicMembers({
-				org: owner,
-				per_page
-			});
-
-			await this.#redis.json.set(cacheKey, "$", members);
-			await this.#redis.expire(cacheKey, MEMBERS_TTL);
-
-			return members;
-		} catch {
-			await this.#redis.json.set(cacheKey, "$", []);
-			await this.#redis.expire(cacheKey, MEMBERS_TTL);
-
-			return undefined;
-		}
+	async getOrganizationMembers(owner: string) {
+		return await this.#processCached<Member[]>()(
+			this.#getOwnerKey(owner, "members"),
+			async () => {
+				try {
+					const { data: members } = await this.#octokit.rest.orgs.listPublicMembers({
+						org: owner,
+						per_page
+					});
+					return members;
+				} catch {
+					return [] as Member[];
+				}
+			},
+			members => members,
+			MEMBERS_TTL
+		);
 	}
 
 	/**
@@ -683,34 +673,24 @@ export class GitHubCache {
 	 * @param repo the GitHub repository name
 	 * @returns a list of issues, or `undefined` if not existing
 	 */
-	async getAllIssues(owner: string, repo: string): Promise<Issue[] | undefined> {
-		const cacheKey = this.#getRepoKey(owner, repo, "issues");
-
-		const cachedIssues = await this.#redis.json.get<Issue[]>(cacheKey);
-		if (cachedIssues) {
-			console.log(`Cache hit for issues for ${owner}`);
-			return cachedIssues.length ? cachedIssues : undefined;
-		}
-
-		console.log(`Cache miss for issues for ${owner}`);
-
-		try {
-			const { data: issues } = await this.#octokit.rest.issues.listForRepo({
-				owner,
-				repo,
-				per_page
-			});
-
-			await this.#redis.json.set(cacheKey, "$", issues);
-			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
-
-			return issues;
-		} catch {
-			await this.#redis.json.set(cacheKey, "$", []);
-			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
-
-			return undefined;
-		}
+	async getAllIssues(owner: string, repo: string) {
+		return await this.#processCached<Issue[]>()(
+			this.#getRepoKey(owner, repo, "issues"),
+			async () => {
+				try {
+					const { data: issues } = await this.#octokit.rest.issues.listForRepo({
+						owner,
+						repo,
+						per_page
+					});
+					return issues;
+				} catch {
+					return [] as Issue[];
+				}
+			},
+			issues => issues,
+			FULL_DETAILS_TTL
+		);
 	}
 
 	/**
@@ -720,34 +700,24 @@ export class GitHubCache {
 	 * @param repo the GitHub repository name
 	 * @returns a list of pull requests, or `undefined` if not existing
 	 */
-	async getAllPRs(owner: string, repo: string): Promise<ListedPullRequest[] | undefined> {
-		const cacheKey = this.#getRepoKey(owner, repo, "prs");
-
-		const cachedPrs = await this.#redis.json.get<ListedPullRequest[]>(cacheKey);
-		if (cachedPrs) {
-			console.log(`Cache hit for PRs for ${owner}`);
-			return cachedPrs.length ? cachedPrs : undefined;
-		}
-
-		console.log(`Cache miss for PRs for PRs for ${owner}`);
-
-		try {
-			const { data: prs } = await this.#octokit.rest.pulls.list({
-				owner,
-				repo,
-				per_page
-			});
-
-			await this.#redis.json.set(cacheKey, "$", prs);
-			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
-
-			return prs;
-		} catch {
-			await this.#redis.json.set(cacheKey, "$", []);
-			await this.#redis.expire(cacheKey, FULL_DETAILS_TTL);
-
-			return undefined;
-		}
+	async getAllPRs(owner: string, repo: string) {
+		return await this.#processCached<ListedPullRequest[]>()(
+			this.#getRepoKey(owner, repo, "prs"),
+			async () => {
+				try {
+					const { data: prs } = await this.#octokit.rest.pulls.list({
+						owner,
+						repo,
+						per_page
+					});
+					return prs;
+				} catch {
+					return [] as ListedPullRequest[];
+				}
+			},
+			issues => issues,
+			FULL_DETAILS_TTL
+		);
 	}
 
 	/**

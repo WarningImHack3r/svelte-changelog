@@ -16,7 +16,7 @@ const closingKeywords = [
 
 export async function load({ params }) {
 	const members = await gitHubCache.getOrganizationMembers(params.org);
-	if (!members) error(404, `Organization ${params.org} not found or empty`);
+	if (!members.length) error(404, `Organization ${params.org} not found or empty`);
 
 	const membersNames = members.map(({ login }) => login);
 
@@ -26,7 +26,7 @@ export async function load({ params }) {
 	]);
 	return {
 		prs: unfilteredPRs
-			?.filter(({ user, body }) => {
+			.filter(({ user, body }) => {
 				if (!membersNames.includes(user?.login ?? "")) return false;
 				if (!body) return true;
 				const lowerBody = body.toLowerCase();
@@ -44,9 +44,7 @@ export async function load({ params }) {
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 			.slice(0, 10),
 		issues: unfilteredIssues
-			?.filter(
-				({ user, pull_request }) => !pull_request && membersNames.includes(user?.login ?? "")
-			)
+			.filter(({ user, pull_request }) => !pull_request && membersNames.includes(user?.login ?? ""))
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 			.slice(0, 10)
 	};

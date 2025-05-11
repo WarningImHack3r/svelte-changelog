@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Transparent } from "svelte-exmarkdown";
 	import { Separator } from "$lib/components/ui/separator";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
+	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
 	let { data } = $props();
 
@@ -92,7 +92,7 @@
 	</a>
 {/snippet}
 
-{#if data.prs}
+{#if data.prs.length}
 	{@render list(
 		"Pull requests",
 		data.prs,
@@ -100,7 +100,7 @@
 	)}
 {/if}
 
-{#if data.issues}
+{#if data.issues.length}
 	{@render list("Issues", data.issues, issue => {
 		const ownerSlashRepo = issue.html_url
 			.replace("https://github.com/", "")
