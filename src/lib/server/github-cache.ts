@@ -127,7 +127,7 @@ export class GitHubCache {
 	 * @private
 	 */
 	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: unknown[]) {
-		const strArgs = args.map(a => `:${a}`);
+		const strArgs = args.map(a => `:${a}`).join("");
 		return `owner:${owner}:${type}${strArgs}`;
 	}
 
@@ -144,7 +144,7 @@ export class GitHubCache {
 	 * @private
 	 */
 	#getRepoKey(owner: string, repo: string, type: RepoKeyType, ...args: unknown[]) {
-		const strArgs = args.map(a => `:${a}`);
+		const strArgs = args.map(a => `:${a}`).join("");
 		return `repo:${owner}/${repo}:${type}${strArgs}`;
 	}
 
@@ -159,7 +159,7 @@ export class GitHubCache {
 	 * @private
 	 */
 	#getPackageKey(packageName: string, ...args: unknown[]) {
-		const strArgs = args.map(a => `:${a}`);
+		const strArgs = args.map(a => `:${a}`).join("");
 		return `package:${packageName}${strArgs}`;
 	}
 
@@ -671,7 +671,7 @@ export class GitHubCache {
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
-	 * @returns a list of issues, or `undefined` if not existing
+	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
 		return await this.#processCached<Issue[]>()(
@@ -698,7 +698,7 @@ export class GitHubCache {
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
-	 * @returns a list of pull requests, or `undefined` if not existing
+	 * @returns a list of pull requests, empty if not existing
 	 */
 	async getAllPRs(owner: string, repo: string) {
 		return await this.#processCached<ListedPullRequest[]>()(
