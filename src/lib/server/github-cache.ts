@@ -17,19 +17,28 @@ export type GitHubRelease = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listReleases"]>
 >["data"][number];
 
-type KeyType = "releases" | "descriptions" | "issue" | "pr";
+export type Member = Awaited<
+	ReturnType<InstanceType<typeof Octokit>["rest"]["orgs"]["listMembers"]>
+>["data"][number];
+
+type OwnerKeyType = "members";
+
+type RepoKeyType = "releases" | "descriptions" | "issue" | "issues" | "pr" | "prs";
 
 export type ItemDetails = {
 	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
 };
 
+export type Issue = Awaited<ReturnType<Issues["get"]>>["data"];
 export type IssueDetails = ItemDetails & {
-	info: Awaited<ReturnType<Issues["get"]>>["data"];
+	info: Issue;
 	linkedPrs: LinkedItem[];
 };
 
+export type PullRequest = Awaited<ReturnType<Pulls["get"]>>["data"];
+export type ListedPullRequest = Awaited<ReturnType<Pulls["list"]>>["data"][number];
 export type PullRequestDetails = ItemDetails & {
-	info: Awaited<ReturnType<Pulls["get"]>>["data"];
+	info: PullRequest;
 	commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
 	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
@@ -71,6 +80,10 @@ const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
  */
 const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
 /**
+ * The TTL of organization members, in seconds.
+ */
+const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
+/**
  * The TTL for non-deprecated packages, in seconds
  */
 const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
@@ -106,6 +119,22 @@ export class GitHubCache {
 	 * Generates a Redis key from the passed info.
 	 *
 	 * @param owner the GitHub repository owner
+	 * @param type the kind of cache to use
+	 * @param args the optional additional values to append
+	 * at the end of the key; every element will be interpolated
+	 * in a string
+	 * @returns the pure computed key
+	 * @private
+	 */
+	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: unknown[]) {
+		const strArgs = args.map(a => `:${a}`).join("");
+		return `owner:${owner}:${type}${strArgs}`;
+	}
+
+	/**
+	 * Generates a Redis key from the passed info.
+	 *
+	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
 	 * @param type the kind of cache to use
 	 * @param args the optional additional values to append
@@ -114,8 +143,8 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(owner: string, repo: string, type: KeyType, ...args: unknown[]) {
-		const strArgs = args.map(a => `:${a}`);
+	#getRepoKey(owner: string, repo: string, type: RepoKeyType, ...args: unknown[]) {
+		const strArgs = args.map(a => `:${a}`).join("");
 		return `repo:${owner}/${repo}:${type}${strArgs}`;
 	}
 
@@ -130,7 +159,7 @@ export class GitHubCache {
 	 * @private
 	 */
 	#getPackageKey(packageName: string, ...args: unknown[]) {
-		const strArgs = args.map(a => `:${a}`);
+		const strArgs = args.map(a => `:${a}`).join("");
 		return `package:${packageName}${strArgs}`;
 	}
 
@@ -200,7 +229,7 @@ export class GitHubCache {
 		owner: string,
 		repo: string,
 		id: number,
-		type: ExtractStrict<KeyType, "issue" | "pr"> | undefined = undefined
+		type: ExtractStrict<RepoKeyType, "issue" | "pr"> | undefined = undefined
 	) {
 		// Known type we assume the existence of
 		switch (type) {
@@ -609,6 +638,85 @@ export class GitHubCache {
 				return Object.fromEntries(descriptions);
 			},
 			DESCRIPTIONS_TTL
+		);
+	}
+
+	/**
+	 * Get the list of members for a given organization.
+	 *
+	 * @param owner the GitHub organization name
+	 * @returns a list of members, or `undefined` if not existing
+	 */
+	async getOrganizationMembers(owner: string) {
+		return await this.#processCached<Member[]>()(
+			this.#getOwnerKey(owner, "members"),
+			async () => {
+				try {
+					const { data: members } = await this.#octokit.rest.orgs.listPublicMembers({
+						org: owner,
+						per_page
+					});
+					return members;
+				} catch {
+					return [] as Member[];
+				}
+			},
+			members => members,
+			MEMBERS_TTL
+		);
+	}
+
+	/**
+	 * Get all the issues for a given GitHub repository.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @returns a list of issues, empty if not existing
+	 */
+	async getAllIssues(owner: string, repo: string) {
+		return await this.#processCached<Issue[]>()(
+			this.#getRepoKey(owner, repo, "issues"),
+			async () => {
+				try {
+					const { data: issues } = await this.#octokit.rest.issues.listForRepo({
+						owner,
+						repo,
+						per_page
+					});
+					return issues;
+				} catch {
+					return [] as Issue[];
+				}
+			},
+			issues => issues,
+			FULL_DETAILS_TTL
+		);
+	}
+
+	/**
+	 * Get all the pull requests for a given GitHub repository.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @returns a list of pull requests, empty if not existing
+	 */
+	async getAllPRs(owner: string, repo: string) {
+		return await this.#processCached<ListedPullRequest[]>()(
+			this.#getRepoKey(owner, repo, "prs"),
+			async () => {
+				try {
+					const { data: prs } = await this.#octokit.rest.pulls.list({
+						owner,
+						repo,
+						per_page
+					});
+					return prs;
+				} catch {
+					return [] as ListedPullRequest[];
+				}
+			},
+			prs => prs,
+			FULL_DETAILS_TTL
 		);
 	}
 
