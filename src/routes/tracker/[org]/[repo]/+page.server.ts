@@ -41,11 +41,9 @@ export async function load({ params }) {
 				}
 				return true;
 			})
-			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-			.slice(0, 10),
+			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
 		issues: unfilteredIssues
 			.filter(({ user, pull_request }) => !pull_request && membersNames.includes(user?.login ?? ""))
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-			.slice(0, 10)
 	};
 }
