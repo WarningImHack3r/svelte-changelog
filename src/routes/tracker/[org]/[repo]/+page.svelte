@@ -118,7 +118,9 @@
 							p: Transparent,
 							pre: Transparent,
 							a: Transparent,
-							ul: Transparent
+							ul: Transparent,
+							ol: Transparent,
+							li: Transparent
 						}
 					}
 				]}
