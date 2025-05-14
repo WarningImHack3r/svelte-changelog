@@ -23,7 +23,7 @@ export type Member = Awaited<
 
 type OwnerKeyType = "members";
 
-type RepoKeyType = "releases" | "descriptions" | "issue" | "issues" | "pr" | "prs";
+type RepoKeyType = "releases" | "descriptions" | "issue" | "issues" | "pr" | "prs" | "discussions";
 
 export type ItemDetails = {
 	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
@@ -43,6 +43,56 @@ export type PullRequestDetails = ItemDetails & {
 	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
 };
+
+type TeamDiscussion = Awaited<
+	ReturnType<InstanceType<typeof Octokit>["rest"]["teams"]["listDiscussionsInOrg"]>
+>["data"][number];
+export type Discussion = {
+	repository_url: string;
+	category: {
+		id: number;
+		node_id: string;
+		repository_id: number;
+		emoji: `:${string}:`;
+		name: string;
+		description: string;
+		created_at: string;
+		updated_at: string;
+		slug: string;
+		is_answerable: boolean;
+	};
+	answer_html_url: string | null;
+	answer_chosen_at: string | null;
+	answer_chosen_by: TeamDiscussion["author"] | null;
+	id: number;
+	user: TeamDiscussion["author"];
+	labels: never[];
+	state: "open" | "closed";
+	state_reason: "resolved" | null;
+	locked: boolean;
+	comments: TeamDiscussion["comments_count"];
+	author_association: "MEMBER" | "CONTRIBUTOR" | "NONE";
+	active_lock_reason: null;
+	timeline_url: string;
+} & Pick<
+	TeamDiscussion,
+	"html_url" | "node_id" | "number" | "title" | "created_at" | "updated_at" | "body" | "reactions"
+>;
+type TeamDiscussionComment = Awaited<
+	ReturnType<InstanceType<typeof Octokit>["rest"]["teams"]["listDiscussionCommentsInOrg"]>
+>["data"][number];
+export type DiscussionComment = {
+	id: number;
+	parent_id: number | null;
+	child_comment_count: number;
+	repository_url: `${string}/${string}`;
+	discussion_id: number;
+	author_association: "MEMBER" | "CONTRIBUTOR" | "NONE";
+	user: TeamDiscussion["author"];
+} & Pick<
+	TeamDiscussionComment,
+	"node_id" | "html_url" | "created_at" | "updated_at" | "body" | "reactions"
+>;
 
 export type LinkedItem = {
 	number: number;
@@ -716,6 +766,36 @@ export class GitHubCache {
 				}
 			},
 			prs => prs,
+			FULL_DETAILS_TTL
+		);
+	}
+
+	/**
+	 * Get all the discussions for a given GitHub repository.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @returns a list of discussions, empty if not existing
+	 */
+	async getAllDiscussions(owner: string, repo: string) {
+		return await this.#processCached<Discussion[]>()(
+			this.#getRepoKey(owner, repo, "discussions"),
+			async () => {
+				try {
+					const { data: discussions } = await this.#octokit.request(
+						"GET /repos/{owner}/{repo}/discussions",
+						{
+							owner,
+							repo,
+							per_page
+						}
+					);
+					return discussions;
+				} catch {
+					return [] as Discussion[];
+				}
+			},
+			discussions => discussions,
 			FULL_DETAILS_TTL
 		);
 	}
