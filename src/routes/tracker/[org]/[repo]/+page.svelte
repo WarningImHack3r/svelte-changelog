@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { Image } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
 	import { Separator } from "$lib/components/ui/separator";
 	import GHBadge from "$lib/components/GHBadge.svelte";
@@ -128,7 +129,14 @@
 						}
 					}
 				]}
-			/>
+			>
+				{#snippet img({ alt })}
+					<div>
+						<Image class="h-lh inline-block" />
+						{alt}
+					</div>
+				{/snippet}
+			</MarkdownRenderer>
 		</div>
 	</a>
 {/snippet}
