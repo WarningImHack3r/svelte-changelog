@@ -7,7 +7,11 @@
 	let commits = $derived("commits" in data.item ? data.item.commits : []);
 	let files = $derived("files" in data.item ? data.item.files : []);
 	let linkedEntities = $derived(
-		"linkedPrs" in data.item ? data.item.linkedPrs : data.item.linkedIssues
+		"linkedPrs" in data.item
+			? data.item.linkedPrs
+			: "linkedIssues" in data.item
+				? data.item.linkedIssues
+				: []
 	);
 </script>
 

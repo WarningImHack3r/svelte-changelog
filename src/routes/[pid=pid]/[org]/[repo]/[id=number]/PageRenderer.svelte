@@ -30,7 +30,12 @@
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import type { Plugin } from "svelte-exmarkdown";
-	import type { IssueDetails, LinkedItem, PullRequestDetails } from "$lib/server/github-cache";
+	import type {
+		DiscussionDetails,
+		IssueDetails,
+		LinkedItem,
+		PullRequestDetails
+	} from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
@@ -64,10 +69,10 @@
 		metadata: {
 			org: string;
 			repo: string;
-			type: "pull" | "issue";
+			type: "pull" | "issue" | "discussion";
 		};
-		info: IssueDetails["info"] | PullRequestDetails["info"];
-		comments: IssueDetails["comments"];
+		info: IssueDetails["info"] | PullRequestDetails["info"] | DiscussionDetails["info"];
+		comments: IssueDetails["comments"] | DiscussionDetails["comments"];
 		commits: PullRequestDetails["commits"];
 		files: PullRequestDetails["files"];
 		linkedEntities: LinkedItem[];
@@ -75,8 +80,15 @@
 
 	let { metadata, info, comments, commits, files, linkedEntities }: Props = $props();
 
-	let rightPartInfo = $derived([
-		...(info.closed_at
+	let rightPartInfo = $derived<{ title: string; value: string }[]>([
+		...("answer_chosen_at" in info && info.answer_chosen_at
+			? [{ title: "Answered at", value: formatToDateTime(info.answer_chosen_at) }]
+			: []),
+		...("answer_chosen_by" in info && info.answer_chosen_by
+			? [{ title: "Answered by", value: info.answer_chosen_by.login }]
+			: []),
+		...("category" in info ? [{ title: "Category", value: info.category.name }] : []),
+		...("closed_at" in info && info.closed_at
 			? [
 					{
 						title: "merged" in info && info.merged ? "Merged at" : "Closed at",
@@ -84,7 +96,7 @@
 					}
 				]
 			: []),
-		...(info.closed_at && "merged" in info && info.merged
+		...("closed_at" in info && info.closed_at && "merged" in info && info.merged
 			? [
 					{
 						title: "Merged by",
@@ -92,7 +104,14 @@
 					}
 				]
 			: []),
-		{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
+		...("assignees" in info
+			? [
+					{
+						title: "Assignees",
+						value: info.assignees?.map(a => a.login).join(", ") || "None"
+					}
+				]
+			: []),
 		...("requested_reviewers" in info
 			? [
 					{
@@ -105,7 +124,14 @@
 			title: "Labels",
 			value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
 		},
-		{ title: "Milestone", value: info.milestone?.title || "None" }
+		...("milestone" in info
+			? [
+					{
+						title: "Milestone",
+						value: info.milestone?.title || "None"
+					}
+				]
+			: [])
 	]);
 </script>
 
@@ -180,7 +206,11 @@
 	{/if}
 	<div class="flex items-center">
 		<h3 class="text-2xl font-semibold tracking-tight">
-			{metadata.type === "pull" ? "Pull request" : "Issue"}
+			{metadata.type === "pull"
+				? "Pull request"
+				: metadata.type === "issue"
+					? "Issue"
+					: "Discussion"}
 		</h3>
 		{#if info.locked}
 			<div
@@ -200,7 +230,7 @@
 					: "state_reason" in info && info.state_reason === "completed"
 						? "solved"
 						: "closed"
-				: info.draft
+				: "draft" in info && info.draft
 					? "draft"
 					: "open"}
 			class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked }}

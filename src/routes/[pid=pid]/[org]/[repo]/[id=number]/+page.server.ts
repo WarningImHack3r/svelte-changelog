@@ -10,9 +10,9 @@ export async function load({ params }) {
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
 
-	const realType = "commits" in item ? "pull" : "issues";
+	const realType = "commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
 	if (type !== realType) {
-		redirect(303, `/${realType}/${org}/${repo}/${id}`);
+		redirect(307, `/${realType}/${org}/${repo}/${id}`);
 	}
 
 	return {
@@ -20,7 +20,12 @@ export async function load({ params }) {
 			org,
 			repo,
 			id: numId,
-			type: type === "issues" ? ("issue" as const) : ("pull" as const)
+			type:
+				type === "issues"
+					? ("issue" as const)
+					: type === "discussions"
+						? ("discussion" as const)
+						: ("pull" as const)
 		},
 		item
 	};
