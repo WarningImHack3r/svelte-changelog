@@ -219,6 +219,7 @@ export class GitHubCache {
 	 * 2. calls the promise to get new data if no value is found in cache
 	 * 3. store this new value back in the cache with an optional TTL before returning the value.
 	 *
+	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
 	#processCached<RType extends Parameters<InstanceType<typeof Redis>["json"]["set"]>[2]>() {
@@ -782,15 +783,11 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "discussions"),
 			async () => {
 				try {
-					const { data: discussions } = await this.#octokit.request(
-						"GET /repos/{owner}/{repo}/discussions",
-						{
-							owner,
-							repo,
-							per_page
-						}
-					);
-					return discussions;
+					return await this.#octokit.paginate<Discussion>("GET /repos/{owner}/{repo}/discussions", {
+						owner,
+						repo,
+						per_page
+					});
 				} catch {
 					return [] as Discussion[];
 				}
