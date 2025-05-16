@@ -176,9 +176,9 @@
 						<Tooltip.Root delayDuration={300}>
 							<Tooltip.Trigger class="w-min text-left sm:w-auto">
 								<span
-									style="--major-gradient: 135deg, #ffcc80, #ff9933, #e67300, #cc7a00, #b36b00, #4d2e00, black;
-									--dark-major-gradient: 135deg, #ffcc80, #ff9933, #e67300, #ff9933, #ffcc80, #fff5e6, white;
-									background-size: 200% 200%"
+									style:--major-gradient="135deg,#ffcc80,#ff9933,#e67300,#cc7a00,#b36b00,#4d2e00,black"
+									style:--dark-major-gradient="135deg,#ffcc80,#ff9933,#e67300,#ff9933,#ffcc80,#fff5e6,white"
+									style:background-size="200% 200%"
 									class="animate-major-gradient bg-linear-(--major-gradient) bg-clip-text text-left font-display text-xl text-transparent dark:bg-linear-(--dark-major-gradient)"
 								>
 									{packageName}@{releaseVersion}
