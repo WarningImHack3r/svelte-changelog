@@ -19,6 +19,7 @@ export async function load({ params }) {
 	if (!members.length) error(404, `Organization ${params.org} not found or empty`);
 
 	const membersNames = members.map(({ login }) => login);
+	const now = new Date();
 
 	const [unfilteredPRs, unfilteredIssues, unfilteredDiscussions] = await Promise.all([
 		gitHubCache.getAllPRs(params.org, params.repo),
@@ -27,7 +28,8 @@ export async function load({ params }) {
 	]);
 	return {
 		prs: unfilteredPRs
-			.filter(({ user, body }) => {
+			.filter(({ user, body, updated_at }) => {
+				if (new Date(updated_at).getFullYear() < now.getFullYear() - 1) return false;
 				if (!membersNames.includes(user?.login ?? "")) return false;
 				if (!body) return true;
 				const lowerBody = body.toLowerCase();
@@ -45,14 +47,17 @@ export async function load({ params }) {
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
 		issues: unfilteredIssues
 			.filter(
-				({ author_association, pull_request }) => !pull_request && author_association === "MEMBER"
+				({ author_association, pull_request, updated_at }) =>
+					!pull_request &&
+					author_association === "MEMBER" &&
+					new Date(updated_at).getFullYear() >= now.getFullYear() - 1
 			)
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
 		discussions: unfilteredDiscussions
 			.filter(
 				({ author_association, updated_at }) =>
 					author_association === "MEMBER" &&
-					new Date(updated_at).getFullYear() >= new Date().getFullYear() - 1
+					new Date(updated_at).getFullYear() >= now.getFullYear() - 1
 			)
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 	};
