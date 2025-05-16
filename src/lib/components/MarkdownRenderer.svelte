@@ -44,13 +44,22 @@
 		className
 	)}
 >
-	<svelte:boundary onerror={e => posthog.captureException(e, { caughtInBoundary: true })}>
+	<svelte:boundary
+		onerror={e =>
+			posthog.captureException(e, {
+				caughtInBoundary: true,
+				boundaryLocation: "MarkdownRenderer",
+				md
+			})}
+	>
 		{#snippet failed(error, reset)}
-			{@const message = (() => {
-				if (error instanceof Error) return error.message.trim();
-				return `${error}`;
-			})()}
-			{#if !inline}
+			{#if inline}
+				<Markdown md="[Rendering error] {md}" {...snippets} />
+			{:else}
+				{@const message = (() => {
+					if (error instanceof Error) return error.message.trim();
+					return `${error}`;
+				})()}
 				<div
 					class="flex flex-col rounded-xl border-[0.5px] border-primary bg-red-500/25 px-5 pt-3 pb-4"
 				>
@@ -71,8 +80,8 @@
 						Retry
 					</Button>
 				</div>
+				<Markdown {md} {...snippets} />
 			{/if}
-			<Markdown {md} {...snippets} />
 		{/snippet}
 
 		<Markdown
