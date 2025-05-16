@@ -179,3 +179,7 @@
 		return `/issues/${ownerSlashRepo}/${issue.number}`;
 	})}
 {/if}
+
+{#if [data.prs.length, data.discussions.length, data.issues.length].every(len => !len)}
+	<div class="mt-16 text-2xl">Nothing interesting to show here :/</div>
+{/if}

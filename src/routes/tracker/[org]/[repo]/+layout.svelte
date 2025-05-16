@@ -58,7 +58,10 @@
 		</Sheet.Content>
 	</Sheet.Root>
 
-	<RepoSidePanel title="Repositories" class="mt-43 shrink-0 hidden h-fit w-80 lg:flex flex-col">
+	<RepoSidePanel
+		title="Repositories"
+		class="mt-43 ml-auto shrink-0 hidden h-fit w-80 lg:flex flex-col"
+	>
 		{@render repoList()}
 	</RepoSidePanel>
 </div>
