@@ -23,7 +23,15 @@ export type Member = Awaited<
 
 type OwnerKeyType = "members";
 
-type RepoKeyType = "releases" | "descriptions" | "issue" | "issues" | "pr" | "prs";
+type RepoKeyType =
+	| "releases"
+	| "descriptions"
+	| "issue"
+	| "issues"
+	| "pr"
+	| "prs"
+	| "discussion"
+	| "discussions";
 
 export type ItemDetails = {
 	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
@@ -43,6 +51,70 @@ export type PullRequestDetails = ItemDetails & {
 	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
 };
+
+export type DiscussionDetails = {
+	info: Discussion;
+	comments: DiscussionComment[];
+};
+
+type AuthorAssociation =
+	| "OWNER"
+	| "MEMBER"
+	| "COLLABORATOR"
+	| "CONTRIBUTOR"
+	| "FIRST_TIMER"
+	| "FIRST_TIME_CONTRIBUTOR"
+	| "MANNEQUIN"
+	| "NONE";
+type TeamDiscussion = Awaited<
+	ReturnType<InstanceType<typeof Octokit>["rest"]["teams"]["listDiscussionsInOrg"]>
+>["data"][number];
+export type Discussion = {
+	repository_url: string;
+	category: {
+		id: number;
+		node_id: string;
+		repository_id: number;
+		emoji: `:${string}:`;
+		name: string;
+		description: string;
+		created_at: string;
+		updated_at: string;
+		slug: string;
+		is_answerable: boolean;
+	};
+	answer_html_url: string | null;
+	answer_chosen_at: string | null;
+	answer_chosen_by: TeamDiscussion["author"] | null;
+	id: number;
+	user: TeamDiscussion["author"];
+	labels: never[];
+	state: "open" | "closed";
+	state_reason: "resolved" | null;
+	locked: boolean;
+	comments: TeamDiscussion["comments_count"];
+	author_association: AuthorAssociation;
+	active_lock_reason: null;
+	timeline_url: string;
+} & Pick<
+	TeamDiscussion,
+	"html_url" | "node_id" | "number" | "title" | "created_at" | "updated_at" | "body" | "reactions"
+>;
+type TeamDiscussionComment = Awaited<
+	ReturnType<InstanceType<typeof Octokit>["rest"]["teams"]["listDiscussionCommentsInOrg"]>
+>["data"][number];
+export type DiscussionComment = {
+	id: number;
+	parent_id: number | null;
+	child_comment_count: number;
+	repository_url: `${string}/${string}`;
+	discussion_id: number;
+	author_association: AuthorAssociation;
+	user: TeamDiscussion["author"];
+} & Pick<
+	TeamDiscussionComment,
+	"node_id" | "html_url" | "created_at" | "updated_at" | "body" | "reactions"
+>;
 
 export type LinkedItem = {
 	number: number;
@@ -169,6 +241,7 @@ export class GitHubCache {
 	 * 2. calls the promise to get new data if no value is found in cache
 	 * 3. store this new value back in the cache with an optional TTL before returning the value.
 	 *
+	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
 	#processCached<RType extends Parameters<InstanceType<typeof Redis>["json"]["set"]>[2]>() {
@@ -229,7 +302,7 @@ export class GitHubCache {
 		owner: string,
 		repo: string,
 		id: number,
-		type: ExtractStrict<RepoKeyType, "issue" | "pr"> | undefined = undefined
+		type: ExtractStrict<RepoKeyType, "issue" | "pr" | "discussions"> | undefined = undefined
 	) {
 		// Known type we assume the existence of
 		switch (type) {
@@ -237,6 +310,8 @@ export class GitHubCache {
 				return await this.getIssueDetails(owner, repo, id);
 			case "pr":
 				return await this.getPullRequestDetails(owner, repo, id);
+			case "discussions":
+				return await this.getDiscussionDetails(owner, repo, id);
 		}
 
 		// Unknown type, try to find or null otherwise
@@ -247,10 +322,16 @@ export class GitHubCache {
 		}
 
 		try {
-			// comes last because issues will also resolve for prs
+			// doesn't come first because issues will also resolve for prs
 			return await this.getIssueDetails(owner, repo, id);
 		} catch (err: unknown) {
 			console.error(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
+		}
+
+		try {
+			return await this.getDiscussionDetails(owner, repo, id);
+		} catch (err: unknown) {
+			console.error(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
 		}
 
 		return null;
@@ -309,6 +390,43 @@ export class GitHubCache {
 				commits,
 				files,
 				linkedIssues
+			}),
+			FULL_DETAILS_TTL
+		);
+	}
+
+	/**
+	 * Get the discussion from the specified info.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param id the discussion number
+	 * @returns the matching discussion
+	 * @throws Error if the discussion is not found
+	 */
+	async getDiscussionDetails(owner: string, repo: string, id: number) {
+		return await this.#processCached<DiscussionDetails>()(
+			this.#getRepoKey(owner, repo, "discussion", id),
+			() =>
+				Promise.all([
+					this.#octokit.request("GET /repos/{owner}/{repo}/discussions/{number}", {
+						owner,
+						repo,
+						number: id
+					}),
+					this.#octokit.paginate<DiscussionComment>(
+						"GET /repos/{owner}/{repo}/discussions/{number}/comments",
+						{
+							owner,
+							repo,
+							number: id,
+							per_page
+						}
+					)
+				]),
+			([{ data: discussion }, comments]) => ({
+				info: discussion,
+				comments
 			}),
 			FULL_DETAILS_TTL
 		);
@@ -716,6 +834,32 @@ export class GitHubCache {
 				}
 			},
 			prs => prs,
+			FULL_DETAILS_TTL
+		);
+	}
+
+	/**
+	 * Get all the discussions for a given GitHub repository.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @returns a list of discussions, empty if not existing
+	 */
+	async getAllDiscussions(owner: string, repo: string) {
+		return await this.#processCached<Discussion[]>()(
+			this.#getRepoKey(owner, repo, "discussions"),
+			async () => {
+				try {
+					return await this.#octokit.paginate<Discussion>("GET /repos/{owner}/{repo}/discussions", {
+						owner,
+						repo,
+						per_page
+					});
+				} catch {
+					return [] as Discussion[];
+				}
+			},
+			discussions => discussions,
 			FULL_DETAILS_TTL
 		);
 	}

@@ -8,7 +8,9 @@
 		GitPullRequestArrow,
 		GitPullRequestClosed,
 		GitPullRequestDraft,
-		type Icon
+		type Icon,
+		MessageSquare,
+		MessageSquareX
 	} from "@lucide/svelte";
 
 	type CommonStatus = "open" | "closed";
@@ -20,6 +22,10 @@
 		| {
 				type: "issue";
 				status: CommonStatus | "solved";
+		  }
+		| {
+				type: "discussion";
+				status: CommonStatus;
 		  };
 
 	type Props = {
@@ -86,6 +92,23 @@
 					bgColor = "bg-purple-500";
 					break;
 			}
+			break;
+		case "discussion":
+			switch (status) {
+				case "open":
+					icon = MessageSquare;
+					label = "Open";
+					textColor = "text-green-600";
+					bgColor = "bg-green-600";
+					break;
+				case "closed":
+					icon = MessageSquareX;
+					label = "Closed";
+					textColor = "text-purple-500";
+					bgColor = "bg-purple-500";
+					break;
+			}
+			break;
 	}
 </script>
 

@@ -30,7 +30,12 @@
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import type { Plugin } from "svelte-exmarkdown";
-	import type { IssueDetails, LinkedItem, PullRequestDetails } from "$lib/server/github-cache";
+	import type {
+		DiscussionDetails,
+		IssueDetails,
+		LinkedItem,
+		PullRequestDetails
+	} from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
@@ -64,10 +69,10 @@
 		metadata: {
 			org: string;
 			repo: string;
-			type: "pull" | "issue";
+			type: "pull" | "issue" | "discussion";
 		};
-		info: IssueDetails["info"] | PullRequestDetails["info"];
-		comments: IssueDetails["comments"];
+		info: IssueDetails["info"] | PullRequestDetails["info"] | DiscussionDetails["info"];
+		comments: IssueDetails["comments"] | DiscussionDetails["comments"];
 		commits: PullRequestDetails["commits"];
 		files: PullRequestDetails["files"];
 		linkedEntities: LinkedItem[];
@@ -75,8 +80,15 @@
 
 	let { metadata, info, comments, commits, files, linkedEntities }: Props = $props();
 
-	let rightPartInfo = $derived([
-		...(info.closed_at
+	let rightPartInfo = $derived<{ title: string; value: string }[]>([
+		...("answer_chosen_at" in info && info.answer_chosen_at
+			? [{ title: "Answered at", value: formatToDateTime(info.answer_chosen_at) }]
+			: []),
+		...("answer_chosen_by" in info && info.answer_chosen_by
+			? [{ title: "Answered by", value: info.answer_chosen_by.login }]
+			: []),
+		...("category" in info ? [{ title: "Category", value: info.category.name }] : []),
+		...("closed_at" in info && info.closed_at
 			? [
 					{
 						title: "merged" in info && info.merged ? "Merged at" : "Closed at",
@@ -84,7 +96,7 @@
 					}
 				]
 			: []),
-		...(info.closed_at && "merged" in info && info.merged
+		...("closed_at" in info && info.closed_at && "merged" in info && info.merged
 			? [
 					{
 						title: "Merged by",
@@ -92,7 +104,14 @@
 					}
 				]
 			: []),
-		{ title: "Assignees", value: info.assignees?.map(a => a.login).join(", ") || "None" },
+		...("assignees" in info
+			? [
+					{
+						title: "Assignees",
+						value: info.assignees?.map(a => a.login).join(", ") || "None"
+					}
+				]
+			: []),
 		...("requested_reviewers" in info
 			? [
 					{
@@ -105,8 +124,74 @@
 			title: "Labels",
 			value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
 		},
-		{ title: "Milestone", value: info.milestone?.title || "None" }
+		...("milestone" in info
+			? [
+					{
+						title: "Milestone",
+						value: info.milestone?.title || "None"
+					}
+				]
+			: [])
 	]);
+
+	/**
+	 * Sort comments for discussions so that they simply have to be indented
+	 * if answers to properly look like threads of comments.
+	 *
+	 * @param comments the input comments
+	 * @returns the sorted comments
+	 */
+	function sortComments(comments: Props["comments"]): Props["comments"] {
+		// Check if the array contains discussion items (with `parent_id`)
+		// We only need to check the first item since we know all items are of the same type
+		const hasParentId = comments[0] && "parent_id" in comments[0];
+
+		// If these are simple items, just sort by date and return
+		if (!hasParentId) {
+			return (comments as IssueDetails["comments"]).sort(
+				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+			);
+		}
+
+		// We know we're dealing with TreeItems at this point
+		const discussionComments = comments as DiscussionDetails["comments"];
+
+		// Create a map to store children by their parent_id for quick lookup
+		const childrenMap = new Map<
+			DiscussionDetails["comments"][number]["parent_id"],
+			DiscussionDetails["comments"]
+		>();
+
+		// Populate the map
+		for (const comment of discussionComments) {
+			if (!childrenMap.has(comment.parent_id)) {
+				childrenMap.set(comment.parent_id, []);
+			}
+			childrenMap.get(comment.parent_id)?.push(comment);
+		}
+
+		// Sort children arrays by creation date
+		for (const children of childrenMap.values()) {
+			children.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+		}
+
+		// Recursively build the result array in the correct order
+		const result: DiscussionDetails["comments"] = [];
+
+		function traverseTree(parentId: DiscussionDetails["comments"][number]["parent_id"]) {
+			const children = childrenMap.get(parentId) || [];
+
+			for (const child of children) {
+				result.push(child);
+				traverseTree(child.id);
+			}
+		}
+
+		// Start traversal from the root
+		traverseTree(null);
+
+		return result;
+	}
 </script>
 
 <div class="container py-8">
@@ -180,7 +265,11 @@
 	{/if}
 	<div class="flex items-center">
 		<h3 class="text-2xl font-semibold tracking-tight">
-			{metadata.type === "pull" ? "Pull request" : "Issue"}
+			{metadata.type === "pull"
+				? "Pull request"
+				: metadata.type === "issue"
+					? "Issue"
+					: "Discussion"}
 		</h3>
 		{#if info.locked}
 			<div
@@ -200,7 +289,7 @@
 					: "state_reason" in info && info.state_reason === "completed"
 						? "solved"
 						: "closed"
-				: info.draft
+				: "draft" in info && info.draft
 					? "draft"
 					: "open"}
 			class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked }}
@@ -267,11 +356,13 @@
 			label="Comments"
 			secondaryLabel="{info.comments} comment{info.comments > 1 ? 's' : ''}"
 		>
-			{#each comments as comment, i (comment.id)}
-				{#if i > 0}
+			{#each sortComments(comments) as comment, i (comment.id)}
+				{@const isAnswer =
+					"parent_id" in comment && comment.parent_id ? comment.parent_id !== info.id : false}
+				{#if !isAnswer && i > 0}
 					<Separator class="my-2 h-1" />
 				{/if}
-				<div>
+				<div class={[isAnswer && "border-l-4 ml-4 pl-2"]}>
 					<!-- Author -->
 					<div
 						class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"

@@ -2,7 +2,7 @@ import { error, redirect } from "@sveltejs/kit";
 import { gitHubCache } from "$lib/server/github-cache";
 
 export async function load({ params }) {
-	const { pullOrIssue: type, org, repo, id } = params;
+	const { pid: type, org, repo, id } = params;
 	const numId = +id; // id is already validated by the route matcher
 
 	const item = await gitHubCache.getItemDetails(org, repo, numId);
@@ -10,9 +10,9 @@ export async function load({ params }) {
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
 
-	const realType = "commits" in item ? "pull" : "issues";
+	const realType = "commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
 	if (type !== realType) {
-		redirect(303, `/${realType}/${org}/${repo}/${id}`);
+		redirect(307, `/${realType}/${org}/${repo}/${id}`);
 	}
 
 	return {
@@ -20,7 +20,12 @@ export async function load({ params }) {
 			org,
 			repo,
 			id: numId,
-			type: type === "issues" ? ("issue" as const) : ("pull" as const)
+			type:
+				type === "issues"
+					? ("issue" as const)
+					: type === "discussions"
+						? ("discussion" as const)
+						: ("pull" as const)
 		},
 		item
 	};

@@ -20,9 +20,10 @@ export async function load({ params }) {
 
 	const membersNames = members.map(({ login }) => login);
 
-	const [unfilteredPRs, unfilteredIssues] = await Promise.all([
+	const [unfilteredPRs, unfilteredIssues, unfilteredDiscussions] = await Promise.all([
 		gitHubCache.getAllPRs(params.org, params.repo),
-		gitHubCache.getAllIssues(params.org, params.repo)
+		gitHubCache.getAllIssues(params.org, params.repo),
+		gitHubCache.getAllDiscussions(params.org, params.repo)
 	]);
 	return {
 		prs: unfilteredPRs
@@ -43,7 +44,16 @@ export async function load({ params }) {
 			})
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
 		issues: unfilteredIssues
-			.filter(({ user, pull_request }) => !pull_request && membersNames.includes(user?.login ?? ""))
+			.filter(
+				({ author_association, pull_request }) => !pull_request && author_association === "MEMBER"
+			)
+			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
+		discussions: unfilteredDiscussions
+			.filter(
+				({ author_association, updated_at }) =>
+					author_association === "MEMBER" &&
+					new Date(updated_at).getFullYear() >= new Date().getFullYear() - 1
+			)
 			.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 	};
 }

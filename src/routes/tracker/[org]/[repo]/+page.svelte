@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { Image } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
 	import { Separator } from "$lib/components/ui/separator";
 	import GHBadge from "$lib/components/GHBadge.svelte";
@@ -7,7 +8,10 @@
 
 	let { data } = $props();
 
-	type Item = NonNullable<typeof data.issues>[number] | NonNullable<typeof data.prs>[number];
+	type Item =
+		| NonNullable<typeof data.issues>[number]
+		| NonNullable<typeof data.prs>[number]
+		| NonNullable<typeof data.discussions>[number];
 
 	/**
 	 * Checks whether a date is more recent than a month.
@@ -46,10 +50,7 @@
 	}
 </script>
 
-<!-- snippets don't support generics: https://github.com/sveltejs/svelte/issues/15883 -->
-<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
-{#snippet list(title: string, items: Item[], itemToLink: (item: any) => string)}
-	<!-- {#snippet list<T extends Item>(title: string, items: T[], itemToLink: (item: T) => string)} -->
+{#snippet list<T extends Item>(title: string, items: T[], itemToLink: (item: T) => string)}
 	<div>
 		<h2 class="mt-12 mb-4 text-3xl font-semibold tracking-tight">{title}</h2>
 		{#each items as item, i (item.id)}
@@ -70,7 +71,11 @@
 	>
 		<GHBadge
 			mode="minimal"
-			type={"base" in item || "pull_request" in item ? "pull" : "issue"}
+			type={"base" in item || "pull_request" in item
+				? "pull"
+				: "category" in item
+					? "discussion"
+					: "issue"}
 			status={item.state === "closed"
 				? "merged" in item
 					? item.merged
@@ -79,7 +84,7 @@
 					: "state_reason" in item && item.state_reason === "completed"
 						? "solved"
 						: "closed"
-				: item.draft
+				: "draft" in item && item.draft
 					? "draft"
 					: "open"}
 			class="shrink-0"
@@ -124,7 +129,14 @@
 						}
 					}
 				]}
-			/>
+			>
+				{#snippet img({ alt })}
+					<div>
+						<Image class="h-lh inline-block" />
+						{alt}
+					</div>
+				{/snippet}
+			</MarkdownRenderer>
 		</div>
 	</a>
 {/snippet}
@@ -150,6 +162,13 @@
 		data.prs,
 		pr => `/pull/${pr.base.repo.owner.login}/${pr.base.repo.name}/${pr.number}`
 	)}
+{/if}
+
+{#if data.discussions.length}
+	{@render list("Discussions", data.discussions, d => {
+		const ownerSlashRepo = d.repository_url.replace("https://api.github.com/repos/", "");
+		return `/discussions/${ownerSlashRepo}/${d.number}`;
+	})}
 {/if}
 
 {#if data.issues.length}
