@@ -133,6 +133,71 @@
 				]
 			: [])
 	]);
+
+	/**
+	 * Sort comments for discussions so that they simply have to be indented
+	 * if answers to properly look like threads of comments.
+	 *
+	 * @param comments the input comments
+	 * @returns the sorted comments
+	 */
+	function sortComments(comments: Props["comments"]): Props["comments"] {
+		// Check if the array contains tree items (with parent_id)
+		// We only need to check the first item since we know all items are of the same type
+		const hasParentId = comments[0] && "parent_id" in comments[0];
+
+		// If these are simple items, just sort by date and return
+		if (!hasParentId) {
+			return (comments as IssueDetails["comments"]).sort(
+				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+			);
+		}
+
+		// We know we're dealing with TreeItems at this point
+		const discussionComments = comments as DiscussionDetails["comments"];
+
+		// Create a map to store children by their parent_id for quick lookup
+		const childrenMap = new Map<
+			DiscussionDetails["comments"][number]["parent_id"],
+			DiscussionDetails["comments"]
+		>();
+
+		// Populate the map with empty arrays
+		childrenMap.set(null, []);
+		for (const comment of discussionComments) {
+			if (!childrenMap.has(comment.id)) {
+				childrenMap.set(comment.id, []);
+			}
+		}
+
+		// Add items to their parent's children array
+		for (const comment of discussionComments) {
+			const parentArray = childrenMap.get(comment.parent_id) || [];
+			parentArray.push(comment);
+		}
+
+		// Sort children arrays by creation date
+		for (const children of childrenMap.values()) {
+			children.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+		}
+
+		// Recursively build the result array in the correct order
+		const result: DiscussionDetails["comments"] = [];
+
+		function traverseTree(parentId: DiscussionDetails["comments"][number]["parent_id"]) {
+			const children = childrenMap.get(parentId) || [];
+
+			for (const child of children) {
+				result.push(child);
+				traverseTree(child.id);
+			}
+		}
+
+		// Start traversal from the root
+		traverseTree(null);
+
+		return result;
+	}
 </script>
 
 <div class="container py-8">
@@ -297,7 +362,7 @@
 			label="Comments"
 			secondaryLabel="{info.comments} comment{info.comments > 1 ? 's' : ''}"
 		>
-			{#each comments as comment, i (comment.id)}
+			{#each sortComments(comments) as comment, i (comment.id)}
 				{@const isAnswer =
 					"parent_id" in comment && comment.parent_id ? comment.parent_id !== info.id : false}
 				{#if !isAnswer && i > 0}
