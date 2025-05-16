@@ -298,10 +298,12 @@
 			secondaryLabel="{info.comments} comment{info.comments > 1 ? 's' : ''}"
 		>
 			{#each comments as comment, i (comment.id)}
-				{#if i > 0}
+				{@const isAnswer =
+					"parent_id" in comment && comment.parent_id ? comment.parent_id !== info.id : false}
+				{#if !isAnswer && i > 0}
 					<Separator class="my-2 h-1" />
 				{/if}
-				<div>
+				<div class={[isAnswer && "border-l-4 ml-4 pl-2"]}>
 					<!-- Author -->
 					<div
 						class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
