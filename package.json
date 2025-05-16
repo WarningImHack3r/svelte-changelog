@@ -40,7 +40,7 @@
 		"clsx": "^2.1.1",
 		"eslint": "^9.26.0",
 		"eslint-config-prettier": "^10.1.2",
-		"eslint-plugin-svelte": "^3.5.1",
+		"eslint-plugin-svelte": "^3.7.0",
 		"feed": "^5.0.0",
 		"globals": "^16.0.0",
 		"marked": "^15.0.11",
@@ -49,14 +49,14 @@
 		"posthog-js": "^1.240.0",
 		"posthog-node": "^4.17.1",
 		"prettier": "^3.5.3",
-		"prettier-plugin-svelte": "^3.3.3",
+		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"rehype-raw": "^7.0.0",
 		"runed": "^0.26.0",
 		"semver": "^7.7.1",
 		"shiki": "^3.4.0",
-		"svelte": "^5.28.2",
-		"svelte-check": "^4.1.7",
+		"svelte": "^5.30.1",
+		"svelte-check": "^4.2.1",
 		"svelte-exmarkdown": "^5.0.1",
 		"svelte-meta-tags": "^4.2.0",
 		"svelte-sonner": "https://pkg.pr.new/wobsoriano/svelte-sonner@126",
@@ -78,5 +78,5 @@
 		]
 	},
 	"type": "module",
-	"packageManager": "pnpm@10.10.0"
+	"packageManager": "pnpm@10.11.0"
 }

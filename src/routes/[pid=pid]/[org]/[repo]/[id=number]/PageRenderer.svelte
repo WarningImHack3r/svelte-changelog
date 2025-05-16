@@ -142,7 +142,7 @@
 	 * @returns the sorted comments
 	 */
 	function sortComments(comments: Props["comments"]): Props["comments"] {
-		// Check if the array contains tree items (with parent_id)
+		// Check if the array contains discussion items (with `parent_id`)
 		// We only need to check the first item since we know all items are of the same type
 		const hasParentId = comments[0] && "parent_id" in comments[0];
 
@@ -162,18 +162,12 @@
 			DiscussionDetails["comments"]
 		>();
 
-		// Populate the map with empty arrays
-		childrenMap.set(null, []);
+		// Populate the map
 		for (const comment of discussionComments) {
-			if (!childrenMap.has(comment.id)) {
-				childrenMap.set(comment.id, []);
+			if (!childrenMap.has(comment.parent_id)) {
+				childrenMap.set(comment.parent_id, []);
 			}
-		}
-
-		// Add items to their parent's children array
-		for (const comment of discussionComments) {
-			const parentArray = childrenMap.get(comment.parent_id) || [];
-			parentArray.push(comment);
+			childrenMap.get(comment.parent_id)?.push(comment);
 		}
 
 		// Sort children arrays by creation date

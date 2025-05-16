@@ -50,10 +50,7 @@
 	}
 </script>
 
-<!-- generic snippets are now in Svelte but not yet in the language tools -->
-<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->
-{#snippet list(title: string, items: Item[], itemToLink: (item: any) => string)}
-	<!--{#snippet list<T extends Item>(title: string, items: T[], itemToLink: (item: T) => string)}-->
+{#snippet list<T extends Item>(title: string, items: T[], itemToLink: (item: T) => string)}
 	<div>
 		<h2 class="mt-12 mb-4 text-3xl font-semibold tracking-tight">{title}</h2>
 		{#each items as item, i (item.id)}

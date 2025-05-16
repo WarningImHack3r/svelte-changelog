@@ -57,6 +57,15 @@ export type DiscussionDetails = {
 	comments: DiscussionComment[];
 };
 
+type AuthorAssociation =
+	| "OWNER"
+	| "MEMBER"
+	| "COLLABORATOR"
+	| "CONTRIBUTOR"
+	| "FIRST_TIMER"
+	| "FIRST_TIME_CONTRIBUTOR"
+	| "MANNEQUIN"
+	| "NONE";
 type TeamDiscussion = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["teams"]["listDiscussionsInOrg"]>
 >["data"][number];
@@ -84,7 +93,7 @@ export type Discussion = {
 	state_reason: "resolved" | null;
 	locked: boolean;
 	comments: TeamDiscussion["comments_count"];
-	author_association: "MEMBER" | "CONTRIBUTOR" | "NONE";
+	author_association: AuthorAssociation;
 	active_lock_reason: null;
 	timeline_url: string;
 } & Pick<
@@ -100,7 +109,7 @@ export type DiscussionComment = {
 	child_comment_count: number;
 	repository_url: `${string}/${string}`;
 	discussion_id: number;
-	author_association: "MEMBER" | "CONTRIBUTOR" | "NONE";
+	author_association: AuthorAssociation;
 	user: TeamDiscussion["author"];
 } & Pick<
 	TeamDiscussionComment,
