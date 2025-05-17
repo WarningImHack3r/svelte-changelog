@@ -56,9 +56,7 @@
 			semVersion?.patch === 0 &&
 			!semVersion?.prerelease.length
 	);
-	let isOlderThanAWeek = $derived(
-		releaseDate.getTime() < new Date().getTime() - 1000 * 60 * 60 * 24 * 7
-	);
+	let isOlderThanAWeek = $derived(releaseDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 7);
 
 	/**
 	 * Converts a date to a relative date string.
@@ -69,7 +67,7 @@
 	 * @returns the relative date
 	 */
 	function timeAgo(date: Date, locale = "en") {
-		const diff = (new Date().getTime() - date.getTime()) / 1000;
+		const diff = (Date.now() - date.getTime()) / 1000;
 		const minutes = Math.floor(diff / 60);
 		const hours = Math.floor(minutes / 60);
 		const days = Math.floor(hours / 24);

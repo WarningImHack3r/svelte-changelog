@@ -22,7 +22,7 @@
 	 * @returns if it is more recent than a month
 	 */
 	function isNew(date: Date) {
-		return date.getTime() >= new Date().getTime() - 1000 * 60 * 60 * 24 * 30;
+		return date.getTime() >= Date.now() - 1000 * 60 * 60 * 24 * 30;
 	}
 
 	/**
@@ -32,7 +32,7 @@
 	 * @returns the formatted string output
 	 */
 	function daysAgo(date: Date) {
-		const days = Math.floor((new Date().getTime() - date.getTime()) / 1000 / 60 / 60 / 24);
+		const days = Math.floor((Date.now() - date.getTime()) / 1000 / 60 / 60 / 24);
 		return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(-days, "day");
 	}
 

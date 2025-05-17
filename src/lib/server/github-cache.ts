@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
@@ -8,6 +9,7 @@ import { Octokit } from "octokit";
 import parseChangelog from "$lib/changelog-parser";
 import type { Repository } from "$lib/repositories";
 import type { Issues, Pulls } from "$lib/types";
+import { CacheHandler, type RedisJson } from "./cache-handler";
 
 /**
  * A strict version of Extract.
@@ -159,7 +161,7 @@ const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
  * with an additional caching mechanism.
  */
 export class GitHubCache {
-	readonly #redis: Redis;
+	readonly #cache: CacheHandler;
 	readonly #octokit: Octokit;
 
 	/**
@@ -171,10 +173,13 @@ export class GitHubCache {
 	 * @constructor
 	 */
 	constructor(redisUrl: string, redisToken: string, githubToken: string) {
-		this.#redis = new Redis({
-			url: redisUrl,
-			token: redisToken
-		});
+		this.#cache = new CacheHandler(
+			new Redis({
+				url: redisUrl,
+				token: redisToken
+			}),
+			dev
+		);
 
 		this.#octokit = new Octokit({
 			auth: githubToken
@@ -238,7 +243,7 @@ export class GitHubCache {
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<RType extends Parameters<InstanceType<typeof Redis>["json"]["set"]>[2]>() {
+	#processCached<RType extends RedisJson>() {
 		/**
 		 * Inner currying function to circumvent unsupported partial inference
 		 *
@@ -255,7 +260,7 @@ export class GitHubCache {
 			transformer: (from: Awaited<PromiseType>) => RType | Promise<RType>,
 			ttl: number | ((value: RType) => number | undefined) | undefined = undefined
 		): Promise<RType> => {
-			const cachedValue = await this.#redis.json.get<RType>(cacheKey);
+			const cachedValue = await this.#cache.get<RType>(cacheKey);
 			if (cachedValue) {
 				console.log(`Cache hit for ${cacheKey}`);
 				return cachedValue;
@@ -265,17 +270,15 @@ export class GitHubCache {
 
 			const newValue = await transformer(await promise());
 
-			await this.#redis.json.set(cacheKey, "$", newValue);
+			let ttlResult: number | undefined = undefined;
 			if (ttl !== undefined) {
 				if (typeof ttl === "function") {
-					const ttlResult = ttl(newValue);
-					if (ttlResult !== undefined) {
-						await this.#redis.expire(cacheKey, ttlResult);
-					}
+					ttlResult = ttl(newValue);
 				} else {
-					await this.#redis.expire(cacheKey, ttl);
+					ttlResult = ttl;
 				}
 			}
+			await this.#cache.set(cacheKey, newValue, ttlResult);
 
 			return newValue;
 		};

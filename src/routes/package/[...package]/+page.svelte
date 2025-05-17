@@ -125,7 +125,7 @@
 					// Only expand releases that are less than a week old
 					.filter(
 						({ created_at }) =>
-							new Date(created_at).getTime() > new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+							new Date(created_at).getTime() > Date.now() - 1000 * 60 * 60 * 24 * 7
 					)
 					.map(({ id }) => id.toString())}
 				class="w-full space-y-2"

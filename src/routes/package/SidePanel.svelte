@@ -96,8 +96,7 @@
 		if (!lastVisitedItem) {
 			return releases.filter(
 				({ created_at, published_at }) =>
-					new Date(published_at ?? created_at).getTime() >
-					new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+					new Date(published_at ?? created_at).getTime() > Date.now() - 1000 * 60 * 60 * 24 * 7
 			);
 		}
 		const lastVisitedDate = new Date(lastVisitedItem);
