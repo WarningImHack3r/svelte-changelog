@@ -1,5 +1,8 @@
 import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
-import type { Repository as GQLRepository } from "@octokit/graphql-schema";
+import type {
+	CommentAuthorAssociation,
+	Repository as GQLRepository
+} from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
 import { Octokit } from "octokit";
 import parseChangelog from "$lib/changelog-parser";
@@ -57,15 +60,6 @@ export type DiscussionDetails = {
 	comments: DiscussionComment[];
 };
 
-type AuthorAssociation =
-	| "OWNER"
-	| "MEMBER"
-	| "COLLABORATOR"
-	| "CONTRIBUTOR"
-	| "FIRST_TIMER"
-	| "FIRST_TIME_CONTRIBUTOR"
-	| "MANNEQUIN"
-	| "NONE";
 type TeamDiscussion = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["teams"]["listDiscussionsInOrg"]>
 >["data"][number];
@@ -93,7 +87,7 @@ export type Discussion = {
 	state_reason: "resolved" | null;
 	locked: boolean;
 	comments: TeamDiscussion["comments_count"];
-	author_association: AuthorAssociation;
+	author_association: CommentAuthorAssociation;
 	active_lock_reason: null;
 	timeline_url: string;
 } & Pick<
@@ -109,7 +103,7 @@ export type DiscussionComment = {
 	child_comment_count: number;
 	repository_url: `${string}/${string}`;
 	discussion_id: number;
-	author_association: AuthorAssociation;
+	author_association: CommentAuthorAssociation;
 	user: TeamDiscussion["author"];
 } & Pick<
 	TeamDiscussionComment,
