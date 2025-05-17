@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { Image } from "@lucide/svelte";
+	import { Image, Info } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
+	import { buttonVariants } from "$lib/components/ui/button";
+	import * as Popover from "$lib/components/ui/popover";
 	import { Separator } from "$lib/components/ui/separator";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -153,7 +155,32 @@
 			><wbr /><span class="text-primary group-hover:underline">{page.params.repo}</span>
 		</a>
 	</h1>
-	<h3 class="text-xl text-muted-foreground font-display text-shadow-sm/5">Repository tracker</h3>
+	<div class="flex items-center gap-2">
+		<h3 class="text-xl text-muted-foreground font-display text-shadow-sm/5">Repository tracker</h3>
+		<Popover.Root>
+			<Popover.Trigger
+				class={[buttonVariants({ variant: "ghost", size: "sm" }), "h-min pt-0.5 !px-0"]}
+			>
+				<Info />
+			</Popover.Trigger>
+			<Popover.Content class="[&>p]:mt-3">
+				<h4 class="font-semibold text-lg">How it works</h4>
+				<p>The content comes, as everything else in this site, from GitHub.</p>
+				<p>
+					All content, be it issues, discussions, or PRs, is filtered to only get displayed if
+					authored by the org's members since last year.
+				</p>
+				<p>
+					For PRs, an additional filtering is performed to <em>not</em> pick any PR that fixes any issue.
+				</p>
+				<p>Then, all of this is sorted by update date, and... that's it!</p>
+				<p>
+					This algorithm might be not fine-grained enough, but I find it working quite well for now.
+					Open an issue/PR if you have any improvement suggestion!
+				</p>
+			</Popover.Content>
+		</Popover.Root>
+	</div>
 </div>
 
 {#if data.prs.length}
