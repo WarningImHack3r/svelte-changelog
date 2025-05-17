@@ -46,6 +46,7 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
+	import AnchorRenderer from "$lib/components/renderers/AnchorRenderer.svelte";
 	import BodyRenderer from "$lib/components/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
@@ -256,7 +257,10 @@
 							markdown={entity.body || "_No description provided_"}
 							parseRawHtml
 							class="max-w-full text-base"
-							additionalPlugins={[{ renderer: { p: BodyRenderer } }, shikiPlugin]}
+							additionalPlugins={[
+								{ renderer: { p: BodyRenderer, a: AnchorRenderer } },
+								shikiPlugin
+							]}
 						/>
 					</Accordion.Content>
 				</Accordion.Item>
@@ -332,7 +336,7 @@
 						markdown={info.body || "_No description provided_"}
 						parseRawHtml
 						class="max-w-full"
-						additionalPlugins={[{ renderer: { p: BodyRenderer } }, shikiPlugin]}
+						additionalPlugins={[{ renderer: { p: BodyRenderer, a: AnchorRenderer } }, shikiPlugin]}
 					/>
 				</div>
 			</div>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import type { Action } from "svelte/action";
+	import type { Attachment } from "svelte/attachments";
 	import { page } from "$app/state";
 
 	type Props = {
@@ -9,7 +9,7 @@
 
 	let { children }: Props = $props();
 
-	const linkify: Action = node => {
+	const linkify: Attachment = node => {
 		let replaced = node.innerHTML;
 		const issuesCandidates = replaced.matchAll(/ #(\d+)/g) || [];
 		for (let [wholeMatch, matchedGroup] of issuesCandidates) {
@@ -23,6 +23,6 @@
 	};
 </script>
 
-<p use:linkify>
+<p {@attach linkify}>
 	{@render children?.()}
 </p>
