@@ -104,7 +104,7 @@
 			}
 		]}
 	>
-		<div class="mx-auto flex h-14 w-full items-center px-8">
+		<div class="mx-auto flex h-14 w-full items-center px-6 xs:px-8">
 			<!-- Left part -->
 			<a href="/" class="flex items-center gap-2">
 				<img

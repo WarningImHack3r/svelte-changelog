@@ -90,12 +90,12 @@
 			class="shrink-0"
 		/>
 		<div class="flex w-full flex-col">
-			<div class="flex justify-between">
+			<div class="flex gap-4 justify-between">
 				<span>
 					<MarkdownRenderer markdown={item.title} inline class="text-foreground" />
 					<span class="text-muted-foreground">#{item.number}</span>
 				</span>
-				<span>
+				<span class="text-right">
 					{#if isNew(lastUpdate)}
 						{daysAgo(lastUpdate)} •
 					{/if}
@@ -110,7 +110,7 @@
 				markdown={item.body || "_No description provided_"}
 				inline
 				parseRawHtml
-				class="line-clamp-2 max-w-full text-base text-muted-foreground"
+				class="line-clamp-2 max-w-full wrap-anywhere text-base text-muted-foreground"
 				additionalPlugins={[
 					{
 						renderer: {
