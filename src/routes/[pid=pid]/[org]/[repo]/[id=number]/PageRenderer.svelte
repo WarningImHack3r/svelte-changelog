@@ -44,6 +44,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import Reactions from "$lib/components/Reactions.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import AnchorRenderer from "$lib/components/renderers/AnchorRenderer.svelte";
@@ -338,6 +339,9 @@
 						class="max-w-full"
 						additionalPlugins={[{ renderer: { p: BodyRenderer, a: AnchorRenderer } }, shikiPlugin]}
 					/>
+					{#if "reactions" in info}
+						<Reactions reactions={info.reactions} release_url={info.html_url} class="mt-4" />
+					{/if}
 				</div>
 			</div>
 			<!-- Right part - info -->
@@ -399,6 +403,7 @@
 							class="max-w-none"
 							additionalPlugins={[shikiPlugin]}
 						/>
+						<Reactions reactions={comment.reactions} release_url={comment.html_url} class="mt-4" />
 					</div>
 				</div>
 			{/each}

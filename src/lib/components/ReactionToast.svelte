@@ -8,9 +8,9 @@
 	let { href }: Props = $props();
 </script>
 
-<h3 class="text-sm">Sorry, you can't react to releases here!</h3>
-<div class="flex items-center-safe justify-between">
-	<h4 class="text-sm text-muted-foreground">Click here to open this release on GitHub</h4>
+<h3 class="text-sm">Sorry, you can't react to stuff here!</h3>
+<div class="flex gap-4 mt-1 justify-between">
+	<h4 class="text-sm text-muted-foreground">Click here to open this content on GitHub</h4>
 	<Button size="sm" variant="secondary" {href} target="_blank" class="group/button">
 		<img src="/github.svg" alt="GitHub" class="size-4 dark:invert" />
 		<ArrowUpRight

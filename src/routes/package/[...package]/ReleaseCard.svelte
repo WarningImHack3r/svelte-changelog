@@ -2,15 +2,13 @@
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import semver from "semver";
-	import { toast } from "svelte-sonner";
 	import type { GitHubRelease } from "$lib/server/github-cache";
-	import type { Entries } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import ReactionToast from "$lib/components/ReactionToast.svelte";
+	import Reactions from "$lib/components/Reactions.svelte";
 	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
 
 	type Props = {
@@ -88,28 +86,6 @@
 		}
 		return formatter.format(-diff, "second");
 	}
-
-	type Reaction = Exclude<keyof NonNullable<(typeof release)["reactions"]>, "url" | "total_count">;
-	const reactionsEmojis: Record<Reaction, string> = {
-		"+1": "👍",
-		"-1": "👎",
-		laugh: "😄",
-		confused: "😕",
-		heart: "❤️",
-		hooray: "🎉",
-		rocket: "🚀",
-		eyes: "👀"
-	};
-	const sortedEmojis: Reaction[] = [
-		"+1",
-		"-1",
-		"laugh",
-		"hooray",
-		"confused",
-		"heart",
-		"rocket",
-		"eyes"
-	];
 </script>
 
 {#snippet badges()}
@@ -247,29 +223,7 @@
 			/>
 			<div class="flex items-end-safe justify-between gap-8">
 				<!-- Reactions -->
-				{#if release.reactions}
-					{@const reactionEntries = Object.entries(release.reactions)
-						.filter(([k, v]) => !["url", "total_count"].includes(k) && !!v)
-						.toSorted(([a], [b]) => sortedEmojis.indexOf(a) - sortedEmojis.indexOf(b)) as Entries<
-						Record<Reaction, number>
-					>}
-					<div class="flex flex-wrap gap-1.5">
-						{#each reactionEntries as [key, value] (key)}
-							<Badge
-								variant="outline"
-								class="text-sm select-none"
-								onclick={() =>
-									toast(ReactionToast, {
-										duration: 5_000,
-										componentProps: { href: release.html_url }
-									})}
-							>
-								{reactionsEmojis[key]}
-								{value}
-							</Badge>
-						{/each}
-					</div>
-				{/if}
+				<Reactions reactions={release.reactions} release_url={release.html_url} />
 				<!-- Open the release on GitHub in a new tab -->
 				<Button variant="outline" size="sm" class="invisible w-16 sm:w-36" />
 				<Button

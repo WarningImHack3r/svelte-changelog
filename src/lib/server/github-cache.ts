@@ -442,42 +442,42 @@ export class GitHubCache {
 		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
 			`
         query($owner: String!, $repo: String!, $issueNumber: Int!) {
-            repository(owner: $owner, name: $repo) {
-                issue(number: $issueNumber) {
-                    timelineItems(first: 100, itemTypes: [CONNECTED_EVENT, CROSS_REFERENCED_EVENT]) {
-                        nodes {
-                            ... on ConnectedEvent {
-                                subject {
-                                    ... on PullRequest {
-                                        number
-                                        title
-																				author {
-																						avatarUrl
-																						login
-                                        }
-                                        createdAt
-																				body
-                                    }
-                                }
-                            }
-                            ... on CrossReferencedEvent {
-                                source {
-                                    ... on PullRequest {
-                                        number
-                                        title
-																				author {
-																						avatarUrl
-																						login
-                                        }
-																				createdAt
-																				body
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+					repository(owner: $owner, name: $repo) {
+						issue(number: $issueNumber) {
+							timelineItems(first: 100, itemTypes: [CONNECTED_EVENT, CROSS_REFERENCED_EVENT]) {
+								nodes {
+									... on ConnectedEvent {
+										subject {
+											... on PullRequest {
+												number
+												title
+												author {
+													avatarUrl
+													login
+												}
+												createdAt
+												body
+											}
+										}
+									}
+									... on CrossReferencedEvent {
+										source {
+											... on PullRequest {
+												number
+												title
+												author {
+													avatarUrl
+													login
+												}
+												createdAt
+												body
+											}
+										}
+									}
+								}
+							}
+						}
+					}
         }
 		`,
 			{
@@ -520,22 +520,22 @@ export class GitHubCache {
 		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
 			`
         query($owner: String!, $repo: String!, $prNumber: Int!) {
-            repository(owner: $owner, name: $repo) {
-                pullRequest(number: $prNumber) {
-                    closingIssuesReferences(first: 50) {
-                        nodes {
-                            number
-                            title
-														author {
-																login
-																avatarUrl
-														}
-														createdAt
-                            body
-                        }
-                    }
-                }
-            }
+					repository(owner: $owner, name: $repo) {
+						pullRequest(number: $prNumber) {
+							closingIssuesReferences(first: 50) {
+								nodes {
+									number
+									title
+									author {
+										login
+										avatarUrl
+									}
+									createdAt
+									body
+								}
+							}
+						}
+					}
         }
 		`,
 			{
