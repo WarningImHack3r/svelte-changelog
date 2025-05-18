@@ -2,6 +2,7 @@
 	import { navigating, page } from "$app/state";
 	import { ChevronRight, CircleAlert, LoaderCircle, Rss } from "@lucide/svelte";
 	import semver from "semver";
+	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Alert from "$lib/components/ui/alert";
 	import { Button } from "$lib/components/ui/button";
@@ -14,17 +15,21 @@
 
 	let { data } = $props();
 	let latestRelease = $derived(
-		data.releases.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
+		data.currentPackage.category.slug === ALL_SLUG
+			? undefined
+			: data.releases.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
 	);
 	let earliestOfLatestMajor = $derived(
-		data.releases
-			.filter(
-				({ prerelease, cleanVersion }) =>
-					(latestRelease
-						? semver.major(cleanVersion) === semver.major(latestRelease.cleanVersion)
-						: false) && !prerelease
-			)
-			.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
+		data.currentPackage.category.slug === ALL_SLUG
+			? undefined
+			: data.releases
+					.filter(
+						({ prerelease, cleanVersion }) =>
+							(latestRelease
+								? semver.major(cleanVersion) === semver.major(latestRelease.cleanVersion)
+								: false) && !prerelease
+					)
+					.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
 	);
 	let showPrereleases = $state(true);
 
@@ -71,19 +76,21 @@
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
 				<div class="flex flex-col items-start xs:flex-row xs:items-center">
-					<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
-						<a
-							href="https://github.com/{data.currentPackage.owner}/{data.currentPackage.repoName}"
-							target="_blank"
-							class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
-						>
-							{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
-						</a>
-					</h2>
-					<Separator
-						orientation="vertical"
-						class="mx-2 hidden h-lh bg-muted-foreground/50 xs:block"
-					/>
+					{#if data.currentPackage.owner && data.currentPackage.repoName}
+						<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
+							<a
+								href="https://github.com/{data.currentPackage.owner}/{data.currentPackage.repoName}"
+								target="_blank"
+								class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
+							>
+								{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
+							</a>
+						</h2>
+						<Separator
+							orientation="vertical"
+							class="mx-2 hidden h-lh bg-muted-foreground/50 xs:block"
+						/>
+					{/if}
 					<Collapsible.Root class="flex items-center">
 						<Collapsible.Trigger>
 							{#snippet child({ props })}
@@ -167,7 +174,6 @@
 						: false}
 					<ReleaseCard
 						{index}
-						packageName={data.currentPackage.pkg.name}
 						repo={{ owner: data.currentPackage.owner, name: data.currentPackage.repoName }}
 						{release}
 						{isLatest}

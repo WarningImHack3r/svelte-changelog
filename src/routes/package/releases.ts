@@ -47,7 +47,7 @@ export async function getPackageReleases(
 						posthog?.captureException(new Error("Release with null tag_name"), undefined, {
 							release
 						});
-						console.warn(`Empty release tag name: ${release}`);
+						console.warn(`Empty release tag name: ${JSON.stringify(release)}`);
 						return false;
 					}
 					const [name] = repo.metadataFromTag(release.tag_name);
@@ -70,7 +70,7 @@ export async function getPackageReleases(
 					posthog?.captureException(new Error("Release with null tag_name"), undefined, {
 						release
 					});
-					console.warn(`Empty release tag name: ${release}`);
+					console.warn(`Empty release tag name: ${JSON.stringify(release)}`);
 					continue;
 				}
 				const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);

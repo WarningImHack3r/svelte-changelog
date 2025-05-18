@@ -13,7 +13,6 @@
 
 	type Props = {
 		index?: number;
-		packageName: string;
 		repo: {
 			owner: string;
 			name: string;
@@ -24,15 +23,13 @@
 	};
 	let {
 		index = 0,
-		packageName,
 		repo,
 		release,
 		isLatest: isLatestRelease = false,
 		isMaintenance: isMaintenanceRelease = false
 	}: Props = $props();
 
-	let releaseVersion = $derived(release.cleanVersion);
-	let semVersion = $derived(semver.coerce(releaseVersion));
+	let semVersion = $derived(semver.coerce(release.cleanVersion));
 	let releaseDate = $derived(new Date(release.published_at ?? release.created_at));
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
@@ -155,7 +152,7 @@
 									style:background-size="200% 200%"
 									class="animate-major-gradient bg-linear-(--major-gradient) bg-clip-text text-left font-display text-xl text-transparent dark:bg-linear-(--dark-major-gradient)"
 								>
-									{packageName}@{releaseVersion}
+									{release.cleanName}@{release.cleanVersion}
 								</span>
 								{#if index === 0}
 									<div
@@ -168,14 +165,14 @@
 								{/if}
 							</Tooltip.Trigger>
 							<Tooltip.Content>
-								{packageName}
+								{release.cleanName}
 								{semVersion?.major} is available!
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>
 				{:else}
 					<span class="w-min text-left font-display text-lg group-hover:underline sm:w-auto">
-						{packageName}@{releaseVersion}
+						{release.cleanName}@{release.cleanVersion}
 					</span>
 				{/if}
 				<div class="mb-auto flex items-center gap-2 xs:hidden">

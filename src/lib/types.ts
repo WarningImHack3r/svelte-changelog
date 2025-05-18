@@ -59,3 +59,8 @@ export type Category = (typeof availableCategory)[number];
 
 export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
 export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
+
+/**
+ * The slug name for all the packages
+ */
+export const ALL_SLUG = "all";

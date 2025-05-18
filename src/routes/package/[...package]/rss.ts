@@ -2,6 +2,7 @@ import { type RequestHandler, error } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { marked } from "marked";
 import { discoverer } from "$lib/server/package-discoverer";
+import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
 /**
@@ -61,7 +62,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		// 2. Get the releases and package info
 		let packageName: string;
 		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"];
-		if (slugPackage.toLowerCase() === "all") {
+		if (slugPackage.toLowerCase() === ALL_SLUG) {
 			// All releases
 			packageName = "All";
 			releases = await getAllPackagesReleases(categorizedPackages, locals.posthog);
@@ -80,7 +81,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		const feed = getBaseFeed(
 			url,
 			`${packageName} releases`,
-			packageName.toLowerCase() === "all" ? "all" : "single"
+			packageName.toLowerCase() === ALL_SLUG ? "all" : "single"
 		);
 		for (const release of releases) {
 			feed.addItem({
