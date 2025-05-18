@@ -9,6 +9,8 @@ export type Entries<T> = {
 	[K in keyof T]: [K, T[K]];
 }[keyof T][];
 
+export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+
 export type RepoInfo = {
 	/**
 	 * Mode to fetch the releases of the repo.

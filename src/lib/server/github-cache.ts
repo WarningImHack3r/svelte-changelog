@@ -565,7 +565,7 @@ export class GitHubCache {
 	 */
 	async getReleases(repository: Repository) {
 		return await this.#processCached<GitHubRelease[]>()(
-			this.#getRepoKey(repository.owner, repository.repoName, "releases"),
+			this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
 			() => this.#fetchReleases(repository),
 			releases => releases,
 			RELEASES_TTL
@@ -581,7 +581,7 @@ export class GitHubCache {
 	 * @private
 	 */
 	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
-		const { owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
+		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
 			const { data: releases } = await this.#octokit.rest.repos.listReleases({
 				owner,

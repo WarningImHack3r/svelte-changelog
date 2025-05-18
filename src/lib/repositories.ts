@@ -1,7 +1,7 @@
 import { uniq } from "$lib/array";
-import type { Category, Entries, Prettify, RepoInfo } from "$lib/types";
+import type { Category, Entries, Prettify, RepoInfo, WithRequired } from "$lib/types";
 
-export const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
+const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 	svelte: {
 		name: "Svelte",
 		repos: [
@@ -134,8 +134,7 @@ export type Repository = Prettify<
 			slug: string;
 			name: string;
 		};
-		owner: string;
-	} & RepoInfo
+	} & WithRequired<RepoInfo, "repoOwner">
 >;
 
 /**
@@ -154,8 +153,8 @@ export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, r
 			slug,
 			name
 		},
-		owner: repo.repoOwner || DEFAULT_OWNER,
-		...repo
+		...repo,
+		repoOwner: repo.repoOwner || DEFAULT_OWNER
 	}))
 );
 

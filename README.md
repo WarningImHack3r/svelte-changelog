@@ -44,7 +44,7 @@ Fork the repo, edit the [`src/lib/repositories.ts`](src/lib/repositories.ts) fil
 The site's code has been architectured to be as flexible as possible, here's how it works:
 
 ```typescript
-export const repos = {
+const repos = {
     svelte: {/* ... */},
     kit: {/* ... */},
     others: {

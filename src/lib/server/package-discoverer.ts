@@ -39,7 +39,7 @@ export class PackageDiscoverer {
 		this.#packages = await Promise.all(
 			this.#repos.map(async repo => {
 				const releases = await this.#cache.getReleases(repo);
-				const descriptions = await this.#cache.getDescriptions(repo.owner, repo.repoName);
+				const descriptions = await this.#cache.getDescriptions(repo.repoOwner, repo.repoName);
 				const packages = [
 					...new Set(
 						releases
@@ -51,7 +51,7 @@ export class PackageDiscoverer {
 					)
 				];
 				console.log(
-					`Discovered ${packages.length} packages for ${repo.owner}/${repo.repoName}: ${packages.join(", ")}`
+					`Discovered ${packages.length} packages for ${repo.repoOwner}/${repo.repoName}: ${packages.join(", ")}`
 				);
 				return {
 					...repo,

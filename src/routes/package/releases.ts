@@ -37,7 +37,7 @@ export async function getPackageReleases(
 			// 1. Get releases
 			const cachedReleases = await gitHubCache.getReleases({ ...repo, category });
 			console.log(
-				`${cachedReleases.length} releases found for repo ${repo.owner}/${repo.repoName}`
+				`${cachedReleases.length} releases found for repo ${repo.repoOwner}/${repo.repoName}`
 			);
 
 			// 2. Filter out invalid ones
@@ -86,7 +86,7 @@ export async function getPackageReleases(
 				// If it is newer than the newest we got, set this repo as the "final repo"
 				if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
 					console.log(
-						`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.owner}/${repo.repoName} as final repo`
+						`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as final repo`
 					);
 					currentPackage = {
 						category,

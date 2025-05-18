@@ -76,14 +76,15 @@
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
 				<div class="flex flex-col items-start xs:flex-row xs:items-center">
-					{#if data.currentPackage.owner && data.currentPackage.repoName}
+					{#if data.currentPackage.repoOwner && data.currentPackage.repoName}
 						<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
 							<a
-								href="https://github.com/{data.currentPackage.owner}/{data.currentPackage.repoName}"
+								href="https://github.com/{data.currentPackage.repoOwner}/{data.currentPackage
+									.repoName}"
 								target="_blank"
 								class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
 							>
-								{data.currentPackage.owner}/<wbr />{data.currentPackage.repoName}
+								{data.currentPackage.repoOwner}/<wbr />{data.currentPackage.repoName}
 							</a>
 						</h2>
 						<Separator
@@ -174,7 +175,7 @@
 						: false}
 					<ReleaseCard
 						{index}
-						repo={{ owner: data.currentPackage.owner, name: data.currentPackage.repoName }}
+						repo={{ owner: data.currentPackage.repoOwner, name: data.currentPackage.repoName }}
 						{release}
 						{isLatest}
 						{isMaintenance}

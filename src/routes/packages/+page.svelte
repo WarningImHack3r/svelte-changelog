@@ -10,7 +10,7 @@
 		<li>
 			<h3 class="font-display text-3xl text-primary text-shadow-sm">{category.name}</h3>
 			<ul class="mt-2">
-				{#each packages as { owner, repoName, pkg }, index (pkg.name)}
+				{#each packages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}
@@ -27,7 +27,7 @@
 										{#if pkg.description}
 											•
 										{/if}
-										{owner}/{repoName}
+										{repoOwner}/{repoName}
 									</span>
 								</span>
 							</div>
