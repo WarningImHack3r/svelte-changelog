@@ -11,6 +11,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import type { Snapshot } from "./$types";
 	import ReleaseCard from "./ReleaseCard.svelte";
 
 	let { data } = $props();
@@ -33,7 +34,7 @@
 	);
 	let showPrereleases = $state(true);
 
-	let lastUpdateDate: Date | undefined = undefined;
+	let lastUpdateDate = $state<Date>();
 	$effect(() => {
 		const lastVisit = localStorage.getItem(
 			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`
@@ -44,6 +45,29 @@
 			new Date().toISOString()
 		);
 	});
+
+	let displayableReleases = $derived(
+		data.releases.filter(({ prerelease }) => showPrereleases || !prerelease)
+	);
+	let expandableReleases = $derived.by(() => {
+		const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
+		return (
+			displayableReleases
+				// Only expand releases that are less than a week old
+				.filter(({ created_at, published_at }, index) => {
+					const creationTimestamp = new Date(published_at ?? created_at).getTime();
+					if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
+					const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
+					return creationTimestamp > maxDate;
+				})
+				.map(({ id }) => id.toString())
+		);
+	});
+
+	export const snapshot: Snapshot<typeof expandableReleases> = {
+		capture: () => expandableReleases,
+		restore: item => (expandableReleases = item)
+	};
 </script>
 
 {#snippet loading()}
@@ -74,9 +98,6 @@
 	{#await Promise.resolve()}
 		{@render loading()}
 	{:then}
-		{@const displayableReleases = data.releases.filter(
-			release => showPrereleases || !release.prerelease
-		)}
 		<div class="flex flex-col">
 			<div class="my-8">
 				<h1 class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl">
@@ -137,16 +158,8 @@
 			</div>
 			<Accordion.Root
 				type="multiple"
-				value={displayableReleases
-					// Only expand releases that are less than a week old
-					.filter(({ created_at, published_at }, index) => {
-						const creationTimestamp = new Date(published_at ?? created_at).getTime();
-						const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
-						if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
-						const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
-						return creationTimestamp > maxDate;
-					})
-					.map(({ id }) => id.toString())}
+				value={expandableReleases}
+				onValueChange={openValues => (expandableReleases = openValues)}
 				class="w-full space-y-2"
 			>
 				{#if data.currentPackage.pkg.deprecated}
