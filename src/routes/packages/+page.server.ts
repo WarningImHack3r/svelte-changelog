@@ -1,13 +1,6 @@
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
 
-/**
- * The goal of this load function is to serve any `[...package]`
- * page by handing it a bunch of promises, so it can await the one
- * it needs. The other ones are for the sidebar badges, so the page
- * doesn't have to re-run the data loading every time we switch from
- * a package to another.
- */
 export async function load({ locals }) {
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
