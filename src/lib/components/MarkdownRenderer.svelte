@@ -56,18 +56,18 @@
 			{#if inline}
 				<Markdown md="[Rendering error] {md}" {...snippets} />
 			{:else}
-				{@const message = (() => {
-					if (error instanceof Error) return error.message.trim();
-					return `${error}`;
-				})()}
+				{@const message =
+					error instanceof Error
+						? `${error.name}: ${error.message}`.trim()
+						: typeof error === "object" && error !== null
+							? JSON.stringify(error).trim()
+							: `${error}`}
 				<div
 					class="flex flex-col rounded-xl border-[0.5px] border-primary bg-red-500/25 px-5 pt-3 pb-4"
 				>
 					<span>An error occurred while rendering this Markdown content:</span>
 					<pre
-						class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">
-						{message}
-					</pre>
+						class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">{message}</pre>
 					<span>
 						It's now rendered with a minimal look to avoid further errors. Please <a
 							href="https://github.com/WarningImHack3r/svelte-changelog/issues"
@@ -88,7 +88,7 @@
 			{md}
 			plugins={[
 				gfmPlugin(),
-				...(parseRawHtml ? [{ rehypePlugin: rehypeRaw }] : []),
+				{ rehypePlugin: parseRawHtml ? [rehypeRaw, { tagfilter: true }] : undefined },
 				...additionalPlugins
 			]}
 			{...snippets}
