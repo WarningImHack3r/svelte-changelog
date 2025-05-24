@@ -69,10 +69,26 @@
 						<a
 							href="/package/{pkg.name}"
 							class="group flex items-center gap-4 rounded-xl px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 						>
 							<div class="flex flex-col">
-								<h4 class="font-medium" style:view-transition-name="title-{viewTransitionName}">
-									{pkg.name}
+								<h4
+									class="font-medium inline-flex flex-col xs:flex-row items-start xs:items-center gap-2"
+									style:view-transition-name="title-{viewTransitionName}"
+								>
+									<span
+										class={[
+											pkg.deprecated &&
+												"transition-opacity duration-300 not-group-hover:line-through opacity-75 group-hover:opacity-100"
+										]}
+									>
+										{pkg.name}
+									</span>
+									{#if pkg.deprecated}
+										<Badge variant="outline" class="border-amber-600 text-amber-600 mb-2 xs:mb-0">
+											Deprecated
+										</Badge>
+									{/if}
 								</h4>
 								<span class="text-muted-foreground">
 									<span style:view-transition-name="desc-{viewTransitionName}">
