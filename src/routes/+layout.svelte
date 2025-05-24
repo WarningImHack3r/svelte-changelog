@@ -7,6 +7,7 @@
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
+	import { setupViewTransition } from "sveltekit-view-transition";
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
@@ -17,6 +18,8 @@
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 
 	let { data, children } = $props();
+
+	setupViewTransition();
 
 	// SEO
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));

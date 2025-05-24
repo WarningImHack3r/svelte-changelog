@@ -15,6 +15,7 @@
 	import ReleaseCard from "./ReleaseCard.svelte";
 
 	let { data } = $props();
+	let viewTransitionName = $derived(data.currentPackage.pkg.name.replace(/[@/-]/g, ""));
 	let latestRelease = $derived(
 		data.currentPackage.category.slug === ALL_SLUG
 			? undefined
@@ -100,7 +101,10 @@
 	{:then}
 		<div class="flex flex-col">
 			<div class="my-8">
-				<h1 class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl">
+				<h1
+					class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl"
+					style:view-transition-name="title-{viewTransitionName}"
+				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
@@ -113,7 +117,11 @@
 								target="_blank"
 								class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
 							>
-								{data.currentPackage.repoOwner}/<wbr />{data.currentPackage.repoName}
+								<span style:view-transition-name="owner-{viewTransitionName}">
+									{data.currentPackage.repoOwner}
+								</span>/<wbr /><span style:view-transition-name="repo-name-{viewTransitionName}">
+									{data.currentPackage.repoName}
+								</span>
 							</a>
 						</h2>
 						<Separator
@@ -153,7 +161,9 @@
 					</Collapsible.Root>
 				</div>
 				{#if data.currentPackage.pkg.description}
-					<h3 class="mt-4 italic">{data.currentPackage.pkg.description}</h3>
+					<h3 class="mt-4 italic" style:view-transition-name="desc-{viewTransitionName}">
+						{data.currentPackage.pkg.description}
+					</h3>
 				{/if}
 			</div>
 			<Accordion.Root

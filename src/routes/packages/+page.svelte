@@ -60,6 +60,7 @@
 			<h3 class="font-display text-3xl text-primary text-shadow-sm">{category.name}</h3>
 			<ul class="mt-2">
 				{#each packages as { repoOwner, repoName, pkg }, index (pkg.name)}
+					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
 					{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
@@ -70,14 +71,22 @@
 							class="group flex items-center gap-4 rounded-xl px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						>
 							<div class="flex flex-col">
-								<h4 class="font-medium">{pkg.name}</h4>
+								<h4 class="font-medium" style:view-transition-name="title-{viewTransitionName}">
+									{pkg.name}
+								</h4>
 								<span class="text-muted-foreground">
-									{pkg.description}
+									<span style:view-transition-name="desc-{viewTransitionName}">
+										{pkg.description}
+									</span>
 									<span class="font-bold">
 										{#if pkg.description}
 											•
 										{/if}
-										{repoOwner}/{repoName}
+										<span style:view-transition-name="owner-{viewTransitionName}">
+											{repoOwner}
+										</span>/<span style:view-transition-name="repo-name-{viewTransitionName}">
+											{repoName}
+										</span>
 									</span>
 								</span>
 							</div>
