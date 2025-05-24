@@ -120,7 +120,12 @@
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={300}>
 				<Tooltip.Trigger>
-					<Badge variant="outline" class="border-blue-600 text-blue-600">Maintenance</Badge>
+					<Badge
+						variant="outline"
+						class="border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+					>
+						Maintenance
+					</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content>
 					An update bringing bug fixes and minor improvements to an older major version
