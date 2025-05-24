@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Menu } from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button";
@@ -7,6 +8,12 @@
 
 	let { data, children } = $props();
 
+	onNavigate(({ from, to, type }) => {
+		if (from?.route.id !== to?.route.id || type === "form") return;
+		open = false;
+	});
+
+	let open = $state(false);
 	let showPrereleases = $state(true);
 </script>
 
@@ -15,7 +22,7 @@
 		{@render children()}
 	</div>
 
-	<Sheet.Root>
+	<Sheet.Root bind:open>
 		<Sheet.Trigger>
 			{#snippet child({ props })}
 				<Button
