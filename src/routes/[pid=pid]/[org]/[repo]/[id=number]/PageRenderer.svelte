@@ -20,6 +20,7 @@
 </script>
 
 <script lang="ts">
+	import { browser } from "$app/environment";
 	import {
 		ArrowUpRight,
 		ChevronLeft,
@@ -193,6 +194,14 @@
 		traverseTree(null);
 
 		return result;
+	}
+
+	/**
+	 * Returns the previous page to go back to
+	 */
+	function getPreviousPath() {
+		if (!browser || !document.referrer) return "/";
+		return new URL(document.referrer).pathname;
 	}
 </script>
 
@@ -522,25 +531,34 @@
 </div>
 <!-- Bottom links -->
 <div class="mt-16 flex w-full flex-col-reverse justify-between gap-8 md:flex-row md:items-center">
-	<Button href="/" variant="link" class="group mr-auto md:mr-0">
+	<Button href={getPreviousPath()} variant="link" class="group mr-auto md:mr-0">
 		<ChevronLeft class="mr-1 size-4 transition-transform duration-300 group-hover:-translate-x-1" />
-		Back to homepage
+		Back
+		{#if getPreviousPath() === "/"}
+			to homepage
+		{/if}
 	</Button>
 	<div class="flex flex-col-reverse items-end gap-4 md:flex-row md:items-center">
-		<div class="flex flex-wrap justify-end gap-4">
-			{#each linkedEntities as closingIssue (closingIssue.number)}
-				<Button
-					href="/{metadata.type === 'pull'
-						? 'issues'
-						: 'pull'}/{metadata.org}/{metadata.repo}/{closingIssue.number}"
-					variant="secondary"
-				>
-					Open {metadata.type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
-				</Button>
-			{/each}
-		</div>
+		{#if linkedEntities.length > 0}
+			<div class="flex flex-wrap justify-end gap-4">
+				{#each linkedEntities as closingIssue (closingIssue.number)}
+					<Button
+						href="/{metadata.type === 'pull'
+							? 'issues'
+							: 'pull'}/{metadata.org}/{metadata.repo}/{closingIssue.number}"
+						variant="secondary"
+					>
+						Open {metadata.type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
+					</Button>
+				{/each}
+			</div>
+		{/if}
 		<Button href={info.html_url} target="_blank" class="group dark:text-black">
-			Open {metadata.type === "pull" ? "pull request" : "issue"} on GitHub
+			Open {metadata.type === "pull"
+				? "pull request"
+				: metadata.type === "issue"
+					? "issue"
+					: "discussion"} on GitHub
 			<ArrowUpRight
 				class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 			/>
