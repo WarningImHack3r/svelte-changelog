@@ -45,7 +45,7 @@
 		"globals": "^16.1.0",
 		"marked": "^15.0.12",
 		"mode-watcher": "^1.0.7",
-		"octokit": "^4.1.4",
+		"octokit": "^5.0.2",
 		"posthog-js": "^1.246.0",
 		"posthog-node": "^4.17.2",
 		"prettier": "^3.5.3",
