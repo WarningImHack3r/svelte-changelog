@@ -102,8 +102,8 @@
 		<div class="flex flex-col">
 			<div class="my-8">
 				<h1
-					class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl"
-					style:view-transition-name="title-{viewTransitionName}"
+					class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl motion-safe:[view-transition-name:var(--vt-name)]"
+					style:--vt-name="title-{viewTransitionName}"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
@@ -117,9 +117,15 @@
 								target="_blank"
 								class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
 							>
-								<span style:view-transition-name="owner-{viewTransitionName}">
+								<span
+									class="motion-safe:[view-transition-name:var(--vt-name)]"
+									style:--vt-name="owner-{viewTransitionName}"
+								>
 									{data.currentPackage.repoOwner}
-								</span>/<wbr /><span style:view-transition-name="repo-name-{viewTransitionName}">
+								</span>/<wbr /><span
+									class="motion-safe:[view-transition-name:var(--vt-name)]"
+									style:--vt-name="repo-name-{viewTransitionName}"
+								>
 									{data.currentPackage.repoName}
 								</span>
 							</a>
@@ -161,7 +167,10 @@
 					</Collapsible.Root>
 				</div>
 				{#if data.currentPackage.pkg.description}
-					<h3 class="mt-4 italic" style:view-transition-name="desc-{viewTransitionName}">
+					<h3
+						class="mt-4 italic motion-safe:[view-transition-name:var(--vt-name)]"
+						style:--vt-name="desc-{viewTransitionName}"
+					>
 						{data.currentPackage.pkg.description}
 					</h3>
 				{/if}

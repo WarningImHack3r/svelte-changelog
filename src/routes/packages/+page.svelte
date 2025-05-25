@@ -73,8 +73,8 @@
 						>
 							<div class="flex flex-col">
 								<h4
-									class="font-medium inline-flex flex-col xs:flex-row items-start xs:items-center gap-2"
-									style:view-transition-name="title-{viewTransitionName}"
+									class="font-medium inline-flex flex-col xs:flex-row items-start motion-safe:[view-transition-name:var(--vt-name)] xs:items-center gap-2"
+									style:--vt-name="title-{viewTransitionName}"
 								>
 									<span
 										class={[
@@ -91,16 +91,25 @@
 									{/if}
 								</h4>
 								<span class="text-muted-foreground">
-									<span style:view-transition-name="desc-{viewTransitionName}">
+									<span
+										class="motion-safe:[view-transition-name:var(--vt-name)]"
+										style:--vt-name="desc-{viewTransitionName}"
+									>
 										{pkg.description}
 									</span>
 									<span class="font-bold">
 										{#if pkg.description}
 											•
 										{/if}
-										<span style:view-transition-name="owner-{viewTransitionName}">
+										<span
+											class="motion-safe:[view-transition-name:var(--vt-name)]"
+											style:--vt-name="owner-{viewTransitionName}"
+										>
 											{repoOwner}
-										</span>/<span style:view-transition-name="repo-name-{viewTransitionName}">
+										</span>/<span
+											class="motion-safe:[view-transition-name:var(--vt-name)]"
+											style:--vt-name="repo-name-{viewTransitionName}"
+										>
 											{repoName}
 										</span>
 									</span>

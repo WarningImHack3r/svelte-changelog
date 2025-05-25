@@ -2,12 +2,12 @@
 	import "../app.css";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
+	import { onNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
-	import { setupViewTransition } from "sveltekit-view-transition";
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
@@ -19,7 +19,18 @@
 
 	let { data, children } = $props();
 
-	setupViewTransition();
+	// View Transitions API
+	// https://svelte.dev/blog/view-transitions
+	onNavigate(({ complete }) => {
+		if (!document.startViewTransition) return;
+
+		return new Promise(resolve => {
+			document.startViewTransition(async () => {
+				resolve();
+				await complete;
+			});
+		});
+	});
 
 	// SEO
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));

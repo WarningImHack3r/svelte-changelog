@@ -60,7 +60,6 @@
 		"svelte-exmarkdown": "^5.0.1",
 		"svelte-meta-tags": "^4.3.0",
 		"svelte-sonner": "^1.0.3",
-		"sveltekit-view-transition": "^0.5.3",
 		"tailwind-merge": "^3.3.0",
 		"tailwind-variants": "^1.0.0",
 		"tailwindcss": "^4.1.7",
