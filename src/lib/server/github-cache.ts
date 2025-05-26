@@ -893,4 +893,4 @@ export class GitHubCache {
 	}
 }
 
-export const gitHubCache = new GitHubCache(KV_REST_API_URL, KV_REST_API_TOKEN, GITHUB_TOKEN);
+export const githubCache = new GitHubCache(KV_REST_API_URL, KV_REST_API_TOKEN, GITHUB_TOKEN);

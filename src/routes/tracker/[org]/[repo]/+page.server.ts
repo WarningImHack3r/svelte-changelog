@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { gitHubCache } from "$lib/server/github-cache";
+import { githubCache } from "$lib/server/github-cache";
 
 // source: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 const closingKeywords = [
@@ -15,16 +15,16 @@ const closingKeywords = [
 ];
 
 export async function load({ params }) {
-	const members = await gitHubCache.getOrganizationMembers(params.org);
+	const members = await githubCache.getOrganizationMembers(params.org);
 	if (!members.length) error(404, `Organization ${params.org} not found or empty`);
 
 	const membersNames = members.map(({ login }) => login);
 	const now = new Date();
 
 	const [unfilteredPRs, unfilteredIssues, unfilteredDiscussions] = await Promise.all([
-		gitHubCache.getAllPRs(params.org, params.repo),
-		gitHubCache.getAllIssues(params.org, params.repo),
-		gitHubCache.getAllDiscussions(params.org, params.repo)
+		githubCache.getAllPRs(params.org, params.repo),
+		githubCache.getAllIssues(params.org, params.repo),
+		githubCache.getAllDiscussions(params.org, params.repo)
 	]);
 	return {
 		prs: unfilteredPRs

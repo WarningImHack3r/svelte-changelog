@@ -1,6 +1,6 @@
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
-import { GitHubCache, gitHubCache } from "./github-cache";
+import { GitHubCache, githubCache } from "./github-cache";
 
 type Package = {
 	name: string;
@@ -154,4 +154,4 @@ export class PackageDiscoverer {
 	}
 }
 
-export const discoverer = new PackageDiscoverer(gitHubCache, publicRepos);
+export const discoverer = new PackageDiscoverer(githubCache, publicRepos);

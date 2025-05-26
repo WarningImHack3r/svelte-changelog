@@ -1,7 +1,7 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
 import type { Repository } from "$lib/repositories";
-import { type GitHubRelease, gitHubCache } from "$lib/server/github-cache";
+import { type GitHubRelease, githubCache } from "$lib/server/github-cache";
 import type { discoverer } from "$lib/server/package-discoverer";
 import type { Prettify } from "$lib/types";
 
@@ -35,7 +35,7 @@ export async function getPackageReleases(
 			if (pkg.name.localeCompare(packageName, undefined, { sensitivity: "base" }) !== 0) continue;
 
 			// 1. Get releases
-			const cachedReleases = await gitHubCache.getReleases({ ...repo, category });
+			const cachedReleases = await githubCache.getReleases({ ...repo, category });
 			console.log(
 				`${cachedReleases.length} releases found for repo ${repo.repoOwner}/${repo.repoName}`
 			);
@@ -45,7 +45,10 @@ export async function getPackageReleases(
 				.filter(release => {
 					if (!release.tag_name) {
 						posthog?.captureException(new Error("Release with null tag_name"), undefined, {
-							release
+							packageName,
+							repoOwner: repo.repoOwner,
+							repoName: repo.repoName,
+							...release
 						});
 						console.warn(`Empty release tag name: ${JSON.stringify(release)}`);
 						return false;
@@ -66,13 +69,6 @@ export async function getPackageReleases(
 			// 3. For each release, check if it is already found, searching by versions
 			const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } = repo;
 			for (const release of validReleases) {
-				if (!release.tag_name) {
-					posthog?.captureException(new Error("Release with null tag_name"), undefined, {
-						release
-					});
-					console.warn(`Empty release tag name: ${JSON.stringify(release)}`);
-					continue;
-				}
 				const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
 				console.log(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
 				if (foundVersions.has(cleanVersion)) continue;

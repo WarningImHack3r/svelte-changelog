@@ -1,11 +1,11 @@
 import { error, redirect } from "@sveltejs/kit";
-import { gitHubCache } from "$lib/server/github-cache";
+import { githubCache } from "$lib/server/github-cache";
 
 export async function load({ params }) {
 	const { pid: type, org, repo, id } = params;
 	const numId = +id; // id is already validated by the route matcher
 
-	const item = await gitHubCache.getItemDetails(org, repo, numId);
+	const item = await githubCache.getItemDetails(org, repo, numId);
 	if (!item) {
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
