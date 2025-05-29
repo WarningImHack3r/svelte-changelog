@@ -25,7 +25,7 @@ Some computations are made to generate the badges, but everything else is a simp
 wrapper around GitHub releases.
 **No data alteration is performed by the site other than for styling and rendering purposes**.
 
-For more info, visit the [v2 release blog](https://svelte-changelog.dev/blog/v2).
+For more info, visit the [v2 release post](https://svelte-changelog.dev/devlog/v2).
 
 ## Missing a package?
 
