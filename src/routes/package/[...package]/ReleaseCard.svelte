@@ -81,7 +81,7 @@
 		} else if (minutes > 0) {
 			return formatter.format(-minutes, "minute");
 		}
-		return formatter.format(-diff, "second");
+		return formatter.format(0, "second"); // "now" if < 1 minute
 	}
 </script>
 
