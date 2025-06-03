@@ -56,7 +56,16 @@
 		rehypePlugin: [
 			rehypeShikiFromHighlighter,
 			highlighter,
-			{ themes: { light: "github-light-default", dark: "github-dark-default" } }
+			{
+				themes: { light: "github-light-default", dark: "github-dark-default" },
+				transformers: [
+					{
+						pre(node) {
+							node.properties["data-language"] = this.options.lang;
+						}
+					}
+				]
+			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};
 
@@ -573,9 +582,47 @@
 	:global(html.dark .shiki span) {
 		color: var(--shiki-dark) !important;
 		background-color: var(--shiki-dark-bg) !important;
-		/* Optional, if you also want font styles */
 		font-style: var(--shiki-dark-font-style) !important;
 		font-weight: var(--shiki-dark-font-weight) !important;
 		text-decoration: var(--shiki-dark-text-decoration) !important;
+	}
+
+	:global {
+		.shiki {
+			/* Show line numbers */
+			/* Credit to https://github.com/shikijs/shiki/issues/3#issuecomment-830564854 */
+			code {
+				counter-reset: step;
+				counter-increment: step 0;
+
+				.line::before {
+					content: counter(step);
+					counter-increment: step;
+					width: 1rem;
+					margin-right: 1.5rem;
+					display: inline-block;
+					text-align: right;
+					color: color-mix(in oklab, var(--color-muted-foreground) 70%, transparent);
+				}
+			}
+
+			/* Add language tag to code blocks */
+			&:is(pre[data-language]) {
+				position: relative;
+				border-radius: var(--radius-xl);
+				border: 1px var(--tw-border-style) var(--color-border);
+
+				&::after {
+					content: attr(data-language);
+					position: absolute;
+					inset: 0.55rem 0.55rem auto auto;
+					padding: 0.25rem 0.5rem;
+					background-color: var(--color-background);
+					font-size: var(--text-xs);
+					border-radius: var(--radius-lg);
+					border: 1px var(--tw-border-style) var(--color-border);
+				}
+			}
+		}
 	}
 </style>
