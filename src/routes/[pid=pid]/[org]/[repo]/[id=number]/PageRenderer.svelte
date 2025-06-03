@@ -359,55 +359,57 @@
 		</div>
 	</div>
 	<!-- Comments -->
-	<BottomCollapsible
-		icon={MessagesSquare}
-		label="Comments"
-		secondaryLabel="{info.comments} comment{info.comments > 1 ? 's' : ''}"
-	>
-		{#each sortComments(comments) as comment, i (comment.id)}
-			{@const isAnswer =
-				"parent_id" in comment && comment.parent_id ? comment.parent_id !== info.id : false}
-			{#if !isAnswer && i > 0}
-				<Separator class="my-2 h-1" />
-			{/if}
-			<div class={[isAnswer && "border-l-4 ml-4 pl-2"]}>
-				<!-- Author -->
-				<div
-					class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
-				>
-					{#if comment.user}
-						<a href={comment.user.html_url} class="group inline-flex items-center">
-							<Avatar.Root class="mr-2 size-5">
-								<Avatar.Image
-									src={comment.user.avatar_url}
-									alt={comment.user.login}
-									class="group-hover:opacity-75"
-								/>
-								<Avatar.Fallback>
-									{comment.user.login.charAt(0).toUpperCase()}
-								</Avatar.Fallback>
-							</Avatar.Root>
-							<span class="font-semibold group-hover:underline">{comment.user.login}</span>
-						</a>
-						<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
-					{/if}
-					<span class="text-muted-foreground">
-						{formatToDateTime(comment.created_at)}
-					</span>
+	{#if comments.length}
+		<BottomCollapsible
+			icon={MessagesSquare}
+			label="Comments"
+			secondaryLabel="{info.comments} comment{info.comments > 1 ? 's' : ''}"
+		>
+			{#each sortComments(comments) as comment, i (comment.id)}
+				{@const isAnswer =
+					"parent_id" in comment && comment.parent_id ? comment.parent_id !== info.id : false}
+				{#if !isAnswer && i > 0}
+					<Separator class="my-2 h-1" />
+				{/if}
+				<div class={[isAnswer && "border-l-4 ml-4 pl-2"]}>
+					<!-- Author -->
+					<div
+						class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
+					>
+						{#if comment.user}
+							<a href={comment.user.html_url} class="group inline-flex items-center">
+								<Avatar.Root class="mr-2 size-5">
+									<Avatar.Image
+										src={comment.user.avatar_url}
+										alt={comment.user.login}
+										class="group-hover:opacity-75"
+									/>
+									<Avatar.Fallback>
+										{comment.user.login.charAt(0).toUpperCase()}
+									</Avatar.Fallback>
+								</Avatar.Root>
+								<span class="font-semibold group-hover:underline">{comment.user.login}</span>
+							</a>
+							<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
+						{/if}
+						<span class="text-muted-foreground">
+							{formatToDateTime(comment.created_at)}
+						</span>
+					</div>
+					<!-- Body -->
+					<div class="p-4">
+						<MarkdownRenderer
+							markdown={comment.body || "_Empty comment_"}
+							parseRawHtml
+							class="max-w-none"
+							additionalPlugins={[shikiPlugin]}
+						/>
+						<Reactions reactions={comment.reactions} release_url={comment.html_url} class="mt-4" />
+					</div>
 				</div>
-				<!-- Body -->
-				<div class="p-4">
-					<MarkdownRenderer
-						markdown={comment.body || "_Empty comment_"}
-						parseRawHtml
-						class="max-w-none"
-						additionalPlugins={[shikiPlugin]}
-					/>
-					<Reactions reactions={comment.reactions} release_url={comment.html_url} class="mt-4" />
-				</div>
-			</div>
-		{/each}
-	</BottomCollapsible>
+			{/each}
+		</BottomCollapsible>
+	{/if}
 	<!-- Commits -->
 	{#if metadata.type === "pull"}
 		<BottomCollapsible
