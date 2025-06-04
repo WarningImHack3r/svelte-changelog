@@ -30,6 +30,7 @@
 		MessagesSquare
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
+	import { transformerNotationDiff } from "@shikijs/transformers";
 	import type { Plugin } from "svelte-exmarkdown";
 	import type {
 		DiscussionDetails,
@@ -60,19 +61,51 @@
 				themes: { light: "github-light-default", dark: "github-dark-default" },
 				transformers: [
 					{
+						preprocess(code, options) {
+							if (options.lang === "diff") {
+								const cleanedCode = code
+									.split("\n")
+									.map(line => line.replace(/^[+-]/, ""))
+									.join("\n");
+								const detectedLanguage = detectLanguage(cleanedCode);
+								if (!detectedLanguage) return;
+								options.lang = detectedLanguage;
+								return code
+									.split("\n")
+									.map(line =>
+										line.replace(
+											/^([+-])(.*)/,
+											(_, sign, rest) => `${rest} // [!code ${sign}${sign}]`
+										)
+									)
+									.join("\n");
+							}
+						},
 						pre(node) {
 							node.properties["data-language"] = this.options.lang
 								.toLowerCase()
 								.replace(/^js$/, "javascript")
 								.replace(/^ts$/, "typescript");
 						}
-					}
+					},
+					transformerNotationDiff()
 				]
 			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};
 
 	// Utils
+	function detectLanguage(code: string): string | undefined {
+		const hasHTML = /<\/[a-zA-Z0-9-]+>/.test(code);
+		const hasJS = / (let|var|const|=) /.test(code);
+
+		if (hasHTML && hasJS) return "svelte";
+		if (hasHTML) return "html";
+		if (hasJS) return /(: [A-Z]|type |interface )/.test(code) ? "ts" : "js";
+		if (/[a-z-]+: \S+/.test(code)) return "css";
+		return undefined;
+	}
+
 	function formatToDateTime(date: string) {
 		return new Intl.DateTimeFormat("en", {
 			dateStyle: "medium",
@@ -584,16 +617,22 @@
 	:global(html.dark .shiki),
 	:global(html.dark .shiki span) {
 		color: var(--shiki-dark) !important;
-		background-color: var(--shiki-dark-bg) !important;
 		font-style: var(--shiki-dark-font-style) !important;
 		font-weight: var(--shiki-dark-font-weight) !important;
 		text-decoration: var(--shiki-dark-text-decoration) !important;
 	}
 
+	:global(html.dark .shiki),
+	:global(html.dark .shiki .line:not(.diff) span) {
+		background-color: var(--shiki-dark-bg) !important;
+	}
+
+	/* Line numbers, credit to https://github.com/shikijs/shiki/issues/3#issuecomment-830564854 */
+	/* Diff marks */
 	:global {
 		.shiki {
-			/* Show line numbers */
-			/* Credit to https://github.com/shikijs/shiki/issues/3#issuecomment-830564854 */
+			position: relative;
+
 			code {
 				counter-reset: step;
 				counter-increment: step 0;
@@ -608,11 +647,62 @@
 					white-space: nowrap;
 					color: color-mix(in oklab, var(--color-muted-foreground) 70%, transparent);
 				}
+
+				.diff {
+					display: inline-block;
+					transition: background-color 0.5s;
+
+					&::after {
+						content: "";
+						position: absolute;
+						left: 0;
+						width: 100%;
+						height: 1lh;
+					}
+
+					&.add {
+						&::after {
+							background-color: color-mix(
+								in oklab,
+								var(--color-green-500) 15%,
+								transparent
+							) !important;
+						}
+
+						span:first-child::before {
+							content: "+";
+							color: var(--color-green-500);
+						}
+					}
+
+					&.remove {
+						&::after {
+							background-color: color-mix(
+								in oklab,
+								var(--color-destructive) 15%,
+								transparent
+							) !important;
+						}
+
+						span {
+							opacity: 0.7;
+						}
+
+						span:first-child::before {
+							content: "-";
+							color: var(--color-destructive);
+						}
+					}
+
+					span:first-child::before {
+						position: absolute;
+						left: 2.75rem;
+					}
+				}
 			}
 
-			/* Add language tag to code blocks */
+			/* Language tag banner */
 			&:is(pre[data-language]) {
-				position: relative;
 				padding-top: 3rem;
 				border-radius: var(--radius-xl);
 				border: 1px var(--tw-border-style) var(--color-border);
