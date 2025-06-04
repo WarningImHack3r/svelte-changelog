@@ -61,7 +61,10 @@
 				transformers: [
 					{
 						pre(node) {
-							node.properties["data-language"] = this.options.lang;
+							node.properties["data-language"] = this.options.lang
+								.toLowerCase()
+								.replace(/^js$/, "javascript")
+								.replace(/^ts$/, "typescript");
 						}
 					}
 				]
@@ -602,6 +605,7 @@
 					margin-right: 1.5rem;
 					display: inline-block;
 					text-align: right;
+					white-space: nowrap;
 					color: color-mix(in oklab, var(--color-muted-foreground) 70%, transparent);
 				}
 			}
@@ -609,18 +613,27 @@
 			/* Add language tag to code blocks */
 			&:is(pre[data-language]) {
 				position: relative;
+				padding-top: 3rem;
 				border-radius: var(--radius-xl);
 				border: 1px var(--tw-border-style) var(--color-border);
 
+				&::before {
+					content: "";
+					position: absolute;
+					inset: 0 0 auto 0;
+					height: 2.5rem;
+					background-color: var(--color-secondary);
+					border-bottom: 1px var(--tw-border-style) var(--color-border);
+				}
+
 				&::after {
 					content: attr(data-language);
+					text-transform: lowercase;
 					position: absolute;
-					inset: 0.55rem 0.55rem auto auto;
-					padding: 0.25rem 0.5rem;
-					background-color: var(--color-background);
+					inset: 0 auto auto 0;
+					padding: 0.5rem 1rem;
+					margin-top: 0.1rem;
 					font-size: var(--text-xs);
-					border-radius: var(--radius-lg);
-					border: 1px var(--tw-border-style) var(--color-border);
 				}
 			}
 		}
