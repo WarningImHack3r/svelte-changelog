@@ -31,6 +31,7 @@
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import { transformerNotationDiff } from "@shikijs/transformers";
+	import posthog from "posthog-js";
 	import type { Plugin } from "svelte-exmarkdown";
 	import type {
 		DiscussionDetails,
@@ -68,7 +69,12 @@
 									.map(line => line.replace(/^[+-]/, ""))
 									.join("\n");
 								const detectedLanguage = detectLanguage(cleanedCode);
-								if (!detectedLanguage) return;
+								if (!detectedLanguage) {
+									posthog.captureException(new Error("Failed to determine diff language"), {
+										code
+									});
+									return;
+								}
 								options.lang = detectedLanguage;
 								return code
 									.split("\n")
