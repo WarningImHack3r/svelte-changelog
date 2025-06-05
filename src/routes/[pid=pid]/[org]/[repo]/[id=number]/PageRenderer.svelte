@@ -32,6 +32,7 @@
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import { transformerNotationDiff } from "@shikijs/transformers";
 	import posthog from "posthog-js";
+	import type { SpecialLanguage } from "shiki";
 	import type { Plugin } from "svelte-exmarkdown";
 	import type {
 		DiscussionDetails,
@@ -101,7 +102,7 @@
 	};
 
 	// Utils
-	function detectLanguage(code: string): string | undefined {
+	function detectLanguage(code: string): (SpecialLanguage | (string & {})) | undefined {
 		const hasHTML = /<\/[a-zA-Z0-9-]+>/.test(code);
 		const hasJS = / (let|var|const|=) /.test(code);
 
@@ -109,7 +110,6 @@
 		if (hasHTML) return "html";
 		if (hasJS) return /(: [A-Z]|type |interface )/.test(code) ? "ts" : "js";
 		if (/[a-z-]+: \S+/.test(code)) return "css";
-		return undefined;
 	}
 
 	function formatToDateTime(date: string) {
