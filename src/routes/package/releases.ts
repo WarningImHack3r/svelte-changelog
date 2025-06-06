@@ -42,6 +42,10 @@ export async function getPackageReleases(
 
 			// 2. Filter out invalid ones
 			const validReleases = cachedReleases
+				.map(release => {
+					if (!release.tag_name && release.name) return { ...release, tag_name: release.name }; // Mitigate (?) some obscure empty tags scenarios
+					return release;
+				})
 				.filter(release => {
 					if (!release.tag_name) {
 						posthog?.captureException(new Error("Release with null tag_name"), undefined, {
