@@ -542,7 +542,6 @@
 	{/if}
 	<!-- Files -->
 	{#if metadata.type === "pull"}
-		<!-- TODO: detailed diff? -->
 		<BottomCollapsible
 			icon={FileDiff}
 			label="Files"
@@ -696,6 +695,7 @@
 
 						span:first-child::before {
 							content: "-";
+							font-weight: bold;
 							color: var(--color-destructive);
 						}
 					}

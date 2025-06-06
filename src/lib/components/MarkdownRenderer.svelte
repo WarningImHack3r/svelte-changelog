@@ -34,12 +34,11 @@
 	}: Props = $props();
 </script>
 
-<!-- TODO: actually figure out how to overflow-x-auto the code blocks -->
 <svelte:element
 	this={inline ? "span" : "div"}
 	class={cn(
 		"prose dark:prose-invert prose-a:wrap-anywhere prose-a:text-primary prose-a:no-underline prose-a:underline-offset-4 prose-a:hover:underline prose-code:wrap-anywhere prose-li:my-1",
-		"prose-pre:text-wrap", // remove with TODO
+		"prose-pre:text-wrap",
 		inline && "*:inline",
 		className
 	)}
