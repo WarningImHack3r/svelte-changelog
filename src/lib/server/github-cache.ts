@@ -113,6 +113,12 @@ export type DiscussionComment = {
 >;
 
 export type LinkedItem = {
+	repository: {
+		owner: {
+			login: string;
+		};
+		name: string;
+	};
 	number: number;
 	title: string;
 	author?: {
@@ -449,6 +455,12 @@ export class GitHubCache {
 									... on ConnectedEvent {
 										subject {
 											... on PullRequest {
+												repository {
+													owner {
+														login
+													}
+													name
+												}
 												number
 												title
 												author {
@@ -463,6 +475,12 @@ export class GitHubCache {
 									... on CrossReferencedEvent {
 										source {
 											... on PullRequest {
+												repository {
+													owner {
+														login
+													}
+													name
+												}
 												number
 												title
 												author {
@@ -524,6 +542,12 @@ export class GitHubCache {
 						pullRequest(number: $prNumber) {
 							closingIssuesReferences(first: 50) {
 								nodes {
+									repository {
+										owner {
+											login
+										}
+										name
+									}
 									number
 									title
 									author {

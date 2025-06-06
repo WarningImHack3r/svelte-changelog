@@ -32,6 +32,7 @@
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import { transformerNotationDiff } from "@shikijs/transformers";
 	import posthog from "posthog-js";
+	import remarkGithub from "remark-github";
 	import type { SpecialLanguage } from "shiki";
 	import type { Plugin } from "svelte-exmarkdown";
 	import type {
@@ -51,8 +52,6 @@
 	import Reactions from "$lib/components/Reactions.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
-	import AnchorRenderer from "$lib/components/renderers/AnchorRenderer.svelte";
-	import BodyRenderer from "$lib/components/renderers/BodyRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 
 	const shikiPlugin: Plugin = {
@@ -316,7 +315,15 @@
 						markdown={entity.body || "_No description provided_"}
 						parseRawHtml
 						class="max-w-full text-base"
-						additionalPlugins={[{ renderer: { p: BodyRenderer, a: AnchorRenderer } }, shikiPlugin]}
+						additionalPlugins={[
+							{
+								remarkPlugin: [
+									remarkGithub,
+									{ repository: `${entity.repository.owner.login}/${entity.repository.name}` }
+								]
+							},
+							shikiPlugin
+						]}
 					/>
 				</Accordion.Content>
 			</Accordion.Item>
@@ -388,7 +395,10 @@
 					markdown={info.body || "_No description provided_"}
 					parseRawHtml
 					class="max-w-full"
-					additionalPlugins={[{ renderer: { p: BodyRenderer, a: AnchorRenderer } }, shikiPlugin]}
+					additionalPlugins={[
+						{ remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }] },
+						shikiPlugin
+					]}
 				/>
 				{#if "reactions" in info}
 					<Reactions reactions={info.reactions} release_url={info.html_url} class="mt-4" />
@@ -597,7 +607,7 @@
 					<Button
 						href="/{metadata.type === 'pull'
 							? 'issues'
-							: 'pull'}/{metadata.org}/{metadata.repo}/{closingIssue.number}"
+							: 'pull'}/{closingIssue.repository.owner.login}/{closingIssue.repository.name}/{closingIssue.number}"
 						variant="secondary"
 					>
 						Open {metadata.type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
