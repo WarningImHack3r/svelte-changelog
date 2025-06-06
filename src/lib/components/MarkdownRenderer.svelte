@@ -94,3 +94,10 @@
 		/>
 	</svelte:boundary>
 </svelte:element>
+
+<style>
+	.prose :global(ul.contains-task-list > li.task-list-item) {
+		list-style-type: none;
+		margin-inline-start: -1.5rem; /* about what the ul indents */
+	}
+</style>
