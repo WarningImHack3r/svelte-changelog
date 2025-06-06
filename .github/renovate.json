@@ -3,6 +3,7 @@
 	"extends": ["config:recommended", ":disableDependencyDashboard"],
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
+	"postUpdateOptions": ["pnpmDedupe"],
 	"packageRules": [
 		{
 			"matchManagers": ["github-actions", "npm"],
