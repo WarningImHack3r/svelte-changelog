@@ -159,6 +159,7 @@
 									size="sm"
 									class="h-auto px-1 py-0 text-foreground"
 									href="{page.url}/{file}"
+									data-sveltekit-preload-data="tap"
 								>
 									{name}
 								</Button>
