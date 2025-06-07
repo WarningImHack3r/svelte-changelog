@@ -47,9 +47,48 @@ export class CacheHandler {
 			return entry.value as T;
 		}
 
-		// In production, use Redis
+		// Production: get TTL for Redis key first
+		let ttl: number;
 		try {
-			return await this.#redis.json.get<T>(key);
+			ttl = await this.#redis.ttl(key);
+		} catch (error) {
+			console.error("Redis TTL error:", error);
+			return null;
+		}
+
+		// Check memory cache first
+		const entry = this.#memoryCache.get(key);
+		if (entry) {
+			if (ttl < 0) {
+				// No expiration (-1) or key doesn't exist (-2)
+				return entry.value as T;
+			}
+
+			// Validate TTL matches what we have in memory
+			const remainingTime = entry.expiresAt
+				? Math.ceil((entry.expiresAt - Date.now()) / 1000)
+				: null;
+			// Allow a 1-second difference
+			if (remainingTime === null || Math.abs(remainingTime - ttl) <= 1) {
+				return entry.value as T;
+			}
+
+			// TTL mismatch — purge memory cache
+			this.#memoryCache.delete(key);
+		}
+
+		// If we reach here, either:
+		// 1. Nothing in memory cache
+		// 2. Memory cache was invalid
+		// Try Redis
+		try {
+			const value = await this.#redis.json.get<T>(key);
+			if (value !== null) {
+				// Store in the memory cache with proper expiration
+				const expiresAt = ttl > 0 ? Date.now() + ttl * 1000 : null;
+				this.#memoryCache.set(key, { value, expiresAt });
+			}
+			return value;
 		} catch (error) {
 			console.error("Redis get error:", error);
 			return null;
@@ -73,10 +112,13 @@ export class CacheHandler {
 			} else console.log(`No cache set for ${key}`);
 			this.#memoryCache.set(key, { value, expiresAt });
 		} else {
-			// In production, use Redis
+			// In production, use both Redis and memory cache
 			try {
 				await this.#redis.json.set(key, "$", value);
 				if (ttlSeconds) await this.#redis.expire(key, ttlSeconds);
+				// Mirror in the memory cache
+				const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
+				this.#memoryCache.set(key, { value, expiresAt });
 			} catch (error) {
 				console.error("Redis set error:", error);
 			}
