@@ -520,6 +520,11 @@
 												</span>
 											</a>
 										</div>
+										{#if commit.commit.author?.date}
+											<span class="text-muted-foreground">
+												• {formatToDateTime(commit.commit.author.date)}
+											</span>
+										{/if}
 									{/if}
 								</div>
 								{#if commitDescription.length > 0}
