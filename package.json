@@ -57,7 +57,7 @@
 		"runed": "^0.28.0",
 		"semver": "^7.7.2",
 		"shiki": "^3.6.0",
-		"svelte": "^5.33.15",
+		"svelte": "^5.33.16",
 		"svelte-check": "^4.2.1",
 		"svelte-exmarkdown": "^5.0.1",
 		"svelte-meta-tags": "^4.4.0",
