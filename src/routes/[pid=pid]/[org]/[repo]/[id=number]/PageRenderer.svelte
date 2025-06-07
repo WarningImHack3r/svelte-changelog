@@ -362,7 +362,7 @@
 <div class="mt-4 flex flex-col gap-4">
 	<!-- Info -->
 	<div
-		class="mb-8 flex w-full flex-col justify-center gap-8 *:h-fit *:rounded-xl *:border md:flex-row"
+		class="mb-8 flex w-full flex-col justify-center gap-8 *:h-fit *:rounded-md *:border md:flex-row"
 	>
 		<!-- Left part - body -->
 		<div class="flex-1 bg-muted/30">
@@ -547,7 +547,10 @@
 													{commit.sha.slice(0, 7)}
 												</span>
 											</Tooltip.Trigger>
-											<Tooltip.Content>
+											<Tooltip.Content
+												class="bg-popover border text-popover-foreground"
+												arrowClasses="bg-popover border-b border-r"
+											>
 												<span class="font-mono">{commit.sha}</span>
 											</Tooltip.Content>
 										</Tooltip.Root>
@@ -603,7 +606,7 @@
 </div>
 <!-- Bottom links -->
 <div class="mt-16 flex w-full flex-col-reverse justify-between gap-8 md:flex-row md:items-center">
-	<Button href={getPreviousPath()} variant="link" class="group mr-auto md:mr-0">
+	<Button href={getPreviousPath()} variant="link" class="group gap-0 mr-auto md:mr-0">
 		<ChevronLeft class="mr-1 size-4 transition-transform duration-300 group-hover:-translate-x-1" />
 		Back
 		{#if getPreviousPath() === "/"}
@@ -629,7 +632,7 @@
 				{/each}
 			</div>
 		{/if}
-		<Button href={info.html_url} target="_blank" class="group dark:text-black">
+		<Button href={info.html_url} target="_blank" class="group gap-0 dark:text-black">
 			Open {metadata.type === "pull"
 				? "pull request"
 				: metadata.type === "issue"

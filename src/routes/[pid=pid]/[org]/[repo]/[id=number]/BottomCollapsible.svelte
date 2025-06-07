@@ -22,11 +22,11 @@
 	let id = $props.id();
 </script>
 
-<div class="rounded-xl border px-4">
+<div class="rounded-md border px-4">
 	<Accordion.Root type="single" value={openByDefault ? id : undefined}>
 		<Accordion.Item value={id} class="border-b-0">
 			<Accordion.Trigger
-				class="group hover:no-underline [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180"
+				class="group hover:no-underline items-center [&>svg:last-child]:mb-1 [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180 gap-0"
 			>
 				{#if icon}
 					{@const SvelteComponent = icon}

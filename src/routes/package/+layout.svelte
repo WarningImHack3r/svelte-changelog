@@ -48,7 +48,6 @@
 				allPackages={data.displayablePackages}
 				otherReleases={data.allReleases}
 				bind:showPrereleases
-				class="my-8"
 			/>
 		</Sheet.Content>
 	</Sheet.Root>

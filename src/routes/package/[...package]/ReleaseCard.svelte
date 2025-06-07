@@ -94,7 +94,12 @@
 						Latest
 					</Badge>
 				</Tooltip.Trigger>
-				<Tooltip.Content>This is the latest stable release of this package</Tooltip.Content>
+				<Tooltip.Content
+					class="bg-popover border text-sm text-popover-foreground"
+					arrowClasses="bg-popover border-b border-r"
+				>
+					This is the latest stable release of this package
+				</Tooltip.Content>
 			</Tooltip.Root>
 		</Tooltip.Provider>
 	{/if}
@@ -104,7 +109,12 @@
 				<Tooltip.Trigger>
 					<Badge>Major</Badge>
 				</Tooltip.Trigger>
-				<Tooltip.Content>Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)</Tooltip.Content>
+				<Tooltip.Content
+					class="bg-popover border text-sm text-popover-foreground"
+					arrowClasses="bg-popover border-b border-r"
+				>
+					Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
+				</Tooltip.Content>
 			</Tooltip.Root>
 		</Tooltip.Provider>
 	{:else if release.prerelease}
@@ -113,7 +123,12 @@
 				<Tooltip.Trigger>
 					<Badge variant="outline" class="border-primary text-primary">Prerelease</Badge>
 				</Tooltip.Trigger>
-				<Tooltip.Content>This version is an alpha or a beta, unstable version</Tooltip.Content>
+				<Tooltip.Content
+					class="bg-popover border text-sm text-popover-foreground"
+					arrowClasses="bg-popover border-b border-r"
+				>
+					This version is an alpha or a beta, unstable version
+				</Tooltip.Content>
 			</Tooltip.Root>
 		</Tooltip.Provider>
 	{:else if isMaintenanceRelease}
@@ -127,7 +142,10 @@
 						Maintenance
 					</Badge>
 				</Tooltip.Trigger>
-				<Tooltip.Content>
+				<Tooltip.Content
+					class="bg-popover border text-sm text-popover-foreground"
+					arrowClasses="bg-popover border-b border-r"
+				>
 					An update bringing bug fixes and minor improvements to an older major version
 				</Tooltip.Content>
 			</Tooltip.Root>
@@ -138,12 +156,12 @@
 <Accordion.Item
 	value={release.id.toString()}
 	class={[
-		"rounded-xl border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20",
+		"rounded-lg border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20",
 		{ "rounded-xl border border-primary": isMajorRelease && index < 3 }
 	]}
 >
 	<Accordion.Trigger
-		class="group rounded-t-xl bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=closed]:rounded-b-xl"
+		class="group bg-secondary [&>svg]:size-[revert-layer] [&>svg]:w-4 px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=open]:rounded-b-none"
 	>
 		<div class="flex w-full items-center gap-2 xs:gap-1">
 			<div class="flex flex-col items-start gap-1">
@@ -169,7 +187,10 @@
 									></div>
 								{/if}
 							</Tooltip.Trigger>
-							<Tooltip.Content>
+							<Tooltip.Content
+								class="bg-popover border text-sm text-popover-foreground"
+								arrowClasses="bg-popover border-b border-r"
+							>
 								{release.cleanName}
 								{semVersion?.major} is available!
 							</Tooltip.Content>
@@ -180,7 +201,7 @@
 						{release.cleanName}@{release.cleanVersion}
 					</span>
 				{/if}
-				<div class="mb-auto flex items-center gap-2 xs:hidden">
+				<div class="flex items-center gap-2 xs:hidden">
 					{@render badges()}
 				</div>
 			</div>
@@ -200,7 +221,10 @@
 									})
 								: timeAgo(releaseDate)}
 						</Tooltip.Trigger>
-						<Tooltip.Content>
+						<Tooltip.Content
+							class="bg-popover border text-sm text-popover-foreground"
+							arrowClasses="bg-popover border-b border-r"
+						>
 							{isOlderThanAWeek
 								? timeAgo(releaseDate)
 								: new Intl.DateTimeFormat("en", {
@@ -211,7 +235,7 @@
 					</Tooltip.Root>
 				</Tooltip.Provider>
 			</span>
-			<div class="hidden items-center gap-2 xs:flex sm:mb-auto">
+			<div class="hidden items-center gap-2 xs:flex">
 				{@render badges()}
 			</div>
 		</div>

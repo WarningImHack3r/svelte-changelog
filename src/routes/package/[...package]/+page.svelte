@@ -132,7 +132,7 @@
 						</h2>
 						<Separator
 							orientation="vertical"
-							class="mx-2 hidden h-lh bg-muted-foreground/50 xs:block"
+							class="mx-2 hidden data-[orientation=vertical]:h-lh bg-muted-foreground/50 xs:block"
 						/>
 					{/if}
 					<Collapsible.Root class="flex items-center">
@@ -142,7 +142,7 @@
 									{...props}
 									variant="ghost"
 									size="sm"
-									class="peer h-6 px-1 data-[state=open]:text-primary"
+									class="peer h-6 !px-1 data-[state=open]:text-primary"
 								>
 									<Rss />
 									<span class="sr-only">RSS</span>
@@ -177,12 +177,12 @@
 			</div>
 			<Accordion.Root
 				type="multiple"
-				value={expandableReleases}
+				bind:value={expandableReleases}
 				onValueChange={openValues => (expandableReleases = openValues)}
 				class="w-full space-y-2"
 			>
 				{#if data.currentPackage.pkg.deprecated}
-					<Alert.Root class="border-amber-500 bg-amber-400/10 rounded-xl">
+					<Alert.Root class="border-amber-500 bg-amber-400/10 rounded-md">
 						<CircleAlert class="size-4" />
 						<Alert.Title>Deprecated</Alert.Title>
 						<Alert.Description>

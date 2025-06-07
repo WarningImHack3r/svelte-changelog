@@ -52,7 +52,7 @@
 			<Sheet.Header>
 				<Sheet.Title>Repositories</Sheet.Title>
 			</Sheet.Header>
-			<RepoSidePanel headless title="Repositories" class="my-8">
+			<RepoSidePanel headless title="Repositories">
 				{@render repoList()}
 			</RepoSidePanel>
 		</Sheet.Content>

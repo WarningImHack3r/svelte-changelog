@@ -68,7 +68,7 @@
 					<li>
 						<a
 							href="/package/{pkg.name}"
-							class="group flex items-center gap-4 rounded-xl px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
 							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 						>
 							<div class="flex flex-col">

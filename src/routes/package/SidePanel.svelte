@@ -113,19 +113,28 @@
 	{/if}
 {/snippet}
 
-<div class={cn("flex flex-col", !headless && "*:shadow-lg dark:*:shadow-black", className)}>
+<div
+	class={cn(
+		"flex flex-col",
+		{
+			"px-5 mb-8": headless,
+			"*:shadow-lg dark:*:shadow-black": !headless
+		},
+		className
+	)}
+>
 	<Card.Root
 		class={{
-			"z-10 border border-muted-foreground/25 bg-secondary": !headless,
-			"border-0 bg-inherit shadow-none": headless
+			"z-10 rounded-md border border-muted-foreground/25 bg-secondary": !headless,
+			"border-0 py-0 bg-inherit shadow-none": headless
 		}}
 	>
 		{#if !headless}
-			<Card.Header class="flex-row items-start justify-between">
-				<Card.Title class="font-display">Packages</Card.Title>
+			<Card.Header class="grid-cols-2 items-center">
+				<Card.Title class="font-display text-2xl">Packages</Card.Title>
 				<a
 					href="/packages"
-					class="group inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+					class="group inline-flex ml-auto items-center gap-1 text-primary underline-offset-4 hover:underline"
 				>
 					See all
 					<ChevronRight class="size-4 transition-transform group-hover:translate-x-1" />

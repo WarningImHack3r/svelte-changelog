@@ -69,7 +69,7 @@
 	{@const isUpdated = !areSameDay(lastUpdate, new Date(item.created_at))}
 	<a
 		href={link}
-		class="flex items-center gap-6 rounded-xl px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+		class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
 	>
 		<GHBadge
 			mode="minimal"
