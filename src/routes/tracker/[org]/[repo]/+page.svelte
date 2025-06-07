@@ -3,7 +3,7 @@
 	import { Image, Info } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
-	import * as Popover from "$lib/components/ui/popover";
+	import * as Dialog from "$lib/components/ui/dialog";
 	import { Separator } from "$lib/components/ui/separator";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -157,13 +157,16 @@
 	</h1>
 	<div class="flex items-center gap-2">
 		<h3 class="text-xl text-muted-foreground font-display text-shadow-sm/5">Repository tracker</h3>
-		<Popover.Root>
-			<Popover.Trigger
-				class={[buttonVariants({ variant: "ghost", size: "sm" }), "h-min pt-0.5 !px-0"]}
+		<Dialog.Root>
+			<Dialog.Trigger
+				class={[
+					buttonVariants({ variant: "ghost", size: "sm" }),
+					"!h-4 !rounded-full pt-0.5 !px-0"
+				]}
 			>
 				<Info />
-			</Popover.Trigger>
-			<Popover.Content class="[&>p]:mt-3">
+			</Dialog.Trigger>
+			<Dialog.Content class="[&>p]:mt-3">
 				<h4 class="font-semibold text-lg">How it works</h4>
 				<p>The content comes, as everything else in this site, from GitHub.</p>
 				<p>
@@ -178,8 +181,8 @@
 					This algorithm might be not fine-grained enough, but I find it working quite well for now.
 					Open an issue/PR if you have any improvement suggestion!
 				</p>
-			</Popover.Content>
-		</Popover.Root>
+			</Dialog.Content>
+		</Dialog.Root>
 	</div>
 </div>
 
