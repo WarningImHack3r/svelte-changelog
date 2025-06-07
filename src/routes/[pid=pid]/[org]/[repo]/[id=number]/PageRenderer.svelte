@@ -614,7 +614,12 @@
 							.owner}/{closingIssue.repository.name}/{closingIssue.number}"
 						variant="secondary"
 					>
-						Open {metadata.type === "pull" ? "issue" : "pull request"} #{closingIssue.number}
+						Open {metadata.type === "pull" ? "issue" : "pull request"}
+						{#if closingIssue.repository.owner === metadata.org && closingIssue.repository.name === metadata.repo}
+							#{closingIssue.number}
+						{:else}
+							{closingIssue.repository.owner}/{closingIssue.repository.name}#{closingIssue.number}
+						{/if}
 					</Button>
 				{/each}
 			</div>
