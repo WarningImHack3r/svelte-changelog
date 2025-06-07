@@ -8,12 +8,12 @@
 
 	type Props = {
 		reactions?: GitHubRelease["reactions"] | undefined;
-		release_url?: string;
+		reactionItemUrl?: string;
 		class?: ClassValue;
 	};
 	let {
 		reactions = undefined,
-		release_url = undefined,
+		reactionItemUrl = undefined,
 		class: className = undefined
 	}: Props = $props();
 
@@ -54,7 +54,7 @@
 				onclick={() =>
 					toast(ReactionToast, {
 						duration: 5_000,
-						componentProps: { href: release_url }
+						componentProps: { href: reactionItemUrl }
 					})}
 			>
 				<span>{reactionsEmojis[key]}</span>

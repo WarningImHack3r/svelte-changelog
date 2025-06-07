@@ -319,12 +319,13 @@
 							{
 								remarkPlugin: [
 									remarkGithub,
-									{ repository: `${entity.repository.owner.login}/${entity.repository.name}` }
+									{ repository: `${entity.repository.owner}/${entity.repository.name}` }
 								]
 							},
 							shikiPlugin
 						]}
 					/>
+					<Reactions reactions={entity.reactions} reactionItemUrl={entity.html_url} class="mt-4" />
 				</Accordion.Content>
 			</Accordion.Item>
 		{/each}
@@ -401,7 +402,7 @@
 					]}
 				/>
 				{#if "reactions" in info}
-					<Reactions reactions={info.reactions} release_url={info.html_url} class="mt-4" />
+					<Reactions reactions={info.reactions} reactionItemUrl={info.html_url} class="mt-4" />
 				{/if}
 			</div>
 		</div>
@@ -465,7 +466,11 @@
 							class="max-w-none"
 							additionalPlugins={[shikiPlugin]}
 						/>
-						<Reactions reactions={comment.reactions} release_url={comment.html_url} class="mt-4" />
+						<Reactions
+							reactions={comment.reactions}
+							reactionItemUrl={comment.html_url}
+							class="mt-4"
+						/>
 					</div>
 				</div>
 			{/each}
@@ -605,9 +610,8 @@
 			<div class="flex flex-wrap justify-end gap-4">
 				{#each linkedEntities as closingIssue (closingIssue.number)}
 					<Button
-						href="/{metadata.type === 'pull'
-							? 'issues'
-							: 'pull'}/{closingIssue.repository.owner.login}/{closingIssue.repository.name}/{closingIssue.number}"
+						href="/{metadata.type === 'pull' ? 'issues' : 'pull'}/{closingIssue.repository
+							.owner}/{closingIssue.repository.name}/{closingIssue.number}"
 						variant="secondary"
 					>
 						Open {metadata.type === "pull" ? "issue" : "pull request"} #{closingIssue.number}

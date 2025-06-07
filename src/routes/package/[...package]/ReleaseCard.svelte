@@ -225,7 +225,7 @@
 			/>
 			<div class="flex items-end-safe justify-between gap-8">
 				<!-- Reactions -->
-				<Reactions reactions={release.reactions} release_url={release.html_url} />
+				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
 				<!-- Open the release on GitHub in a new tab -->
 				<Button variant="outline" size="sm" class="invisible w-16 sm:w-36" />
 				<Button

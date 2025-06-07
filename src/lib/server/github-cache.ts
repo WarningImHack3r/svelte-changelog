@@ -2,7 +2,10 @@ import { dev } from "$app/environment";
 import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
-	Repository as GQLRepository
+	Issue as GQLIssue,
+	PullRequest as GQLPullRequest,
+	Repository as GQLRepository,
+	ReferencedSubject
 } from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
 import { Octokit } from "octokit";
@@ -113,12 +116,12 @@ export type DiscussionComment = {
 >;
 
 export type LinkedItem = {
+	html_url: string;
 	repository: {
-		owner: {
-			login: string;
-		};
+		owner: string;
 		name: string;
 	};
+	reactions: GitHubRelease["reactions"];
 	number: number;
 	title: string;
 	author?: {
@@ -447,14 +450,20 @@ export class GitHubCache {
 	async #getLinkedPullRequests(owner: string, repo: string, issueNumber: number) {
 		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
 			`
-        query($owner: String!, $repo: String!, $issueNumber: Int!) {
+        query($owner: String!, $repo: String!, $issueNumber: Int!, $count: Int!) {
 					repository(owner: $owner, name: $repo) {
 						issue(number: $issueNumber) {
-							timelineItems(first: 100, itemTypes: [CONNECTED_EVENT, CROSS_REFERENCED_EVENT]) {
+							timelineItems(first: $count, itemTypes: [CONNECTED_EVENT, CROSS_REFERENCED_EVENT]) {
 								nodes {
 									... on ConnectedEvent {
 										subject {
 											... on PullRequest {
+												url
+												reactions(first: $count) {
+													nodes {
+														content
+													}
+												}
 												repository {
 													owner {
 														login
@@ -475,6 +484,12 @@ export class GitHubCache {
 									... on CrossReferencedEvent {
 										source {
 											... on PullRequest {
+												url
+												reactions(first: $count) {
+													nodes {
+														content
+													}
+												}
 												repository {
 													owner {
 														login
@@ -501,7 +516,8 @@ export class GitHubCache {
 			{
 				owner,
 				repo,
-				issueNumber
+				issueNumber,
+				count: per_page
 			}
 		);
 
@@ -514,11 +530,11 @@ export class GitHubCache {
 			if ("subject" in item) {
 				const issueOrPr = item.subject;
 				if (!issueOrPr || !("number" in issueOrPr)) continue;
-				linkedPRs.set(issueOrPr.number, issueOrPr);
+				linkedPRs.set(issueOrPr.number, this.#gqlToLinkedItem(issueOrPr));
 			} else if ("source" in item) {
 				const referencedSubject = item.source;
 				if (!referencedSubject || !("number" in referencedSubject)) continue;
-				linkedPRs.set(referencedSubject.number, referencedSubject);
+				linkedPRs.set(referencedSubject.number, this.#gqlToLinkedItem(referencedSubject));
 			}
 		}
 
@@ -537,11 +553,17 @@ export class GitHubCache {
 	async #getLinkedIssues(owner: string, repo: string, prNumber: number) {
 		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
 			`
-        query($owner: String!, $repo: String!, $prNumber: Int!) {
+        query($owner: String!, $repo: String!, $prNumber: Int!, $count: Int!) {
 					repository(owner: $owner, name: $repo) {
 						pullRequest(number: $prNumber) {
-							closingIssuesReferences(first: 50) {
+							closingIssuesReferences(first: $count) {
 								nodes {
+									url
+									reactions(first: $count) {
+										nodes {
+											content
+										}
+									}
 									repository {
 										owner {
 											login
@@ -565,7 +587,8 @@ export class GitHubCache {
 			{
 				owner,
 				repo,
-				prNumber
+				prNumber,
+				count: per_page
 			}
 		);
 
@@ -575,10 +598,46 @@ export class GitHubCache {
 		const closingIssues = result?.repository?.pullRequest?.closingIssuesReferences?.nodes ?? [];
 		for (const issue of closingIssues) {
 			if (!issue) continue;
-			linkedIssues.set(issue.number, issue);
+			linkedIssues.set(issue.number, this.#gqlToLinkedItem(issue));
 		}
 
 		return Array.from(linkedIssues.values());
+	}
+
+	/**
+	 * Transforms a raw GraphQL return type to a LinkedItem
+	 *
+	 * @param gql the raw GraphQL item
+	 * @returns the mapped LinkedItem
+	 */
+	#gqlToLinkedItem({
+		url,
+		repository,
+		reactions,
+		...rest
+	}: GQLIssue | GQLPullRequest | ReferencedSubject): LinkedItem {
+		return {
+			...rest,
+			html_url: url,
+			repository: {
+				owner: repository.owner.login,
+				name: repository.name
+			},
+			reactions: reactions.nodes
+				? {
+						url: "",
+						total_count: reactions.nodes.length,
+						"+1": reactions.nodes.filter(reaction => reaction?.content === "THUMBS_UP").length,
+						"-1": reactions.nodes.filter(reaction => reaction?.content === "THUMBS_DOWN").length,
+						laugh: reactions.nodes.filter(reaction => reaction?.content === "LAUGH").length,
+						confused: reactions.nodes.filter(reaction => reaction?.content === "CONFUSED").length,
+						heart: reactions.nodes.filter(reaction => reaction?.content === "HEART").length,
+						hooray: reactions.nodes.filter(reaction => reaction?.content === "HOORAY").length,
+						eyes: reactions.nodes.filter(reaction => reaction?.content === "EYES").length,
+						rocket: reactions.nodes.filter(reaction => reaction?.content === "ROCKET").length
+					}
+				: undefined
+		};
 	}
 
 	/**
