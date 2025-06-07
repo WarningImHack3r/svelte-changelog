@@ -14,6 +14,17 @@
 	import type { Snapshot } from "./$types";
 	import ReleaseCard from "./ReleaseCard.svelte";
 
+	const loadingSentences = [
+		"Loading",
+		"Interrogating Rich",
+		"Looking for the North Star",
+		"Changing the log",
+		"Spamming GitHub",
+		"Computing stuff in the clouds",
+		"gnidaoL",
+		"Preparing for TWIS"
+	];
+
 	let { data } = $props();
 	let viewTransitionName = $derived(data.currentPackage.pkg.name.replace(/[@/-]/g, ""));
 	let latestRelease = $derived(
@@ -77,12 +88,12 @@
 			<Skeleton class="h-16 w-64" />
 			<Skeleton class="h-8 w-32" />
 		</div>
-		<div class="relative w-full space-y-2">
+		<div class="relative mt-3 w-full space-y-2">
 			<p
-				class="absolute top-18 left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-xl"
+				class="absolute top-18 left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 justify-center text-xl"
 			>
-				<LoaderCircle class="mr-2 size-4 animate-spin" />
-				Loading...
+				<LoaderCircle class="mr-2 h-lh shrink-0 animate-spin" />
+				{loadingSentences[Math.floor(Math.random() * loadingSentences.length)]}...
 			</p>
 			<Skeleton class="h-36 w-full" />
 			<Skeleton class="h-44 w-full" />
