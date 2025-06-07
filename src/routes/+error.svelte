@@ -6,9 +6,9 @@
 	<title>Error {page.status} | Svelte Changelog</title>
 </svelte:head>
 
-<div class="w-full h-[75vh] flex flex-col justify-center items-center">
+<div class="flex h-[75vh] w-full flex-col items-center justify-center">
 	<h1 class="text-[15rem] leading-none">{page.status}</h1>
 	{#if page.error}
-		<h3 class="font-semibold text-muted-foreground text-2xl">{page.error.message}</h3>
+		<h3 class="text-2xl font-semibold text-muted-foreground">{page.error.message}</h3>
 	{/if}
 </div>

@@ -50,7 +50,7 @@
 		{#each reactionEntries as [key, value] (key)}
 			<Badge
 				variant="outline"
-				class="text-sm select-none gap-1.5"
+				class="gap-1.5 text-sm select-none"
 				onclick={() =>
 					toast(ReactionToast, {
 						duration: 5_000,

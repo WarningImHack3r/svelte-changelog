@@ -20,7 +20,7 @@
 				{:else}
 					<a
 						href="../{repo.owner}/{repo.name}"
-						class="hover:underline hover:text-primary underline-offset-2"
+						class="underline-offset-2 hover:text-primary hover:underline"
 					>
 						{repo.owner}/<wbr />{repo.name}
 					</a>
@@ -41,7 +41,7 @@
 				<Button
 					{...props}
 					variant="secondary"
-					class="absolute right-0 mt-12 ml-auto lg:hidden sm:mt-16"
+					class="absolute right-0 mt-12 ml-auto sm:mt-16 lg:hidden"
 				>
 					<Menu />
 					<span class="sr-only">Menu</span>
@@ -60,7 +60,7 @@
 
 	<RepoSidePanel
 		title="Repositories"
-		class="mt-43 ml-auto shrink-0 hidden h-fit w-80 lg:flex flex-col"
+		class="mt-43 ml-auto hidden h-fit w-80 shrink-0 flex-col lg:flex"
 	>
 		{@render repoList()}
 	</RepoSidePanel>

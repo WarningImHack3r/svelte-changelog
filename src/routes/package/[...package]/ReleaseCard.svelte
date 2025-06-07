@@ -95,7 +95,7 @@
 					</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
-					class="bg-popover border text-sm text-popover-foreground"
+					class="border bg-popover text-sm text-popover-foreground"
 					arrowClasses="bg-popover border-b border-r"
 				>
 					This is the latest stable release of this package
@@ -110,7 +110,7 @@
 					<Badge>Major</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
-					class="bg-popover border text-sm text-popover-foreground"
+					class="border bg-popover text-sm text-popover-foreground"
 					arrowClasses="bg-popover border-b border-r"
 				>
 					Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
@@ -124,7 +124,7 @@
 					<Badge variant="outline" class="border-primary text-primary">Prerelease</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
-					class="bg-popover border text-sm text-popover-foreground"
+					class="border bg-popover text-sm text-popover-foreground"
 					arrowClasses="bg-popover border-b border-r"
 				>
 					This version is an alpha or a beta, unstable version
@@ -143,7 +143,7 @@
 					</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
-					class="bg-popover border text-sm text-popover-foreground"
+					class="border bg-popover text-sm text-popover-foreground"
 					arrowClasses="bg-popover border-b border-r"
 				>
 					An update bringing bug fixes and minor improvements to an older major version
@@ -161,7 +161,7 @@
 	]}
 >
 	<Accordion.Trigger
-		class="group bg-secondary [&>svg]:size-[revert-layer] [&>svg]:w-4 px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=open]:rounded-b-none"
+		class="group bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=open]:rounded-b-none [&>svg]:size-[revert-layer] [&>svg]:w-4"
 	>
 		<div class="flex w-full items-center gap-2 xs:gap-1">
 			<div class="flex flex-col items-start gap-1">
@@ -188,7 +188,7 @@
 								{/if}
 							</Tooltip.Trigger>
 							<Tooltip.Content
-								class="bg-popover border text-sm text-popover-foreground"
+								class="border bg-popover text-sm text-popover-foreground"
 								arrowClasses="bg-popover border-b border-r"
 							>
 								{release.cleanName}
@@ -222,7 +222,7 @@
 								: timeAgo(releaseDate)}
 						</Tooltip.Trigger>
 						<Tooltip.Content
-							class="bg-popover border text-sm text-popover-foreground"
+							class="border bg-popover text-sm text-popover-foreground"
 							arrowClasses="bg-popover border-b border-r"
 						>
 							{isOlderThanAWeek

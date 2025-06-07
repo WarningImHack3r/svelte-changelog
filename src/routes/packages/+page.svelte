@@ -73,19 +73,19 @@
 						>
 							<div class="flex flex-col">
 								<h4
-									class="font-medium inline-flex flex-col xs:flex-row items-start motion-safe:[view-transition-name:var(--vt-name)] xs:items-center gap-2"
+									class="inline-flex flex-col items-start gap-2 font-medium motion-safe:[view-transition-name:var(--vt-name)] xs:flex-row xs:items-center"
 									style:--vt-name="title-{viewTransitionName}"
 								>
 									<span
 										class={[
 											pkg.deprecated &&
-												"transition-opacity duration-300 not-group-hover:line-through opacity-75 group-hover:opacity-100"
+												"opacity-75 transition-opacity duration-300 not-group-hover:line-through group-hover:opacity-100"
 										]}
 									>
 										{pkg.name}
 									</span>
 									{#if pkg.deprecated}
-										<Badge variant="outline" class="border-amber-600 text-amber-600 mb-2 xs:mb-0">
+										<Badge variant="outline" class="mb-2 border-amber-600 text-amber-600 xs:mb-0">
 											Deprecated
 										</Badge>
 									{/if}
@@ -115,7 +115,7 @@
 									</span>
 								</span>
 							</div>
-							<span class="ml-auto mr-1 shrink-0 flex items-center gap-1">
+							<span class="mr-1 ml-auto flex shrink-0 items-center gap-1">
 								{#if linkedBadgeData}
 									{#await linkedBadgeData then d}
 										{@render newBadge(getUnvisitedReleases(pkg.name, d?.releases).length)}

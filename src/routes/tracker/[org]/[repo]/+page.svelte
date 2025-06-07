@@ -92,7 +92,7 @@
 			class="shrink-0"
 		/>
 		<div class="flex w-full flex-col">
-			<div class="flex gap-4 justify-between">
+			<div class="flex justify-between gap-4">
 				<span>
 					<MarkdownRenderer markdown={item.title} inline class="text-foreground" />
 					<span class="text-muted-foreground">#{item.number}</span>
@@ -112,7 +112,7 @@
 				markdown={item.body || "_No description provided_"}
 				inline
 				parseRawHtml
-				class="line-clamp-2 max-w-full wrap-anywhere text-base text-muted-foreground"
+				class="line-clamp-2 max-w-full text-base wrap-anywhere text-muted-foreground"
 				additionalPlugins={[
 					{
 						renderer: {
@@ -134,7 +134,7 @@
 			>
 				{#snippet img({ alt })}
 					<div>
-						<Image class="h-lh inline-block" />
+						<Image class="inline-block h-lh" />
 						{alt}
 					</div>
 				{/snippet}
@@ -156,18 +156,18 @@
 		</a>
 	</h1>
 	<div class="flex items-center gap-2">
-		<h3 class="text-xl text-muted-foreground font-display text-shadow-sm/5">Repository tracker</h3>
+		<h3 class="font-display text-xl text-muted-foreground text-shadow-sm/5">Repository tracker</h3>
 		<Dialog.Root>
 			<Dialog.Trigger
 				class={[
 					buttonVariants({ variant: "ghost", size: "sm" }),
-					"!h-4 !rounded-full pt-0.5 !px-0"
+					"!h-4 !rounded-full !px-0 pt-0.5"
 				]}
 			>
 				<Info />
 			</Dialog.Trigger>
 			<Dialog.Content class="[&>p]:mt-3">
-				<h4 class="font-semibold text-lg">How it works</h4>
+				<h4 class="text-lg font-semibold">How it works</h4>
 				<p>The content comes, as everything else in this site, from GitHub.</p>
 				<p>
 					All content, be it issues, discussions, or PRs, is filtered to only get displayed if

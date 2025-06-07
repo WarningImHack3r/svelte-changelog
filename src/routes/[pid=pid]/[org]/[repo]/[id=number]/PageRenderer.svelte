@@ -337,10 +337,10 @@
 	</h3>
 	{#if info.locked}
 		<div
-			class="flex ml-auto items-center rounded-full px-2 xs:px-4 py-2 text-white bg-neutral-500/70 dark:bg-neutral-500/50"
+			class="ml-auto flex items-center rounded-full bg-neutral-500/70 px-2 py-2 text-white xs:px-4 dark:bg-neutral-500/50"
 		>
 			<Lock class="size-5" />
-			<span class="font-semibold ml-2 hidden xs:inline">Locked</span>
+			<span class="ml-2 hidden font-semibold xs:inline">Locked</span>
 		</div>
 	{/if}
 	<GHBadge
@@ -433,7 +433,7 @@
 				{#if !isAnswer && i > 0}
 					<Separator class="my-2 h-1" />
 				{/if}
-				<div class={[isAnswer && "border-l-4 ml-4 pl-2"]}>
+				<div class={[isAnswer && "ml-4 border-l-4 pl-2"]}>
 					<!-- Author -->
 					<div
 						class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
@@ -548,7 +548,7 @@
 												</span>
 											</Tooltip.Trigger>
 											<Tooltip.Content
-												class="bg-popover border text-popover-foreground"
+												class="border bg-popover text-popover-foreground"
 												arrowClasses="bg-popover border-b border-r"
 											>
 												<span class="font-mono">{commit.sha}</span>
@@ -606,7 +606,7 @@
 </div>
 <!-- Bottom links -->
 <div class="mt-16 flex w-full flex-col-reverse justify-between gap-8 md:flex-row md:items-center">
-	<Button href={getPreviousPath()} variant="link" class="group gap-0 mr-auto md:mr-0">
+	<Button href={getPreviousPath()} variant="link" class="group mr-auto gap-0 md:mr-0">
 		<ChevronLeft class="mr-1 size-4 transition-transform duration-300 group-hover:-translate-x-1" />
 		Back
 		{#if getPreviousPath() === "/"}

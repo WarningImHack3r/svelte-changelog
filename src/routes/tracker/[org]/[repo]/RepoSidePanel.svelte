@@ -15,9 +15,9 @@
 <Card.Root
 	class={[
 		{
-			"z-10 border rounded-md border-muted-foreground/25 bg-secondary shadow-lg dark:shadow-black":
+			"z-10 rounded-md border border-muted-foreground/25 bg-secondary shadow-lg dark:shadow-black":
 				!headless,
-			"border-0 px-5 bg-inherit py-0 shadow-none": headless
+			"border-0 bg-inherit px-5 py-0 shadow-none": headless
 		},
 		className
 	]}

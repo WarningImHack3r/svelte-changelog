@@ -102,7 +102,7 @@
 		<div class="flex flex-col">
 			<div class="my-8">
 				<h1
-					class="text-3xl font-semibold text-primary text-shadow-sm md:text-5xl motion-safe:[view-transition-name:var(--vt-name)]"
+					class="text-3xl font-semibold text-primary text-shadow-sm motion-safe:[view-transition-name:var(--vt-name)] md:text-5xl"
 					style:--vt-name="title-{viewTransitionName}"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -132,7 +132,7 @@
 						</h2>
 						<Separator
 							orientation="vertical"
-							class="mx-2 hidden data-[orientation=vertical]:h-lh bg-muted-foreground/50 xs:block"
+							class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
 						/>
 					{/if}
 					<Collapsible.Root class="flex items-center">
@@ -183,7 +183,7 @@
 				class="w-full space-y-2"
 			>
 				{#if data.currentPackage.pkg.deprecated}
-					<Alert.Root class="border-amber-500 bg-amber-400/10 rounded-md">
+					<Alert.Root class="rounded-md border-amber-500 bg-amber-400/10">
 						<CircleAlert class="size-4" />
 						<Alert.Title>Deprecated</Alert.Title>
 						<Alert.Description>

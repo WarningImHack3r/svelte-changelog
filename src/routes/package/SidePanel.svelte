@@ -117,7 +117,7 @@
 	class={cn(
 		"flex flex-col",
 		{
-			"px-5 mb-8": headless,
+			"mb-8 px-5": headless,
 			"*:shadow-lg dark:*:shadow-black": !headless
 		},
 		className
@@ -126,7 +126,7 @@
 	<Card.Root
 		class={{
 			"z-10 rounded-md border border-muted-foreground/25 bg-secondary": !headless,
-			"border-0 py-0 bg-inherit shadow-none": headless
+			"border-0 bg-inherit py-0 shadow-none": headless
 		}}
 	>
 		{#if !headless}
@@ -134,7 +134,7 @@
 				<Card.Title class="font-display text-2xl">Packages</Card.Title>
 				<a
 					href="/packages"
-					class="group inline-flex ml-auto items-center gap-1 text-primary underline-offset-4 hover:underline"
+					class="group ml-auto inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
 				>
 					See all
 					<ChevronRight class="size-4 transition-transform group-hover:translate-x-1" />
@@ -169,7 +169,7 @@
 													class={[
 														"underline-offset-4 group-hover:underline",
 														pkg.deprecated &&
-															"transition-opacity duration-300 line-through opacity-75 group-hover:opacity-100"
+															"line-through opacity-75 transition-opacity duration-300 group-hover:opacity-100"
 													]}
 													title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 												>
