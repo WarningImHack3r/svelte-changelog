@@ -128,7 +128,7 @@
 				/>
 				{#if !page.route.id?.startsWith("/devlog")}
 					<span class="hidden text-xl font-semibold text-shadow-xs/10 xs:inline-block">
-						Svelte
+						<span class="font-display">Svelte</span>
 						<span class="text-primary">Changelog</span>
 					</span>
 				{/if}
