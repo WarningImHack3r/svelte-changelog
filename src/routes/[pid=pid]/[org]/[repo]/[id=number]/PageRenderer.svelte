@@ -274,7 +274,7 @@
 	<Accordion.Root type="single" class="mb-12">
 		{#each linkedEntities as entity (entity.number)}
 			<Accordion.Item value={entity.number.toString()}>
-				<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:flex-shrink-0">
+				<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:shrink-0">
 					<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
 						<!-- Title -->
 						<span class="text-left group-hover:*:underline">

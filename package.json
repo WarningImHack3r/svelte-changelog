@@ -15,7 +15,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.28.0",
-		"@fontsource/dm-serif-display": "^5.2.5",
+		"@fontsource/dm-serif-display": "^5.2.6",
 		"@fontsource/pretendard": "^5.2.5",
 		"@internationalized/date": "^3.8.2",
 		"@lucide/svelte": "^0.513.0",
@@ -38,7 +38,7 @@
 		"@types/semver": "^7.7.0",
 		"@upstash/redis": "^1.35.0",
 		"@vercel/speed-insights": "^1.2.0",
-		"bits-ui": "^2.4.1",
+		"bits-ui": "^2.5.0",
 		"clsx": "^2.1.1",
 		"eslint": "^9.28.0",
 		"eslint-config-prettier": "^10.1.5",

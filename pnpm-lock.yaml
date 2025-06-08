@@ -12,8 +12,8 @@ importers:
         specifier: ^9.28.0
         version: 9.28.0
       '@fontsource/dm-serif-display':
-        specifier: ^5.2.5
-        version: 5.2.5
+        specifier: ^5.2.6
+        version: 5.2.6
       '@fontsource/pretendard':
         specifier: ^5.2.5
         version: 5.2.5
@@ -81,8 +81,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(@sveltejs/kit@2.21.2(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.33.17)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.33.17)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.33.17)
       bits-ui:
-        specifier: ^2.4.1
-        version: 2.4.1(@internationalized/date@3.8.2)(svelte@5.33.17)
+        specifier: ^2.5.0
+        version: 2.5.0(@internationalized/date@3.8.2)(svelte@5.33.17)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -422,8 +422,8 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@fontsource/dm-serif-display@5.2.5':
-    resolution: {integrity: sha512-yhhRKyfXgRPJLwD1+BDAVAERTlYegqSV+l7+FTj7R5lq1G3etXcSR9dg+Age1p6kD2YWM108MUQhikSLlIzyDw==}
+  '@fontsource/dm-serif-display@5.2.6':
+    resolution: {integrity: sha512-V/JaidjpfZu8TD9rGM3bIhDMCzS79C/mMWHPK9EtJT8S2qghXahDFZdlfria5T+OGpffGuHKL4st4UIFMdTM4A==}
 
   '@fontsource/pretendard@5.2.5':
     resolution: {integrity: sha512-UAj3l+Exfx6Sq5hySbhTQhNzkZnhzBxQdHySmjo2lifXyXpMAHv7GD7hAQTLgZfBd1WixJJkmynfJbOp+TAckg==}
@@ -1118,8 +1118,8 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bits-ui@2.4.1:
-    resolution: {integrity: sha512-Z0qZkPgtxP5dkEOyZqCK2PQ1oFXsD0AlfFMtsrMLJqaYtjUBoQGosHVKEH03M9q4G8kxVnG74Zb0F9pS0X4+6w==}
+  bits-ui@2.5.0:
+    resolution: {integrity: sha512-PbjylA1UWd4A/c5AYqie/EVxQ1/8uugmJKLg9whLoBBHbfPEBGhK09dCPrahK9kA6DRHhMmij0XXIUGIfrmNow==}
     engines: {node: '>=20', pnpm: '>=8.7.0'}
     peerDependencies:
       '@internationalized/date': ^3.8.1
@@ -2757,7 +2757,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@fontsource/dm-serif-display@5.2.5': {}
+  '@fontsource/dm-serif-display@5.2.6': {}
 
   '@fontsource/pretendard@5.2.5': {}
 
@@ -3485,7 +3485,7 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
-  bits-ui@2.4.1(@internationalized/date@3.8.2)(svelte@5.33.17):
+  bits-ui@2.5.0(@internationalized/date@3.8.2)(svelte@5.33.17):
     dependencies:
       '@floating-ui/core': 1.7.0
       '@floating-ui/dom': 1.7.0
