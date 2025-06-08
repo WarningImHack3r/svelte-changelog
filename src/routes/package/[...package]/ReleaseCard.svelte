@@ -156,7 +156,7 @@
 <Accordion.Item
 	value={release.id.toString()}
 	class={[
-		"rounded-lg border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20",
+		"rounded-lg border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20 [&>[data-accordion-content]]:bg-accent/30",
 		{ "rounded-xl border border-primary": isMajorRelease && index < 3 }
 	]}
 >
@@ -240,7 +240,7 @@
 			</div>
 		</div>
 	</Accordion.Trigger>
-	<Accordion.Content class="rounded-b-xl bg-accent/30 px-6">
+	<Accordion.Content class="px-6">
 		<div class="relative mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
