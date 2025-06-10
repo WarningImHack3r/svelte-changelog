@@ -1,5 +1,6 @@
 import eslint from "@eslint/js";
 import prettierConfig from "eslint-config-prettier/flat";
+import oxlint from "eslint-plugin-oxlint";
 import svelte from "eslint-plugin-svelte";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -38,5 +39,6 @@ export default tseslint.config(
 	},
 	{
 		ignores: ["build/", ".svelte-kit/", "dist/", "src/lib/components/ui/", "src/lib/utils.[jt]s"]
-	}
+	},
+	oxlint.buildFromOxlintConfigFile("./.oxlintrc.json")
 );
