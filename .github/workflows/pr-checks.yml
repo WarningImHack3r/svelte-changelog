@@ -54,7 +54,7 @@ jobs:
           fetch-depth: ${{ github.event_name == 'push' && 2 || 1 }}
 
       - name: 📥 Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: latest
 
@@ -83,7 +83,7 @@ jobs:
       - name: 📤 Commit updated lock file
         id: auto-commit-action-lock
         if: needs.permissions-check.outputs.has-permissions == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: Update lock file
           file_pattern: pnpm-lock.yaml
@@ -140,6 +140,6 @@ jobs:
 
       - name: 📤 Commit lint fixes
         if: failure() && needs.permissions-check.outputs.has-permissions == 'true' && (steps.svelte-format.outcome == 'failure' || steps.prettier-eslint.outcome == 'failure')
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: Fix lint
