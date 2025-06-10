@@ -343,21 +343,23 @@
 			<span class="ml-2 hidden font-semibold xs:inline">Locked</span>
 		</div>
 	{/if}
-	<GHBadge
-		type={metadata.type}
-		status={info.state === "closed"
-			? "merged" in info
-				? info.merged
-					? "merged"
-					: "closed"
-				: "state_reason" in info && info.state_reason === "completed"
-					? "solved"
-					: "closed"
-			: "draft" in info && info.draft
-				? "draft"
-				: "open"}
-		class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked }}
-	/>
+	{#key info}
+		<GHBadge
+			type={metadata.type}
+			status={info.state === "closed"
+				? "merged" in info
+					? info.merged
+						? "merged"
+						: "closed"
+					: "state_reason" in info && info.state_reason === "completed"
+						? "solved"
+						: "closed"
+				: "draft" in info && info.draft
+					? "draft"
+					: "open"}
+			class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked }}
+		/>
+	{/key}
 </div>
 <div class="mt-4 flex flex-col gap-4">
 	<!-- Info -->

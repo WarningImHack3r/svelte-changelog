@@ -5,8 +5,5 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import lucidePreprocess from "vite-plugin-lucide-preprocess";
 
 export default defineConfig({
-	plugins: [devtoolsJson(), lucidePreprocess(), sveltekit(), tailwindcss()],
-	server: {
-		strictPort: true // default port required for Login with GH workflow
-	}
+	plugins: [devtoolsJson(), lucidePreprocess(), sveltekit(), tailwindcss()]
 });
