@@ -26,4 +26,5 @@
 	{commits}
 	{files}
 	{linkedEntities}
+	mergedTagName={data.mergedTagName}
 />

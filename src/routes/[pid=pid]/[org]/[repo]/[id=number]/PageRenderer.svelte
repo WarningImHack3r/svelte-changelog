@@ -26,6 +26,7 @@
 		ChevronLeft,
 		FileDiff,
 		GitCommitVertical,
+		Info,
 		Lock,
 		MessagesSquare
 	} from "@lucide/svelte";
@@ -42,6 +43,7 @@
 		PullRequestDetails
 	} from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
+	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
@@ -129,9 +131,10 @@
 		commits: PullRequestDetails["commits"];
 		files: PullRequestDetails["files"];
 		linkedEntities: LinkedItem[];
+		mergedTagName: Promise<string | undefined>;
 	};
 
-	let { metadata, info, comments, commits, files, linkedEntities }: Props = $props();
+	let { metadata, info, comments, commits, files, linkedEntities, mergedTagName }: Props = $props();
 
 	let rightPartInfo = $derived<{ title: string; value: string }[]>([
 		...("answer_chosen_at" in info && info.answer_chosen_at
@@ -363,11 +366,9 @@
 </div>
 <div class="mt-4 flex flex-col gap-4">
 	<!-- Info -->
-	<div
-		class="mb-8 flex w-full flex-col justify-center gap-8 *:h-fit *:rounded-md *:border md:flex-row"
-	>
+	<div class="mb-8 flex w-full flex-col justify-center gap-8 *:h-fit md:flex-row">
 		<!-- Left part - body -->
-		<div class="flex-1 bg-muted/30">
+		<div class="flex-1 rounded-md border bg-muted/30">
 			<!-- Author -->
 			<div
 				class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
@@ -409,17 +410,40 @@
 			</div>
 		</div>
 		<!-- Right part - info -->
-		<div class="px-4 pb-3 md:w-2/5 md:max-w-xs md:min-w-72">
-			<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pt-2 pb-1 text-xl font-semibold">Info</h4>
-			{#each rightPartInfo as { title, value }, i (title)}
-				{#if i > 0}
-					<Separator class="my-2" />
+		<div class="flex flex-col gap-4 md:w-2/5 md:max-w-xs md:min-w-72">
+			<div class="rounded-md border px-4 pb-3">
+				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pt-2 pb-1 text-xl font-semibold">Info</h4>
+				{#each rightPartInfo as { title, value }, i (title)}
+					{#if i > 0}
+						<Separator class="my-2" />
+					{/if}
+					<div class="flex items-center justify-between gap-2">
+						<span class="font-medium">{title}</span>
+						<span class="text-right text-muted-foreground">{value}</span>
+					</div>
+				{/each}
+			</div>
+			{#await mergedTagName then tagName}
+				{#if tagName}
+					<Alert.Root class="rounded-md border-green-500 bg-green-400/10">
+						<Info class="size-4" />
+						<Alert.Description class="inline text-foreground">
+							This pull request was merged in
+							<Button
+								variant="link"
+								href="https://github.com/{metadata.org}/{metadata.repo}/releases/tag/{tagName}"
+								target="_blank"
+								class="group h-auto gap-0.5 p-0 text-green-500 has-[>svg]:px-0"
+							>
+								{tagName}
+								<ArrowUpRight
+									class="-translate-x-2 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100"
+								/>
+							</Button>
+						</Alert.Description>
+					</Alert.Root>
 				{/if}
-				<div class="flex items-center justify-between gap-2">
-					<span class="font-medium">{title}</span>
-					<span class="text-right text-muted-foreground">{value}</span>
-				</div>
-			{/each}
+			{/await}
 		</div>
 	</div>
 	<!-- Comments -->

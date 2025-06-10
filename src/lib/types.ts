@@ -61,6 +61,58 @@ export type Category = (typeof availableCategory)[number];
 
 export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
 export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
+/**
+ * The JSON API response for `https://github.com/{user}/{repo}/branch_commits/{sha}`
+ */
+export type BranchCommit = {
+	/**
+	 * The branches for the given commit
+	 */
+	branches: {
+		/**
+		 * The branch name
+		 * @example main
+		 */
+		branch: string;
+		/**
+		 * The linked pull requests
+		 */
+		prs: {
+			/**
+			 * The PR number
+			 * @example 16119
+			 */
+			number: number;
+			/**
+			 * I have no clue honestly, `false` most often
+			 */
+			showPrefix: boolean;
+			/**
+			 * The repository this PR is on
+			 */
+			repo: {
+				/**
+				 * The repository name
+				 * @example svelte
+				 */
+				name: string;
+				/**
+				 * The repository owner
+				 * @example sveltejs
+				 */
+				ownerLogin: string;
+			};
+			/**
+			 * The PR's node ID(?)
+			 */
+			globalRelayId: string;
+		}[];
+	}[];
+	/**
+	 * A list of tags this commit appears in
+	 */
+	tags: string[];
+};
 
 /**
  * The slug name for all the packages

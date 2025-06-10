@@ -1,7 +1,8 @@
 import { error, redirect } from "@sveltejs/kit";
 import { githubCache } from "$lib/server/github-cache";
+import type { BranchCommit } from "$lib/types";
 
-export async function load({ params }) {
+export async function load({ params, fetch }) {
 	const { pid: type, org, repo, id } = params;
 	const numId = +id; // id is already validated by the route matcher
 
@@ -27,6 +28,31 @@ export async function load({ params }) {
 						? ("discussion" as const)
 						: ("pull" as const)
 		},
-		item
+		item,
+		mergedTagName: new Promise<string | undefined>((resolve, reject) => {
+			// Credit to Refined GitHub: https://github.com/refined-github/refined-github/blob/main/source/features/closing-remarks.tsx
+			// Get the merged PR's sha, otherwise it is not a proper target for this
+			if (!("merged" in item.info)) {
+				resolve(undefined);
+				return;
+			}
+			const sha = item.info.merge_commit_sha;
+			if (!sha) {
+				resolve(undefined);
+				return;
+			}
+			// Fetch the merge commit's info
+			fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
+				headers: {
+					Accept: "application/json"
+				}
+			})
+				.then(res => res.json() as Promise<BranchCommit>)
+				.then(({ tags }) =>
+					// The info is right here after a little filtering :D
+					resolve(tags.findLast(tag => !tag.includes("nightly") && /\d[.]\d/.test(tag)))
+				)
+				.catch(reject);
+		})
 	};
 }
