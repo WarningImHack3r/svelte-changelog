@@ -1,4 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
+import { publicRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 import type { BranchCommit } from "$lib/types";
 
@@ -16,6 +17,8 @@ export async function load({ params, fetch }) {
 		redirect(307, `/${realType}/${org}/${repo}/${id}`);
 	}
 
+	const matchingRepo = publicRepos.find(r => r.repoOwner === org && r.repoName === repo);
+
 	return {
 		itemMetadata: {
 			org,
@@ -29,7 +32,7 @@ export async function load({ params, fetch }) {
 						: ("pull" as const)
 		},
 		item,
-		mergedTagName: new Promise<string | undefined>((resolve, reject) => {
+		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
 			// Credit to Refined GitHub: https://github.com/refined-github/refined-github/blob/main/source/features/closing-remarks.tsx
 			// Get the merged PR's sha, otherwise it is not a proper target for this
 			if (!("merged" in item.info)) {
@@ -48,10 +51,15 @@ export async function load({ params, fetch }) {
 				}
 			})
 				.then(res => res.json() as Promise<BranchCommit>)
-				.then(({ tags }) =>
+				.then(({ tags }) => {
 					// The info is right here after a little filtering :D
-					resolve(tags.findLast(tag => !tag.includes("nightly") && /\d[.]\d/.test(tag)))
-				)
+					const earliestTag = tags.findLast(tag => !tag.includes("nightly") && /\d[.]\d/.test(tag));
+					if (!earliestTag) {
+						resolve(undefined);
+						return;
+					}
+					resolve(matchingRepo?.metadataFromTag(earliestTag));
+				})
 				.catch(reject);
 		})
 	};
