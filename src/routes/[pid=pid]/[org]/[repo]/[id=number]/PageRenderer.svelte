@@ -434,10 +434,13 @@
 								variant="link"
 								href="https://github.com/{metadata.org}/{metadata.repo}/releases/tag/{rawTag}"
 								target="_blank"
-								class="h-auto p-0 text-green-500"
+								class="group h-auto gap-0.5 p-0 text-green-500 has-[>svg]:px-0"
 							>
 								{tagName}
 								{tagVersion}
+								<ArrowUpRight
+									class="-translate-x-2 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100"
+								/>
 							</Button>
 						</Alert.Description>
 					</Alert.Root>
