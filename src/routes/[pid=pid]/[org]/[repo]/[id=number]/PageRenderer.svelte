@@ -492,7 +492,12 @@
 							markdown={comment.body || "_Empty comment_"}
 							parseRawHtml
 							class="max-w-none"
-							additionalPlugins={[shikiPlugin]}
+							additionalPlugins={[
+								{
+									remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }]
+								},
+								shikiPlugin
+							]}
 						/>
 						<Reactions
 							reactions={comment.reactions}
