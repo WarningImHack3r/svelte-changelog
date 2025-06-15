@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state";
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import semver from "semver";
@@ -154,10 +155,12 @@
 {/snippet}
 
 <Accordion.Item
+	id={release.cleanVersion}
 	value={release.id.toString()}
 	class={[
-		"rounded-lg border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20 [&>[data-accordion-content]]:bg-accent/30",
-		{ "rounded-xl border border-primary": isMajorRelease && index < 3 }
+		"scroll-mt-20 rounded-md border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20 [&>[data-accordion-content]]:rounded-md [&>[data-accordion-content]]:bg-accent/30",
+		{ "border border-primary": isMajorRelease && index < 3 },
+		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` }
 	]}
 >
 	<Accordion.Trigger

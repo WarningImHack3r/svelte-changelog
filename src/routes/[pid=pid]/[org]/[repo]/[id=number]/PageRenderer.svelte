@@ -132,7 +132,7 @@
 		commits: PullRequestDetails["commits"];
 		files: PullRequestDetails["files"];
 		linkedEntities: LinkedItem[];
-		mergedTagName: Promise<[string, string, string] | undefined>;
+		mergedTagName: Promise<[string, string] | undefined>;
 	};
 
 	let { metadata, info, comments, commits, files, linkedEntities, mergedTagName }: Props = $props();
@@ -426,22 +426,18 @@
 			</div>
 			{#await mergedTagName then mergedTag}
 				{#if mergedTag}
-					{@const [tagName, tagVersion, rawTag] = mergedTag}
+					{@const [tagName, tagVersion] = mergedTag}
 					<Alert.Root class="rounded-md border-green-500 bg-green-400/10">
 						<Tag class="size-4" />
 						<Alert.Description class="inline text-foreground">
 							This pull request was released in
 							<Button
 								variant="link"
-								href="https://github.com/{metadata.org}/{metadata.repo}/releases/tag/{rawTag}"
-								target="_blank"
-								class="group h-auto gap-0.5 p-0 text-green-500 has-[>svg]:px-0"
+								href="/package/{tagName}#{tagVersion}"
+								class="h-auto p-0 text-green-500"
 							>
 								{tagName}
 								{tagVersion}
-								<ArrowUpRight
-									class="-translate-x-2 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100"
-								/>
 							</Button>
 						</Alert.Description>
 					</Alert.Root>

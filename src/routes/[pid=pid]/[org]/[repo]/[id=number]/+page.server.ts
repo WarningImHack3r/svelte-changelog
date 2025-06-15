@@ -32,7 +32,7 @@ export async function load({ params, fetch }) {
 						: ("pull" as const)
 		},
 		item,
-		mergedTagName: new Promise<[string, string, string] | undefined>((resolve, reject) => {
+		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
 			// Credit to Refined GitHub: https://github.com/refined-github/refined-github/blob/main/source/features/closing-remarks.tsx
 			// Get the merged PR's sha, otherwise it is not a proper target for this
 			if (!("merged" in item.info)) {
@@ -54,11 +54,11 @@ export async function load({ params, fetch }) {
 				.then(({ tags }) => {
 					// The info is right here after a little filtering :D
 					const earliestTag = tags.findLast(tag => !tag.includes("nightly") && /\d[.]\d/.test(tag));
-					if (!earliestTag || !matchingRepo) {
+					if (!earliestTag) {
 						resolve(undefined);
 						return;
 					}
-					resolve([...matchingRepo.metadataFromTag(earliestTag), earliestTag]);
+					resolve(matchingRepo?.metadataFromTag(earliestTag));
 				})
 				.catch(reject);
 		})

@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { untrack } from "svelte";
+	import { MediaQuery } from "svelte/reactivity";
+	import { scrollY } from "svelte/reactivity/window";
 	import { navigating, page } from "$app/state";
 	import { ChevronRight, CircleAlert, LoaderCircle, Rss } from "@lucide/svelte";
 	import semver from "semver";
@@ -63,17 +66,30 @@
 	);
 	let expandableReleases = $derived.by(() => {
 		const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
-		return (
-			displayableReleases
+		return displayableReleases
+			.filter(({ created_at, published_at, tag_name }, index) => {
+				if (page.url.hash && tag_name.includes(page.url.hash.replace(/^#/, ""))) return true;
 				// Only expand releases that are less than a week old
-				.filter(({ created_at, published_at }, index) => {
-					const creationTimestamp = new Date(published_at ?? created_at).getTime();
-					if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
-					const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
-					return creationTimestamp > maxDate;
-				})
-				.map(({ id }) => id.toString())
-		);
+				const creationTimestamp = new Date(published_at ?? created_at).getTime();
+				if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
+				const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
+				return creationTimestamp > maxDate;
+			})
+			.map(({ id }) => id.toString());
+	});
+
+	// Hash management
+	let wantsReducedMotion = new MediaQuery("(prefers-reduced-motion: reduce)");
+	$effect(() => {
+		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
+
+		Promise.resolve() // match what's performed on the DOM
+			.then(() => new Promise(resolve => setTimeout(resolve, 300))) // wait for the accordions to expand (+ better UX)
+			.then(() => {
+				document
+					.getElementById(page.url.hash.replace(/^#/, ""))
+					?.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
+			});
 	});
 
 	export const snapshot: Snapshot<typeof expandableReleases> = {
