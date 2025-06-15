@@ -105,6 +105,12 @@
 
 	// Utils
 	function detectLanguage(code: string): (SpecialLanguage | (string & {})) | undefined {
+		const match = code
+			.split("\n", 1)[0]
+			?.trim()
+			?.match(/^(?:\/\/|#) ?[^ !]+?\.([A-Za-z0-9]{1,10})$/);
+		if (match) return match[1];
+
 		const hasHTML = /<\/[a-zA-Z0-9-]+>/.test(code);
 		const hasJS = / (let|var|const|=) /.test(code);
 
@@ -759,7 +765,7 @@
 
 					span:first-child::before {
 						position: absolute;
-						left: 2.75rem;
+						left: 2.5rem;
 					}
 				}
 			}
