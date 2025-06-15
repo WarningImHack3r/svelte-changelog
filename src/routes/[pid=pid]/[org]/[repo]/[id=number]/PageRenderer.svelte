@@ -72,9 +72,10 @@
 									.join("\n");
 								const detectedLanguage = detectLanguage(cleanedCode);
 								if (!detectedLanguage) {
-									posthog.captureException(new Error("Failed to determine diff language"), {
-										code
-									});
+									if (browser)
+										posthog.captureException(new Error("Failed to determine diff language"), {
+											code
+										});
 									return;
 								}
 								options.lang = detectedLanguage;
