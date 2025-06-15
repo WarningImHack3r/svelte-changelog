@@ -183,8 +183,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1))
       vite-plugin-lucide-preprocess:
-        specifier: ^1.3.0
-        version: 1.3.0(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1))
+        specifier: ^1.3.1
+        version: 1.3.1(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1))
 
 packages:
 
@@ -2373,8 +2373,8 @@ packages:
     peerDependencies:
       vite: ^2.7.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
 
-  vite-plugin-lucide-preprocess@1.3.0:
-    resolution: {integrity: sha512-Eh/CfXWU/OHL1/49qOeYEY7+0KUHwxWeTs+rjiIcbunvZqCJN1n8lemX6Offu9SLaNlxfdDdNwtiatWlapIVxw==}
+  vite-plugin-lucide-preprocess@1.3.1:
+    resolution: {integrity: sha512-81WwWoCww1+Dej8fJR1nDJPP2ewsUKQtE4bXt0ZpD8UZ0wbLRCzWoenXG0Q2egIW42ZDe/PekaasXAXGkVv1qA==}
     peerDependencies:
       vite: '>=5'
 
@@ -4825,7 +4825,7 @@ snapshots:
       uuid: 11.1.0
       vite: 6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)
 
-  vite-plugin-lucide-preprocess@1.3.0(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)):
+  vite-plugin-lucide-preprocess@1.3.1(vite@6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)):
     dependencies:
       vite: 6.3.5(@types/node@24.0.1)(jiti@2.4.2)(lightningcss@1.30.1)
 
