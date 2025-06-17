@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Menu } from "@lucide/svelte";
 	import { uniqueRepos } from "$lib/repositories";
@@ -7,6 +8,13 @@
 	import RepoSidePanel from "./RepoSidePanel.svelte";
 
 	let { children } = $props();
+
+	onNavigate(({ from, to, type }) => {
+		if (from?.route.id !== to?.route.id || type === "form") return;
+		open = false;
+	});
+
+	let open = $state(false);
 </script>
 
 {#snippet repoList()}
@@ -35,7 +43,7 @@
 		{@render children()}
 	</div>
 
-	<Sheet.Root>
+	<Sheet.Root bind:open>
 		<Sheet.Trigger>
 			{#snippet child({ props })}
 				<Button
