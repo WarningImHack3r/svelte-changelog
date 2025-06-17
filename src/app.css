@@ -61,7 +61,10 @@
 /* Tailwind container utility */
 @utility container {
 	margin-inline: auto;
-	padding-inline: 2rem;
+	padding-inline: 1rem;
+	@media (min-width: 475px) {
+		padding-inline: 2rem;
+	}
 	/* Cancels the undocumented default breakpoint-driven max-width */
 	max-width: var(--breakpoint-2xl);
 }
