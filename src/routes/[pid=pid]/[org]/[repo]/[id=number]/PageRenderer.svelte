@@ -20,7 +20,12 @@
 </script>
 
 <script lang="ts">
+	import { untrack } from "svelte";
+	import type { HTMLAttributes, SvelteHTMLElements } from "svelte/elements";
+	import { MediaQuery } from "svelte/reactivity";
+	import { scrollY } from "svelte/reactivity/window";
 	import { browser } from "$app/environment";
+	import { navigating, page } from "$app/state";
 	import {
 		ArrowUpRight,
 		ChevronLeft,
@@ -33,6 +38,7 @@
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import { transformerNotationDiff } from "@shikijs/transformers";
 	import posthog from "posthog-js";
+	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGithub from "remark-github";
 	import type { SpecialLanguage } from "shiki";
@@ -198,6 +204,16 @@
 			: [])
 	]);
 
+	// Hash management
+	let wantsReducedMotion = new MediaQuery("(prefers-reduced-motion: reduce)");
+	$effect(() => {
+		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
+
+		document
+			.getElementById(page.url.hash.slice(1))
+			?.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
+	});
+
 	/**
 	 * Sort comments for discussions so that they simply have to be indented
 	 * if answers to properly look like threads of comments.
@@ -265,6 +281,24 @@
 		return new URL(document.referrer).pathname;
 	}
 </script>
+
+{#snippet headingRenderer(
+	heading: Extract<keyof SvelteHTMLElements, `h${number}`> | (string & {}),
+	{ children, id, class: className, ...props }: HTMLAttributes<HTMLHeadingElement>
+)}
+	{@const shouldRender = metadata.type === "discussion" && id}
+	<svelte:element
+		this={heading}
+		id={shouldRender ? id : undefined}
+		class={[className, shouldRender && "group scroll-mt-20"]}
+		{...props}
+	>
+		{@render children?.()}
+		{#if shouldRender}
+			<a href="#{id}" class="transition-colors not-group-hover:text-muted-foreground/50">#</a>
+		{/if}
+	</svelte:element>
+{/snippet}
 
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
 	<a href={info.html_url}>
@@ -411,9 +445,29 @@
 					additionalPlugins={[
 						{ remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }] },
 						{ remarkPlugin: remarkGemoji },
+						{ rehypePlugin: rehypeSlug },
 						shikiPlugin
 					]}
-				/>
+				>
+					{#snippet h1(props)}
+						{@render headingRenderer("h1", props)}
+					{/snippet}
+					{#snippet h2(props)}
+						{@render headingRenderer("h2", props)}
+					{/snippet}
+					{#snippet h3(props)}
+						{@render headingRenderer("h3", props)}
+					{/snippet}
+					{#snippet h4(props)}
+						{@render headingRenderer("h4", props)}
+					{/snippet}
+					{#snippet h5(props)}
+						{@render headingRenderer("h5", props)}
+					{/snippet}
+					{#snippet h6(props)}
+						{@render headingRenderer("h6", props)}
+					{/snippet}
+				</MarkdownRenderer>
 				{#if "reactions" in info}
 					<Reactions reactions={info.reactions} reactionItemUrl={info.html_url} class="mt-4" />
 				{/if}
@@ -699,12 +753,11 @@
 		background-color: var(--shiki-dark-bg) !important;
 	}
 
-	/* Line numbers, credit to https://github.com/shikijs/shiki/issues/3#issuecomment-830564854 */
-	/* Diff marks */
 	:global {
 		.shiki {
 			position: relative;
 
+			/* Line numbers, credit to https://github.com/shikijs/shiki/issues/3#issuecomment-830564854 */
 			code {
 				counter-reset: step;
 				counter-increment: step 0;
@@ -720,6 +773,7 @@
 					color: color-mix(in oklab, var(--color-muted-foreground) 70%, transparent);
 				}
 
+				/* Diff marks */
 				.diff {
 					display: inline-block;
 					transition: background-color 0.5s;
