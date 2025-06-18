@@ -33,6 +33,7 @@
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import { transformerNotationDiff } from "@shikijs/transformers";
 	import posthog from "posthog-js";
+	import remarkGemoji from "remark-gemoji";
 	import remarkGithub from "remark-github";
 	import type { SpecialLanguage } from "shiki";
 	import type { Plugin } from "svelte-exmarkdown";
@@ -332,6 +333,7 @@
 									{ repository: `${entity.repository.owner}/${entity.repository.name}` }
 								]
 							},
+							{ remarkPlugin: remarkGemoji },
 							shikiPlugin
 						]}
 					/>
@@ -408,6 +410,7 @@
 					class="max-w-full"
 					additionalPlugins={[
 						{ remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }] },
+						{ remarkPlugin: remarkGemoji },
 						shikiPlugin
 					]}
 				/>
@@ -499,6 +502,7 @@
 								{
 									remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }]
 								},
+								{ remarkPlugin: remarkGemoji },
 								shikiPlugin
 							]}
 						/>
