@@ -27,6 +27,7 @@ export async function load({ params }) {
 		githubCache.getAllDiscussions(params.org, params.repo)
 	]);
 	return {
+		params,
 		prs: unfilteredPRs
 			.filter(({ user, body, updated_at }) => {
 				if (new Date(updated_at).getFullYear() < now.getFullYear() - 1) return false;

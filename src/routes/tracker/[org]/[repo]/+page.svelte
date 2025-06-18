@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from "$app/state";
 	import { Image, Info } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
@@ -146,13 +145,13 @@
 <div class="my-8">
 	<h1 class="text-3xl font-semibold text-shadow-sm md:text-5xl">
 		<a
-			href="https://github.com/{page.params.org}/{page.params.repo}"
+			href="https://github.com/{data.params.org}/{data.params.repo}"
 			target="_blank"
 			class="group *:underline-offset-4 after:ml-0.5 after:inline-block after:-translate-x-2 after:font-sans after:text-2xl after:opacity-0 after:transition after:content-['↗'] hover:after:translate-x-0 hover:after:opacity-100"
 		>
-			<span class="text-primary group-hover:underline">{page.params.org}</span><span
+			<span class="text-primary group-hover:underline">{data.params.org}</span><span
 				class="text-foreground no-underline">/</span
-			><wbr /><span class="text-primary group-hover:underline">{page.params.repo}</span>
+			><wbr /><span class="text-primary group-hover:underline">{data.params.repo}</span>
 		</a>
 	</h1>
 	<div class="flex items-center gap-2">
