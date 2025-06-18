@@ -47,44 +47,23 @@ export class CacheHandler {
 			return entry.value as T;
 		}
 
-		// Production: get TTL for Redis key first
-		let ttl: number;
-		try {
-			ttl = await this.#redis.ttl(key);
-		} catch (error) {
-			console.error("Redis TTL error:", error);
-			return null;
-		}
-
-		// Check memory cache first
+		// Production mode
 		const entry = this.#memoryCache.get(key);
 		if (entry) {
-			if (ttl < 0) {
-				// No expiration (-1) or key doesn't exist (-2)
-				return entry.value as T;
+			// Check if entry has expired based on our cached expiresAt
+			if (entry.expiresAt && entry.expiresAt < Date.now()) {
+				this.#memoryCache.delete(key);
+				return null;
 			}
-
-			// Validate TTL matches what we have in memory
-			const remainingTime = entry.expiresAt
-				? Math.ceil((entry.expiresAt - Date.now()) / 1000)
-				: null;
-			// Allow a 1-second difference
-			if (remainingTime === null || Math.abs(remainingTime - ttl) <= 1) {
-				return entry.value as T;
-			}
-
-			// TTL mismatch — purge memory cache
-			this.#memoryCache.delete(key);
+			return entry.value as T;
 		}
 
-		// If we reach here, either:
-		// 1. Nothing in memory cache
-		// 2. Memory cache was invalid
-		// Try Redis
+		// No cache entry, try Redis
 		try {
 			const value = await this.#redis.json.get<T>(key);
 			if (value !== null) {
-				// Store in the memory cache with proper expiration
+				// Get TTL only when populating the cache for the first time
+				const ttl = await this.#redis.ttl(key);
 				const expiresAt = ttl > 0 ? Date.now() + ttl * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
 			}
