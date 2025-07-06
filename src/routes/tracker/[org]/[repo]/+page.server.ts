@@ -37,7 +37,9 @@ export async function load({ params }) {
 				for (const keyword of closingKeywords) {
 					if (
 						lowerBody.includes(`${keyword} #`) ||
+						lowerBody.includes(`${keyword}: #`) ||
 						lowerBody.includes(`${keyword} https://github.com`) ||
+						lowerBody.includes(`${keyword}: https://github.com`) ||
 						new RegExp(`${keyword} [A-Za-z0-9_-]+/[A-Za-z0-9_-]+#[0-9]+`).test(lowerBody)
 					) {
 						return false;
