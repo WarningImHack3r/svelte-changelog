@@ -36,12 +36,9 @@
 		Tag
 	} from "@lucide/svelte";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
-	import { transformerNotationDiff } from "@shikijs/transformers";
-	import posthog from "posthog-js";
 	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGithub from "remark-github";
-	import type { SpecialLanguage } from "shiki";
 	import type { Plugin } from "svelte-exmarkdown";
 	import type {
 		DiscussionDetails,
@@ -62,6 +59,7 @@
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
+	import { transformerDiffMarking, transformerLanguageDetection } from "./syntax-highlighting";
 
 	const shikiPlugin: Plugin = {
 		rehypePlugin: [
@@ -69,63 +67,10 @@
 			highlighter,
 			{
 				themes: { light: "github-light-default", dark: "github-dark-default" },
-				transformers: [
-					{
-						preprocess(code, options) {
-							if (options.lang === "diff") {
-								const cleanedCode = code
-									.split("\n")
-									.map(line => line.replace(/^[+-]/, ""))
-									.join("\n");
-								const detectedLanguage = detectLanguage(cleanedCode);
-								if (!detectedLanguage) {
-									if (browser)
-										posthog.captureException(new Error("Failed to determine diff language"), {
-											code
-										});
-									return;
-								}
-								options.lang = detectedLanguage;
-								return code
-									.split("\n")
-									.map(line =>
-										line.replace(
-											/^([+-])(.*)/,
-											(_, sign, rest) => `${rest} // [!code ${sign}${sign}]`
-										)
-									)
-									.join("\n");
-							}
-						},
-						pre(node) {
-							node.properties["data-language"] = this.options.lang
-								.toLowerCase()
-								.replace(/^js$/, "javascript")
-								.replace(/^ts$/, "typescript");
-						}
-					},
-					transformerNotationDiff()
-				]
+				transformers: [transformerLanguageDetection, transformerDiffMarking]
 			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};
-
-	// Utils
-	function detectLanguage(code: string): (SpecialLanguage | (string & {})) | undefined {
-		const match = code
-			.split("\n", 1)[0]
-			?.trim()
-			?.match(/^(?:\/\/|#) ?[^ !]+?\.([A-Za-z0-9]{1,10})$/);
-		if (match) return match[1];
-
-		const hasHTML = /<\/[a-zA-Z0-9-]+>/.test(code);
-		const hasJS = / (let|var|const|=) /.test(code);
-
-		if (hasHTML && hasJS) return "svelte";
-		if (hasHTML) return "html";
-		if (hasJS) return /(: [A-Z]|type |interface )/.test(code) ? "ts" : "js";
-		if (/[a-z-]+: \S+/.test(code)) return "css";
-	}
 
 	function formatToDateTime(date: string) {
 		return new Intl.DateTimeFormat("en", {
