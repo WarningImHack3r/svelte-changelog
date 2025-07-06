@@ -59,7 +59,11 @@
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
-	import { transformerDiffMarking, transformerLanguageDetection } from "./syntax-highlighting";
+	import {
+		transformerDiffMarking,
+		transformerLanguageDetection,
+		transformerTrimCode
+	} from "./syntax-highlighting";
 
 	const shikiPlugin: Plugin = {
 		rehypePlugin: [
@@ -67,7 +71,7 @@
 			highlighter,
 			{
 				themes: { light: "github-light-default", dark: "github-dark-default" },
-				transformers: [transformerLanguageDetection, transformerDiffMarking]
+				transformers: [transformerTrimCode, transformerLanguageDetection, transformerDiffMarking]
 			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};

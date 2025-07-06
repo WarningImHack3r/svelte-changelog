@@ -26,6 +26,15 @@ export function detectLanguage(code: string): (SpecialLanguage | (string & {})) 
 }
 
 /**
+ * A transformer that trims unnecessary whitespace at the beginning and end of the string.
+ */
+export const transformerTrimCode: ShikiTransformer = {
+	preprocess(code) {
+		return code.replace(/(^\r?\n|\r?\n$)/g, "");
+	}
+};
+
+/**
  * A Shiki transformer used for language detection and setting the appropriate language metadata
  * in code blocks. Useful for handling code snippets with "diff" language and converting them
  * to a detected programming language.
