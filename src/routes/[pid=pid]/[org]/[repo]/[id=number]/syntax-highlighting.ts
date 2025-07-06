@@ -17,7 +17,7 @@ export function detectLanguage(code: string): (SpecialLanguage | (string & {})) 
 	if (match) return match[1];
 
 	const hasHTML = /<\/[a-zA-Z0-9-]+>/.test(code);
-	const hasJS = / (let|var|const|=) /.test(code);
+	const hasJS = / (let|var|const|=|\/\/) /.test(code);
 
 	if (hasHTML && hasJS) return "svelte";
 	if (hasHTML) return "html";
