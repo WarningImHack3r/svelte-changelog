@@ -7,6 +7,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"moduleDetection": "force",
 		"noUncheckedIndexedAccess": true,
+		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,

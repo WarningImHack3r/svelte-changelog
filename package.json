@@ -9,7 +9,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:ci": "svelte-kit sync && svelte-check --no-tsconfig",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --check . && eslint .",
+		"lint": "NODE_OPTIONS='--experimental-strip-types' prettier --check . && eslint --flag unstable_native_nodejs_ts_config",
 		"format": "prettier --write .",
 		"prepare": "svelte-kit sync"
 	},
