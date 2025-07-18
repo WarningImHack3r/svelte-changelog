@@ -22,7 +22,7 @@
 <script lang="ts">
 	import { untrack } from "svelte";
 	import type { HTMLAttributes, SvelteHTMLElements } from "svelte/elements";
-	import { MediaQuery } from "svelte/reactivity";
+	import { MediaQuery, SvelteMap } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { browser } from "$app/environment";
 	import { navigating, page } from "$app/state";
@@ -175,7 +175,7 @@
 		// We only need to check the first item since we know all items are of the same type
 		const hasParentId = comments[0] && "parent_id" in comments[0];
 
-		// If these are simple items, just sort by date and return
+		// If these are simple items, sort by date and return
 		if (!hasParentId) {
 			return (comments as IssueDetails["comments"]).sort(
 				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -185,8 +185,8 @@
 		// We know we're dealing with TreeItems at this point
 		const discussionComments = comments as DiscussionDetails["comments"];
 
-		// Create a map to store children by their parent_id for quick lookup
-		const childrenMap = new Map<
+		// Create a map to store children by their parent_id for quick lookups
+		const childrenMap = new SvelteMap<
 			DiscussionDetails["comments"][number]["parent_id"],
 			DiscussionDetails["comments"]
 		>();
