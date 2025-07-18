@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onNavigate } from "$app/navigation";
-	import { navigating, page } from "$app/state";
+	import { navigating } from "$app/state";
 	import { LoaderCircle, Menu } from "@lucide/svelte";
 	import { uniqueRepos } from "$lib/repositories";
 	import { Button } from "$lib/components/ui/button";
@@ -8,7 +8,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import RepoSidePanel from "./RepoSidePanel.svelte";
 
-	let { children } = $props();
+	let { params, children } = $props();
 
 	onNavigate(({ from, to, type }) => {
 		if (from?.route.id !== to?.route.id || type === "form") return;
@@ -33,7 +33,7 @@
 {#snippet repoList()}
 	<ul class="space-y-1">
 		{#each uniqueRepos as repo (repo)}
-			{@const active = repo.owner === page.params.org && repo.name === page.params.repo}
+			{@const active = repo.owner === params.org && repo.name === params.repo}
 			<li>
 				{#if active}
 					<span class="font-bold underline underline-offset-2">{repo.owner}/<wbr />{repo.name}</span
