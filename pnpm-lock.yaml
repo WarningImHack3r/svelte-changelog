@@ -21,8 +21,8 @@ importers:
         specifier: ^3.8.2
         version: 3.8.2
       '@lucide/svelte':
-        specifier: ^0.532.0
-        version: 0.532.0(svelte@5.35.3)
+        specifier: ^0.534.0
+        version: 0.534.0(svelte@5.35.3)
       '@neoconfetti/svelte':
         specifier: ^2.2.2
         version: 2.2.2(svelte@5.35.3)
@@ -72,14 +72,14 @@ importers:
         specifier: ^7.7.0
         version: 7.7.0
       '@upstash/redis':
-        specifier: ^1.35.1
-        version: 1.35.1
+        specifier: ^1.35.2
+        version: 1.35.2
       '@vercel/speed-insights':
         specifier: ^1.2.0
         version: 1.2.0(@sveltejs/kit@2.26.1(@sveltejs/vite-plugin-svelte@6.1.0(svelte@5.35.3)(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.35.3)(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.35.3)
       bits-ui:
-        specifier: ^2.8.13
-        version: 2.8.13(@internationalized/date@3.8.2)(svelte@5.35.3)
+        specifier: ^2.8.14
+        version: 2.8.14(@internationalized/date@3.8.2)(svelte@5.35.3)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -108,8 +108,8 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3
       posthog-js:
-        specifier: ^1.258.2
-        version: 1.258.2
+        specifier: ^1.258.3
+        version: 1.258.3
       posthog-node:
         specifier: ^5.6.0
         version: 5.6.0
@@ -183,11 +183,11 @@ importers:
         specifier: ^7.0.6
         version: 7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)
       vite-plugin-devtools-json:
-        specifier: ^0.3.0
-        version: 0.3.0(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1))
+        specifier: ^0.4.1
+        version: 0.4.1(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1))
       vite-plugin-lucide-preprocess:
-        specifier: ^1.4.0
-        version: 1.4.0(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1))
+        specifier: ^1.4.1
+        version: 1.4.1(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1))
 
 packages:
 
@@ -480,8 +480,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@lucide/svelte@0.532.0':
-    resolution: {integrity: sha512-KYaOv8j4gHTIGKNzLjgD8za9oOJLPC8/69r7zYC2Rj4xuENS45gwqKYUlENb+nIbGoxt64sosn2Rmd9GL22cig==}
+  '@lucide/svelte@0.534.0':
+    resolution: {integrity: sha512-XqlT0ibiEEoEGcmZLdk0RNtq1OW77OjqxXZjJE/23Wabl+2d9Pxg9AAx7+6WFv8BSf8K6im73vz3cZKYEgY9Mw==}
     peerDependencies:
       svelte: ^5
 
@@ -1013,8 +1013,8 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@upstash/redis@1.35.1':
-    resolution: {integrity: sha512-sIMuAMU9IYbE2bkgDby8KLoQKRiBMXn0moXxqLvUmQ7VUu2CvulZLtK8O0x3WQZFvvZhU5sRC2/lOVZdGfudkA==}
+  '@upstash/redis@1.35.2':
+    resolution: {integrity: sha512-QlEI77M/qfSA7G6yioKrUiKCueewONb7P0Xe4Pr42RSJHs8S+UkBwY2unEiTWtONC4L6ngKjbtQJgpXzxbnRpw==}
 
   '@vercel/nft@0.30.0':
     resolution: {integrity: sha512-xVye7Z0riD9czsMuEJYpFqm2FR33r3euYaFzuEPCoUtYuDwmus3rJfKtcFU7Df+pgj8p4zs78x5lOWYoLNr+7Q==}
@@ -1112,8 +1112,8 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bits-ui@2.8.13:
-    resolution: {integrity: sha512-YC3DiatZzREdbTZR8IuxbQeYg+/MNcyQeuS6Hycl+ufoG7eiV66qICx210plFER9B776FEYSHXSYuQdlvWODpw==}
+  bits-ui@2.8.14:
+    resolution: {integrity: sha512-QgaKVX3mWr7XZCcQkE06bqotOPXM77TBXUAkEvmDYFMAPOYy6RjwVC4/Rg8306u9gO9rB0czvoEUI1wRSHLJww==}
     engines: {node: '>=20'}
     peerDependencies:
       '@internationalized/date': ^3.8.1
@@ -1954,8 +1954,8 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.258.2:
-    resolution: {integrity: sha512-XBSeiN4HjiYsy3tW5zss8WOJF2JXTQXAYw2wZ+zjqQuzzi7kkLEXjIgsVrBnt5Opwhqn0krZVsb0ZBw34dIiyQ==}
+  posthog-js@1.258.3:
+    resolution: {integrity: sha512-bX4Ehzo/yBGY7o23CUAQelX+oUdLn5bKhEjTSiveXsjkZhRURxfKDinYTwI6tjs19FC8BWfHFyO3q3TgT2E7CA==}
     peerDependencies:
       '@rrweb/types': 2.0.0-alpha.17
       rrweb-snapshot: 2.0.0-alpha.17
@@ -2397,13 +2397,13 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vite-plugin-devtools-json@0.3.0:
-    resolution: {integrity: sha512-y8QdN/uZNV0Jj96H9R3s7G9jtcSuyssk8EwSfWaY+NUAdy7976d7rjtXJzqmeCcgp4CZywcTyUc+k6zpPFHdeg==}
+  vite-plugin-devtools-json@0.4.1:
+    resolution: {integrity: sha512-pN+QJL+NwZUV+Via8w/Sh6X2pDrVClIMDAXdl7+EteXKB6mcHhsFGGclmxrPx6ZPGKSK5ez5ns64oRpjE5wFCg==}
     peerDependencies:
       vite: ^2.7.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
 
-  vite-plugin-lucide-preprocess@1.4.0:
-    resolution: {integrity: sha512-PzeTfy8Qh8OsXSlxdkQl9acd5f3uZSzRAyh0vU1PiZ+PvLzMgg3rpy+nIP1A/ks/z3nkxaC6BOGxu7kQhDyM1g==}
+  vite-plugin-lucide-preprocess@1.4.1:
+    resolution: {integrity: sha512-hSyemjs8YpL16JlFd6YhWrjLHpxpt93lZSepuWGW6VcAIOGSeNqZjJg7qTpSCRU6YSZ3tVIwCkBX5K9WiCDplw==}
     peerDependencies:
       vite: '>=5'
 
@@ -2739,7 +2739,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@lucide/svelte@0.532.0(svelte@5.35.3)':
+  '@lucide/svelte@0.534.0(svelte@5.35.3)':
     dependencies:
       svelte: 5.35.3
 
@@ -3325,7 +3325,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@upstash/redis@1.35.1':
+  '@upstash/redis@1.35.2':
     dependencies:
       uncrypto: 0.1.3
 
@@ -3402,7 +3402,7 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
-  bits-ui@2.8.13(@internationalized/date@3.8.2)(svelte@5.35.3):
+  bits-ui@2.8.14(@internationalized/date@3.8.2)(svelte@5.35.3):
     dependencies:
       '@floating-ui/core': 1.7.2
       '@floating-ui/dom': 1.7.2
@@ -4417,7 +4417,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.258.2:
+  posthog-js@1.258.3:
     dependencies:
       core-js: 3.42.0
       fflate: 0.4.8
@@ -4873,12 +4873,12 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  vite-plugin-devtools-json@0.3.0(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)):
+  vite-plugin-devtools-json@0.4.1(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)):
     dependencies:
       uuid: 11.1.0
       vite: 7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)
 
-  vite-plugin-lucide-preprocess@1.4.0(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)):
+  vite-plugin-lucide-preprocess@1.4.1(vite@7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)):
     dependencies:
       vite: 7.0.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)
 
