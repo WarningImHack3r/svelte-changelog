@@ -26,7 +26,7 @@ jobs:
       - name: ❓ Has access to secrets?
         id: secrets-check
         continue-on-error: true
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.event.repository.full_name }}
           ref: ${{ github.head_ref }}
@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: 📂 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.event.repository.full_name }}
           ref: ${{ github.head_ref }}
