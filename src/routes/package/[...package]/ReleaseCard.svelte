@@ -164,7 +164,7 @@
 	]}
 >
 	<Accordion.Trigger
-		class="group bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=open]:rounded-b-none [&>svg]:size-[revert-layer] [&>svg]:w-4"
+		class="group bg-secondary px-4 py-3 hover:bg-secondary/75 hover:no-underline data-[state=open]:rounded-b-none [&>svg]:my-auto [&>svg]:w-4"
 	>
 		<div class="flex w-full items-center gap-2 xs:gap-1">
 			<div class="flex flex-col items-start gap-1">
@@ -208,7 +208,7 @@
 					{@render badges()}
 				</div>
 			</div>
-			<span class="mr-4 ml-auto flex text-right text-sm text-muted-foreground xs:mr-2 xs:ml-0">
+			<span class="ml-auto flex text-right text-sm text-muted-foreground xs:mr-2 xs:ml-0">
 				<span class="mr-1 hidden xs:block">•</span>
 				<Tooltip.Provider>
 					<Tooltip.Root delayDuration={300}>

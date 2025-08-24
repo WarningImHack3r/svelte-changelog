@@ -13,10 +13,10 @@ export function detectLanguage(code: string): (SpecialLanguage | (string & {})) 
 	const match = code
 		.split("\n", 1)[0]
 		?.trim()
-		?.match(/^(?:\/\/|#) ?[^ !]+?\.([A-Za-z0-9]{1,10})$/);
+		?.match(/^(?:\/\/|#) ?[^ !]+?\.([A-Za-z\d]{1,10})$/);
 	if (match) return match[1];
 
-	const hasHTML = /<\/[a-zA-Z0-9-]+>/.test(code);
+	const hasHTML = /<\/[a-zA-Z\d-]+>/.test(code);
 	const hasJS = / (let|var|const|=|\/\/) /.test(code);
 
 	if (hasHTML && hasJS) return "svelte";
