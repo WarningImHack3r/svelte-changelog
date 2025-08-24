@@ -12,13 +12,13 @@ import { OG_HEIGHT, OG_WIDTH } from "./constants";
 const sansFont = read(Pretendard).arrayBuffer();
 const displayFont = read(DMSerifDisplay).arrayBuffer();
 
-// Sources: https://github.com/huggingface/chat-ui/blob/main/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82,
+// Sources: https://github.com/huggingface/chat-ui/blob/main/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82
 // https://geoffrich.net/posts/svelte-social-image/
 export const GET: RequestHandler = async ({ url }) => {
 	const renderedComponent = render(Thumbnail, {
 		props: {
 			title: url.searchParams.get("title") ?? "",
-			description: url.searchParams.get("description")
+			description: url.searchParams.get("description") ?? undefined
 		}
 	});
 
@@ -31,12 +31,14 @@ export const GET: RequestHandler = async ({ url }) => {
 			{
 				name: "Pretendard",
 				data: await sansFont,
-				weight: 400
+				weight: 400,
+				style: "normal"
 			},
 			{
 				name: "DM Serif Display",
 				data: await displayFont,
-				weight: 400
+				weight: 400,
+				style: "normal"
 			}
 		]
 	});

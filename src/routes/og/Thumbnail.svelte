@@ -7,7 +7,9 @@
 	let { title, description = undefined }: Props = $props();
 </script>
 
-<div class="size-full">
-	<p class="font-display">{title}</p>
-	<p class="text-muted-foreground">{description}</p>
+<div class="my-auto flex h-full w-full flex-col justify-center p-4">
+	<p class="font-display text-7xl">{title}</p>
+	{#if description}
+		<p class="text-4xl text-muted-foreground">{description}</p>
+	{/if}
 </div>
