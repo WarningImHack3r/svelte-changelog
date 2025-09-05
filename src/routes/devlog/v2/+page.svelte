@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 </script>
 
@@ -87,7 +88,7 @@
 	sidebar for a better packages overview and an eased navigation.
 </p>
 
-<p>All that now lives under a brand new domain, <a href="/">{page.url.host}</a>.</p>
+<p>All that now lives under a brand new domain, <a href={resolve("/")}>{page.url.host}</a>.</p>
 
 <p>
 	This version truly is the beginning of a new era for this site, unlocking many possibilities

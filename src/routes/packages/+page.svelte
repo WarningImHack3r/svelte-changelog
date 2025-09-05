@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
+	import { resolve } from "$app/paths";
 	import { ChevronRight } from "@lucide/svelte";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import { Badge } from "$lib/components/ui/badge";
@@ -67,7 +68,9 @@
 					{/if}
 					<li>
 						<a
-							href="/package/{pkg.name}"
+							href={resolve("/package/[...package]", {
+								package: pkg.name
+							})}
 							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
 							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 						>

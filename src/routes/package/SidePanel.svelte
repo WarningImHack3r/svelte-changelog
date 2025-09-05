@@ -2,6 +2,7 @@
 	import { untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { browser } from "$app/environment";
+	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
 	import { PersistedState } from "runed";
@@ -133,7 +134,7 @@
 			<Card.Header class="grid-cols-2 items-center">
 				<Card.Title class="font-display text-2xl">Packages</Card.Title>
 				<a
-					href="/packages"
+					href={resolve("/packages")}
 					class="group ml-auto inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
 				>
 					See all
@@ -162,7 +163,9 @@
 										{:else}
 											<!-- Clickable sub-items -->
 											<a
-												href="/package/{pkg.name}"
+												href={resolve("/package/[...package]", {
+													package: pkg.name
+												})}
 												class="group inline-flex w-full items-center gap-1"
 											>
 												<span
@@ -204,7 +207,9 @@
 							{:else}
 								<!-- Clickable category -->
 								<a
-									href="/package/{firstPackageName}"
+									href={resolve("/package/[...package]", {
+										package: firstPackageName
+									})}
 									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary"
 								>
 									<span class="underline-offset-4 group-hover:underline">{category.name}</span>

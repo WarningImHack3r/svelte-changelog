@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onNavigate } from "$app/navigation";
+	import { resolve } from "$app/paths";
 	import { navigating } from "$app/state";
 	import { LoaderCircle, Menu } from "@lucide/svelte";
 	import { uniqueRepos } from "$lib/repositories";
@@ -38,9 +39,13 @@
 				{#if active}
 					<span class="font-bold underline underline-offset-2">{repo.owner}/<wbr />{repo.name}</span
 					>
+					<!-- ↖ sorry for that hideous formatting, can't help it, prettier got me -->
 				{:else}
 					<a
-						href="../{repo.owner}/{repo.name}"
+						href={resolve("/tracker/[org]/[repo]", {
+							org: repo.owner,
+							repo: repo.name
+						})}
 						class="underline-offset-2 hover:text-primary hover:underline"
 					>
 						{repo.owner}/<wbr />{repo.name}
