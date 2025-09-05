@@ -1,11 +1,12 @@
 import eslint from "@eslint/js";
 import prettierConfig from "eslint-config-prettier/flat";
 import svelte from "eslint-plugin-svelte";
+import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import svelteConfig from "./svelte.config.js";
 
-export default tseslint.config(
+export default defineConfig(
 	eslint.configs.recommended,
 	tseslint.configs.recommended,
 	svelte.configs.recommended,
@@ -36,7 +37,11 @@ export default tseslint.config(
 			"@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }]
 		}
 	},
-	{
-		ignores: ["build/", ".svelte-kit/", "dist/", "src/lib/components/ui/", "src/lib/utils.[jt]s"]
-	}
+	globalIgnores([
+		"build/",
+		".svelte-kit/",
+		"dist/",
+		"src/lib/components/ui/",
+		"src/lib/utils.[jt]s"
+	])
 );

@@ -250,6 +250,7 @@
 {/snippet}
 
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 	<a href={info.html_url}>
 		<MarkdownRenderer
 			markdown={info.title}
@@ -366,6 +367,7 @@
 				class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
 			>
 				{#if info.user}
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 					<a href={info.user.html_url} class="group inline-flex items-center">
 						<Avatar.Root class="mr-2 size-5">
 							<Avatar.Image
@@ -476,6 +478,7 @@
 						class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
 					>
 						{#if comment.user}
+							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 							<a href={comment.user.html_url} class="group inline-flex items-center">
 								<Avatar.Root class="mr-2 size-5">
 									<Avatar.Image
@@ -534,6 +537,7 @@
 							<!-- Left part: commit message, description & author -->
 							<div class="flex flex-col gap-1">
 								<div>
+									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 									<a href={commit.html_url} class="hover:underline">
 										<MarkdownRenderer
 											markdown={commitMessage ?? "_No message provided_"}
@@ -542,12 +546,12 @@
 										/>
 									</a>
 									{#if commit.author}
+										<!-- const to be able to disable eslint without getting owned by prettier wrapping stuff -->
+										{@const authorProfile = commit.author.html_url}
 										<div class="ml-0.5 inline-flex items-center gap-1.5 text-muted-foreground">
 											<span>•</span>
-											<a
-												href={commit.author.html_url}
-												class="group inline-flex items-center gap-1.5"
-											>
+											<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+											<a href={authorProfile} class="group inline-flex items-center gap-1.5">
 												<Avatar.Root class="size-4">
 													<Avatar.Image
 														src={commit.author.avatar_url}
@@ -618,6 +622,7 @@
 					<div
 						class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
 					>
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 						<a href={file.blob_url} class="inline-block hover:*:underline">
 							<span class="[overflow-wrap:_anywhere]">{file.filename}</span>
 							{#if file.additions > 0}

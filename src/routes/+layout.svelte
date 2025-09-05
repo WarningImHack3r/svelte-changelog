@@ -3,6 +3,7 @@
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { onNavigate } from "$app/navigation";
+	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
@@ -120,7 +121,7 @@
 	>
 		<div class="mx-auto flex h-14 w-full items-center px-6 xs:px-8">
 			<!-- Left part -->
-			<a href="/" class="flex items-center gap-2">
+			<a href={resolve("/")} class="flex items-center gap-2">
 				<img
 					src="https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg"
 					alt="Svelte"
