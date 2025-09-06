@@ -25,6 +25,7 @@
 	import { MediaQuery, SvelteMap } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { browser } from "$app/environment";
+	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import {
 		ArrowUpRight,
@@ -447,7 +448,9 @@
 							This pull request was released in
 							<Button
 								variant="link"
-								href="/package/{tagName}#{tagVersion}"
+								href={resolve("/package/[...package]", {
+									package: tagName
+								}) + `#${tagVersion}`}
 								class="h-auto p-0 text-green-500"
 							>
 								{tagName}
@@ -666,8 +669,12 @@
 			<div class="flex flex-wrap justify-end gap-4">
 				{#each linkedEntities as closingIssue (closingIssue.number)}
 					<Button
-						href="/{metadata.type === 'pull' ? 'issues' : 'pull'}/{closingIssue.repository
-							.owner}/{closingIssue.repository.name}/{closingIssue.number}"
+						href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+							pid: metadata.type === "pull" ? "issues" : "pull",
+							org: closingIssue.repository.owner,
+							repo: closingIssue.repository.name,
+							id: `${closingIssue.number}`
+						})}
 						variant="secondary"
 					>
 						Open {metadata.type === "pull" ? "issue" : "pull request"}
