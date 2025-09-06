@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from "svelte";
 	import { page } from "$app/state";
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
@@ -54,6 +55,75 @@
 	);
 	let isOlderThanAWeek = $derived(releaseDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 7);
 
+	$effect(() => {
+		const interval = setInterval(
+			() => (releaseDate = new Date(releaseDate)),
+			// this can become wrong when the unit changes
+			// and refresh too frequently for the now greater
+			// unit as $effect is only called once on client
+			// render, but it's an edge case I'm ready to
+			// accept as the user experience remains "live",
+			// it's just a matter of a small optimization
+			getRefreshPeriod(untrack(() => releaseDate))
+		);
+
+		return () => clearInterval(interval);
+	});
+
+	/**
+	 * A small utility function to get the diff between two dates
+	 * @param first The initial date
+	 * @param second The date to compare the first one to
+	 * @returns A diff object with every unit from second to year
+	 */
+	function getDiffBetween(first: Date, second: Date) {
+		return {
+			get seconds() {
+				return (second.getTime() - first.getTime()) / 1000;
+			},
+			get minutes() {
+				return Math.floor(this.seconds / 60);
+			},
+			get hours() {
+				return Math.floor(this.minutes / 60);
+			},
+			get days() {
+				return Math.floor(this.hours / 24);
+			},
+			get months() {
+				return Math.floor(this.days / 30);
+			},
+			get years() {
+				return Math.floor(this.months / 12);
+			}
+		};
+	}
+
+	/**
+	 * Get the refresh period needed for a "live feel"
+	 * when displaying a date. Mainly meant to be used inside
+	 * a {@link setInterval}.
+	 *
+	 * @param date The date to get the period for
+	 * @returns The number of milliseconds to wait for before refreshing
+	 */
+	function getRefreshPeriod(date: Date) {
+		const { minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+
+		if (years > 0) {
+			return 12 * 30 * 24 * 60 * 60 * 1_000;
+		} else if (months > 0) {
+			return 30 * 24 * 60 * 60 * 1_000;
+		} else if (days > 0) {
+			return 24 * 60 * 60 * 1_000;
+		} else if (hours > 0) {
+			return 60 * 60 * 1_000;
+		} else if (minutes > 0) {
+			return 60 * 1_000;
+		}
+		return 1_000;
+	}
+
 	/**
 	 * Converts a date to a relative date string.
 	 * e.g., "2 days ago", "3 hours ago", "1 minute ago"
@@ -63,12 +133,7 @@
 	 * @returns the relative date
 	 */
 	function timeAgo(date: Date, locale = "en") {
-		const diff = (Date.now() - date.getTime()) / 1000;
-		const minutes = Math.floor(diff / 60);
-		const hours = Math.floor(minutes / 60);
-		const days = Math.floor(hours / 24);
-		const months = Math.floor(days / 30);
-		const years = Math.floor(months / 12);
+		const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		if (years > 0) {
@@ -82,7 +147,7 @@
 		} else if (minutes > 0) {
 			return formatter.format(-minutes, "minute");
 		}
-		return formatter.format(0, "second"); // "now" if < 1 minute
+		return formatter.format(-Math.floor(seconds), "second");
 	}
 </script>
 
