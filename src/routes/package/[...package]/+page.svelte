@@ -75,7 +75,7 @@
 				const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
 				return creationTimestamp > maxDate;
 			})
-			.map(({ id }) => id.toString());
+			.map(({ id }) => `${id}`);
 	});
 
 	// Hash management

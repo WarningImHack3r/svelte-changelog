@@ -221,7 +221,7 @@
 
 <Accordion.Item
 	id={release.cleanVersion}
-	value={release.id.toString()}
+	value={`${release.id}`}
 	class={[
 		"scroll-mt-20 rounded-md border-b-0 shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20 [&>[data-accordion-content]]:rounded-md [&>[data-accordion-content]]:bg-accent/30",
 		{ "border border-primary": isMajorRelease && index < 3 },

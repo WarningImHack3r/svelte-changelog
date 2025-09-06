@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { Image, Info } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
@@ -188,26 +189,42 @@
 </div>
 
 {#if data.prs.length}
-	{@render list(
-		"Pull requests",
-		data.prs,
-		pr => `/pull/${pr.base.repo.owner.login}/${pr.base.repo.name}/${pr.number}`
+	{@render list("Pull requests", data.prs, pr =>
+		resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+			pid: "pull",
+			org: pr.base.repo.owner.login,
+			repo: pr.base.repo.name,
+			id: `${pr.number}`
+		})
 	)}
 {/if}
 
 {#if data.discussions.length}
 	{@render list("Discussions", data.discussions, d => {
-		const ownerSlashRepo = d.repository_url.replace("https://api.github.com/repos/", "");
-		return `/discussions/${ownerSlashRepo}/${d.number}`;
+		const [org = "", repo = ""] = d.repository_url
+			.replace("https://api.github.com/repos/", "")
+			.split("/");
+		return resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+			pid: "discussions",
+			org,
+			repo,
+			id: `${d.number}`
+		});
 	})}
 {/if}
 
 {#if data.issues.length}
 	{@render list("Issues", data.issues, issue => {
-		const ownerSlashRepo = issue.html_url
+		const [org = "", repo = ""] = issue.html_url
 			.replace("https://github.com/", "")
-			.replace(/\/[A-z]+\/\d+$/, "");
-		return `/issues/${ownerSlashRepo}/${issue.number}`;
+			.replace(/\/[A-z]+\/\d+$/, "")
+			.split("/");
+		return resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+			pid: "issues",
+			org,
+			repo,
+			id: `${issue.number}`
+		});
 	})}
 {/if}
 

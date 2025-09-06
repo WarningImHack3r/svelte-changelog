@@ -95,7 +95,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 				content: release.body_html ?? mdToHtml(release.body),
 				date: new Date(release.published_at ?? release.created_at),
 				description: `${release.cleanName} ${release.cleanVersion} release`,
-				id: release.id.toString(),
+				id: `${release.id}`,
 				link: release.html_url,
 				published: release.published_at ? new Date(release.published_at) : undefined,
 				title: `${release.cleanName}@${release.cleanVersion}`

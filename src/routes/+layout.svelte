@@ -127,22 +127,22 @@
 					alt="Svelte"
 					class="size-8"
 				/>
-				{#if !page.route.id?.startsWith("/devlog")}
+				{#if !page.route.id?.startsWith(resolve("/devlog"))}
 					<span class="hidden text-xl font-semibold text-shadow-xs/10 xs:inline-block">
 						<span class="font-display">Svelte</span>
 						<span class="text-primary">Changelog</span>
 					</span>
 				{/if}
 			</a>
-			{#if page.route.id?.startsWith("/devlog")}
+			{#if page.route.id?.startsWith(resolve("/devlog"))}
 				<div class="mx-4 h-8 w-0.5 rotate-25 rounded-full bg-muted-foreground/40"></div>
 				<span class="text-xl font-semibold">Blog</span>
 			{/if}
 
 			<!-- Navigation -->
-			{#if !page.route.id?.startsWith("/devlog")}
+			{#if !page.route.id?.startsWith(resolve("/devlog"))}
 				<ul class="ml-6 hidden sm:flex">
-					{#each [{ link: "/packages", title: "Packages" }, { link: "/tracker", title: "Tracker" }, { link: "/devlog", title: "Devlog" }] as { link, title } (link)}
+					{#each [{ link: resolve("/packages"), title: "Packages" }, { link: resolve("/tracker"), title: "Tracker" }, { link: resolve("/devlog"), title: "Devlog" }] as { link, title } (link)}
 						{@const disabled = page.url.pathname.startsWith(link)}
 						<li>
 							<Button

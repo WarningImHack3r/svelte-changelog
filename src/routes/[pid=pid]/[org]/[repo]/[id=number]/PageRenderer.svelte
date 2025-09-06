@@ -227,7 +227,7 @@
 	 * Returns the previous page to go back to
 	 */
 	function getPreviousPath() {
-		if (!browser || !document.referrer) return "/";
+		if (!browser || !document.referrer) return resolve("/");
 		return new URL(document.referrer).pathname;
 	}
 </script>
@@ -269,7 +269,7 @@
 	</h3>
 	<Accordion.Root type="single" class="mb-12">
 		{#each linkedEntities as entity (entity.number)}
-			<Accordion.Item value={entity.number.toString()}>
+			<Accordion.Item value={`${entity.number}`}>
 				<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:shrink-0">
 					<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
 						<!-- Title -->
@@ -660,7 +660,7 @@
 	<Button href={getPreviousPath()} variant="link" class="group mr-auto gap-0 md:mr-0">
 		<ChevronLeft class="mr-1 size-4 transition-transform duration-300 group-hover:-translate-x-1" />
 		Back
-		{#if getPreviousPath() === "/"}
+		{#if getPreviousPath() === resolve("/")}
 			to homepage
 		{/if}
 	</Button>

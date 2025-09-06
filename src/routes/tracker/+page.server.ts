@@ -1,9 +1,10 @@
 import { redirect } from "@sveltejs/kit";
+import { resolve } from "$app/paths";
 import { uniqueRepos } from "$lib/repositories";
 
-export function load({ url }) {
+export function load() {
 	// Load the first repo of our list
 	const firstRepo = uniqueRepos[0];
-	if (!firstRepo) redirect(307, "/");
-	redirect(307, `${url.pathname}/${firstRepo.owner}/${firstRepo.name}`);
+	if (!firstRepo) redirect(307, resolve("/"));
+	redirect(307, resolve("/tracker/[org]/[repo]", { org: firstRepo.owner, repo: firstRepo.name }));
 }
