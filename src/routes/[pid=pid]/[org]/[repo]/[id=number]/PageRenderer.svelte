@@ -632,7 +632,7 @@
 								<span class="font-semibold text-green-500">+{file.additions}</span>
 							{/if}
 							{#if file.deletions > 0}
-								<span class="font-semibold text-red-500">-{file.deletions}</span>
+								<span class="font-semibold text-destructive">-{file.deletions}</span>
 							{/if}
 						</a>
 						<span class="flex-shrink-0 text-right text-muted-foreground">
@@ -647,7 +647,7 @@
 					<span class="font-semibold text-green-500">
 						+{files.reduce((acc, file) => acc + file.additions, 0)}
 					</span>
-					<span class="font-semibold text-red-500">
+					<span class="font-semibold text-destructive">
 						-{files.reduce((acc, file) => acc + file.deletions, 0)}
 					</span>
 				</div>
