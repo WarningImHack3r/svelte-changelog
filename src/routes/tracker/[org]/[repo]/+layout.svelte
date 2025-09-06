@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { navigating } from "$app/state";
-	import { LoaderCircle, Menu } from "@lucide/svelte";
+	import { Menu } from "@lucide/svelte";
 	import { uniqueRepos } from "$lib/repositories";
 	import { Button } from "$lib/components/ui/button";
 	import * as Sheet from "$lib/components/ui/sheet";
-	import { Skeleton } from "$lib/components/ui/skeleton";
 	import RepoSidePanel from "./RepoSidePanel.svelte";
 
 	let { params, children } = $props();
@@ -17,18 +15,6 @@
 	});
 
 	let open = $state(false);
-
-	/**
-	 * The classic function that generates a random integer
-	 * between the specified minimum and maximum values, inclusive.
-	 *
-	 * @param min - The minimum value in the range.
-	 * @param max - The maximum value in the range.
-	 * @returns A random integer within the range [min, max].
-	 */
-	function random(min: number, max: number) {
-		return Math.floor(Math.random() * (max - min + 1)) + min;
-	}
 </script>
 
 {#snippet repoList()}
@@ -57,32 +43,9 @@
 {/snippet}
 
 <div class="relative flex gap-8">
-	{#if navigating.to}
-		<div class="flex w-full flex-col">
-			<div class="mt-8 space-y-2">
-				<Skeleton class="h-16 w-72" />
-				<Skeleton class="h-8 w-56" />
-			</div>
-			<div class="relative w-full space-y-2">
-				<p
-					class="absolute top-44 left-1/2 z-10 inline-flex -translate-x-1/2 -translate-y-1/2 justify-center text-xl"
-				>
-					<LoaderCircle class="mr-2 h-lh shrink-0 animate-spin" />
-					Gathering all the data, this may take some time...
-				</p>
-				{#each Array(3), i (i)}
-					<Skeleton class="mt-16 mb-4 h-12 w-52" />
-					{#each Array(random(1, 6)), j (j)}
-						<Skeleton class="h-24 w-full" />
-					{/each}
-				{/each}
-			</div>
-		</div>
-	{:else}
-		<div class="min-w-0">
-			{@render children()}
-		</div>
-	{/if}
+	<div class="min-w-0">
+		{@render children()}
+	</div>
 
 	<Sheet.Root bind:open>
 		<Sheet.Trigger>
