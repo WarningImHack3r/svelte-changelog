@@ -28,19 +28,40 @@ export async function getPackageReleases(
 	const foundVersions = new Set<string>();
 	const releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] = [];
 
-	// Discover releases
 	console.log("Starting loading releases...");
+
+	// Step 1: First identify all matching packages and create fetch tasks
+	const matchingPackageTasks: {
+		category: Repository["category"];
+		repo: (typeof allPackages)[number]["packages"][number];
+		releasesFetch: () => Promise<GitHubRelease[]>;
+	}[] = [];
+
+	// Collect all matching packages and create fetch tasks
 	for (const { category, packages } of allPackages) {
 		for (const { pkg, ...repo } of packages) {
 			if (pkg.name.localeCompare(packageName, undefined, { sensitivity: "base" }) !== 0) continue;
 
-			// 1. Get releases
-			const cachedReleases = await githubCache.getReleases({ ...repo, category });
+			matchingPackageTasks.push({
+				category,
+				repo: { pkg, ...repo },
+				// Create a fetch task but don't await it yet
+				releasesFetch: () => githubCache.getReleases({ ...repo, category })
+			});
+		}
+	}
+
+	// Step 2: Process all fetch tasks in parallel
+	const taskResults = await Promise.all(
+		matchingPackageTasks.map(async ({ category, repo, releasesFetch }) => {
+			// Await the individual fetch and process its results
+			const cachedReleases = await releasesFetch();
+
 			console.log(
 				`${cachedReleases.length} releases found for repo ${repo.repoOwner}/${repo.repoName}`
 			);
 
-			// 2. Filter out invalid ones
+			// Filter out invalid releases and sort them
 			const validReleases = cachedReleases
 				.map(release => {
 					if (!release.tag_name && release.name) return { ...release, tag_name: release.name }; // Mitigate (?) some obscure empty tags scenarios
@@ -60,7 +81,7 @@ export async function getPackageReleases(
 					const [name] = repo.metadataFromTag(release.tag_name);
 					return (
 						(repo.dataFilter?.(release) ?? true) &&
-						pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0
+						repo.pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 					);
 				})
 				.sort((a, b) => {
@@ -70,33 +91,42 @@ export async function getPackageReleases(
 				});
 			console.log("Final filtered count:", validReleases.length);
 
-			// 3. For each release, check if it is already found, searching by versions
-			const { dataFilter, metadataFromTag, changelogContentsReplacer, ...rest } = repo;
-			for (const release of validReleases) {
-				const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
-				console.log(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
-				if (foundVersions.has(cleanVersion)) continue;
+			// Return the processed data for further processing
+			return {
+				category,
+				repo,
+				validReleases
+			};
+		})
+	);
 
-				// If not, add its version to the set and itself to the final version
-				const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
-				console.log("Current newest version", currentNewestVersion);
-				foundVersions.add(cleanVersion);
-				releases.push({ cleanName, cleanVersion, ...release });
+	// Step 3: Process all results sequentially to maintain consistent result
+	for (const { category, repo, validReleases } of taskResults) {
+		// For each release, check if it is already found, searching by versions
+		const { dataFilter, metadataFromTag, changelogContentsReplacer, ...serializableRepo } = repo;
+		for (const release of validReleases) {
+			const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
+			console.log(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
+			if (foundVersions.has(cleanVersion)) continue;
 
-				// If it is newer than the newest we got, set this repo as the "final repo"
-				if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
-					console.log(
-						`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as final repo`
-					);
-					currentPackage = {
-						category,
-						pkg,
-						...rest
-					};
-				}
+			// If not, add its version to the set and itself to the final version
+			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
+			console.log("Current newest version", currentNewestVersion);
+			foundVersions.add(cleanVersion);
+			releases.push({ cleanName, cleanVersion, ...release });
+
+			// If it is newer than the newest we got, set this repo as the "final repo"
+			if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
+				console.log(
+					`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as final repo`
+				);
+				currentPackage = {
+					category,
+					...serializableRepo
+				};
 			}
-			console.log("Done");
 		}
+		console.log("Done");
 	}
 
 	return currentPackage
