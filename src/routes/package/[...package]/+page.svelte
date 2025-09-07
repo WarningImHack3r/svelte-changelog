@@ -14,6 +14,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import { getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import ReleaseCard from "./ReleaseCard.svelte";
 
@@ -47,7 +48,8 @@
 					)
 					.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
 	);
-	let showPrereleases = $state(true);
+	const sharedSettings = getPackageSettings();
+	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
 	let lastUpdateDate = $state<Date>();
 	$effect(() => {
@@ -62,7 +64,23 @@
 	});
 
 	let displayableReleases = $derived(
-		data.releases.filter(({ prerelease }) => showPrereleases || !prerelease)
+		data.releases.filter(({ prerelease, cleanVersion }) => {
+			const baseCondition = prerelease ? packageSettings.current.showPrereleases : true;
+			switch (packageSettings.current.releasesType) {
+				case "all":
+					return baseCondition;
+				case "major":
+					return (
+						baseCondition && semver.minor(cleanVersion) === 0 && semver.patch(cleanVersion) === 0
+					);
+				case "minor":
+					return (
+						baseCondition && semver.minor(cleanVersion) > 0 && semver.patch(cleanVersion) === 0
+					);
+				case "patch":
+					return baseCondition && semver.patch(cleanVersion) > 0;
+			}
+		})
 	);
 	let expandableReleases = $derived.by(() => {
 		const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
@@ -75,7 +93,7 @@
 				const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
 				return creationTimestamp > maxDate;
 			})
-			.map(({ id }) => id.toString());
+			.map(({ id }) => `${id}`);
 	});
 
 	// Hash management
@@ -203,12 +221,7 @@
 					</h3>
 				{/if}
 			</div>
-			<Accordion.Root
-				type="multiple"
-				bind:value={expandableReleases}
-				onValueChange={openValues => (expandableReleases = openValues)}
-				class="w-full space-y-2"
-			>
+			<Accordion.Root type="multiple" bind:value={expandableReleases} class="w-full space-y-2">
 				{#if data.currentPackage.pkg.deprecated}
 					<Alert.Root class="rounded-md border-amber-500 bg-amber-400/10">
 						<CircleAlert class="size-4" />
@@ -251,6 +264,17 @@
 						{isLatest}
 						{isMaintenance}
 					/>
+				{:else}
+					<div class="mt-8">
+						<p class="font-display text-2xl font-semibold">Nothing to show here!</p>
+						<p class="text-lg tracking-tight">
+							{#if packageSettings.current.releasesType !== "all" || !packageSettings.current.showPrereleases}
+								Try adjusting your visibility settings in the sidebar.
+							{:else}
+								If there was content, it would be here. Probably.
+							{/if}
+						</p>
+					</div>
 				{/each}
 			</Accordion.Root>
 		</div>

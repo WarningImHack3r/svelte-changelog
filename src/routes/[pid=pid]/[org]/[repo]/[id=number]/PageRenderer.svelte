@@ -25,6 +25,7 @@
 	import { MediaQuery, SvelteMap } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { browser } from "$app/environment";
+	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import {
 		ArrowUpRight,
@@ -226,7 +227,7 @@
 	 * Returns the previous page to go back to
 	 */
 	function getPreviousPath() {
-		if (!browser || !document.referrer) return "/";
+		if (!browser || !document.referrer) return resolve("/");
 		return new URL(document.referrer).pathname;
 	}
 </script>
@@ -268,7 +269,7 @@
 	</h3>
 	<Accordion.Root type="single" class="mb-12">
 		{#each linkedEntities as entity (entity.number)}
-			<Accordion.Item value={entity.number.toString()}>
+			<Accordion.Item value={`${entity.number}`}>
 				<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:shrink-0">
 					<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
 						<!-- Title -->
@@ -447,7 +448,9 @@
 							This pull request was released in
 							<Button
 								variant="link"
-								href="/package/{tagName}#{tagVersion}"
+								href={resolve("/package/[...package]", {
+									package: tagName
+								}) + `#${tagVersion}`}
 								class="h-auto p-0 text-green-500"
 							>
 								{tagName}
@@ -629,7 +632,7 @@
 								<span class="font-semibold text-green-500">+{file.additions}</span>
 							{/if}
 							{#if file.deletions > 0}
-								<span class="font-semibold text-red-500">-{file.deletions}</span>
+								<span class="font-semibold text-destructive">-{file.deletions}</span>
 							{/if}
 						</a>
 						<span class="flex-shrink-0 text-right text-muted-foreground">
@@ -644,7 +647,7 @@
 					<span class="font-semibold text-green-500">
 						+{files.reduce((acc, file) => acc + file.additions, 0)}
 					</span>
-					<span class="font-semibold text-red-500">
+					<span class="font-semibold text-destructive">
 						-{files.reduce((acc, file) => acc + file.deletions, 0)}
 					</span>
 				</div>
@@ -657,7 +660,7 @@
 	<Button href={getPreviousPath()} variant="link" class="group mr-auto gap-0 md:mr-0">
 		<ChevronLeft class="mr-1 size-4 transition-transform duration-300 group-hover:-translate-x-1" />
 		Back
-		{#if getPreviousPath() === "/"}
+		{#if getPreviousPath() === resolve("/")}
 			to homepage
 		{/if}
 	</Button>
@@ -666,8 +669,12 @@
 			<div class="flex flex-wrap justify-end gap-4">
 				{#each linkedEntities as closingIssue (closingIssue.number)}
 					<Button
-						href="/{metadata.type === 'pull' ? 'issues' : 'pull'}/{closingIssue.repository
-							.owner}/{closingIssue.repository.name}/{closingIssue.number}"
+						href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+							pid: metadata.type === "pull" ? "issues" : "pull",
+							org: closingIssue.repository.owner,
+							repo: closingIssue.repository.name,
+							id: `${closingIssue.number}`
+						})}
 						variant="secondary"
 					>
 						Open {metadata.type === "pull" ? "issue" : "pull request"}

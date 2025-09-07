@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Image, Info } from "@lucide/svelte";
+	import { resolve } from "$app/paths";
+	import { Image, Info, LoaderCircle } from "@lucide/svelte";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
 	import * as Dialog from "$lib/components/ui/dialog";
@@ -10,9 +11,9 @@
 	let { data, params } = $props();
 
 	type Item =
-		| NonNullable<typeof data.issues>[number]
-		| NonNullable<typeof data.prs>[number]
-		| NonNullable<typeof data.discussions>[number];
+		| Awaited<NonNullable<typeof data.issues>>[number]
+		| Awaited<NonNullable<typeof data.prs>>[number]
+		| Awaited<NonNullable<typeof data.discussions>>[number];
 
 	/**
 	 * Checks whether a date is more recent than a month.
@@ -51,15 +52,30 @@
 	}
 </script>
 
-{#snippet list<T extends Item>(title: string, items: T[], itemToLink: (item: T) => string)}
+{#snippet list<T extends Item>(
+	title: string,
+	items: T[] | Promise<T[]>,
+	itemToLink: (item: T) => string
+)}
 	<div>
 		<h2 class="mt-12 mb-4 text-3xl font-semibold tracking-tight">{title}</h2>
-		{#each items as item, i (item.id)}
-			{#if i > 0}
-				<Separator class="my-1" />
-			{/if}
-			{@render listItem(item, itemToLink(item))}
-		{/each}
+		{#await items}
+			<p class="mt-2 mb-4 inline-flex justify-center text-xl">
+				<LoaderCircle class="mr-2 h-lh shrink-0 animate-spin" />
+				Loading (this may take a while)...
+			</p>
+		{:then loadedItems}
+			{#each loadedItems as item, i (item.id)}
+				{#if i > 0}
+					<Separator class="my-1" />
+				{/if}
+				{@render listItem(item, itemToLink(item))}
+			{:else}
+				<p class="text-lg">Nothing to show there :/</p>
+			{/each}
+		{:catch e}
+			<p class="text-lg text-destructive">Failed to load elements: {e}</p>
+		{/await}
 	</div>
 {/snippet}
 
@@ -187,30 +203,36 @@
 	</div>
 </div>
 
-{#if data.prs.length}
-	{@render list(
-		"Pull requests",
-		data.prs,
-		pr => `/pull/${pr.base.repo.owner.login}/${pr.base.repo.name}/${pr.number}`
-	)}
-{/if}
+{@render list("Pull requests", data.prs, pr =>
+	resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+		pid: "pull",
+		org: pr.base.repo.owner.login,
+		repo: pr.base.repo.name,
+		id: `${pr.number}`
+	})
+)}
 
-{#if data.discussions.length}
-	{@render list("Discussions", data.discussions, d => {
-		const ownerSlashRepo = d.repository_url.replace("https://api.github.com/repos/", "");
-		return `/discussions/${ownerSlashRepo}/${d.number}`;
-	})}
-{/if}
+{@render list("Discussions", data.discussions, d => {
+	const [org = "", repo = ""] = d.repository_url
+		.replace("https://api.github.com/repos/", "")
+		.split("/");
+	return resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+		pid: "discussions",
+		org,
+		repo,
+		id: `${d.number}`
+	});
+})}
 
-{#if data.issues.length}
-	{@render list("Issues", data.issues, issue => {
-		const ownerSlashRepo = issue.html_url
-			.replace("https://github.com/", "")
-			.replace(/\/[A-z]+\/\d+$/, "");
-		return `/issues/${ownerSlashRepo}/${issue.number}`;
-	})}
-{/if}
-
-{#if [data.prs.length, data.discussions.length, data.issues.length].every(len => !len)}
-	<div class="mt-16 text-2xl">Nothing interesting to show here :/</div>
-{/if}
+{@render list("Issues", data.issues, issue => {
+	const [org = "", repo = ""] = issue.html_url
+		.replace("https://github.com/", "")
+		.replace(/\/[A-z]+\/\d+$/, "")
+		.split("/");
+	return resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+		pid: "issues",
+		org,
+		repo,
+		id: `${issue.number}`
+	});
+})}

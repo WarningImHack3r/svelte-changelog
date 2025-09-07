@@ -1,4 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
+import { resolve } from "$app/paths";
 import { publicRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 import type { BranchCommit } from "$lib/types";
@@ -14,7 +15,7 @@ export async function load({ params, fetch }) {
 
 	const realType = "commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
 	if (type !== realType) {
-		redirect(307, `/${realType}/${org}/${repo}/${id}`);
+		redirect(307, resolve("/[pid=pid]/[org]/[repo]/[id=number]", { pid: realType, org, repo, id }));
 	}
 
 	const matchingRepo = publicRepos.find(r => r.repoOwner === org && r.repoName === repo);

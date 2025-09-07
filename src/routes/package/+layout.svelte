@@ -5,6 +5,7 @@
 	import { Button } from "$lib/components/ui/button";
 	import * as Sheet from "$lib/components/ui/sheet";
 	import SidePanel from "./SidePanel.svelte";
+	import { initPackageSettings } from "./settings.svelte";
 
 	let { data, children } = $props();
 
@@ -14,7 +15,8 @@
 	});
 
 	let open = $state(false);
-	let showPrereleases = $state(true);
+	const sharedSettings = initPackageSettings();
+	let packageSettings = $derived(sharedSettings.get(page.data.currentPackage.pkg.name));
 </script>
 
 <div class="relative flex gap-8">
@@ -47,7 +49,7 @@
 				packageName={page.data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
 				otherReleases={data.allReleases}
-				bind:showPrereleases
+				bind:settings={packageSettings.current}
 			/>
 		</Sheet.Content>
 	</Sheet.Root>
@@ -60,6 +62,6 @@
 			"mt-35 hidden h-fit w-100 shrink-0 lg:flex",
 			page.data.currentPackage.pkg.description?.length && "mt-45"
 		]}
-		bind:showPrereleases
+		bind:settings={packageSettings.current}
 	/>
 </div>

@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { ChevronRight } from "@lucide/svelte";
-	import { PersistedState } from "runed";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
-	import type { Prettify } from "$lib/types";
+	import { type PackageSettings, type Prettify, releasesTypes } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as Card from "$lib/components/ui/card";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
+	import * as ToggleGroup from "$lib/components/ui/toggle-group";
+	import { DEFAULT_SETTINGS } from "./settings.svelte";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
@@ -43,29 +43,19 @@
 				| undefined
 			>;
 		};
-		showPrereleases?: boolean;
+		settings?: PackageSettings;
 		headless?: boolean;
 		class?: ClassValue;
 	};
 	let {
 		packageName = "",
 		allPackages = [],
-		showPrereleases = $bindable(true),
 		otherReleases = {},
+		settings = $bindable(DEFAULT_SETTINGS),
 		headless = false,
 		class: className
 	}: Props = $props();
 	let id = $props.id();
-
-	let storedPrereleaseState = new PersistedState(
-		`show-${packageName}-prereleases`,
-		showPrereleases
-	);
-	$effect(() => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		showPrereleases;
-		untrack(() => (storedPrereleaseState.current = showPrereleases));
-	});
 
 	/**
 	 * Extract the data from the {@link Props.otherReleases|otherReleases}
@@ -234,27 +224,57 @@
 		</Card.Content>
 	</Card.Root>
 	{#if headless}
-		<Separator class="my-4" />
+		<Separator class="my-4 rounded-full data-[orientation=horizontal]:h-1" />
+		<h3 class="mb-6 text-xl font-semibold tracking-tight text-primary">Visibility settings</h3>
 	{/if}
 	<div
 		class={[
-			"flex items-center gap-2",
+			"flex flex-col gap-2",
 			!headless && "-mt-2 rounded-b-xl border-x border-b bg-card px-4 pt-5 pb-2.5"
 		]}
 	>
-		<Checkbox
-			disabled
-			id="beta-releases-{id}"
-			aria-labelledby="beta-releases-label-{id}"
-			bind:checked={showPrereleases}
-		/>
-		<Label
-			id="beta-releases-label-{id}"
-			for="beta-releases-{id}"
-			class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-		>
-			Show {packageName} prereleases
-			<span class="text-muted-foreground">(Unavailable)</span>
-		</Label>
+		<!-- Prereleases toggle -->
+		<div class="flex items-center gap-2">
+			<Checkbox
+				id="beta-releases-{id}"
+				aria-labelledby="beta-releases-label-{id}"
+				bind:checked={
+					() => settings.showPrereleases ?? DEFAULT_SETTINGS.showPrereleases,
+					newState => (settings.showPrereleases = newState)
+				}
+			/>
+			<Label
+				id="beta-releases-label-{id}"
+				for="beta-releases-{id}"
+				class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+			>
+				Show {packageName} prereleases
+			</Label>
+		</div>
+
+		<Separator class="mt-0.5" />
+
+		<!-- Version filtering -->
+		<div class="flex items-center gap-2">
+			<span class="text-sm leading-none font-medium text-nowrap">Show release types:</span>
+			<ToggleGroup.Root
+				type="single"
+				bind:value={
+					() => settings.releasesType ?? DEFAULT_SETTINGS.releasesType,
+					newType => {
+						// don't take in account deselections, naturally always leaving something selected
+						if (newType) settings.releasesType = newType;
+					}
+				}
+				size="sm"
+				class="w-full"
+			>
+				{#each releasesTypes as releaseType (releaseType.toLowerCase())}
+					<ToggleGroup.Item value={releaseType.toLowerCase()} class="h-auto py-0.5">
+						{releaseType}
+					</ToggleGroup.Item>
+				{/each}
+			</ToggleGroup.Root>
+		</div>
 	</div>
 </div>
