@@ -49,7 +49,7 @@
 				packageName={page.data.currentPackage.pkg.name}
 				allPackages={data.displayablePackages}
 				otherReleases={data.allReleases}
-				bind:showPrereleases={packageSettings.current.showPrereleases}
+				bind:settings={packageSettings.current}
 			/>
 		</Sheet.Content>
 	</Sheet.Root>
@@ -62,6 +62,6 @@
 			"mt-35 hidden h-fit w-100 shrink-0 lg:flex",
 			page.data.currentPackage.pkg.description?.length && "mt-45"
 		]}
-		bind:showPrereleases={packageSettings.current.showPrereleases}
+		bind:settings={packageSettings.current}
 	/>
 </div>

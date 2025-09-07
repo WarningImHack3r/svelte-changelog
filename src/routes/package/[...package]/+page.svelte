@@ -48,7 +48,7 @@
 					)
 					.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
 	);
-	const sharedSettings = getPackageSettings()
+	const sharedSettings = getPackageSettings();
 	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
 	let lastUpdateDate = $state<Date>();
@@ -64,7 +64,23 @@
 	});
 
 	let displayableReleases = $derived(
-		data.releases.filter(({ prerelease }) => packageSettings.current.showPrereleases || !prerelease)
+		data.releases.filter(({ prerelease, cleanVersion }) => {
+			const baseCondition = prerelease ? packageSettings.current.showPrereleases : true;
+			switch (packageSettings.current.releasesType) {
+				case "all":
+					return baseCondition;
+				case "major":
+					return (
+						baseCondition && semver.minor(cleanVersion) === 0 && semver.patch(cleanVersion) === 0
+					);
+				case "minor":
+					return (
+						baseCondition && semver.minor(cleanVersion) > 0 && semver.patch(cleanVersion) === 0
+					);
+				case "patch":
+					return baseCondition && semver.patch(cleanVersion) > 0;
+			}
+		})
 	);
 	let expandableReleases = $derived.by(() => {
 		const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
@@ -248,6 +264,17 @@
 						{isLatest}
 						{isMaintenance}
 					/>
+				{:else}
+					<div class="mt-8">
+						<p class="font-display text-2xl font-semibold">Nothing to show here!</p>
+						<p class="text-lg tracking-tight">
+							{#if packageSettings.current.releasesType !== "all" || !packageSettings.current.showPrereleases}
+								Try adjusting your visibility settings in the sidebar.
+							{:else}
+								If there was content, it would be here. Probably.
+							{/if}
+						</p>
+					</div>
 				{/each}
 			</Accordion.Root>
 		</div>

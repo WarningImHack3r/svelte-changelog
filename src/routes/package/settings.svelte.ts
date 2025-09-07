@@ -4,8 +4,9 @@ import type { PackageSettings } from "$lib/types";
 
 const settingsKey = Symbol("settings");
 
-const DEFAULT_SETTINGS: PackageSettings = {
-	showPrereleases: true
+export const DEFAULT_SETTINGS: PackageSettings = {
+	showPrereleases: true,
+	releasesType: "all"
 };
 
 class PackagesSettings {
