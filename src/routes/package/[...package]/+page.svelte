@@ -14,6 +14,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import { getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import ReleaseCard from "./ReleaseCard.svelte";
 
@@ -47,7 +48,8 @@
 					)
 					.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
 	);
-	let showPrereleases = $state(true);
+	const sharedSettings = getPackageSettings()
+	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
 	let lastUpdateDate = $state<Date>();
 	$effect(() => {
@@ -62,7 +64,7 @@
 	});
 
 	let displayableReleases = $derived(
-		data.releases.filter(({ prerelease }) => showPrereleases || !prerelease)
+		data.releases.filter(({ prerelease }) => packageSettings.current.showPrereleases || !prerelease)
 	);
 	let expandableReleases = $derived.by(() => {
 		const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
@@ -203,12 +205,7 @@
 					</h3>
 				{/if}
 			</div>
-			<Accordion.Root
-				type="multiple"
-				bind:value={expandableReleases}
-				onValueChange={openValues => (expandableReleases = openValues)}
-				class="w-full space-y-2"
-			>
+			<Accordion.Root type="multiple" bind:value={expandableReleases} class="w-full space-y-2">
 				{#if data.currentPackage.pkg.deprecated}
 					<Alert.Root class="rounded-md border-amber-500 bg-amber-400/10">
 						<CircleAlert class="size-4" />

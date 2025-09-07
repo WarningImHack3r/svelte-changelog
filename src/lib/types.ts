@@ -118,3 +118,10 @@ export type BranchCommit = {
  * The slug name for all the packages
  */
 export const ALL_SLUG = "all";
+
+/**
+ * A package's local visibility settings
+ */
+export type PackageSettings = {
+	showPrereleases: boolean;
+};
