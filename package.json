@@ -41,7 +41,7 @@
 		"clsx": "^2.1.1",
 		"eslint": "^9.35.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-svelte": "^3.12.1",
+		"eslint-plugin-svelte": "^3.12.2",
 		"feed": "^5.1.0",
 		"globals": "^16.3.0",
 		"marked": "^16.2.1",
