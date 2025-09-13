@@ -362,7 +362,7 @@
 	<!-- Info -->
 	<div class="mb-8 flex w-full flex-col justify-center gap-8 *:h-fit md:flex-row">
 		<!-- Left part - body -->
-		<div class="flex-1 rounded-md border bg-muted/30">
+		<div class="flex-1 rounded-md border bg-background">
 			<!-- Author -->
 			<div
 				class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
@@ -389,7 +389,7 @@
 				</span>
 			</div>
 			<!-- Body -->
-			<div class="p-4">
+			<div class="bg-muted/30 p-4">
 				<MarkdownRenderer
 					markdown={info.body || "_No description provided_"}
 					parseRawHtml
@@ -427,7 +427,7 @@
 		</div>
 		<!-- Right part - info -->
 		<div class="flex flex-col gap-4 md:w-2/5 md:max-w-xs md:min-w-72">
-			<div class="rounded-md border px-4 pb-3">
+			<div class="rounded-md border bg-background px-4 pb-3">
 				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pt-2 pb-1 text-xl font-semibold">Info</h4>
 				{#each rightPartInfo as { title, value }, i (title)}
 					{#if i > 0}
@@ -442,22 +442,24 @@
 			{#await mergedTagName then mergedTag}
 				{#if mergedTag}
 					{@const [tagName, tagVersion] = mergedTag}
-					<Alert.Root class="rounded-md border-green-500 bg-green-400/10">
-						<Tag class="size-4" />
-						<Alert.Description class="inline text-foreground">
-							This pull request was released in
-							<Button
-								variant="link"
-								href={resolve("/package/[...package]", {
-									package: tagName
-								}) + `#${tagVersion}`}
-								class="h-auto p-0 text-green-500"
-							>
-								{tagName}
-								{tagVersion}
-							</Button>
-						</Alert.Description>
-					</Alert.Root>
+					<div class="bg-background">
+						<Alert.Root class="rounded-md border-green-500 bg-green-400/10">
+							<Tag class="size-4" />
+							<Alert.Description class="inline text-foreground">
+								This pull request was released in
+								<Button
+									variant="link"
+									href={resolve("/package/[...package]", {
+										package: tagName
+									}) + `#${tagVersion}`}
+									class="h-auto p-0 text-green-500"
+								>
+									{tagName}
+									{tagVersion}
+								</Button>
+							</Alert.Description>
+						</Alert.Root>
+					</div>
 				{/if}
 			{/await}
 		</div>

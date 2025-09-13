@@ -150,6 +150,13 @@
 
 	body {
 		@apply flex min-h-screen flex-col bg-background text-foreground;
+		background-image:
+			radial-gradient(var(--color-border) 0.5px, transparent 0.5px),
+			radial-gradient(var(--color-border) 0.5px, var(--color-background) 0.5px);
+		background-size: 20px 20px;
+		background-position:
+			0 0,
+			10px 10px;
 	}
 
 	/* I like pointer cursors on buttons */
