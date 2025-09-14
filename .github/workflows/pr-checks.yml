@@ -91,7 +91,7 @@ jobs:
 
       - name: 🔍 Get modified files
         id: modified-files
-        uses: tj-actions/changed-files@v46
+        uses: tj-actions/changed-files@v47
 
       - name: 📤 Export results
         id: changed-files

@@ -9,6 +9,7 @@ import type {
 } from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
 import { Octokit } from "octokit";
+import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import type { Repository } from "$lib/repositories";
 import type { Issues, Pulls } from "$lib/types";
@@ -323,20 +324,20 @@ export class GitHubCache {
 		// Unknown type, try to find or null otherwise
 		try {
 			return await this.getPullRequestDetails(owner, repo, id);
-		} catch (err: unknown) {
+		} catch (err) {
 			console.error(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
 		}
 
 		try {
 			// doesn't come first because issues will also resolve for prs
 			return await this.getIssueDetails(owner, repo, id);
-		} catch (err: unknown) {
+		} catch (err) {
 			console.error(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
 		}
 
 		try {
 			return await this.getDiscussionDetails(owner, repo, id);
-		} catch (err: unknown) {
+		} catch (err) {
 			console.error(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
 		}
 
@@ -689,9 +690,9 @@ export class GitHubCache {
 			repo,
 			ref:
 				owner === "sveltejs" &&
-				repo === "prettier-plugin-svelte" && // this repo is a bit of a mess
+				repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
 				tags[0] &&
-				repository.metadataFromTag(tags[0].name)[1].startsWith("3")
+				semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
 					? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
 					: undefined,
 			path: "CHANGELOG.md"

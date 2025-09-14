@@ -105,9 +105,10 @@
 
 <header
 	class={[
-		"sticky top-0 z-40 w-full bg-background/95 backdrop-blur transition-shadow duration-500 supports-backdrop-filter:bg-background/60",
+		"sticky top-0 z-40 w-full transition-shadow duration-500",
 		{
-			"shadow-sm": newsToDisplay || (scrollY.current ?? 0) >= 25
+			"bg-background/95 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60":
+				newsToDisplay || (scrollY.current ?? 0) >= 25
 		}
 	]}
 >

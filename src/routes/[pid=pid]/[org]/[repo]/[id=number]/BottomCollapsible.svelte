@@ -22,7 +22,7 @@
 	let id = $props.id();
 </script>
 
-<div class="rounded-md border px-4">
+<div class="rounded-md border bg-background px-4">
 	<Accordion.Root type="single" value={openByDefault ? id : undefined}>
 		<Accordion.Item value={id} class="border-b-0">
 			<Accordion.Trigger

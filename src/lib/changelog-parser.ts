@@ -1,8 +1,7 @@
 // Gently stolen from https://github.com/fl-client/changelog-parser as this “fixed” version
 // is not available on npm.
 // Removed the `filePath` option as I don't need it, bring in the types and fix the linting errors.
-
-const EOL = "\n";
+import { EOL } from "node:os";
 
 // patterns
 const semver = /\[?v?([\w.-]+\.[\w.-]+[a-zA-Z0-9])]?/;
@@ -37,30 +36,9 @@ type ProcessingData = {
  * Changelog parser.
  *
  * @param text changelog text
- * @param callback optional callback
  * @returns parsed changelog object
  */
-export default function parseChangelog(
-	text: string,
-	callback?: (error: string | null, result?: Changelog) => void
-): Promise<Changelog> {
-	const changelog = parse(text);
-
-	if (typeof callback === "function") {
-		changelog.then(log => callback(null, log)).catch((err: string) => callback(err));
-	}
-
-	// otherwise, invoke callback
-	return changelog;
-}
-
-/**
- * Internal parsing logic.
- *
- * @param text the changelog text
- * @returns the parsed changelog object
- */
-function parse(text: string): Promise<Changelog> {
+export default function parseChangelog(text: string): Promise<Changelog> {
 	let data: ReturnType<typeof handleLine> = {
 		log: {
 			title: "",
@@ -71,22 +49,19 @@ function parse(text: string): Promise<Changelog> {
 	};
 
 	return new Promise(resolve => {
-		function done() {
-			// push last version into log
-			if (data.current) {
-				pushCurrent(data);
-			}
-
-			// clean up description
-			data.log.description = clean(data.log.description);
-
-			resolve(data.log);
+		for (const line of text.split(/\r\n?|\n/gm)) {
+			data = handleLine(line, data);
 		}
 
-		if (text) {
-			text.split(/\r\n?|\n/gm).forEach(line => (data = handleLine(line, data)));
-			done();
+		// push last version into log
+		if (data.current) {
+			pushCurrent(data);
 		}
+
+		// clean up description
+		data.log.description = clean(data.log.description);
+
+		resolve(data.log);
 	});
 }
 
@@ -98,16 +73,16 @@ function parse(text: string): Promise<Changelog> {
  */
 function handleLine(line: string, data: ProcessingData): ProcessingData {
 	// skip line if it's a link label
-	if (RegExp(/^\[[^[\]]*] *?:/).exec(line)) return data;
+	if (/^\[[^[\]]*] *?:/.exec(line)) return data;
 
 	// set the title if it's there
-	if (!data.log.title && RegExp(/^# ?[^#]/).exec(line)) {
+	if (!data.log.title && /^# ?[^#]/.exec(line)) {
 		data.log.title = line.substring(1).trim();
 		return data;
 	}
 
 	// new version found!
-	if (RegExp(/^##? ?[^#]/).exec(line)) {
+	if (/^##? ?[^#]/.exec(line)) {
 		if (data.current?.title) pushCurrent(data);
 
 		data.current = versionFactory();
@@ -116,8 +91,9 @@ function handleLine(line: string, data: ProcessingData): ProcessingData {
 
 		data.current.title = line.substring(2).trim();
 
-		if (data.current.title && date.exec(data.current.title))
+		if (data.current.title) {
 			data.current.date = date.exec(data.current.title)?.at(1) ?? null;
+		}
 
 		return data;
 	}
