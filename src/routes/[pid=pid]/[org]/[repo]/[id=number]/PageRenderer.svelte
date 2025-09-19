@@ -11,11 +11,23 @@
 	import githubLight from "@shikijs/themes/github-light-default";
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+	import { loadLanguages } from "./syntax-highlighting";
 
 	const highlighter = createHighlighterCoreSync({
 		langs: [svelte, typescript, javascript, html, css, json, shell, diff],
 		themes: [githubLight, githubDark],
 		engine: createJavaScriptRegexEngine()
+	});
+
+	const loadedLanguages = loadLanguages({
+		svelte,
+		typescript,
+		javascript,
+		html,
+		css,
+		json,
+		shell,
+		diff
 	});
 </script>
 
@@ -72,7 +84,11 @@
 			highlighter,
 			{
 				themes: { light: "github-light-default", dark: "github-dark-default" },
-				transformers: [transformerTrimCode, transformerLanguageDetection, transformerDiffMarking]
+				transformers: [
+					transformerTrimCode,
+					transformerLanguageDetection(loadedLanguages),
+					transformerDiffMarking
+				]
 			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};
