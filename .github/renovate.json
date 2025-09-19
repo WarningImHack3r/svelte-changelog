@@ -9,11 +9,6 @@
 			"matchManagers": ["github-actions", "npm"],
 			"groupName": "{{manager}}",
 			"addLabels": ["{{manager}}"]
-		},
-		{
-			"matchUpdateTypes": ["patch"],
-			"matchCurrentVersion": "!/^0/",
-			"automerge": true
 		}
 	]
 }
