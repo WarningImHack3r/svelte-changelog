@@ -813,23 +813,26 @@
 				border-radius: var(--radius-xl);
 				border: 1px var(--tw-border-style) var(--color-border);
 
-				&::before {
-					content: "";
+				&::before,
+				&::after {
+					text-transform: lowercase;
+					font-size: var(--text-xs);
 					position: absolute;
+					padding: 0.6rem 1rem;
+				}
+
+				&::before {
+					content: attr(data-language);
 					inset: 0 0 auto 0;
 					height: 2.5rem;
 					background-color: var(--color-secondary);
 					border-bottom: 1px var(--tw-border-style) var(--color-border);
 				}
 
-				&::after {
-					content: attr(data-language);
-					text-transform: lowercase;
-					position: absolute;
-					inset: 0 auto auto 0;
-					padding: 0.5rem 1rem;
-					margin-top: 0.1rem;
-					font-size: var(--text-xs);
+				&[data-detected="true"]::after {
+					content: "(auto-detected)";
+					inset: 0 0 auto auto;
+					color: var(--color-muted-foreground);
 				}
 			}
 		}

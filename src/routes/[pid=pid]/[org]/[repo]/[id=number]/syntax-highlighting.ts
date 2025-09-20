@@ -116,6 +116,7 @@ export function transformerLanguageDetection(
 					return;
 				}
 				options.lang = detectedLanguage;
+				if (options.meta) options.meta["data-detected"] = true;
 				return code;
 			}
 		},
