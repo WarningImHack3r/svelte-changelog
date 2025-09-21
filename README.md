@@ -30,6 +30,7 @@ For more info, visit the [v2 release post](https://svelte-changelog.dev/devlog/v
 ### Run locally
 
 The main requirements to run Svelte Changelog are the `.env` entries, which you can find an example of inside the `.env.example`:
+
 - `GITHUB_TOKEN`: a [classic GitHub token](https://github.com/settings/tokens) with the `public_repo` scope (that's it), required for API requests.
 - `KV_REST_API_TOKEN` (optional): the token for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
 - `KV_REST_API_URL` (optional): the URL for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
