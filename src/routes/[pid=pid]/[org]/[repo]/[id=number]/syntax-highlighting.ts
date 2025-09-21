@@ -1,28 +1,86 @@
 import { browser } from "$app/environment";
 import posthog from "posthog-js";
-import type { ShikiTransformer, SpecialLanguage } from "shiki";
+import type { LanguageRegistration, ShikiTransformer } from "shiki";
+
+/**
+ * Pre-load the languages by returning regular expressions from language
+ * registrations.
+ *
+ * @param languages a set of languages and their associated registrations.
+ * @returns a set of languages and their associated regular expressions to test code against.
+ */
+export function loadLanguages(
+	languages: Record<string, LanguageRegistration[]>
+): Record<string, string[]> {
+	return Object.fromEntries(
+		Object.entries(languages).map(([language, registrations]) => {
+			const regexps: string[] = [];
+			for (const registration of registrations) {
+				const patterns = registration.patterns;
+				const visitedIncludes = new Set<string>();
+				for (const pattern of patterns) {
+					// Pattern with #include
+					if (pattern.include) {
+						if (visitedIncludes.has(pattern.include)) continue;
+						visitedIncludes.add(pattern.include);
+						const repoValue = registration.repository[pattern.include.slice(1)];
+						if (repoValue) {
+							if (repoValue.match) regexps.push(repoValue.match.toString());
+							if (repoValue.begin) regexps.push(repoValue.begin.toString());
+							if (repoValue.end) regexps.push(repoValue.end.toString());
+							if (repoValue.patterns) patterns.push(...repoValue.patterns);
+						}
+						continue;
+					}
+					// Custom pattern
+					if (pattern.match) regexps.push(pattern.match.toString());
+					if (pattern.begin) regexps.push(pattern.begin.toString());
+					if (pattern.end) regexps.push(pattern.end.toString());
+				}
+			}
+			return [language, regexps];
+		})
+	);
+}
 
 /**
  * Detects the programming or markup language based on the given code snippet.
  *
  * @param code the code snippet to analyze and detect the language from.
+ * @param languages the pre-loaded languages and their associated regexps.
  * @returns The detected language as a string, or undefined if no language
  * could be determined.
  */
-export function detectLanguage(code: string): (SpecialLanguage | (string & {})) | undefined {
-	const match = code
-		.split("\n", 1)[0]
-		?.trim()
-		?.match(/^(?:\/\/|#) ?[^ !]+?\.([A-Za-z\d]{1,10})$/);
-	if (match) return match[1];
+export function detectLanguage(
+	code: string,
+	languages: Record<string, string[]>
+): string | undefined {
+	let languageCandidate: string | undefined = undefined;
+	let highestRate = 0;
+	let highestTotal = 0;
 
-	const hasHTML = /<\/[a-zA-Z\d-]+>/.test(code);
-	const hasJS = / (let|var|const|=|\/\/) /.test(code);
-
-	if (hasHTML && hasJS) return "svelte";
-	if (hasHTML) return "html";
-	if (hasJS) return /(: [A-Z]|type |interface )/.test(code) ? "ts" : "js";
-	if (/[a-z-]+: \S+/.test(code)) return "css";
+	for (const [language, regexps] of Object.entries(languages)) {
+		if (!regexps.length) continue;
+		const matchesCount = regexps
+			.map(regexp => {
+				try {
+					return code.match(regexp)?.length ?? 0;
+				} catch {
+					return 0;
+				}
+			})
+			.reduce((acc, b) => acc + b, 0);
+		const successRate = matchesCount / regexps.length;
+		if (
+			successRate > highestRate ||
+			(successRate === highestRate && regexps.length > highestTotal)
+		) {
+			languageCandidate = language;
+			highestRate = successRate;
+			highestTotal = regexps.length;
+		}
+	}
+	return languageCandidate;
 }
 
 /**
@@ -39,32 +97,37 @@ export const transformerTrimCode: ShikiTransformer = {
  * in code blocks. Useful for handling code snippets with "diff" language and converting them
  * to a detected programming language.
  */
-export const transformerLanguageDetection: ShikiTransformer = {
-	preprocess(code, options) {
-		if (options.lang === "diff") {
-			const cleanedCode = code
-				.split("\n")
-				.map(line => line.replace(/^[+-]/, ""))
-				.join("\n");
-			const detectedLanguage = detectLanguage(cleanedCode);
-			if (!detectedLanguage) {
-				if (browser)
-					posthog.captureException(new Error("Failed to determine diff language"), {
-						code
-					});
-				return;
+export function transformerLanguageDetection(
+	languages: Record<string, string[]>
+): ShikiTransformer {
+	return {
+		preprocess(code, options) {
+			if (options.lang === "diff") {
+				const cleanedCode = code
+					.split("\n")
+					.map(line => line.replace(/^[+-]/, ""))
+					.join("\n");
+				const detectedLanguage = detectLanguage(cleanedCode, languages);
+				if (!detectedLanguage) {
+					if (browser)
+						posthog.captureException(new Error("Failed to determine diff language"), {
+							code
+						});
+					return;
+				}
+				options.lang = detectedLanguage;
+				if (options.meta) options.meta["data-detected"] = true;
+				return code;
 			}
-			options.lang = detectedLanguage;
-			return code;
+		},
+		pre(node) {
+			node.properties["data-language"] = this.options.lang
+				.toLowerCase()
+				.replace(/^js$/, "javascript")
+				.replace(/^ts$/, "typescript");
 		}
-	},
-	pre(node) {
-		node.properties["data-language"] = this.options.lang
-			.toLowerCase()
-			.replace(/^js$/, "javascript")
-			.replace(/^ts$/, "typescript");
-	}
-};
+	};
+}
 
 /**
  * Replicate the behavior of Shiki's `transformerNotationDiff`,

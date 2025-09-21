@@ -11,11 +11,23 @@
 	import githubLight from "@shikijs/themes/github-light-default";
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+	import { loadLanguages } from "./syntax-highlighting";
 
 	const highlighter = createHighlighterCoreSync({
 		langs: [svelte, typescript, javascript, html, css, json, shell, diff],
 		themes: [githubLight, githubDark],
 		engine: createJavaScriptRegexEngine()
+	});
+
+	const loadedLanguages = loadLanguages({
+		svelte,
+		typescript,
+		javascript,
+		html,
+		css,
+		json,
+		shell,
+		diff
 	});
 </script>
 
@@ -72,7 +84,11 @@
 			highlighter,
 			{
 				themes: { light: "github-light-default", dark: "github-dark-default" },
-				transformers: [transformerTrimCode, transformerLanguageDetection, transformerDiffMarking]
+				transformers: [
+					transformerTrimCode,
+					transformerLanguageDetection(loadedLanguages),
+					transformerDiffMarking
+				]
 			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};
@@ -797,23 +813,26 @@
 				border-radius: var(--radius-xl);
 				border: 1px var(--tw-border-style) var(--color-border);
 
-				&::before {
-					content: "";
+				&::before,
+				&::after {
+					text-transform: lowercase;
+					font-size: var(--text-xs);
 					position: absolute;
+					padding: 0.6rem 1rem;
+				}
+
+				&::before {
+					content: attr(data-language);
 					inset: 0 0 auto 0;
 					height: 2.5rem;
 					background-color: var(--color-secondary);
 					border-bottom: 1px var(--tw-border-style) var(--color-border);
 				}
 
-				&::after {
-					content: attr(data-language);
-					text-transform: lowercase;
-					position: absolute;
-					inset: 0 auto auto 0;
-					padding: 0.5rem 1rem;
-					margin-top: 0.1rem;
-					font-size: var(--text-xs);
+				&[data-detected="true"]::after {
+					content: "(auto-detected)";
+					inset: 0 0 auto auto;
+					color: var(--color-muted-foreground);
 				}
 			}
 		}
