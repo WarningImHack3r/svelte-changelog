@@ -1,5 +1,12 @@
 import { dev } from "$app/environment";
-import { GITHUB_TOKEN, KV_REST_API_TOKEN, KV_REST_API_URL } from "$env/static/private";
+import {
+	GH_APP_ID,
+	GH_APP_INSTALLATION_TOKEN,
+	GH_APP_PRIV_KEY_BASE64,
+	GITHUB_TOKEN,
+	KV_REST_API_TOKEN,
+	KV_REST_API_URL
+} from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
 	Issue as GQLIssue,
@@ -8,7 +15,7 @@ import type {
 	ReferencedSubject
 } from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
-import { Octokit } from "octokit";
+import { App, Octokit } from "octokit";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import type { Repository } from "$lib/repositories";
@@ -182,7 +189,7 @@ export class GitHubCache {
 	 * @param githubToken the GitHub token for uncached API requests
 	 * @constructor
 	 */
-	constructor(redisUrl: string, redisToken: string, githubToken: string) {
+	constructor(redisUrl: string, redisToken: string, octokit: Octokit) {
 		this.#cache = new CacheHandler(
 			new Redis({
 				url: redisUrl,
@@ -191,9 +198,7 @@ export class GitHubCache {
 			dev
 		);
 
-		this.#octokit = new Octokit({
-			auth: githubToken
-		});
+		this.#octokit = octokit;
 	}
 
 	/**
@@ -977,4 +982,15 @@ export class GitHubCache {
 	}
 }
 
-export const githubCache = new GitHubCache(KV_REST_API_URL, KV_REST_API_TOKEN, GITHUB_TOKEN);
+export const githubCache = new GitHubCache(
+	KV_REST_API_URL,
+	KV_REST_API_TOKEN,
+	GITHUB_TOKEN
+		? new Octokit({
+				auth: GITHUB_TOKEN
+			})
+		: await new App({
+				appId: GH_APP_ID,
+				privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8")
+			}).getInstallationOctokit(+GH_APP_INSTALLATION_TOKEN)
+);
