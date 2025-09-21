@@ -13,7 +13,7 @@ Made with SvelteKit, TailwindCSS & shadcn-svelte.
 - RSS feeds for all packages
 - Dynamically computed badges to indicate whether a package is the Latest, a Major version, a Prerelease, or a Maintenance version
 - Sidebar with the number of unseen releases for each package
-- ...and more!
+- ...and much more!
 
 ## How does it work?
 
@@ -26,6 +26,19 @@ wrapper around GitHub releases.
 **No data alteration is performed by the site other than for styling and rendering purposes**.
 
 For more info, visit the [v2 release post](https://svelte-changelog.dev/devlog/v2).
+
+### Run locally
+
+The main requirements to run Svelte Changelog are the `.env` entries, which you can find an example of inside the `.env.example`:
+- `GITHUB_TOKEN`: a [classic GitHub token](https://github.com/settings/tokens) with the `public_repo` scope (that's it), required for API requests.
+- `KV_REST_API_TOKEN` (optional): the token for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
+- `KV_REST_API_URL` (optional): the URL for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
+- `PUBLIC_POSTHOG_KEY` (optional): the token for the analytics service I use, [PostHog](https://posthog.com). You can leave it empty; analytics are disabled in dev environments.
+
+> [!NOTE]
+> If other environment variables happen to be required for linting or compilation purposes, simply add them with an empty value inside your `.env` file
+
+That's it: your GitHub token will do most of the job, and you can run the website like any regular SvelteKit app (`pnpm i` && `pnpm dev`).
 
 ## Missing a package?
 
