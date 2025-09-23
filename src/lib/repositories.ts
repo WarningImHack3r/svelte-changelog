@@ -61,6 +61,7 @@ const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 			{
 				repoName: "language-tools",
 				metadataFromTag: tag => {
+					if (/@\d/.test(tag)) return splitByLastAt(tag);
 					const lastIndex = tag.lastIndexOf("-");
 					return [tag.substring(0, lastIndex), tag.substring(lastIndex + 1)];
 				}
