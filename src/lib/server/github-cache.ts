@@ -693,13 +693,19 @@ export class GitHubCache {
 		const { data: changelogResult } = await this.#octokit.rest.repos.getContent({
 			owner,
 			repo,
-			ref:
-				owner === "sveltejs" &&
-				repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
-				tags[0] &&
-				semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
-					? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
-					: undefined,
+			ref: (() => {
+				try {
+					return owner === "sveltejs" &&
+						repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
+						tags[0] &&
+						semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
+						? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
+						: undefined;
+				} catch {
+					// handle oopsies for invalid versions returned from `metadataFromTag` (or others)
+					return undefined;
+				}
+			})(),
 			path: "CHANGELOG.md"
 		});
 

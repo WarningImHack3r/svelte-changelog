@@ -78,7 +78,20 @@ export async function getPackageReleases(
 						console.warn(`Empty release tag name: ${JSON.stringify(release)}`);
 						return false;
 					}
-					const [name] = repo.metadataFromTag(release.tag_name);
+					const [name, version] = repo.metadataFromTag(release.tag_name);
+					if (semver.valid(version) === null) {
+						posthog?.captureException(new Error("Invalid version"), undefined, {
+							repo: `${repo.repoOwner}/${repo.repoName}`,
+							packageName,
+							tag: release.tag_name,
+							parsedName: name,
+							parsedVersion: version
+						});
+						console.warn(
+							`Invalid version from \`metadataFromTag\` "${version}" gotten from ${release.tag_name}`
+						);
+						return false;
+					}
 					return (
 						(repo.dataFilter?.(release) ?? true) &&
 						repo.pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0
