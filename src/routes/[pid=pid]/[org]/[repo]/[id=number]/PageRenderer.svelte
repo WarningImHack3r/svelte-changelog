@@ -278,7 +278,7 @@
 	</a>
 </h2>
 {#if linkedEntities.length > 0}
-	<h3 class="text-2xl font-semibold tracking-tight">
+	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{metadata.type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1
 			? "s"
 			: ""}
@@ -345,7 +345,7 @@
 	</Accordion.Root>
 {/if}
 <div class="flex items-center">
-	<h3 class="text-2xl font-semibold tracking-tight">
+	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{metadata.type === "pull" ? "Pull request" : metadata.type === "issue" ? "Issue" : "Discussion"}
 	</h3>
 	{#if info.locked}

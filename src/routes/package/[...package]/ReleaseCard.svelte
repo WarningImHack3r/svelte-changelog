@@ -3,6 +3,8 @@
 	import { page } from "$app/state";
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
+	import remarkGemoji from "remark-gemoji";
+	import remarkGithub from "remark-github";
 	import semver from "semver";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
@@ -312,7 +314,11 @@
 		<div class="relative mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
-				additionalPlugins={[{ renderer: { li: ListElementRenderer } }]}
+				additionalPlugins={[
+					{ remarkPlugin: [remarkGithub, { repository: `${repo.owner}/${repo.name}` }] },
+					{ remarkPlugin: remarkGemoji },
+					{ renderer: { li: ListElementRenderer } }
+				]}
 				class="prose-sm max-w-full prose-p:my-0"
 			/>
 			<div class="flex items-end-safe justify-between gap-8">
