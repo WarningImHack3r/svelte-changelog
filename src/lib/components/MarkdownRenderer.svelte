@@ -25,13 +25,21 @@
 	} & MdSnippets;
 
 	let {
-		markdown: md,
+		markdown,
 		inline = false,
 		parseRawHtml = false,
 		additionalPlugins = [],
 		class: className = undefined,
 		...snippets
 	}: Props = $props();
+
+	// Markdown renders <thing:*> as a link (yeah I didn't know either).
+	// We don't want that to break Svelte's special elements, so we escape this.
+	//
+	// Refs:
+	// - https://www.markdownguide.org/basic-syntax/#urls-and-email-addresses
+	// - https://svelte.dev/docs/svelte/svelte-boundary (and others)
+	let md = $derived(markdown.replace(/<(svelte:\S+)>/g, "&lt;$1&gt;"));
 </script>
 
 <svelte:element

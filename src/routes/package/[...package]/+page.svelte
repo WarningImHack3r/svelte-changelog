@@ -230,7 +230,7 @@
 							<MarkdownRenderer
 								markdown={data.currentPackage.pkg.deprecated}
 								inline
-								class="text-sm text-muted-foreground"
+								class="max-w-full text-sm text-muted-foreground"
 							>
 								{#snippet a({ style, children, class: className, title, href, hidden, type })}
 									<a {style} class={className} {title} {href} {hidden} {type} target="_blank">
