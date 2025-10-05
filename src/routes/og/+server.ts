@@ -2,6 +2,7 @@ import { render } from "svelte/server";
 import { read } from "$app/server";
 import DMSerifDisplay from "@fontsource/dm-serif-display/files/dm-serif-display-latin-400-normal.woff";
 import Pretendard from "@fontsource/pretendard/files/pretendard-latin-400-normal.woff";
+import PretendardSemibold from "@fontsource/pretendard/files/pretendard-latin-600-normal.woff";
 import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
 import { html } from "satori-html";
@@ -10,6 +11,7 @@ import Thumbnail from "./Thumbnail.svelte";
 import { OG_HEIGHT, OG_WIDTH } from "./constants";
 
 const sansFont = read(Pretendard).arrayBuffer();
+const sansFontSemibold = read(PretendardSemibold).arrayBuffer();
 const displayFont = read(DMSerifDisplay).arrayBuffer();
 
 // Sources: https://github.com/huggingface/chat-ui/blob/main/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82
@@ -29,13 +31,19 @@ export const GET: RequestHandler = async ({ url }) => {
 		height: OG_HEIGHT,
 		fonts: [
 			{
-				name: "Pretendard",
+				name: "SansFont",
 				data: await sansFont,
 				weight: 400,
 				style: "normal"
 			},
 			{
-				name: "DM Serif Display",
+				name: "SansFontSemibold",
+				data: await sansFontSemibold,
+				weight: 600,
+				style: "normal"
+			},
+			{
+				name: "DisplayFont",
 				data: await displayFont,
 				weight: 400,
 				style: "normal"
