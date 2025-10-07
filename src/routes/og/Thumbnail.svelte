@@ -2,10 +2,9 @@
 	type Props = {
 		title: string;
 		description?: string;
-		secondaryIconUrl?: string;
 	};
 
-	let { title, description, secondaryIconUrl }: Props = $props();
+	let { title, description }: Props = $props();
 </script>
 
 <div class="flex h-full w-full border-b border-orange-600" style:border-bottom-width="32px">
@@ -27,10 +26,6 @@
 				<span class="text-orange-600" style:font-family="SansFontSemibold">Changelog</span>
 			</span>
 		</div>
-		{#if secondaryIconUrl}
-			{@const src = secondaryIconUrl}
-			<img {src} alt="Secondary icon" class="ml-auto w-16" />
-		{/if}
 		<div class="my-auto flex flex-col justify-center">
 			<p class="text-7xl" style:font-family="DisplayFont">{title}</p>
 			{#if description}
