@@ -69,9 +69,10 @@ export const GET: RequestHandler = async ({ url }) => {
 		bodyData = new Uint8Array(png);
 	}
 
-	return new Response(bodyData, {
-		headers: {
-			"Content-Type": "image/png"
-		}
-	});
+ return new Response(bodyData, {
+   headers: {
+    "Content-Type": "image/png",
+    "Cache-Control": "public, max-age=31536000, immutable"
+   }
+ });
 };
