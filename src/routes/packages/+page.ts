@@ -10,7 +10,7 @@ export function load({ data, url }) {
 					{
 						get url() {
 							const ogUrl = new URL("og", url.origin);
-							ogUrl.searchParams.set("title", "All packages");
+							ogUrl.searchParams.set("title", "All Packages");
 							return ogUrl.href;
 						}
 					}
