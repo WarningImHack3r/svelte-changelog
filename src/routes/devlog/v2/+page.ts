@@ -1,12 +1,20 @@
 import type { MetaTagsProps } from "svelte-meta-tags";
 
-export function load() {
+export function load({ url }) {
 	return {
 		pageMetaTags: Object.freeze({
 			title: "v2 • Devlog",
 			description: "The development blog of Svelte Changelog",
-			twitter: {
-				description: "The development blog of Svelte Changelog"
+			openGraph: {
+				images: [
+					{
+						get url() {
+							const ogUrl = new URL("og", url.origin);
+							ogUrl.searchParams.set("title", "v2 • Devlog");
+							return ogUrl.href;
+						}
+					}
+				]
 			}
 		}) satisfies MetaTagsProps
 	};
