@@ -9,6 +9,12 @@
 </script>
 
 <div class="flex h-full w-full border-b border-orange-600" style:border-bottom-width="32px">
+	<img
+		src="https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg"
+		alt="Svelte"
+		class="absolute -top-40 -right-40 opacity-20"
+		style:height="150%"
+	/>
 	<div class="flex flex-col p-8">
 		<div class="flex items-center" style:gap="8">
 			<img
