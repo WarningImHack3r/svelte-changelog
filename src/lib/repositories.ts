@@ -99,6 +99,10 @@ const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 				metadataFromTag(tag) {
 					return [this.repoName, tag.replace(/^v/, "")];
 				}
+			},
+			{
+				repoName: "mcp",
+				metadataFromTag: splitByLastAt
 			}
 		]
 	}
