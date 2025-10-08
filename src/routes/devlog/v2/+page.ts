@@ -2,7 +2,7 @@ import type { MetaTagsProps } from "svelte-meta-tags";
 
 export function load({ url }) {
 	return {
-		pageMetaTags: Object.freeze({
+		pageMetaTags: Object.freeze<MetaTagsProps>({
 			title: "v2 • Devlog",
 			description: "The development blog of Svelte Changelog",
 			openGraph: {
@@ -15,7 +15,10 @@ export function load({ url }) {
 						}
 					}
 				]
+			},
+			twitter: {
+				cardType: "summary_large_image"
 			}
-		}) satisfies MetaTagsProps
+		})
 	};
 }

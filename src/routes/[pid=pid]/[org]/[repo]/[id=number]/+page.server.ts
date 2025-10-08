@@ -4,6 +4,8 @@ import { publicRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 import type { BranchCommit } from "$lib/types";
 
+type Type = "pull" | "issue" | "discussion";
+
 export async function load({ params, fetch }) {
 	const { pid: type, org, repo, id } = params;
 	const numId = +id; // id is already validated by the route matcher
@@ -25,12 +27,10 @@ export async function load({ params, fetch }) {
 			org,
 			repo,
 			id: numId,
-			type:
-				type === "issues"
-					? ("issue" as const)
-					: type === "discussions"
-						? ("discussion" as const)
-						: ("pull" as const)
+			type: type === "issues" ? "issue" : type === "discussions" ? "discussion" : type
+		} satisfies {
+			type: Type;
+			[key: string]: unknown;
 		},
 		item,
 		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {

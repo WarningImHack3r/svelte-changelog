@@ -20,7 +20,7 @@ export function load({ url, data }) {
 	return {
 		...data,
 		siteName,
-		baseMetaTags: Object.freeze({
+		baseMetaTags: Object.freeze<MetaTagsProps>({
 			title: "Loading...",
 			titleTemplate: `%s | ${siteName}`,
 			description: "A nice UI to stay up-to-date with Svelte releases",
@@ -41,13 +41,13 @@ export function load({ url, data }) {
 			},
 			twitter: {
 				creator: "@probably_coding",
-				cardType: "summary" as const,
+				cardType: "summary",
 				description: "A nice UI to stay up-to-date with Svelte releases"
 			},
 			keywords: ["svelte", "changelog", "svelte changelog", "sveltekit"],
 			additionalRobotsProps: {
 				noarchive: true
 			}
-		}) satisfies MetaTagsProps
+		})
 	};
 }

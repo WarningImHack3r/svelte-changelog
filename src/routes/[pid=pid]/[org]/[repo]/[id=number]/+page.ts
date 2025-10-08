@@ -3,7 +3,7 @@ import type { MetaTagsProps } from "svelte-meta-tags";
 export function load({ data, url }) {
 	return {
 		...data,
-		pageMetaTags: Object.freeze({
+		pageMetaTags: Object.freeze<MetaTagsProps>({
 			title: `Detail of ${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id}`,
 			openGraph: {
 				images: [
@@ -19,7 +19,10 @@ export function load({ data, url }) {
 						}
 					}
 				]
+			},
+			twitter: {
+				cardType: "summary_large_image"
 			}
-		}) satisfies MetaTagsProps
+		})
 	};
 }

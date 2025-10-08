@@ -3,7 +3,7 @@ import type { MetaTagsProps } from "svelte-meta-tags";
 export function load({ data, params, url }) {
 	return {
 		...data,
-		pageMetaTags: Object.freeze({
+		pageMetaTags: Object.freeze<MetaTagsProps>({
 			title: `Tracker for ${params.org}/${params.repo}`,
 			openGraph: {
 				images: [
@@ -15,7 +15,10 @@ export function load({ data, params, url }) {
 						}
 					}
 				]
+			},
+			twitter: {
+				cardType: "summary_large_image"
 			}
-		}) satisfies MetaTagsProps
+		})
 	};
 }
