@@ -5,5 +5,8 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import lucidePreprocess from "vite-plugin-lucide-preprocess";
 
 export default defineConfig({
-	plugins: [devtoolsJson(), lucidePreprocess(), sveltekit(), tailwindcss()]
+	plugins: [devtoolsJson(), lucidePreprocess(), sveltekit(), tailwindcss()],
+	ssr: {
+		external: ["@resvg/resvg-js"]
+	}
 });
