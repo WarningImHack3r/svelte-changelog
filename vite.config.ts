@@ -6,7 +6,9 @@ import lucidePreprocess from "vite-plugin-lucide-preprocess";
 
 export default defineConfig({
 	plugins: [devtoolsJson(), lucidePreprocess(), sveltekit(), tailwindcss()],
-	ssr: {
-		external: ["@resvg/resvg-js"]
+	build: {
+		rollupOptions: {
+			external: ["@resvg/resvg-js"]
+		}
 	}
 });
