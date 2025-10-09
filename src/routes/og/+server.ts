@@ -1,4 +1,5 @@
 import { render } from "svelte/server";
+import { dev } from "$app/environment";
 import { read } from "$app/server";
 import DMSerifDisplay from "@fontsource/dm-serif-display/files/dm-serif-display-latin-400-normal.woff";
 import Pretendard from "@fontsource/pretendard/files/pretendard-latin-400-normal.woff";
@@ -69,10 +70,11 @@ export const GET: RequestHandler = async ({ url }) => {
 		bodyData = new Uint8Array(png);
 	}
 
-	return new Response(bodyData, {
+	const response = new Response(bodyData, {
 		headers: {
-			"Content-Type": "image/png",
-			"Cache-Control": "public, max-age=31536000, immutable"
+			"Content-Type": "image/png"
 		}
 	});
+	if (dev) response.headers.append("Cache-Control", "public, max-age=31536000, immutable");
+	return response;
 };
