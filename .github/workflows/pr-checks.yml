@@ -57,9 +57,10 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: 🧭 Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: latest
+          cache: pnpm
 
       - name: 📥 Install NPM dependencies
         run: pnpm i --no-frozen-lockfile
@@ -80,7 +81,7 @@ jobs:
       - name: 📤 Commit updated lock file
         id: auto-commit-action-lock
         if: needs.permissions-check.outputs.has-permissions == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v6
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Update lock file
           file_pattern: pnpm-lock.yaml
@@ -137,6 +138,6 @@ jobs:
 
       - name: 📤 Commit lint fixes
         if: failure() && needs.permissions-check.outputs.has-permissions == 'true' && (steps.svelte-format.outcome == 'failure' || steps.prettier-eslint.outcome == 'failure')
-        uses: stefanzweifel/git-auto-commit-action@v6
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Fix lint
