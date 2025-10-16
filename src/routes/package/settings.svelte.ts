@@ -1,8 +1,6 @@
-import { getContext, setContext } from "svelte";
+import { createContext } from "svelte";
 import { PersistedState } from "runed";
 import type { PackageSettings } from "$lib/types";
-
-const settingsKey = Symbol("settings");
 
 export const DEFAULT_SETTINGS: PackageSettings = {
 	showPrereleases: true,
@@ -24,10 +22,9 @@ class PackagesSettings {
 	}
 }
 
-export function initPackageSettings() {
-	return setContext(settingsKey, new PackagesSettings());
-}
+const [getPackageSettings, setPackageSettings] = createContext<PackagesSettings>();
 
-export function getPackageSettings() {
-	return getContext<ReturnType<typeof initPackageSettings>>(settingsKey);
+export function initPackageSettings() {
+	return setPackageSettings(new PackagesSettings());
 }
+export { getPackageSettings };
