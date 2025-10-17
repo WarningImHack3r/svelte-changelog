@@ -7,7 +7,10 @@
 	let { title, description }: Props = $props();
 </script>
 
-<div class="flex h-full w-full border-b border-orange-600" style:border-bottom-width="32px">
+<div
+	class="flex h-full w-full border-b border-orange-600 bg-white"
+	style:border-bottom-width="32px"
+>
 	<img
 		src="https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg"
 		alt="Svelte"
