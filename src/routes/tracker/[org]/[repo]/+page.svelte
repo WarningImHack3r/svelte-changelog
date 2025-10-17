@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { Image, Info, LoaderCircle } from "@lucide/svelte";
+	import remarkGithub from "remark-github";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
 	import * as Dialog from "$lib/components/ui/dialog";
@@ -146,6 +147,9 @@
 							ol: Transparent,
 							li: Transparent
 						}
+					},
+					{
+						remarkPlugin: [remarkGithub, { repository: `${params.org}/${params.repo}` }]
 					}
 				]}
 			>
