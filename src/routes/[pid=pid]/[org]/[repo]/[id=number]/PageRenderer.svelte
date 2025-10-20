@@ -552,7 +552,8 @@
 		>
 			<Steps class="my-4">
 				{#each commits as commit (commit.sha)}
-					{@const [commitMessage, ...commitDescription] = commit.commit.message.split("\n")}
+					{@const [commitMessage, ...commitDescriptions] = commit.commit.message.split("\n")}
+					{@const commitDescription = commitDescriptions.join("\n").trim()}
 					<Step icon={GitCommitVertical}>
 						<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 							<!-- Left part: commit message, description & author -->
@@ -595,11 +596,8 @@
 										{/if}
 									{/if}
 								</div>
-								{#if commitDescription.length > 0}
-									<MarkdownRenderer
-										markdown={commitDescription.join(" ")}
-										class="prose-sm max-w-full text-muted-foreground"
-									/>
+								{#if commitDescriptions.length}
+									<pre class="text-sm text-muted-foreground">{commitDescription}</pre>
 								{/if}
 							</div>
 							<!-- Right part: verification badge & sha -->
