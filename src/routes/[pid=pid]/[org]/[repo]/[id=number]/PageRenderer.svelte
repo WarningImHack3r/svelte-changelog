@@ -71,6 +71,7 @@
 	import Reactions from "$lib/components/Reactions.svelte";
 	import Step from "$lib/components/Step.svelte";
 	import Steps from "$lib/components/Steps.svelte";
+	import LinkRenderer from "$lib/components/renderers/LinkRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 	import {
 		transformerDiffMarking,
@@ -435,6 +436,9 @@
 					{#snippet h6(props)}
 						{@render headingRenderer("h6", props)}
 					{/snippet}
+					{#snippet a(props)}
+						<LinkRenderer attributes={props} />
+					{/snippet}
 				</MarkdownRenderer>
 				{#if "reactions" in info}
 					<Reactions reactions={info.reactions} reactionItemUrl={info.html_url} class="mt-4" />
@@ -532,7 +536,11 @@
 								{ remarkPlugin: remarkGemoji },
 								shikiPlugin
 							]}
-						/>
+						>
+							{#snippet a(props)}
+								<LinkRenderer attributes={props} />
+							{/snippet}
+						</MarkdownRenderer>
 						<Reactions
 							reactions={comment.reactions}
 							reactionItemUrl={comment.html_url}
