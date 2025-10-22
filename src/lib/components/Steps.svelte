@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
+	import type { ClassValue } from "svelte/elements";
 	import { cn } from "$lib/utils";
 
 	type Props = {
-		class?: string | undefined | null;
+		class?: ClassValue;
 		children?: Snippet;
 		[key: string]: unknown;
 	};

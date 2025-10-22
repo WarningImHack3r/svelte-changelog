@@ -44,6 +44,9 @@
 		ChevronLeft,
 		FileDiff,
 		GitCommitVertical,
+		GitMerge,
+		GitPullRequestClosed,
+		GitPullRequestCreateArrow,
 		Lock,
 		MessagesSquare,
 		Tag
@@ -609,6 +612,12 @@
 			secondaryLabel="{commits.length} commit{commits.length > 1 ? 's' : ''}"
 		>
 			<Steps class="my-4">
+				<Step icon={GitPullRequestCreateArrow} class="text-base [&>span>svg]:text-green-500">
+					<div class="flex flex-col">
+						<span>Pull request open</span>
+						<span class="text-muted-foreground">{formatToDateTime(info.created_at)}</span>
+					</div>
+				</Step>
 				{#each commits as commit (commit.sha)}
 					{@const [commitMessage, ...commitDescriptions] = commit.commit.message.split("\n")}
 					{@const commitDescription = commitDescriptions.join("\n").trim()}
@@ -682,6 +691,22 @@
 						</div>
 					</Step>
 				{/each}
+				{#if "merged" in info && info.closed_at}
+					<Step
+						icon={info.merged ? GitMerge : GitPullRequestClosed}
+						class={[
+							"text-base",
+							info.merged ? "[&>span>svg]:text-purple-400" : "[&>span>svg]:text-red-400"
+						]}
+					>
+						<!-- hide the bottom tip of the steps line -->
+						<div class="absolute bottom-0 -left-8 h-4 outline outline-background"></div>
+						<div class="flex flex-col">
+							<span>Pull request {info.merged ? "merged" : "closed"}</span>
+							<span class="text-muted-foreground">{formatToDateTime(info.closed_at)}</span>
+						</div>
+					</Step>
+				{/if}
 			</Steps>
 		</BottomCollapsible>
 	{/if}
