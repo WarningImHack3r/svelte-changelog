@@ -17,6 +17,7 @@
 	import { getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import ReleaseCard from "./ReleaseCard.svelte";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 
 	const loadingSentences = [
 		"Loading",
@@ -183,7 +184,7 @@
 					<Collapsible.Root class="flex items-center">
 						<Collapsible.Trigger>
 							{#snippet child({ props })}
-								<Button
+								<AnimatedButton
 									{...props}
 									variant="ghost"
 									size="sm"
@@ -191,7 +192,7 @@
 								>
 									<Rss />
 									<span class="sr-only">RSS</span>
-								</Button>
+								</AnimatedButton>
 								<ChevronRight
 									class="size-4 -translate-x-1 scale-75 opacity-0 transition-all peer-hover:translate-x-0 peer-hover:scale-100 peer-hover:opacity-100 peer-data-[state=open]:translate-x-0 peer-data-[state=open]:scale-100 peer-data-[state=open]:rotate-180 peer-data-[state=open]:opacity-100"
 								/>

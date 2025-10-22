@@ -6,6 +6,7 @@
 	import { buttonVariants } from "$lib/components/ui/button";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { Separator } from "$lib/components/ui/separator";
+	import { animatedClasses } from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
@@ -181,7 +182,7 @@
 		<Dialog.Root>
 			<Dialog.Trigger
 				class={[
-					buttonVariants({ variant: "ghost", size: "sm" }),
+					buttonVariants({ variant: "ghost", size: "sm", class: animatedClasses }),
 					"!h-4 !rounded-full !px-0 pt-0.5"
 				]}
 			>

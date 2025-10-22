@@ -66,6 +66,7 @@
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Tooltip from "$lib/components/ui/tooltip";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Reactions from "$lib/components/Reactions.svelte";
@@ -739,7 +740,7 @@
 		{#if linkedEntities.length > 0}
 			<div class="flex flex-wrap justify-end gap-4">
 				{#each linkedEntities as closingIssue (closingIssue.number)}
-					<Button
+					<AnimatedButton
 						href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
 							pid: metadata.type === "pull" ? "issues" : "pull",
 							org: closingIssue.repository.owner,
@@ -754,11 +755,11 @@
 						{:else}
 							{closingIssue.repository.owner}/{closingIssue.repository.name}#{closingIssue.number}
 						{/if}
-					</Button>
+					</AnimatedButton>
 				{/each}
 			</div>
 		{/if}
-		<Button href={info.html_url} target="_blank" class="group gap-0 dark:text-black">
+		<AnimatedButton href={info.html_url} target="_blank" class="group gap-0 dark:text-black">
 			Open {metadata.type === "pull"
 				? "pull request"
 				: metadata.type === "issue"
@@ -767,7 +768,7 @@
 			<ArrowUpRight
 				class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 			/>
-		</Button>
+		</AnimatedButton>
 	</div>
 </div>
 

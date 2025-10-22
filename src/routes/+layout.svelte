@@ -12,9 +12,10 @@
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
-	import { Button, buttonVariants } from "$lib/components/ui/button";
+	import { buttonVariants } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { Toaster } from "$lib/components/ui/sonner";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 
@@ -146,14 +147,14 @@
 					{#each [{ link: resolve("/packages"), title: "Packages" }, { link: resolve("/tracker"), title: "Tracker" }, { link: resolve("/devlog"), title: "Devlog" }] as { link, title } (link)}
 						{@const disabled = page.url.pathname.startsWith(link)}
 						<li>
-							<Button
+							<AnimatedButton
 								href={disabled ? undefined : link}
 								variant="ghost"
 								class="hover:bg-accent/75"
 								{disabled}
 							>
 								{title}
-							</Button>
+							</AnimatedButton>
 						</li>
 					{/each}
 				</ul>
@@ -162,7 +163,7 @@
 			<!-- Right part -->
 			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
 				<nav class="flex items-center space-x-1">
-					<Button
+					<AnimatedButton
 						href="https://github.com/WarningImHack3r/svelte-changelog"
 						target="_blank"
 						variant="ghost"
@@ -170,11 +171,11 @@
 					>
 						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
 						<span class="sr-only">Visit the repository</span>
-					</Button>
+					</AnimatedButton>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
 						<DropdownMenu.Trigger>
 							{#snippet child({ props })}
-								<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
+								<AnimatedButton {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
 										<Sun
 											class="!size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
@@ -189,7 +190,7 @@
 											: ''}"
 									/>
 									<span class="sr-only">Change theme</span>
-								</Button>
+								</AnimatedButton>
 							{/snippet}
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
@@ -235,13 +236,13 @@
 				inline
 				class="mx-auto my-1 px-4 text-center text-foreground prose-a:font-semibold prose-a:text-foreground prose-a:underline"
 			/>
-			<Button
+			<AnimatedButton
 				variant="ghost"
 				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-background/0"
 				onclick={markCurrentNewsAsRead}
 			>
 				<X class="size-4" />
-			</Button>
+			</AnimatedButton>
 		</div>
 	{/if}
 </header>

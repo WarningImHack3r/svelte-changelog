@@ -12,7 +12,7 @@
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import { cn } from "$lib/utils";
-	import { Button } from "$lib/components/ui/button";
+	import AnimatedButton from "./AnimatedButton.svelte";
 
 	type MdSnippets = Omit<ComponentProps<typeof Markdown>, "md" | "plugins">;
 
@@ -75,9 +75,13 @@
 							report this issue
 						</a> if it's not already known.
 					</span>
-					<Button variant="outline" class="ml-auto border-primary/50 bg-red-300/30" onclick={reset}>
+					<AnimatedButton
+						variant="outline"
+						class="ml-auto border-primary/50 bg-red-300/30"
+						onclick={reset}
+					>
 						Retry
-					</Button>
+					</AnimatedButton>
 				</div>
 				<Markdown {md} {...snippets} />
 			{/if}

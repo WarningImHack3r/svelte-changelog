@@ -9,8 +9,8 @@
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
-	import { Button } from "$lib/components/ui/button";
 	import * as Tooltip from "$lib/components/ui/tooltip";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Reactions from "$lib/components/Reactions.svelte";
 	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
@@ -325,8 +325,8 @@
 				<!-- Reactions -->
 				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
 				<!-- Open the release on GitHub in a new tab -->
-				<Button variant="outline" size="sm" class="invisible w-16 sm:w-36" />
-				<Button
+				<AnimatedButton variant="outline" size="sm" class="invisible w-16 sm:w-36" />
+				<AnimatedButton
 					href={release.html_url}
 					variant="outline"
 					size="sm"
@@ -342,7 +342,7 @@
 					<ArrowUpRight
 						class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
 					/>
-				</Button>
+				</AnimatedButton>
 			</div>
 		</div>
 	</Accordion.Content>
