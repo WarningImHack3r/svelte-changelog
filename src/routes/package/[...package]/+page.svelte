@@ -12,12 +12,12 @@
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import { getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import ReleaseCard from "./ReleaseCard.svelte";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 
 	const loadingSentences = [
 		"Loading",

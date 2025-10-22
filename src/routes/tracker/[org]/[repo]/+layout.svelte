@@ -4,8 +4,8 @@
 	import { Menu } from "@lucide/svelte";
 	import { uniqueRepos } from "$lib/repositories";
 	import * as Sheet from "$lib/components/ui/sheet";
-	import RepoSidePanel from "./RepoSidePanel.svelte";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
+	import RepoSidePanel from "./RepoSidePanel.svelte";
 
 	let { params, children } = $props();
 
