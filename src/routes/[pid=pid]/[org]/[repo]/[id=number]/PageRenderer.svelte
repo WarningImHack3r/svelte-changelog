@@ -241,6 +241,55 @@
 	}
 
 	/**
+	 * Linkify the commit message by wrapping all its non-link text inside
+	 * markdown links if it already contains a link
+	 *
+	 * @param message the commit message
+	 * @param wrapperUrl the wrapper link to wrap the rest of the message with
+	 * @returns the formatted commit message
+	 */
+	function formatCommitMessage(message: string | null | undefined, wrapperUrl: string) {
+		if (!message) return `[_No message provided_](${wrapperUrl})`;
+		message = message
+			.replace(/(https?:\/\/[^ ]+)/g, `[$1]($1)`)
+			.replace(
+				/\(#(\d+)\)/g,
+				`([#$1](https://github.com/${metadata.org}/${metadata.repo}/issues/$1))`
+			);
+		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+		const links: { index: number; length: number }[] = [];
+		let match;
+
+		while ((match = linkRegex.exec(message)) !== null) {
+			links.push({
+				index: match.index,
+				length: match[0].length
+			});
+		}
+
+		if (!links.length) return `[${message}](${wrapperUrl})`;
+
+		let result = "";
+		let lastIndex = 0;
+
+		for (const link of links) {
+			const textBefore = message.slice(lastIndex, link.index);
+			if (textBefore.trim()) {
+				result += `[${textBefore}](${wrapperUrl})`;
+			}
+			lastIndex = link.index + link.length;
+			result += message.slice(link.index, lastIndex);
+		}
+
+		const textAfter = message.slice(lastIndex);
+		if (textAfter.trim()) {
+			result += `[${textAfter}](${wrapperUrl})`;
+		}
+
+		return result;
+	}
+
+	/**
 	 * Returns the previous page to go back to
 	 */
 	function getPreviousPath() {
@@ -562,19 +611,17 @@
 				{#each commits as commit (commit.sha)}
 					{@const [commitMessage, ...commitDescriptions] = commit.commit.message.split("\n")}
 					{@const commitDescription = commitDescriptions.join("\n").trim()}
+					{@const formattedCommitMessage = formatCommitMessage(commitMessage, commit.html_url)}
 					<Step icon={GitCommitVertical}>
 						<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 							<!-- Left part: commit message, description & author -->
 							<div class="flex flex-col gap-1">
 								<div>
-									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-									<a href={commit.html_url} class="hover:underline">
-										<MarkdownRenderer
-											markdown={commitMessage ?? "_No message provided_"}
-											inline
-											class="prose-p:text-foreground"
-										/>
-									</a>
+									<MarkdownRenderer
+										markdown={formattedCommitMessage}
+										inline
+										class="prose-p:text-foreground prose-a:hover:underline prose-a:[[href*='/commit/']]:text-foreground"
+									/>
 									{#if commit.author}
 										<!-- const to be able to disable eslint without getting owned by prettier wrapping stuff -->
 										{@const authorProfile = commit.author.html_url}
