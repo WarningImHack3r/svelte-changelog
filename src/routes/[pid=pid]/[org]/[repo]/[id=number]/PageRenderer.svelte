@@ -605,7 +605,7 @@
 									{/if}
 								</div>
 								{#if commitDescriptions.length}
-									<pre class="text-sm text-muted-foreground">{commitDescription}</pre>
+									<pre class="text-sm text-wrap text-muted-foreground">{commitDescription}</pre>
 								{/if}
 							</div>
 							<!-- Right part: verification badge & sha -->
