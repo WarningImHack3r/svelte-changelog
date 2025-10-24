@@ -757,7 +757,7 @@ export class GitHubCache {
 						tag_name,
 						target_commitish: "main",
 						name: `${repo}@${cleanVersion}`,
-						body: changelogVersion?.body ?? "_No changelog provided._",
+						body: changelogVersion?.body || "_No changelog provided._",
 						draft: false,
 						prerelease: tag_name.includes("-"),
 						created_at: committer.date,

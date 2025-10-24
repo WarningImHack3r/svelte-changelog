@@ -225,7 +225,7 @@
 	id={release.cleanVersion}
 	value={`${release.id}`}
 	class={[
-		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20 *:data-accordion-content:rounded-b-md *:data-accordion-content:bg-accent/30",
+		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 *:data-accordion-content:rounded-b-md *:data-accordion-content:bg-accent/30 data-[state=open]:outline-muted-foreground/20",
 		{ "border border-primary": isMajorRelease && index < 3 },
 		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` }
 	]}
