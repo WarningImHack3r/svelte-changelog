@@ -1,5 +1,6 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
+import { dlog, dwarn } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
 import { type GitHubRelease, githubCache } from "$lib/server/github-cache";
 import type { discoverer } from "$lib/server/package-discoverer";
@@ -28,7 +29,7 @@ export async function getPackageReleases(
 	const foundVersions = new Set<string>();
 	const releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] = [];
 
-	console.log("Starting loading releases...");
+	dlog("Starting loading releases...");
 
 	// Step 1: First identify all matching packages and create fetch tasks
 	const matchingPackageTasks: {
@@ -57,9 +58,7 @@ export async function getPackageReleases(
 			// Await the individual fetch and process its results
 			const cachedReleases = await releasesFetch();
 
-			console.log(
-				`${cachedReleases.length} releases found for repo ${repo.repoOwner}/${repo.repoName}`
-			);
+			dlog(`${cachedReleases.length} releases found for repo ${repo.repoOwner}/${repo.repoName}`);
 
 			// Filter out invalid releases and sort them
 			const validReleases = cachedReleases
@@ -75,7 +74,7 @@ export async function getPackageReleases(
 							repoName: repo.repoName,
 							...release
 						});
-						console.warn(`Empty release tag name: ${JSON.stringify(release)}`);
+						dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
 						return false;
 					}
 					const [name, version] = repo.metadataFromTag(release.tag_name);
@@ -87,7 +86,7 @@ export async function getPackageReleases(
 							parsedName: name,
 							parsedVersion: version
 						});
-						console.warn(
+						dwarn(
 							`Invalid version from \`metadataFromTag\` "${version}" gotten from ${release.tag_name}`
 						);
 						return false;
@@ -102,7 +101,7 @@ export async function getPackageReleases(
 					const [, secondVersion] = repo.metadataFromTag(b.tag_name);
 					return semver.rcompare(firstVersion, secondVersion);
 				});
-			console.log("Final filtered count:", validReleases.length);
+			dlog("Final filtered count:", validReleases.length);
 
 			// Return the processed data for further processing
 			return {
@@ -119,18 +118,18 @@ export async function getPackageReleases(
 		const { dataFilter, metadataFromTag, changelogContentsReplacer, ...serializableRepo } = repo;
 		for (const release of validReleases) {
 			const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
-			console.log(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
+			dlog(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
 			if (foundVersions.has(cleanVersion)) continue;
 
 			// If not, add its version to the set and itself to the final version
 			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
-			console.log("Current newest version", currentNewestVersion);
+			dlog("Current newest version", currentNewestVersion);
 			foundVersions.add(cleanVersion);
 			releases.push({ cleanName, cleanVersion, ...release });
 
 			// If it is newer than the newest we got, set this repo as the "final repo"
 			if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
-				console.log(
+				dlog(
 					`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as final repo`
 				);
 				currentPackage = {
@@ -139,7 +138,7 @@ export async function getPackageReleases(
 				};
 			}
 		}
-		console.log("Done");
+		dlog("Done");
 	}
 
 	return currentPackage

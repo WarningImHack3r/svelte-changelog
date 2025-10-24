@@ -18,6 +18,7 @@ import { Redis } from "@upstash/redis";
 import { App, Octokit } from "octokit";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
+import { derror, dlog } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
 import type { Issues, Pulls } from "$lib/types";
 import { CacheHandler, type RedisJson } from "./cache-handler";
@@ -277,11 +278,11 @@ export class GitHubCache {
 		): Promise<RType> => {
 			const cachedValue = await this.#cache.get<RType>(cacheKey);
 			if (cachedValue) {
-				console.log(`Cache hit for ${cacheKey}`);
+				dlog(`Cache hit for ${cacheKey}`);
 				return cachedValue;
 			}
 
-			console.log(`Cache miss for ${cacheKey}`);
+			dlog(`Cache miss for ${cacheKey}`);
 
 			const newValue = await transformer(await promise());
 
@@ -330,20 +331,20 @@ export class GitHubCache {
 		try {
 			return await this.getPullRequestDetails(owner, repo, id);
 		} catch (err) {
-			console.error(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
 		}
 
 		try {
 			// doesn't come first because issues will also resolve for prs
 			return await this.getIssueDetails(owner, repo, id);
 		} catch (err) {
-			console.error(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
 		}
 
 		try {
 			return await this.getDiscussionDetails(owner, repo, id);
 		} catch (err) {
-			console.error(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
 		}
 
 		return null;
@@ -973,7 +974,7 @@ export class GitHubCache {
 					if (res.status !== 200) return {};
 					return (await res.json()) as { deprecated?: boolean | string };
 				} catch (error) {
-					console.error(`Error fetching npmjs.org for package ${packageName}:`, error);
+					derror(`Error fetching npmjs.org for package ${packageName}:`, error);
 					return {};
 				}
 			},

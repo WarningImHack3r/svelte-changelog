@@ -2,6 +2,7 @@ import { redirect } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { PostHog } from "posthog-node";
+import { derror } from "$lib/debug";
 
 const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 	host: "https://eu.i.posthog.com",
@@ -10,7 +11,7 @@ const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 
 export async function handleError({ error, status, event }) {
 	if (status !== 404) {
-		console.error(`[SERVER] ${error}`);
+		derror(`[SERVER] ${error}`);
 		client.captureException(error, undefined, event);
 		await client.shutdown();
 	}

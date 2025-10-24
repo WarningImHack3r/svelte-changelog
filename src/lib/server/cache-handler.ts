@@ -1,4 +1,5 @@
 import type { Redis } from "@upstash/redis";
+import { derror, dlog } from "$lib/debug";
 
 export type RedisJson = Parameters<InstanceType<typeof Redis>["json"]["set"]>[2];
 
@@ -27,23 +28,23 @@ export class CacheHandler {
 	 */
 	async get<T extends RedisJson>(key: string) {
 		if (this.#isDev) {
-			console.log(`Retrieving ${key} from in-memory cache`);
+			dlog(`Retrieving ${key} from in-memory cache`);
 			// In dev mode, use memory cache only
 			const entry = this.#memoryCache.get(key);
 
 			if (!entry) {
-				console.log("Nothing to retrieve");
+				dlog("Nothing to retrieve");
 				return null;
 			}
 
 			// Check if entry is expired
 			if (entry.expiresAt && entry.expiresAt < Date.now()) {
-				console.log("Value expired, purging and returning null");
+				dlog("Value expired, purging and returning null");
 				this.#memoryCache.delete(key);
 				return null;
 			}
 
-			console.log("Returning found value from in-memory cache");
+			dlog("Returning found value from in-memory cache");
 			return entry.value as T;
 		}
 
@@ -69,7 +70,7 @@ export class CacheHandler {
 			}
 			return value;
 		} catch (error) {
-			console.error("Redis get error:", error);
+			derror("Redis get error:", error);
 			return null;
 		}
 	}
@@ -83,12 +84,12 @@ export class CacheHandler {
 	 */
 	async set<T extends RedisJson>(key: string, value: T, ttlSeconds?: number) {
 		if (this.#isDev) {
-			console.log(`Setting value for ${key} in memory cache`);
+			dlog(`Setting value for ${key} in memory cache`);
 			// In dev mode, use memory cache only
 			const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 			if (expiresAt) {
-				console.log(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
-			} else console.log(`No cache set for ${key}`);
+				dlog(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
+			} else dlog(`No cache set for ${key}`);
 			this.#memoryCache.set(key, { value, expiresAt });
 		} else {
 			// In production, use both Redis and memory cache
@@ -99,7 +100,7 @@ export class CacheHandler {
 				const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
 			} catch (error) {
-				console.error("Redis set error:", error);
+				derror("Redis set error:", error);
 			}
 		}
 	}

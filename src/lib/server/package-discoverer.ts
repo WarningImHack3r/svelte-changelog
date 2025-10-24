@@ -1,3 +1,4 @@
+import { dlog } from "$lib/debug";
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
 import { GitHubCache, githubCache } from "./github-cache";
@@ -50,7 +51,7 @@ export class PackageDiscoverer {
 							})
 					)
 				];
-				console.log(
+				dlog(
 					`Discovered ${packages.length} packages for ${repo.repoOwner}/${repo.repoName}: ${packages.join(", ")}`
 				);
 				return {
