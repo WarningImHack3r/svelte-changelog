@@ -1,9 +1,9 @@
-import type { MetaTagsProps } from "svelte-meta-tags";
+import { definePageMetaTags } from "svelte-meta-tags";
 
 export function load({ data, url }) {
 	return {
 		...data,
-		pageMetaTags: Object.freeze<MetaTagsProps>({
+		...definePageMetaTags({
 			title: `Detail of ${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id}`,
 			openGraph: {
 				images: [

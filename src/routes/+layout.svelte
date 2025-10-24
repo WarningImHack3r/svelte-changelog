@@ -178,10 +178,10 @@
 								<AnimatedButton {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
 										<Sun
-											class="!size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+											class="size-5! scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
 										/>
 										<Moon
-											class="absolute !size-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+											class="absolute size-5! scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
 										/>
 									</div>
 									<ChevronDown

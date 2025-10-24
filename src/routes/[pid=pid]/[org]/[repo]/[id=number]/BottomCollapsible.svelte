@@ -26,11 +26,11 @@
 	<Accordion.Root type="single" value={openByDefault ? id : undefined}>
 		<Accordion.Item value={id} class="border-b-0">
 			<Accordion.Trigger
-				class="group items-center gap-0 hover:no-underline [&>svg:last-child]:mb-1 [&>svg:last-child]:flex-shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180"
+				class="group items-center gap-0 hover:no-underline [&>svg:last-child]:mb-1 [&>svg:last-child]:shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180"
 			>
 				{#if icon}
 					{@const SvelteComponent = icon}
-					<SvelteComponent class="mr-3 size-5 flex-shrink-0" />
+					<SvelteComponent class="mr-3 size-5 shrink-0" />
 				{/if}
 				<div class="flex w-full flex-col items-start justify-between xs:flex-row xs:items-center">
 					<span class="text-xl font-semibold">{label}</span>

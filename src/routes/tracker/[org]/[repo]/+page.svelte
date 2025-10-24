@@ -183,7 +183,7 @@
 			<Dialog.Trigger
 				class={[
 					buttonVariants({ variant: "ghost", size: "sm", class: animatedClasses }),
-					"!h-4 !rounded-full !px-0 pt-0.5"
+					"h-4! rounded-full! px-0! pt-0.5"
 				]}
 			>
 				<Info />

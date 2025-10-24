@@ -188,7 +188,7 @@
 									{...props}
 									variant="ghost"
 									size="sm"
-									class="peer h-6 !px-1 data-[state=open]:text-primary"
+									class="peer h-6 px-1! data-[state=open]:text-primary"
 								>
 									<Rss />
 									<span class="sr-only">RSS</span>

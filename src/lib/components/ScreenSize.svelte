@@ -66,7 +66,7 @@
 <div
 	class="font-mono text-xs font-medium text-white *:fixed *:border *:border-gray-500 *:bg-black *:px-2.5 *:py-1 *:shadow-lg *:shadow-black/50"
 >
-	<div class="bottom-5 left-5 z-50 flex items-center rounded-full !pr-1">
+	<div class="bottom-5 left-5 z-50 flex items-center rounded-full pr-1!">
 		<span>
 			{width.toLocaleString()} x {height.toLocaleString()}
 		</span>

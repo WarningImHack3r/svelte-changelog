@@ -355,7 +355,7 @@
 						</span>
 						<!-- Author & Date -->
 						<div
-							class="mr-4 flex flex-shrink-0 flex-col items-end gap-1 text-right text-sm text-muted-foreground xs:ml-auto xs:flex-row xs:items-center"
+							class="mr-4 flex shrink-0 flex-col items-end gap-1 text-right text-sm text-muted-foreground xs:ml-auto xs:flex-row xs:items-center"
 						>
 							{#if "author" in entity}
 								<div class="flex items-center gap-2">
@@ -724,7 +724,7 @@
 					>
 						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 						<a href={file.blob_url} class="inline-block hover:*:underline">
-							<span class="[overflow-wrap:_anywhere]">{file.filename}</span>
+							<span class="wrap-anywhere">{file.filename}</span>
 							{#if file.additions > 0}
 								<span class="font-semibold text-green-500">+{file.additions}</span>
 							{/if}
@@ -732,7 +732,7 @@
 								<span class="font-semibold text-destructive">-{file.deletions}</span>
 							{/if}
 						</a>
-						<span class="flex-shrink-0 text-right text-muted-foreground">
+						<span class="shrink-0 text-right text-muted-foreground">
 							{file.changes} changes
 						</span>
 					</div>

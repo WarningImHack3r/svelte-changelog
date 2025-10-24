@@ -1,9 +1,9 @@
-import type { MetaTagsProps } from "svelte-meta-tags";
+import { definePageMetaTags } from "svelte-meta-tags";
 
 export function load({ data, params, url }) {
 	return {
 		...data,
-		pageMetaTags: Object.freeze<MetaTagsProps>({
+		...definePageMetaTags({
 			title: `Tracker for ${params.org}/${params.repo}`,
 			openGraph: {
 				images: [

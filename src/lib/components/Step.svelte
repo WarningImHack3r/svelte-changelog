@@ -15,7 +15,7 @@
 
 <div class={cn("step relative", className)}>
 	<span
-		class="absolute -mt-0.5 -ml-[50px] inline-flex size-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-0.25 font-mono text-base font-normal"
+		class="absolute -mt-0.5 -ml-[50px] inline-flex size-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-px font-mono text-base font-normal"
 	>
 		{#if icon}
 			{@const Component = icon}
