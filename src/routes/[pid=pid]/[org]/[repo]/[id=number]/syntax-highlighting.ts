@@ -1,12 +1,14 @@
 import { browser } from "$app/environment";
 import posthog from "posthog-js";
-import type { LanguageRegistration, ShikiTransformer } from "shiki";
+import { type LanguageRegistration, type ShikiTransformer, isPlainLang } from "shiki";
+import { dlog } from "$lib/debug";
 
 /**
  * Pre-load the languages by returning regular expressions from language
  * registrations.
  *
  * @param languages a set of languages and their associated registrations.
+ *        Languages must be sorted from the least to the most weighted.
  * @returns a set of languages and their associated regular expressions to test code against.
  */
 export function loadLanguages(
@@ -59,27 +61,61 @@ export function detectLanguage(
 	let highestRate = 0;
 	let highestTotal = 0;
 
+	const trimmed = code.trim();
+	if (!trimmed) return languageCandidate;
+
+	dlog("===== Starting determining language for:");
+	dlog(code);
+	dlog("=====");
+
+	// try detecting language based off of first line comment
+	const firstLine = trimmed.split("\n").shift()?.trim();
+	if (firstLine) {
+		const isComment =
+			(firstLine.startsWith("//") || firstLine.startsWith("#")) && !firstLine.includes(" ");
+		if (isComment) {
+			dlog(`First line comment: ${firstLine}`);
+			const firstSplit = firstLine.split(".");
+			if (firstSplit.length) {
+				const extension = firstSplit.pop();
+				if (extension && Object.keys(languages).includes(extension)) {
+					dlog(`Found valid language from first comment: ${extension}`);
+					return extension;
+				}
+			}
+		}
+	}
+
+	// otherwise, loop over regexes
 	for (const [language, regexps] of Object.entries(languages)) {
 		if (!regexps.length) continue;
-		const matchesCount = regexps
-			.map(regexp => {
-				try {
-					return code.match(regexp)?.length ?? 0;
-				} catch {
-					return 0;
-				}
-			})
-			.reduce((acc, b) => acc + b, 0);
-		const successRate = matchesCount / regexps.length;
+		const compute = regexps.map<{ matches: boolean; count: number }>(regexp => {
+			try {
+				const match = code.match(regexp);
+				return { matches: !!match, count: match?.length ?? 0 };
+			} catch {
+				return { matches: false, count: 0 };
+			}
+		});
+		const matchesLength = compute.reduce((acc, item) => acc + item.count, 0);
+		const matchesCount = compute.filter(item => item.matches).length;
+		const successRate = matchesLength / matchesCount;
+		dlog(
+			`[${language}]\t${matchesLength} on ${matchesCount} regexes matches over ${regexps.length} regexes - success rate: ${Math.round((successRate * 100 + Number.EPSILON) * 100) / 100}%`
+		);
 		if (
 			successRate > highestRate ||
 			(successRate === highestRate && regexps.length > highestTotal)
 		) {
+			dlog(
+				`New candidate found! Previous values: ${languageCandidate} - highest rate ${highestRate}, highest total regexes: ${highestTotal}`
+			);
 			languageCandidate = language;
 			highestRate = successRate;
 			highestTotal = regexps.length;
 		}
 	}
+	dlog(`Done: result is ${languageCandidate}`);
 	return languageCandidate;
 }
 
@@ -103,6 +139,8 @@ export function transformerLanguageDetection(
 	return {
 		preprocess(code, options) {
 			if (options.lang === "diff") {
+				// tests:
+				// - /issues/sveltejs/svelte/14280
 				const cleanedCode = code
 					.split("\n")
 					.map(line => line.replace(/^[+-]/, ""))
@@ -117,8 +155,16 @@ export function transformerLanguageDetection(
 				}
 				options.lang = detectedLanguage;
 				if (options.meta) options.meta["data-detected"] = true;
-				return code;
+			} else if (isPlainLang(options.lang)) {
+				// tests:
+				// - /issues/sveltejs/svelte/16072
+				const detectedLanguage = detectLanguage(code, languages);
+				if (detectedLanguage) {
+					options.lang = detectedLanguage;
+					if (options.meta) options.meta["data-detected"] = true;
+				}
 			}
+			return code;
 		},
 		pre(node) {
 			node.properties["data-language"] = this.options.lang

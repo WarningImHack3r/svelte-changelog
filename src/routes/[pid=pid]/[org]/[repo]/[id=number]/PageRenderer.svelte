@@ -20,14 +20,13 @@
 	});
 
 	const loadedLanguages = loadLanguages({
-		svelte,
-		typescript,
-		javascript,
-		html,
-		css,
+		sh: shell,
 		json,
-		shell,
-		diff
+		css,
+		html,
+		js: javascript,
+		ts: typescript,
+		svelte
 	});
 </script>
 
@@ -93,7 +92,8 @@
 					transformerTrimCode,
 					transformerLanguageDetection(loadedLanguages),
 					transformerDiffMarking
-				]
+				],
+				defaultLanguage: "text"
 			} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
 		]
 	};
