@@ -41,6 +41,7 @@
 	import {
 		ArrowUpRight,
 		ChevronLeft,
+		ChevronRight,
 		FileDiff,
 		GitCommitVertical,
 		GitMerge,
@@ -66,6 +67,7 @@
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
+	import * as HoverCard from "$lib/components/ui/hover-card";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
@@ -490,7 +492,43 @@
 						{@render headingRenderer("h6", props)}
 					{/snippet}
 					{#snippet a(props)}
-						<LinkRenderer attributes={props} />
+						{@const { href, children, ...rest } = props}
+						<LinkRenderer attributes={props}>
+							{#snippet linkChildren(original)}
+								{@const match = (href ?? "").match(
+									/^https:\/\/github.com\/(\S+)\/(\S+)\/(\S+)\/(\d+)(#[a-z]+-\d+)?$/
+								)}
+								{#if href && match}
+									{@const [, org, repo, pid, id] = [...match]}
+									<HoverCard.Root openDelay={300}>
+										<HoverCard.Content class="flex w-fit items-center justify-center px-6">
+											<Button
+												variant="link"
+												href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+													pid: pid ?? "",
+													org: org ?? "",
+													repo: repo ?? "",
+													id: id ?? ""
+												})}
+												class="group h-auto p-0! text-base"
+											>
+												Open in Svelte Changelog
+												<ChevronRight class="transition-transform group-hover:translate-x-1" />
+											</Button>
+										</HoverCard.Content>
+										<HoverCard.Trigger>
+											{#snippet child({ props: cardProps })}
+												<a {...cardProps} {...rest} {href}>
+													{@render children?.()}
+												</a>
+											{/snippet}
+										</HoverCard.Trigger>
+									</HoverCard.Root>
+								{:else}
+									{@render original()}
+								{/if}
+							{/snippet}
+						</LinkRenderer>
 					{/snippet}
 				</MarkdownRenderer>
 				{#if "reactions" in info}

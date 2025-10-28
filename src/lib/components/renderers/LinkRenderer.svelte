@@ -1,12 +1,14 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
 	import type { HTMLAnchorAttributes } from "svelte/elements";
 	import { dev } from "$app/environment";
 
 	type Props = {
 		attributes: HTMLAnchorAttributes;
+		linkChildren?: Snippet<[Snippet]>;
 	};
 
-	let { attributes }: Props = $props();
+	let { attributes, linkChildren }: Props = $props();
 	let { children, ...rest } = $derived(attributes);
 	let { href } = $derived(rest);
 
@@ -44,9 +46,16 @@
 
 <!-- Renders -->
 {#snippet link()}
-	<a {...rest}>
-		{@render children?.()}
-	</a>
+	{#snippet original()}
+		<a {...rest}>
+			{@render children?.()}
+		</a>
+	{/snippet}
+	{#if linkChildren}
+		{@render linkChildren(original)}
+	{:else}
+		{@render original()}
+	{/if}
 {/snippet}
 
 {#snippet image(alt?: string)}
