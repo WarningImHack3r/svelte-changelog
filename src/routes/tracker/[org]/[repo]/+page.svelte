@@ -17,6 +17,9 @@
 		| Awaited<NonNullable<typeof data.prs>>[number]
 		| Awaited<NonNullable<typeof data.discussions>>[number];
 
+	const daysAgoFormatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+	const shortDateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+
 	/**
 	 * Checks whether a date is more recent than a month.
 	 *
@@ -35,7 +38,7 @@
 	 */
 	function daysAgo(date: Date) {
 		const days = Math.floor((Date.now() - date.getTime()) / 1000 / 60 / 60 / 24);
-		return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(-days, "day");
+		return daysAgoFormatter.format(-days, "day");
 	}
 
 	/**
@@ -84,7 +87,8 @@
 <!-- prettier-ignore -->
 {#snippet listItem(item: Item, link: string)}
 	{@const lastUpdate = new Date(item.updated_at)}
-	{@const isUpdated = !areSameDay(lastUpdate, new Date(item.created_at))}
+	{@const createdAt = new Date(item.created_at)}
+	{@const isUpdated = !areSameDay(lastUpdate, createdAt)}
 
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 	<a href={link} class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
@@ -114,15 +118,11 @@
 					<MarkdownRenderer markdown={item.title} inline class="text-foreground" />
 					<span class="text-muted-foreground">#{item.number}</span>
 				</span>
-				<span class="text-right">
-					{#if isNew(lastUpdate)}
-						{daysAgo(lastUpdate)} •
+				<span class="text-right text-nowrap">
+					{#if isUpdated && isNew(lastUpdate)}
+						<span class="italic font-semibold">updated {daysAgo(lastUpdate)}</span> •
 					{/if}
-					<span class={{ italic: isUpdated }}>
-						{new Intl.DateTimeFormat("en", {
-							dateStyle: "medium"
-						}).format(lastUpdate)}
-					</span>
+					<span>{shortDateFormatter.format(createdAt)}</span>
 				</span>
 			</div>
 			<MarkdownRenderer
@@ -154,7 +154,7 @@
 			>
 				{#snippet img({ alt })}
 					<div>
-						<Image class="inline-block h-lh" />
+						<Image class="inline-block h-[.9lh]" />
 						{alt}
 					</div>
 				{/snippet}
