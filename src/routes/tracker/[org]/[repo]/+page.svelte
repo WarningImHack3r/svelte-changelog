@@ -81,15 +81,13 @@
 	</div>
 {/snippet}
 
+<!-- prettier-ignore -->
 {#snippet listItem(item: Item, link: string)}
 	{@const lastUpdate = new Date(item.updated_at)}
 	{@const isUpdated = !areSameDay(lastUpdate, new Date(item.created_at))}
-	{@const href =
-		/* neat trick to prevent eslint-plugin-svelte from flagging the link as not `resolve`d */ link}
-	<a
-		{href}
-		class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-	>
+
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+	<a href={link} class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
 		<GHBadge
 			mode="minimal"
 			type={"base" in item || "pull_request" in item

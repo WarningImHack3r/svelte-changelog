@@ -518,6 +518,7 @@
 										</HoverCard.Content>
 										<HoverCard.Trigger>
 											{#snippet child({ props: cardProps })}
+												<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 												<a {...cardProps} {...rest} {href}>
 													{@render children?.()}
 												</a>

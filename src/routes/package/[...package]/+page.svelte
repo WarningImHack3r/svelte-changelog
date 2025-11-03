@@ -233,8 +233,8 @@
 								inline
 								class="max-w-full text-sm text-muted-foreground"
 							>
-								{#snippet a({ style, children, class: className, title, href, hidden, type })}
-									<a {style} class={className} {title} {href} {hidden} {type} target="_blank">
+								{#snippet a({ children, ...rest })}
+									<a {...rest} target="_blank">
 										{@render children?.()}
 									</a>
 								{/snippet}
