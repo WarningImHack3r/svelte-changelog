@@ -24,7 +24,7 @@
 		"@lucide/svelte": "^0.546.0",
 		"@neoconfetti/svelte": "^2.2.2",
 		"@octokit/graphql-schema": "^15.26.0",
-		"@octokit/types": "^15.0.1",
+		"@octokit/types": "^16.0.0",
 		"@prgm/sveltekit-progress-bar": "^3.0.2",
 		"@shikijs/langs": "^3.13.0",
 		"@shikijs/rehype": "^3.13.0",
