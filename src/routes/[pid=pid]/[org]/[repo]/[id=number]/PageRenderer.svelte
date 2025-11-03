@@ -1,4 +1,4 @@
-<script module>
+<script lang="ts" module>
 	import css from "@shikijs/langs/css";
 	import diff from "@shikijs/langs/diff";
 	import html from "@shikijs/langs/html";
@@ -100,12 +100,10 @@
 		]
 	};
 
-	function formatToDateTime(date: string) {
-		return new Intl.DateTimeFormat("en", {
-			dateStyle: "medium",
-			timeStyle: "short"
-		}).format(new Date(date));
-	}
+	const dateTimeFormatter = new Intl.DateTimeFormat("en", {
+		dateStyle: "medium",
+		timeStyle: "short"
+	});
 
 	type Props = {
 		metadata: {
@@ -125,7 +123,7 @@
 
 	let rightPartInfo = $derived<{ title: string; value: string }[]>([
 		...("answer_chosen_at" in info && info.answer_chosen_at
-			? [{ title: "Answered at", value: formatToDateTime(info.answer_chosen_at) }]
+			? [{ title: "Answered at", value: dateTimeFormatter.format(new Date(info.answer_chosen_at)) }]
 			: []),
 		...("answer_chosen_by" in info && info.answer_chosen_by
 			? [{ title: "Answered by", value: info.answer_chosen_by.login }]
@@ -135,7 +133,7 @@
 			? [
 					{
 						title: "merged" in info && info.merged ? "Merged at" : "Closed at",
-						value: formatToDateTime(info.closed_at)
+						value: dateTimeFormatter.format(new Date(info.closed_at))
 					}
 				]
 			: []),
@@ -372,7 +370,7 @@
 								<span class="hidden xs:block">•</span>
 							{/if}
 							{#if "createdAt" in entity}
-								<span>{formatToDateTime(entity.createdAt)}</span>
+								<span>{dateTimeFormatter.format(new Date(entity.createdAt))}</span>
 							{/if}
 						</div>
 					</div>
@@ -457,7 +455,7 @@
 					<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
 				{/if}
 				<span class="text-muted-foreground">
-					{formatToDateTime(info.created_at)}
+					{dateTimeFormatter.format(new Date(info.created_at))}
 				</span>
 			</div>
 			<!-- Body -->
@@ -612,7 +610,7 @@
 							<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
 						{/if}
 						<span class="text-muted-foreground">
-							{formatToDateTime(comment.created_at)}
+							{dateTimeFormatter.format(new Date(comment.created_at))}
 						</span>
 					</div>
 					<!-- Body -->
@@ -654,7 +652,9 @@
 				<Step icon={GitPullRequestCreateArrow} class="text-base [&>span>svg]:text-green-500">
 					<div class="flex flex-col">
 						<span>Pull request open</span>
-						<span class="text-muted-foreground">{formatToDateTime(info.created_at)}</span>
+						<span class="text-muted-foreground">
+							{dateTimeFormatter.format(new Date(info.created_at))}
+						</span>
 					</div>
 				</Step>
 				{#each commits as commit (commit.sha)}
@@ -695,7 +695,7 @@
 										</div>
 										{#if commit.commit.author?.date}
 											<span class="text-muted-foreground">
-												• {formatToDateTime(commit.commit.author.date)}
+												• {dateTimeFormatter.format(new Date(commit.commit.author.date))}
 											</span>
 										{/if}
 									{/if}
@@ -742,7 +742,9 @@
 						<div class="absolute bottom-0 -left-8 h-4 outline outline-background"></div>
 						<div class="flex flex-col">
 							<span>Pull request {info.merged ? "merged" : "closed"}</span>
-							<span class="text-muted-foreground">{formatToDateTime(info.closed_at)}</span>
+							<span class="text-muted-foreground">
+								{dateTimeFormatter.format(new Date(info.closed_at))}
+							</span>
 						</div>
 					</Step>
 				{/if}

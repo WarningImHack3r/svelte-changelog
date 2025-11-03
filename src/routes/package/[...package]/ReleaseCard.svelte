@@ -1,3 +1,10 @@
+<script lang="ts" module>
+	const fullDateFormatter = new Intl.DateTimeFormat("en", {
+		dateStyle: "long",
+		timeStyle: "short"
+	});
+</script>
+
 <script lang="ts">
 	import { untrack } from "svelte";
 	import { page } from "$app/state";
@@ -295,12 +302,7 @@
 							class="border bg-popover text-sm text-popover-foreground"
 							arrowClasses="bg-popover border-b border-r"
 						>
-							{isOlderThanAWeek
-								? timeAgo(releaseDate)
-								: new Intl.DateTimeFormat("en", {
-										dateStyle: "long",
-										timeStyle: "short"
-									}).format(releaseDate)}
+							{isOlderThanAWeek ? timeAgo(releaseDate) : fullDateFormatter.format(releaseDate)}
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</Tooltip.Provider>
