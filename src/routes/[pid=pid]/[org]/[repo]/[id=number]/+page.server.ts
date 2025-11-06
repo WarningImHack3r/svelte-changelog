@@ -1,12 +1,25 @@
 import { error, redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { publicRepos } from "$lib/repositories";
+import { publicRepos, uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 import type { BranchCommit } from "$lib/types";
 
 type Type = "pull" | "issue" | "discussion";
 
 export async function load({ params: { pid: type, org, repo, id }, fetch }) {
+	const isKnownRepo = uniqueRepos.some(({ owner, name }) => org === owner && repo === name);
+	if (!isKnownRepo) {
+		error(403, {
+			message: "Unknown repository",
+			description:
+				"Svelte Changelog can only display the details of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",
+			link: {
+				text: "Go home",
+				href: resolve("/")
+			}
+		});
+	}
+
 	const item = await githubCache.getItemDetails(org, repo, +id);
 	if (!item) {
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);

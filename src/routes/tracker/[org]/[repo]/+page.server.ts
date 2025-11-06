@@ -1,4 +1,6 @@
 import { error } from "@sveltejs/kit";
+import { resolve } from "$app/paths";
+import { uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 
 // source: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
@@ -15,6 +17,21 @@ const closingKeywords = [
 ];
 
 export async function load({ params }) {
+	const isKnownRepo = uniqueRepos.some(
+		({ owner, name }) => params.org === owner && params.repo === name
+	);
+	if (!isKnownRepo) {
+		error(403, {
+			message: "Unknown repository",
+			description:
+				"Svelte Changelog can only track known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",
+			link: {
+				text: "Tracker home page",
+				href: resolve("/tracker")
+			}
+		});
+	}
+
 	const members = await githubCache.getOrganizationMembers(params.org);
 	if (!members.length) error(404, `Organization ${params.org} not found or empty`);
 
