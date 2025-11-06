@@ -6,11 +6,8 @@ import type { BranchCommit } from "$lib/types";
 
 type Type = "pull" | "issue" | "discussion";
 
-export async function load({ params, fetch }) {
-	const { pid: type, org, repo, id } = params;
-	const numId = +id; // id is already validated by the route matcher
-
-	const item = await githubCache.getItemDetails(org, repo, numId);
+export async function load({ params: { pid: type, org, repo, id }, fetch }) {
+	const item = await githubCache.getItemDetails(org, repo, +id);
 	if (!item) {
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
@@ -26,7 +23,7 @@ export async function load({ params, fetch }) {
 		itemMetadata: {
 			org,
 			repo,
-			id: numId,
+			id: +id,
 			type: type === "issues" ? "issue" : type === "discussions" ? "discussion" : type
 		} satisfies {
 			type: Type;
