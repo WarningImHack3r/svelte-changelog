@@ -4,7 +4,7 @@
 	import { dev } from "$app/environment";
 	import { onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { page } from "$app/state";
+	import { page, updated } from "$app/state";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
@@ -247,9 +247,9 @@
 	{/if}
 </header>
 
-<div class="container py-8">
+<main data-sveltekit-reload={updated.current ? "" : "off"} class="container py-8">
 	{@render children?.()}
-</div>
+</main>
 
 <footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">
