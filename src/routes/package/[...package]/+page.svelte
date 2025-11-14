@@ -231,7 +231,7 @@
 						icon={CircleAlert}
 						title="Deprecated"
 						markdown={data.currentPackage.pkg.deprecated}
-						class="rounded-md border-amber-500 bg-amber-400/10"
+						class="border-amber-500 bg-amber-400/10"
 					/>
 				{/if}
 				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
@@ -241,7 +241,7 @@
 						icon={CircleAlert}
 						title="Note"
 						{markdown}
-						class="rounded-md border-sky-500 bg-sky-400/20"
+						class="border-sky-500 bg-sky-400/20"
 					/>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}

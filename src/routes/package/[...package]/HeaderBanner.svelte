@@ -14,7 +14,7 @@
 	let { icon: BannerIcon, title, markdown, class: className }: Props = $props();
 </script>
 
-<Alert.Root class={className}>
+<Alert.Root class={["rounded-md", className]}>
 	{#if BannerIcon}
 		<BannerIcon class="size-4" />
 	{/if}
