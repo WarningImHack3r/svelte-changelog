@@ -7,16 +7,15 @@
 	import semver from "semver";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
-	import * as Alert from "$lib/components/ui/alert";
 	import { Button } from "$lib/components/ui/button";
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import { getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
+	import HeaderBanner from "./HeaderBanner.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
 
 	const loadingSentences = [
@@ -224,23 +223,22 @@
 			</div>
 			<Accordion.Root type="multiple" bind:value={expandableReleases} class="w-full space-y-2">
 				{#if data.currentPackage.pkg.deprecated}
-					<Alert.Root class="rounded-md border-amber-500 bg-amber-400/10">
-						<CircleAlert class="size-4" />
-						<Alert.Title>Deprecated</Alert.Title>
-						<Alert.Description>
-							<MarkdownRenderer
-								markdown={data.currentPackage.pkg.deprecated}
-								inline
-								class="max-w-full text-sm text-muted-foreground"
-							>
-								{#snippet a({ children, ...rest })}
-									<a {...rest} target="_blank">
-										{@render children?.()}
-									</a>
-								{/snippet}
-							</MarkdownRenderer>
-						</Alert.Description>
-					</Alert.Root>
+					<HeaderBanner
+						icon={CircleAlert}
+						title="Deprecated"
+						markdown={data.currentPackage.pkg.deprecated}
+						class="rounded-md border-amber-500 bg-amber-400/10"
+					/>
+				{/if}
+				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
+					{@const markdown =
+						"This package has trouble tagging its releases, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
+					<HeaderBanner
+						icon={CircleAlert}
+						title="Note"
+						{markdown}
+						class="rounded-md border-sky-500 bg-sky-400/20"
+					/>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
