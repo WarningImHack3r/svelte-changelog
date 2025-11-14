@@ -36,18 +36,22 @@
 			? undefined
 			: data.releases.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
 	);
-	let earliestOfLatestMajor = $derived(
-		data.currentPackage.category.slug === ALL_SLUG
-			? undefined
-			: data.releases
-					.filter(
-						({ prerelease, cleanVersion }) =>
-							(latestRelease
-								? semver.major(cleanVersion) === semver.major(latestRelease.cleanVersion)
-								: false) && !prerelease
-					)
-					.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
-	);
+	let earliestForMajors = $derived.by<Record<number, (typeof data.releases)[number]>>(() => {
+		if (data.currentPackage.category.slug === ALL_SLUG) return {};
+		const allWithSemver = data.releases
+			.map(release => ({ coerced: semver.coerce(release.cleanVersion), ...release }))
+			.filter(({ coerced }) => coerced);
+		const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced!.major))];
+		return Object.fromEntries(
+			uniqueMajors.map(major => {
+				const sorted = allWithSemver
+					.filter(({ coerced, prerelease }) => coerced!.major === major && !prerelease)
+					.sort((a, b) => semver.compare(a.coerced!, b.coerced!));
+				const { coerced, ...rest } = sorted[0]!;
+				return [major, rest];
+			})
+		);
+	});
 	const sharedSettings = getPackageSettings();
 	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
@@ -242,25 +246,27 @@
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
+					{@const semLatest = semver.coerce(latestRelease?.cleanVersion)}
 					{@const isMajorRelease =
 						!release.prerelease &&
 						semVersion?.minor === 0 &&
 						semVersion?.patch === 0 &&
 						!semVersion?.prerelease.length}
-					{@const releaseDate = new Date(release.published_at ?? release.created_at)}
-					{@const isLatest = release.id === latestRelease?.id}
-					{@const isMaintenance = earliestOfLatestMajor
-						? !isMajorRelease &&
-							/* `semVersion` and `latestRelease` can't be undefined here */
-							semVersion!.major < semver.major(latestRelease!.cleanVersion) &&
-							releaseDate >
-								new Date(earliestOfLatestMajor.published_at ?? earliestOfLatestMajor.created_at)
-						: false}
+					{@const earliestOfNextMajor = semVersion
+						? earliestForMajors[semVersion.major + 1]
+						: undefined}
+					{@const isMaintenance =
+						semVersion && semLatest && earliestOfNextMajor
+							? !isMajorRelease &&
+								semVersion.major < semLatest.major &&
+								new Date(release.published_at ?? release.created_at) >
+									new Date(earliestOfNextMajor.published_at ?? earliestOfNextMajor.created_at)
+							: false}
 					<ReleaseCard
 						{index}
 						repo={{ owner: data.currentPackage.repoOwner, name: data.currentPackage.repoName }}
 						{release}
-						{isLatest}
+						isLatest={release.id === latestRelease?.id}
 						{isMaintenance}
 					/>
 				{:else}
