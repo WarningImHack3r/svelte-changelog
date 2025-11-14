@@ -28,8 +28,9 @@
 				>[];
 			}
 		>[];
-		otherReleases?: {
-			[key: string]: Promise<
+		otherReleases?: Record<
+			string,
+			Promise<
 				| {
 						releasesRepo: Prettify<
 							Pick<CategorizedPackage, "category"> &
@@ -41,8 +42,8 @@
 						releases: CleanRelease[] | undefined;
 				  }
 				| undefined
-			>;
-		};
+			>
+		>;
 		settings?: PackageSettings;
 		headless?: boolean;
 		class?: ClassValue;

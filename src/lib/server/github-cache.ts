@@ -855,7 +855,7 @@ export class GitHubCache {
 	 * @returns a map of paths to descriptions.
 	 */
 	async getDescriptions(owner: string, repo: string) {
-		return await this.#processCached<{ [key: string]: string }>()(
+		return await this.#processCached<Record<string, string>>()(
 			this.#getRepoKey(owner, repo, "descriptions"),
 			() =>
 				this.#request(
