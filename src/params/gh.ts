@@ -1,3 +1,5 @@
 export function match(param) {
-	return param.replace(/^https?:\/\//, "") === "github.com";
+	const matches = param.replace(/^https?:\/\//, "") === "github.com";
+	console.log(`${param} matches? ${matches}.`);
+	return matches;
 }
