@@ -290,7 +290,8 @@
 							{isOlderThanAWeek
 								? releaseDate.toLocaleDateString("en", {
 										year:
-											releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15
+											(releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15) ||
+											releaseDate.getFullYear() < new Date().getFullYear()
 												? "numeric"
 												: undefined,
 										month: "long",
