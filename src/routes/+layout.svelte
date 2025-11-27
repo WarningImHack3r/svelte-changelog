@@ -5,6 +5,7 @@
 	import { onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
+	import type { ResolvedPathname } from "$app/types";
 	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
@@ -71,6 +72,13 @@
 		localStorage.setItem(closedNewsKey, JSON.stringify([...getClosedNewsIds(), newsToDisplay.id]));
 		newsToDisplay = undefined;
 	}
+
+	// Navbar
+	const navbarItems: Record<string, ResolvedPathname> = {
+		Packages: resolve("/packages"),
+		Tracker: resolve("/tracker"),
+		Devlog: resolve("/devlog")
+	};
 
 	$effect(() => {
 		// Theme
@@ -144,7 +152,7 @@
 			<!-- Navigation -->
 			{#if !page.route.id?.startsWith(resolve("/devlog"))}
 				<ul class="ml-6 hidden sm:flex">
-					{#each [{ link: resolve("/packages"), title: "Packages" }, { link: resolve("/tracker"), title: "Tracker" }, { link: resolve("/devlog"), title: "Devlog" }] as { link, title } (link)}
+					{#each Object.entries(navbarItems) as [title, link] (link)}
 						{@const disabled = page.url.pathname.startsWith(link)}
 						<li>
 							<AnimatedButton
