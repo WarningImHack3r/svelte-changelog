@@ -3,7 +3,8 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { navigating, page } from "$app/state";
-	import { ChevronRight, CircleAlert, LoaderCircle, Rss } from "@lucide/svelte";
+	import { ChevronRight, CircleAlert, Info, LoaderCircle, Rss } from "@lucide/svelte";
+	import { PersistedState } from "runed";
 	import semver from "semver";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
@@ -13,7 +14,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
-	import { getPackageSettings } from "../settings.svelte";
+	import { SettingsUtils, getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import HeaderBanner from "./HeaderBanner.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
@@ -113,6 +114,15 @@
 					?.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
 			});
 	});
+
+	// Persistance
+	const activeSettingsReminder = new PersistedState(
+		`${data.currentPackage.pkg.name.toLowerCase().replace(/ /g, "-")}-active-settings-reminder`,
+		false,
+		{
+			storage: "session"
+		}
+	);
 
 	export const snapshot: Snapshot<typeof expandableReleases> = {
 		capture: () => expandableReleases,
@@ -243,6 +253,27 @@
 						{markdown}
 						class="border-sky-500 bg-sky-400/20"
 					/>
+				{/if}
+				{#if SettingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
+					{@const markdown = `The following filters are active:\n${SettingsUtils.modificationString(
+						packageSettings.current
+					)}`}
+					<HeaderBanner
+						icon={Info}
+						title="Settings changed"
+						{markdown}
+						class="border-slate-600 bg-slate-400/20"
+					>
+						{#snippet additionalContent()}
+							<Button
+								variant="link"
+								onclick={() => (activeSettingsReminder.current = true)}
+								class="ms-auto h-auto p-0"
+							>
+								Remind me later for this package
+							</Button>
+						{/snippet}
+					</HeaderBanner>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}

@@ -14,7 +14,6 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
-	import { DEFAULT_SETTINGS } from "./settings.svelte";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
@@ -44,7 +43,7 @@
 				| undefined
 			>
 		>;
-		settings?: PackageSettings;
+		settings: PackageSettings;
 		headless?: boolean;
 		class?: ClassValue;
 	};
@@ -52,7 +51,7 @@
 		packageName = "",
 		allPackages = [],
 		otherReleases = {},
-		settings = $bindable(DEFAULT_SETTINGS),
+		settings = $bindable(),
 		headless = false,
 		class: className
 	}: Props = $props();
@@ -240,8 +239,7 @@
 				id="beta-releases-{id}"
 				aria-labelledby="beta-releases-label-{id}"
 				bind:checked={
-					() => settings.showPrereleases ?? DEFAULT_SETTINGS.showPrereleases,
-					newState => (settings.showPrereleases = newState)
+					() => settings.showPrereleases, newState => (settings.showPrereleases = newState)
 				}
 			/>
 			<Label
@@ -261,7 +259,7 @@
 			<ToggleGroup.Root
 				type="single"
 				bind:value={
-					() => settings.releasesType ?? DEFAULT_SETTINGS.releasesType,
+					() => settings.releasesType,
 					newType => {
 						// don't take in account deselections, naturally always leaving something selected
 						if (newType) settings.releasesType = newType;

@@ -2,10 +2,33 @@ import { createContext } from "svelte";
 import { PersistedState } from "runed";
 import type { PackageSettings } from "$lib/types";
 
-export const DEFAULT_SETTINGS: PackageSettings = {
+const DEFAULT_SETTINGS: PackageSettings = {
 	showPrereleases: true,
 	releasesType: "all"
 };
+
+export class SettingsUtils {
+	static hasChanged(settings: PackageSettings) {
+		return (
+			settings.showPrereleases !== DEFAULT_SETTINGS.showPrereleases ||
+			settings.releasesType !== DEFAULT_SETTINGS.releasesType
+		);
+	}
+
+	static modificationString(settings: PackageSettings) {
+		const result = [];
+		if (settings.showPrereleases !== DEFAULT_SETTINGS.showPrereleases) {
+			result.push("prereleases are hidden");
+		}
+		if (settings.releasesType !== DEFAULT_SETTINGS.releasesType) {
+			result.push(`only the ${settings.releasesType} releases are shown`);
+		}
+		return result
+			.filter(Boolean)
+			.map(item => `- ${item}`)
+			.join("\n");
+	}
+}
 
 class PackagesSettings {
 	#settingsMap = new Map<string, PersistedState<PackageSettings>>();
