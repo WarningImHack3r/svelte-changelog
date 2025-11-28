@@ -45,16 +45,18 @@
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
 		// Add missing links to PRs in the release body
-		return release.body.replace(
-			/[^[][#\d, ]*?#(\d+)(#issuecomment-\d+)?[#\d, ]*?[^\]]/g,
-			// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
-			(match, prNumber, rest) => {
-				if (!rest) rest = "";
-				const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${rest}`;
-				// replaceception
-				return match.replace(`#${prNumber}${rest}`, `[#${prNumber}${rest}](${prUrl})`);
-			}
-		);
+		return repo.owner && repo.name
+			? release.body.replace(
+					/[^[][#\d, ]*?#(\d+)(#issuecomment-\d+)?[#\d, ]*?[^\]]/g,
+					// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+					(match, prNumber, rest) => {
+						if (!rest) rest = "";
+						const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${rest}`;
+						// replaceception
+						return match.replace(`#${prNumber}${rest}`, `[#${prNumber}${rest}](${prUrl})`);
+					}
+				)
+			: release.body;
 	});
 	let isMajorRelease = $derived(
 		!release.prerelease &&
@@ -318,7 +320,12 @@
 			<MarkdownRenderer
 				markdown={releaseBody}
 				additionalPlugins={[
-					{ remarkPlugin: [remarkGithub, { repository: `${repo.owner}/${repo.name}` }] },
+					{
+						remarkPlugin:
+							repo.owner && repo.name
+								? [remarkGithub, { repository: `${repo.owner}/${repo.name}` }]
+								: undefined
+					},
 					{ remarkPlugin: remarkGemoji },
 					{ renderer: { li: ListElementRenderer } }
 				]}
