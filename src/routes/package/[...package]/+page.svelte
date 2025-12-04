@@ -116,12 +116,14 @@
 	});
 
 	// Persistance
-	const activeSettingsReminder = new PersistedState(
-		`${data.currentPackage.pkg.name.toLowerCase().replace(/ /g, "-")}-active-settings-reminder`,
-		false,
-		{
-			storage: "session"
-		}
+	let activeSettingsReminder = $derived(
+		new PersistedState(
+			`${data.currentPackage.pkg.name.toLowerCase().replace(/ /g, "-")}-active-settings-reminder`,
+			false,
+			{
+				storage: "session"
+			}
+		)
 	);
 
 	export const snapshot: Snapshot<typeof expandableReleases> = {
