@@ -1,12 +1,21 @@
 <script lang="ts" module>
+	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
+	import { VERSION } from "svelte/compiler";
+
 	const fullDateFormatter = new Intl.DateTimeFormat("en", {
 		dateStyle: "long",
 		timeStyle: "short"
 	});
+
+	const versionedPackages: Record<string, string> = {
+		svelte: VERSION,
+		"@sveltejs/kit": KIT_VERSION
+	};
 </script>
 
 <script lang="ts">
 	import { untrack } from "svelte";
+	import { dev } from "$app/environment";
 	import { page } from "$app/state";
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
@@ -236,7 +245,12 @@
 	class={[
 		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 *:data-accordion-content:rounded-b-md *:data-accordion-content:bg-accent/30 data-[state=open]:outline-muted-foreground/20",
 		{ "border border-primary": isMajorRelease && index < 3 },
-		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` }
+		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` },
+		{
+			"relative mb-2.5 ring-4 ring-primary before:absolute before:-top-6 before:-left-1 before:-z-10 before:rounded-t-lg before:bg-primary before:px-2 before:pb-1.5 before:font-display before:content-['Current_version'] before:text-shadow-xs/50 before:text-shadow-black":
+				dev && versionedPackages[release.cleanName] === release.cleanVersion
+		},
+		{ "mt-8": dev && versionedPackages[release.cleanName] == release.cleanVersion && index > 0 }
 	]}
 >
 	<Accordion.Trigger
