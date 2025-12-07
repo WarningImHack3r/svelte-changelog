@@ -18,7 +18,7 @@ import { Redis } from "@upstash/redis";
 import { App, Octokit } from "octokit";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
-import { derror, dlog } from "$lib/debug";
+import { ddebug, derror } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
 import type { Issues, Pulls } from "$lib/types";
 import { CacheHandler, type RedisJson } from "./cache-handler";
@@ -301,11 +301,11 @@ export class GitHubCache {
 		): Promise<RType> => {
 			const cachedValue = await this.#cache.get<RType>(cacheKey);
 			if (cachedValue) {
-				dlog(`Cache hit for ${cacheKey}`);
+				ddebug(`Cache hit for ${cacheKey}`);
 				return cachedValue;
 			}
 
-			dlog(`Cache miss for ${cacheKey}`);
+			ddebug(`Cache miss for ${cacheKey}`);
 
 			const newValue = await transformer(await promise());
 

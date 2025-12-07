@@ -1,6 +1,6 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
-import { dlog, dwarn } from "$lib/debug";
+import { ddebug, dlog, dwarn } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
 import { type GitHubRelease, githubCache } from "$lib/server/github-cache";
 import type { discoverer } from "$lib/server/package-discoverer";
@@ -118,18 +118,18 @@ export async function getPackageReleases(
 		const { dataFilter, metadataFromTag, changelogContentsReplacer, ...serializableRepo } = repo;
 		for (const release of validReleases) {
 			const [cleanName, cleanVersion] = repo.metadataFromTag(release.tag_name);
-			dlog(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
+			ddebug(`Release ${release.tag_name}, extracted version: ${cleanVersion}`);
 			if (foundVersions.has(cleanVersion)) continue;
 
 			// If not, add its version to the set and itself to the final version
 			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
-			dlog("Current newest version", currentNewestVersion);
+			ddebug("Current newest version", currentNewestVersion);
 			foundVersions.add(cleanVersion);
 			releases.push({ cleanName, cleanVersion, ...release });
 
 			// If it is newer than the newest we got, set this repo as the "final repo"
 			if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
-				dlog(
+				ddebug(
 					`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as final repo`
 				);
 				currentPackage = {

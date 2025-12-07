@@ -1,7 +1,7 @@
 import { browser } from "$app/environment";
 import posthog from "posthog-js";
 import { type LanguageRegistration, type ShikiTransformer, isPlainLang } from "shiki";
-import { dlog } from "$lib/debug";
+import { ddebug } from "$lib/debug";
 
 /**
  * Pre-load the languages by returning regular expressions from language
@@ -64,9 +64,9 @@ export function detectLanguage(
 	const trimmed = code.trim();
 	if (!trimmed) return languageCandidate;
 
-	dlog("===== Starting determining language for:");
-	dlog(code);
-	dlog("=====");
+	ddebug("===== Starting determining language for:");
+	ddebug(code);
+	ddebug("=====");
 
 	// try detecting language based off of first line comment
 	const firstLine = trimmed.split("\n").shift()?.trim();
@@ -74,12 +74,12 @@ export function detectLanguage(
 		const isComment =
 			(firstLine.startsWith("//") || firstLine.startsWith("#")) && !firstLine.includes(" ");
 		if (isComment) {
-			dlog(`First line comment: ${firstLine}`);
+			ddebug(`First line comment: ${firstLine}`);
 			const firstSplit = firstLine.split(".");
 			if (firstSplit.length) {
 				const extension = firstSplit.pop();
 				if (extension && Object.keys(languages).includes(extension)) {
-					dlog(`Found valid language from first comment: ${extension}`);
+					ddebug(`Found valid language from first comment: ${extension}`);
 					return extension;
 				}
 			}
@@ -100,14 +100,14 @@ export function detectLanguage(
 		const matchesLength = compute.reduce((acc, item) => acc + item.count, 0);
 		const matchesCount = compute.filter(item => item.matches).length;
 		const successRate = matchesLength / matchesCount;
-		dlog(
+		ddebug(
 			`[${language}]\t${matchesLength} on ${matchesCount} regexes matches over ${regexps.length} regexes - success rate: ${Math.round((successRate * 100 + Number.EPSILON) * 100) / 100}%`
 		);
 		if (
 			successRate > highestRate ||
 			(successRate === highestRate && regexps.length > highestTotal)
 		) {
-			dlog(
+			ddebug(
 				`New candidate found! Previous values: ${languageCandidate} - highest rate ${highestRate}, highest total regexes: ${highestTotal}`
 			);
 			languageCandidate = language;
@@ -115,7 +115,7 @@ export function detectLanguage(
 			highestTotal = regexps.length;
 		}
 	}
-	dlog(`Done: result is ${languageCandidate}`);
+	ddebug(`Done: result is ${languageCandidate}`);
 	return languageCandidate;
 }
 

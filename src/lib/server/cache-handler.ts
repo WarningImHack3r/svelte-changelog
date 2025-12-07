@@ -1,5 +1,5 @@
 import type { Redis } from "@upstash/redis";
-import { derror, dlog } from "$lib/debug";
+import { ddebug, derror } from "$lib/debug";
 
 export type RedisJson = Parameters<InstanceType<typeof Redis>["json"]["set"]>[2];
 
@@ -28,23 +28,23 @@ export class CacheHandler {
 	 */
 	async get<T extends RedisJson>(key: string) {
 		if (this.#isDev) {
-			dlog(`Retrieving ${key} from in-memory cache`);
+			ddebug(`Retrieving ${key} from in-memory cache`);
 			// In dev mode, use memory cache only
 			const entry = this.#memoryCache.get(key);
 
 			if (!entry) {
-				dlog("Nothing to retrieve");
+				ddebug("Nothing to retrieve");
 				return null;
 			}
 
 			// Check if entry is expired
 			if (entry.expiresAt && entry.expiresAt < Date.now()) {
-				dlog("Value expired, purging and returning null");
+				ddebug("Value expired, purging and returning null");
 				this.#memoryCache.delete(key);
 				return null;
 			}
 
-			dlog("Returning found value from in-memory cache");
+			ddebug("Returning found value from in-memory cache");
 			return entry.value as T;
 		}
 
@@ -84,12 +84,12 @@ export class CacheHandler {
 	 */
 	async set<T extends RedisJson>(key: string, value: T, ttlSeconds?: number) {
 		if (this.#isDev) {
-			dlog(`Setting value for ${key} in memory cache`);
+			ddebug(`Setting value for ${key} in memory cache`);
 			// In dev mode, use memory cache only
 			const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 			if (expiresAt) {
-				dlog(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
-			} else dlog(`No cache set for ${key}`);
+				ddebug(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
+			} else ddebug(`No cache set for ${key}`);
 			this.#memoryCache.set(key, { value, expiresAt });
 		} else {
 			// In production, use both Redis and memory cache

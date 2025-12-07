@@ -14,6 +14,11 @@
 		"prepare": "svelte-kit sync"
 	},
 	"dependencies": {
+		"@opentelemetry/api-logs": "^0.208.0",
+		"@opentelemetry/exporter-logs-otlp-http": "^0.208.0",
+		"@opentelemetry/resources": "^2.2.0",
+		"@opentelemetry/sdk-logs": "^0.208.0",
+		"@opentelemetry/sdk-node": "^0.208.0",
 		"@resvg/resvg-js": "^2.6.2"
 	},
 	"devDependencies": {
@@ -86,7 +91,8 @@
 			"@parcel/watcher",
 			"@tailwindcss/oxide",
 			"core-js",
-			"esbuild"
+			"esbuild",
+			"protobufjs"
 		]
 	},
 	"type": "module",
