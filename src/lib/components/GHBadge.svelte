@@ -37,86 +37,105 @@
 
 	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
 
-	let icon = $state<typeof Icon>();
-	let label = $state("");
-	let textColor = $state("");
-	let bgColor = $state("");
+	type Info = {
+		icon: typeof Icon | undefined;
+		label: string;
+		textColor: string;
+		bgColor: string;
+	};
 
-	switch (type) {
-		case "pull":
-			switch (status) {
-				case "draft":
-					icon = GitPullRequestDraft;
-					label = "Draft";
-					textColor = "text-neutral-500";
-					bgColor = "bg-neutral-500";
-					break;
-				case "open":
-					icon = GitPullRequestArrow;
-					label = "Open";
-					textColor = "text-green-600";
-					bgColor = "bg-green-600";
-					break;
-				case "merged":
-					icon = GitMerge;
-					label = "Merged";
-					textColor = "text-purple-500";
-					bgColor = "bg-purple-500";
-					break;
-				case "closed":
-					icon = GitPullRequestClosed;
-					label = "Closed";
-					textColor = "text-red-500";
-					bgColor = "bg-red-500";
-					break;
-			}
-			break;
-		case "issue":
-			switch (status) {
-				case "open":
-					icon = CircleDot;
-					label = "Open";
-					textColor = "text-green-600";
-					bgColor = "bg-green-600";
-					break;
-				case "closed":
-					icon = CircleSlash;
-					label = "Closed";
-					textColor = "text-neutral-500";
-					bgColor = "bg-neutral-500";
-					break;
-				case "solved":
-					icon = CircleCheck;
-					label = "Solved";
-					textColor = "text-purple-500";
-					bgColor = "bg-purple-500";
-					break;
-			}
-			break;
-		case "discussion":
-			switch (status) {
-				case "open":
-					icon = MessageSquare;
-					label = "Open";
-					textColor = "text-green-600";
-					bgColor = "bg-green-600";
-					break;
-				case "closed":
-					icon = MessageSquareX;
-					label = "Closed";
-					textColor = "text-purple-500";
-					bgColor = "bg-purple-500";
-					break;
-			}
-			break;
-	}
+	let { icon, label, textColor, bgColor } = $derived.by<Info>(() => {
+		switch (type) {
+			case "pull":
+				switch (status) {
+					case "draft":
+						return {
+							icon: GitPullRequestDraft,
+							label: "Draft",
+							textColor: "text-neutral-500",
+							bgColor: "bg-neutral-500"
+						};
+					case "open":
+						return {
+							icon: GitPullRequestArrow,
+							label: "Open",
+							textColor: "text-green-600",
+							bgColor: "bg-green-600"
+						};
+					case "merged":
+						return {
+							icon: GitMerge,
+							label: "Merged",
+							textColor: "text-purple-500",
+							bgColor: "bg-purple-500"
+						};
+					case "closed":
+						return {
+							icon: GitPullRequestClosed,
+							label: "Closed",
+							textColor: "text-red-500",
+							bgColor: "bg-red-500"
+						};
+				}
+				break;
+			case "issue":
+				switch (status) {
+					case "open":
+						return {
+							icon: CircleDot,
+							label: "Open",
+							textColor: "text-green-600",
+							bgColor: "bg-green-600"
+						};
+					case "closed":
+						return {
+							icon: CircleSlash,
+							label: "Closed",
+							textColor: "text-neutral-500",
+							bgColor: "bg-neutral-500"
+						};
+					case "solved":
+						return {
+							icon: CircleCheck,
+							label: "Solved",
+							textColor: "text-purple-500",
+							bgColor: "bg-purple-500"
+						};
+				}
+				break;
+			case "discussion":
+				switch (status) {
+					case "open":
+						return {
+							icon: MessageSquare,
+							label: "Open",
+							textColor: "text-green-600",
+							bgColor: "bg-green-600"
+						};
+					case "closed":
+						return {
+							icon: MessageSquareX,
+							label: "Closed",
+							textColor: "text-purple-500",
+							bgColor: "bg-purple-500"
+						};
+				}
+				break;
+		}
+		return {
+			icon: undefined,
+			label: "",
+			textColor: "",
+			bgColor: ""
+		};
+	});
 </script>
 
 {#if mode === "regular"}
 	<div class={["flex items-center rounded-full px-4 py-2 text-white", bgColor, className]}>
 		{#if icon}
-			{@const SvelteComponent = icon}
-			<SvelteComponent class="mr-2 size-5" />
+			{@const Component = icon}
+			<Component class="mr-2 size-5" />
 		{/if}
 		<span class="font-semibold">{label}</span>
 	</div>
