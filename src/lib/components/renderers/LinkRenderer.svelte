@@ -81,9 +81,15 @@
 		{:else}
 			{@render link()}
 		{/if}
-	{:else if href.startsWith("https://github.com/user-attachments/assets/")}
-		<!-- special case for faster responses for known GH URLs -->
-		{@render video()}
+	{:else if href.startsWith("https://github.com")}
+		<!-- We'll assume that the only raw media that can come from GH is this, avoiding CORS & spam -->
+		{#if href.startsWith("https://github.com/user-attachments/assets/")}
+			<!-- special case for faster responses for known GH URLs -->
+			<!-- images could also come from this pattern, but they are almost always already proper <img>s -->
+			{@render video()}
+		{:else}
+			{@render link()}
+		{/if}
 	{:else if new URL(href).pathname === "/"}
 		<!-- we'll assume nothing else than a link can come from a URL without pathname -->
 		{@render link()}
