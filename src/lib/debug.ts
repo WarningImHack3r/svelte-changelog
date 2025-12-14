@@ -1,4 +1,4 @@
-import { dev } from "$app/environment";
+import { browser, dev } from "$app/environment";
 import { logs } from "@opentelemetry/api-logs";
 import util from "node:util";
 
@@ -7,17 +7,17 @@ const logger = logs.getLogger("svelte-changelog-logs");
 
 export function dlog(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.log(message, ...optionalParams);
-	logger.emit({ severityText: "info", body: util.format(message, ...optionalParams) });
+	if (!browser) logger.emit({ severityText: "info", body: util.format(message, ...optionalParams) });
 }
 
 export function dwarn(message?: unknown, ...optionalParams: unknown[]) {
 	if (dev || DEBUG) console.warn(message, ...optionalParams);
-	logger.emit({ severityText: "warn", body: util.format(message, ...optionalParams) });
+	if (!browser) logger.emit({ severityText: "warn", body: util.format(message, ...optionalParams) });
 }
 
 export function derror(message?: unknown, ...optionalParams: unknown[]) {
 	if (dev || DEBUG) console.error(message, ...optionalParams);
-	logger.emit({ severityText: "error", body: util.format(message, ...optionalParams) });
+	if (!browser) logger.emit({ severityText: "error", body: util.format(message, ...optionalParams) });
 }
 
 /**
@@ -25,12 +25,12 @@ export function derror(message?: unknown, ...optionalParams: unknown[]) {
  */
 export function dfatal(message?: unknown, ...optionalParams: unknown[]) {
 	if (dev || DEBUG) console.error(message, ...optionalParams);
-	logger.emit({ severityText: "fatal", body: util.format(message, ...optionalParams) });
+	if (!browser) logger.emit({ severityText: "fatal", body: util.format(message, ...optionalParams) });
 }
 
 export function ddebug(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.debug(message, ...optionalParams);
-	logger.emit({ severityText: "debug", body: util.format(message, ...optionalParams) });
+	if (!browser) logger.emit({ severityText: "debug", body: util.format(message, ...optionalParams) });
 }
 
 export function dclear() {
@@ -95,5 +95,5 @@ export function dtimeStamp(label?: string) {
 
 export function dtrace(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.trace(message, ...optionalParams);
-	logger.emit({ severityText: "trace", body: util.format(message, ...optionalParams) });
+	if (!browser) logger.emit({ severityText: "trace", body: util.format(message, ...optionalParams) });
 }
