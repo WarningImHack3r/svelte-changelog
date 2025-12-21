@@ -76,19 +76,54 @@
 	let isOlderThanAWeek = $derived(releaseDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 7);
 
 	$effect(() => {
-		const interval = setInterval(
+		const unsubscribe = setDynamicInterval(
 			() => (releaseDate = new Date(releaseDate)),
-			// this can become wrong when the unit changes
-			// and refresh too frequently for the now greater
-			// unit as $effect is only called once on client
-			// render, but it's an edge case I'm ready to
-			// accept as the user experience remains "live",
-			// it's just a matter of a small optimization
-			getRefreshPeriod(untrack(() => releaseDate))
+			() => getRefreshPeriod(untrack(() => releaseDate))
 		);
 
-		return () => clearInterval(interval);
+		return unsubscribe;
 	});
+
+	/**
+	 * A version of {@link setInterval} that has a dynamic `delay`
+	 * parameter, so it can dynamically adjust.
+	 *
+	 * @param callback the callback given to the {@link setInterval} (internally a {@link setTimeout})
+	 * @param delayFn a function called everytime a new `callback` call is about to begin, specifying
+	 * its firing delay
+	 * @returns an unsubscribe function to stop everything
+	 */
+	function setDynamicInterval(
+		callback: Parameters<typeof setTimeout>[0],
+		delayFn: () => NonNullable<Parameters<typeof setTimeout>[1]>
+	) {
+		let timeoutId: ReturnType<typeof setInterval> | null = null;
+		let stopped = false;
+
+		function schedule() {
+			if (stopped) return;
+
+			const delay = delayFn();
+
+			timeoutId = setTimeout(
+				() => {
+					callback();
+					schedule();
+				},
+				Math.min(delay, 2 ** 31 - 1) // max setTimeout value before it overflows
+			);
+		}
+
+		schedule();
+
+		return function clear() {
+			stopped = true;
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+				timeoutId = null;
+			}
+		};
+	}
 
 	/**
 	 * A small utility function to get the diff between two dates
@@ -98,8 +133,11 @@
 	 */
 	function getDiffBetween(first: Date, second: Date) {
 		return {
+			get milliseconds() {
+				return second.getTime() - first.getTime();
+			},
 			get seconds() {
-				return (second.getTime() - first.getTime()) / 1000;
+				return Math.floor(this.milliseconds / 1000);
 			},
 			get minutes() {
 				return Math.floor(this.seconds / 60);
@@ -128,47 +166,55 @@
 	 * @returns The number of milliseconds to wait for before refreshing
 	 */
 	function getRefreshPeriod(date: Date) {
-		const { minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+		const { milliseconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+
+		function diff(value: number) {
+			return value - (milliseconds % value);
+		}
 
 		if (years > 0) {
-			return 12 * 30 * 24 * 60 * 60 * 1_000;
+			return diff(12 * 30 * 24 * 60 * 60 * 1_000);
 		} else if (months > 0) {
-			return 30 * 24 * 60 * 60 * 1_000;
+			return diff(30 * 24 * 60 * 60 * 1_000);
 		} else if (days > 0) {
-			return 24 * 60 * 60 * 1_000;
+			return diff(24 * 60 * 60 * 1_000);
 		} else if (hours > 0) {
-			return 60 * 60 * 1_000;
+			return diff(60 * 60 * 1_000);
 		} else if (minutes > 0) {
-			return 60 * 1_000;
+			return diff(60 * 1_000);
 		}
-		return 1_000;
+		return diff(1_000);
 	}
 
 	/**
 	 * Converts a date to a relative date string.
 	 * e.g., "2 days ago", "3 hours ago", "1 minute ago"
 	 *
-	 * @param date The date to convert
 	 * @param locale the locale to use for formatting
-	 * @returns the relative date
+	 * @returns a function you input the date to convert in, returning the relative date
 	 */
-	function timeAgo(date: Date, locale = "en") {
-		const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+	function timeAgo(locale = "en") {
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
-		if (years > 0) {
-			return formatter.format(-years, "year");
-		} else if (months > 0) {
-			return formatter.format(-months, "month");
-		} else if (days > 0) {
-			return formatter.format(-days, "day");
-		} else if (hours > 0) {
-			return formatter.format(-hours, "hour");
-		} else if (minutes > 0) {
-			return formatter.format(-minutes, "minute");
-		}
-		return formatter.format(-Math.floor(seconds), "second");
+		return (date: Date) => {
+			const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+
+			if (years > 0) {
+				return formatter.format(-years, "year");
+			} else if (months > 0) {
+				return formatter.format(-months, "month");
+			} else if (days > 0) {
+				return formatter.format(-days, "day");
+			} else if (hours > 0) {
+				return formatter.format(-hours, "hour");
+			} else if (minutes > 0) {
+				return formatter.format(-minutes, "minute");
+			}
+			return formatter.format(-Math.floor(seconds), "second");
+		};
 	}
+
+	const ago = timeAgo();
 </script>
 
 {#snippet badges()}
@@ -313,13 +359,13 @@
 										month: "long",
 										day: "numeric"
 									})
-								: timeAgo(releaseDate)}
+								: ago(releaseDate)}
 						</Tooltip.Trigger>
 						<Tooltip.Content
 							class="border bg-popover text-sm text-popover-foreground"
 							arrowClasses="bg-popover border-b border-r"
 						>
-							{isOlderThanAWeek ? timeAgo(releaseDate) : fullDateFormatter.format(releaseDate)}
+							{isOlderThanAWeek ? ago(releaseDate) : fullDateFormatter.format(releaseDate)}
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</Tooltip.Provider>
