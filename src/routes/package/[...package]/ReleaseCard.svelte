@@ -293,7 +293,7 @@
 		{ "border border-primary": isMajorRelease && index < 3 },
 		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` },
 		{
-			"relative mb-2.5 ring-4 ring-primary before:absolute before:-top-6 before:-left-1 before:-z-10 before:rounded-t-lg before:bg-primary before:px-2 before:pb-1.5 before:font-display before:content-['Current_version'] before:text-shadow-xs/50 before:text-shadow-black":
+			"relative mb-2.5 ring-4 ring-primary before:absolute before:-top-6 before:-left-1 before:-z-10 before:rounded-t-lg before:bg-primary before:px-2 before:pb-1.5 before:font-display before:text-white before:content-['Current_version'] before:text-shadow-xs/50 before:text-shadow-black":
 				dev && versionedPackages[release.cleanName] === release.cleanVersion
 		},
 		{ "mt-8": dev && versionedPackages[release.cleanName] == release.cleanVersion && index > 0 }
