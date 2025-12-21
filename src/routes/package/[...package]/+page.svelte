@@ -116,6 +116,23 @@
 			});
 	});
 
+	// Registries
+	let registries = $derived.by<
+		Record<string, { iconUrl: string; url: string; additionalClasses?: string }>
+	>(() => {
+		const pkg = data.currentPackage.pkg.name;
+		return data.currentPackage.category.slug === ALL_SLUG
+			? Object.fromEntries([])
+			: {
+					npmjs: {
+						iconUrl: "/npm.svg",
+						url: `https://npmjs.com/package/${pkg}`,
+						additionalClasses:
+							"[&>img]:filter-[grayscale(1)_contrast(100)_brightness(1)] dark:[&>img]:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
+					}
+				};
+	});
+
 	// RSS
 	const rssEntries: Record<string, string> = {
 		XML: "rss.xml",
@@ -193,6 +210,13 @@
 					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
 				</h1>
 				<div class="flex flex-col items-start xs:flex-row xs:items-center">
+					{#snippet verticalSeparator()}
+						<Separator
+							orientation="vertical"
+							class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
+						/>
+					{/snippet}
+					<!-- Repo name -->
 					{#if data.currentPackage.repoOwner && data.currentPackage.repoName}
 						<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
 							<a
@@ -214,11 +238,26 @@
 								</span>
 							</a>
 						</h2>
-						<Separator
-							orientation="vertical"
-							class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
-						/>
+						{@render verticalSeparator()}
 					{/if}
+					<!-- JS registries -->
+					{#each Object.entries(registries) as [name, { iconUrl: src, url: href, additionalClasses }], index (name)}
+						<Button
+							variant="ghost"
+							size="icon"
+							class={["size-7", additionalClasses]}
+							{href}
+							target="_blank"
+						>
+							<img {src} alt={name} class="h-4" />
+						</Button>
+
+						<!-- Only shows if there are registries available for this package -->
+						{#if index === Object.keys(registries).length - 1}
+							{@render verticalSeparator()}
+						{/if}
+					{/each}
+					<!-- RSS -->
 					<Collapsible.Root class="flex items-center">
 						<Collapsible.Trigger>
 							{#snippet child({ props })}
