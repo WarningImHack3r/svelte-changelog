@@ -2,6 +2,7 @@
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
+	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ChevronRight, CircleAlert, Info, LoaderCircle, Rss } from "@lucide/svelte";
 	import { PersistedState } from "runed";
@@ -115,6 +116,28 @@
 			});
 	});
 
+	// RSS
+	const rssEntries: Record<string, string> = {
+		XML: "rss.xml",
+		ATOM: "atom.xml",
+		JSON: "rss.json"
+	};
+
+	/**
+	 * Append a segment at the end of an URL, cleanly.
+	 *
+	 * @param origin the URL origin
+	 * @param pathname the URL pathname
+	 * @param segment the segment to add
+	 * @returns the new URL with an added segment
+	 */
+	function appendToPath(origin: string, pathname: string, segment: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const u = new URL(pathname, origin);
+		u.pathname = `${u.pathname.replace(/\/$/, "")}/${segment}`;
+		return u.href;
+	}
+
 	// Persistance
 	let activeSettingsReminder = $derived(
 		new PersistedState(
@@ -214,12 +237,18 @@
 							{/snippet}
 						</Collapsible.Trigger>
 						<AnimatedCollapsibleContent axis="x" class="ml-2">
-							{#each [{ name: "XML", file: "rss.xml" }, { name: "ATOM", file: "atom.xml" }, { name: "JSON", file: "rss.json" }] as { name, file } (name)}
+							{#each Object.entries(rssEntries) as [name, file] (name)}
 								<Button
 									variant="link"
 									size="sm"
 									class="h-auto px-1 py-0 text-foreground"
-									href="{page.url}/{file}"
+									href={appendToPath(
+										page.url.origin,
+										resolve("/package/[...package]", {
+											package: data.currentPackage.pkg.name
+										}),
+										file
+									)}
 									data-sveltekit-preload-data="tap"
 								>
 									{name}
