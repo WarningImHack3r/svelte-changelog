@@ -12,6 +12,8 @@ import type {
 	Issue as GQLIssue,
 	PullRequest as GQLPullRequest,
 	Repository as GQLRepository,
+	ReactionConnection,
+	ReactionContent,
 	ReferencedSubject
 } from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
@@ -680,6 +682,10 @@ export class GitHubCache {
 		reactions,
 		...rest
 	}: GQLIssue | GQLPullRequest | ReferencedSubject): LinkedItem {
+		function getReactionCount(reactions: ReactionConnection, content: ReactionContent) {
+			return reactions.nodes?.filter(reaction => reaction?.content === content).length ?? 0;
+		}
+
 		return {
 			...rest,
 			html_url: url,
@@ -691,14 +697,14 @@ export class GitHubCache {
 				? {
 						url: "",
 						total_count: reactions.nodes.length,
-						"+1": reactions.nodes.filter(reaction => reaction?.content === "THUMBS_UP").length,
-						"-1": reactions.nodes.filter(reaction => reaction?.content === "THUMBS_DOWN").length,
-						laugh: reactions.nodes.filter(reaction => reaction?.content === "LAUGH").length,
-						confused: reactions.nodes.filter(reaction => reaction?.content === "CONFUSED").length,
-						heart: reactions.nodes.filter(reaction => reaction?.content === "HEART").length,
-						hooray: reactions.nodes.filter(reaction => reaction?.content === "HOORAY").length,
-						eyes: reactions.nodes.filter(reaction => reaction?.content === "EYES").length,
-						rocket: reactions.nodes.filter(reaction => reaction?.content === "ROCKET").length
+						"+1": getReactionCount(reactions, "THUMBS_UP"),
+						"-1": getReactionCount(reactions, "THUMBS_DOWN"),
+						laugh: getReactionCount(reactions, "LAUGH"),
+						confused: getReactionCount(reactions, "CONFUSED"),
+						heart: getReactionCount(reactions, "HEART"),
+						hooray: getReactionCount(reactions, "HOORAY"),
+						eyes: getReactionCount(reactions, "EYES"),
+						rocket: getReactionCount(reactions, "ROCKET")
 					}
 				: undefined
 		};

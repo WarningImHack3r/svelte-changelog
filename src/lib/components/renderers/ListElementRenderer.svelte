@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
+	import type { Attachment } from "svelte/attachments";
 	import { ArrowRight } from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button";
 
@@ -9,23 +10,23 @@
 
 	let { children }: Props = $props();
 
-	let data = $state<HTMLLIElement>();
-	let pullsLinks: string[] = [];
-	let issuesLinks: string[] = [];
-	let allLinks = $derived.by(() => {
-		if (data) {
-			const links = data.innerHTML.match(/https?:\/\/[^"]+/g) || [];
-			for (const link of links) {
-				if (link.includes("/pull/")) {
-					pullsLinks.push(link);
-				} else if (link.includes("/issues/")) {
-					issuesLinks.push(link);
-				}
+	let allLinks = $state<string[]>([]);
+	let isBreaking = $state(false);
+	const linksFinder: Attachment<HTMLLIElement> = node => {
+		const pullsLinks: string[] = [];
+		const issuesLinks: string[] = [];
+		const links = node.innerHTML.match(/https?:\/\/[^"]+/g) ?? [];
+		for (const link of links) {
+			if (link.includes("/pull/")) {
+				pullsLinks.push(link);
+			} else if (link.includes("/issues/")) {
+				issuesLinks.push(link);
 			}
-			return [...pullsLinks, ...issuesLinks];
 		}
-		return [];
-	});
+
+		allLinks = [...pullsLinks, ...issuesLinks];
+		isBreaking = node.innerText.trim().startsWith("breaking:");
+	};
 
 	/**
 	 * Replaces a link with `https://github.com/username/repo/[pull|issues]/123`
@@ -42,14 +43,8 @@
 </script>
 
 <li
-	bind:this={data}
-	class={[
-		"group text-pretty *:inline",
-		{
-			"dark:font-bold": data?.innerText.startsWith("breaking:"),
-			"font-semibold": data?.innerText.startsWith("breaking:")
-		}
-	]}
+	{@attach linksFinder}
+	class={["group text-pretty *:inline", isBreaking && "font-semibold dark:font-bold"]}
 >
 	{@render children?.()}
 	{#if allLinks.length > 0}
