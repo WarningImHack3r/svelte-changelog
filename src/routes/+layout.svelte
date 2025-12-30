@@ -138,14 +138,12 @@
 					class="size-8"
 				/>
 				{#if !page.route.id?.startsWith(resolve("/devlog"))}
-					<div class="hidden text-xl font-semibold text-shadow-xs/10 xs:inline-block">
-						<div class="relative size-full" aria-hidden="true">
-							<span class="absolute font-display">Svelte</span>
-							<span class="absolute left-14.5 [font-size:1.30rem] text-primary">Changelog</span>
-						</div>
-						<!-- Keep those for layout fit -->
-						<span class="invisible">Svelte Changelog</span>
-					</div>
+					<span class="hidden gap-1 text-xl font-semibold text-shadow-xs/10 xs:inline-flex">
+						<span style:text-box="trim-both ex alphabetic" class="font-display">Svelte</span>
+						<span style:text-box="trim-both ex alphabetic" class="[font-size:1.30rem] text-primary">
+							Changelog
+						</span>
+					</span>
 				{/if}
 			</a>
 			{#if page.route.id?.startsWith(resolve("/devlog"))}
