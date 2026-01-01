@@ -52,7 +52,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.1",
 		"feed": "^5.1.0",
-		"globals": "^16.5.0",
+		"globals": "^17.0.0",
 		"marked": "^17.0.1",
 		"mode-watcher": "^1.1.0",
 		"octokit": "^5.0.5",
