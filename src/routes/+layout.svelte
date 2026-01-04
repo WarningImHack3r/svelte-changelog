@@ -39,7 +39,7 @@
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
-	type Mode = Parameters<typeof setMode>[0];
+	type Mode = Parameters<typeof setMode>[0]; // the Mode type isn't exported by mode-watcher
 	type Theme = {
 		label: string;
 		icon: typeof Icon;
@@ -74,6 +74,7 @@
 	}
 
 	// Navbar
+	const navbarBorderThreshold = 25;
 	const navbarItems: Record<string, ResolvedPathname> = {
 		Packages: resolve("/packages"),
 		Tracker: resolve("/tracker"),
@@ -117,7 +118,7 @@
 		"sticky top-0 z-40 w-full transition-shadow duration-500",
 		{
 			"bg-background/95 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60":
-				newsToDisplay || (scrollY.current ?? 0) >= 25
+				newsToDisplay || (scrollY.current ?? 0) >= navbarBorderThreshold
 		}
 	]}
 >
@@ -125,7 +126,7 @@
 		class={[
 			"border-b transition-colors duration-500",
 			{
-				"border-transparent": !newsToDisplay && (scrollY.current ?? 0) < 25
+				"border-transparent": !newsToDisplay && (scrollY.current ?? 0) < navbarBorderThreshold
 			}
 		]}
 	>
