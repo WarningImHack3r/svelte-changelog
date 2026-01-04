@@ -35,7 +35,7 @@ export async function getPackageReleases(
 	const matchingPackageTasks: {
 		category: Repository["category"];
 		repo: (typeof allPackages)[number]["packages"][number];
-		releasesFetch: () => Promise<GitHubRelease[]>;
+		releasesFetch: Promise<GitHubRelease[]>;
 	}[] = [];
 
 	// Collect all matching packages and create fetch tasks
@@ -47,7 +47,7 @@ export async function getPackageReleases(
 				category,
 				repo: { pkg, ...repo },
 				// Create a fetch task but don't await it yet
-				releasesFetch: () => githubCache.getReleases({ ...repo, category })
+				releasesFetch: githubCache.getReleases({ ...repo, category })
 			});
 		}
 	}
@@ -56,7 +56,7 @@ export async function getPackageReleases(
 	const taskResults = await Promise.all(
 		matchingPackageTasks.map(async ({ category, repo, releasesFetch }) => {
 			// Await the individual fetch and process its results
-			const cachedReleases = await releasesFetch();
+			const cachedReleases = await releasesFetch;
 
 			dlog(`${cachedReleases.length} releases found for repo ${repo.repoOwner}/${repo.repoName}`);
 
