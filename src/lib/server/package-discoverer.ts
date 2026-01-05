@@ -49,6 +49,7 @@ export class PackageDiscoverer {
 								const [name] = repo.metadataFromTag(tag_name);
 								return name;
 							})
+							.filter(Boolean)
 					)
 				];
 				dlog(

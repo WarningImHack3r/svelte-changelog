@@ -78,6 +78,13 @@ export async function getPackageReleases(
 						return false;
 					}
 					const [name, version] = repo.metadataFromTag(release.tag_name);
+					if (!name) {
+						dwarn(
+							`Empty package name after parsing it ("${release.tag_name}" in ${repo.repoOwner}/${repo.repoName} -> "${name}@${version}").` +
+								" This is either a single bad-shaped release or a much larger problem where a change to metadataFromTag is needed."
+						);
+						return false;
+					}
 					if (semver.valid(version) === null) {
 						posthog?.captureException(new Error("Invalid version"), undefined, {
 							repo: `${repo.repoOwner}/${repo.repoName}`,
