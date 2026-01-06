@@ -6,19 +6,23 @@
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
 	import type { ResolvedPathname } from "$app/types";
-	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
+	import { ChevronDown, type Icon, Monitor, Moon, Snowflake, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
+	import { PersistedState } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import { buttonVariants } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import { Separator } from "$lib/components/ui/separator";
 	import { Toaster } from "$lib/components/ui/sonner";
+	import { Toggle } from "$lib/components/ui/toggle";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
+	import Snowflakes from "$lib/components/Snowflakes.svelte";
 
 	let { data, children } = $props();
 
@@ -81,6 +85,17 @@
 		Devlog: resolve("/devlog")
 	};
 
+	// Snow - enabled during Dec 15th through Jan 15th
+	const currentDate = new Date();
+	const beginningDate = $derived(
+		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? -1 : 0), 11, 15)
+	);
+	const endingDate = $derived(
+		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? 0 : 1), 0, 15)
+	);
+	const isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
+	let isSnowEnabled = new PersistedState("snowlover", true);
+
 	$effect(() => {
 		// Theme
 		theme =
@@ -109,6 +124,12 @@
 	<ScreenSize />
 {/if}
 <ModeWatcher />
+{#if isSnowTime}
+	<Snowflakes
+		enabled={isSnowEnabled.current}
+		class="pointer-events-none fixed inset-0 -z-10 h-screen w-screen"
+	/>
+{/if}
 <ProgressBar class="text-primary" zIndex={100} />
 <Toaster />
 <MetaTags {...metaTags} />
@@ -172,8 +193,19 @@
 			{/if}
 
 			<!-- Right part -->
-			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
-				<nav class="flex items-center space-x-1">
+			<div class="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+				<nav class="flex items-center gap-1">
+					{#if isSnowTime}
+						<Toggle
+							aria-label="Toggle snowflakes"
+							variant="outline"
+							bind:pressed={isSnowEnabled.current}
+							class="me-1"
+						>
+							<Snowflake />
+						</Toggle>
+						<Separator orientation="vertical" class="data-[orientation=vertical]:h-lh" />
+					{/if}
 					<AnimatedButton
 						href="https://github.com/WarningImHack3r/svelte-changelog"
 						target="_blank"
