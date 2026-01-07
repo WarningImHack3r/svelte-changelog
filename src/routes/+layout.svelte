@@ -1,5 +1,6 @@
 <script lang="ts">
 	import "../app.css";
+	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { onNavigate } from "$app/navigation";
@@ -19,6 +20,7 @@
 	import { Separator } from "$lib/components/ui/separator";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import { Toggle } from "$lib/components/ui/toggle";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
@@ -95,6 +97,7 @@
 	);
 	const isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
 	let isSnowEnabled = new PersistedState("snowlover", true);
+	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
 
 	$effect(() => {
 		// Theme
@@ -196,15 +199,32 @@
 			<div class="flex flex-1 items-center justify-end gap-2 sm:gap-4">
 				<nav class="flex items-center gap-1">
 					{#if isSnowTime}
-						<Toggle
-							aria-label="Toggle snowflakes"
-							variant="outline"
-							bind:pressed={isSnowEnabled.current}
-							class="me-1"
-						>
-							<Snowflake />
-						</Toggle>
-						<Separator orientation="vertical" class="data-[orientation=vertical]:h-lh" />
+						<Tooltip.Provider disabled={!reduceMotion.current}>
+							<Tooltip.Root delayDuration={300}>
+								<Tooltip.Trigger>
+									{#snippet child({ props })}
+										<Toggle
+											{...props}
+											aria-label="Toggle snowflakes"
+											variant="outline"
+											bind:pressed={isSnowEnabled.current}
+											disabled={reduceMotion.current}
+											class="me-1 disabled:pointer-events-auto"
+										>
+											<Snowflake />
+										</Toggle>
+										<Separator orientation="vertical" class="data-[orientation=vertical]:h-lh" />
+									{/snippet}
+								</Tooltip.Trigger>
+								<Tooltip.Content
+									class="border bg-popover text-popover-foreground"
+									arrowClasses="bg-popover border-b border-r"
+								>
+									You can't control the snow as you prefer reduced motion. As a result, snow is
+									disabled.
+								</Tooltip.Content>
+							</Tooltip.Root>
+						</Tooltip.Provider>
 					{/if}
 					<AnimatedButton
 						href="https://github.com/WarningImHack3r/svelte-changelog"
