@@ -218,9 +218,9 @@
 </script>
 
 {#snippet badges()}
-	{#if isLatestRelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+	<Tooltip.Provider delayDuration={300}>
+		{#if isLatestRelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge class="bg-green-600 hover:bg-green-600 dark:bg-green-700 hover:dark:bg-green-700">
 						Latest
@@ -233,11 +233,9 @@
 					This is the latest stable release of this package
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{/if}
-	{#if isMajorRelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+		{/if}
+		{#if isMajorRelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge>Major</Badge>
 				</Tooltip.Trigger>
@@ -248,10 +246,8 @@
 					Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{:else if release.prerelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+		{:else if release.prerelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge variant="outline" class="border-primary text-primary">Prerelease</Badge>
 				</Tooltip.Trigger>
@@ -262,10 +258,8 @@
 					This version is an alpha or a beta, unstable version
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{:else if isMaintenanceRelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+		{:else if isMaintenanceRelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge
 						variant="outline"
@@ -281,8 +275,8 @@
 					An update bringing bug fixes and minor improvements to an older major version
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{/if}
+		{/if}
+	</Tooltip.Provider>
 {/snippet}
 
 <Accordion.Item
