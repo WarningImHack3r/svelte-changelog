@@ -34,12 +34,22 @@ class PackagesSettings {
 	#settingsMap = new Map<string, PersistedState<PackageSettings>>();
 
 	get(packageName: string) {
+		const key = `${packageName.toLowerCase().replace(/ /g, "-")}-settings`;
+		let defaultSettings = DEFAULT_SETTINGS;
 		const storedValue = this.#settingsMap.get(packageName);
-		if (storedValue) return storedValue;
-		const newState = new PersistedState(
-			`${packageName.toLowerCase().replace(/ /g, "-")}-settings`,
-			DEFAULT_SETTINGS
-		);
+		if (storedValue) {
+			let skip = false;
+			for (const k of Object.keys(DEFAULT_SETTINGS)) {
+				if (!(k in storedValue.current)) {
+					defaultSettings = { ...DEFAULT_SETTINGS, ...storedValue.current };
+					localStorage.removeItem(key);
+					skip = true;
+					break;
+				}
+			}
+			if (!skip) return storedValue;
+		}
+		const newState = new PersistedState(key, defaultSettings);
 		this.#settingsMap.set(packageName, newState);
 		return newState;
 	}
