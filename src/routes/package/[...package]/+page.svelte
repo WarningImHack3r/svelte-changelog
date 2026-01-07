@@ -311,7 +311,7 @@
 						icon={CircleAlert}
 						title="Deprecated"
 						markdown={data.currentPackage.pkg.deprecated}
-						class="border-amber-500 bg-amber-400/10"
+						class="border-amber-500 bg-amber-400/10 prose-a:text-amber-500!"
 					/>
 				{/if}
 				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
@@ -321,7 +321,7 @@
 						icon={CircleAlert}
 						title="Note"
 						{markdown}
-						class="border-sky-500 bg-sky-400/20"
+						class="border-sky-500 bg-sky-400/20 prose-a:text-sky-500"
 					/>
 				{/if}
 				{#if SettingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
@@ -332,13 +332,13 @@
 						icon={Info}
 						title="Settings changed"
 						{markdown}
-						class="border-slate-600 bg-slate-400/20"
+						class="border-slate-600 bg-slate-400/20 prose-a:text-slate-400"
 					>
 						{#snippet additionalContent()}
 							<Button
 								variant="link"
 								onclick={() => (activeSettingsReminder.current = true)}
-								class="ms-auto h-auto p-0"
+								class="ms-auto h-auto p-0 text-slate-400"
 							>
 								Remind me later for this package
 							</Button>
