@@ -13,9 +13,9 @@
 	let fileDiff = $derived(
 		new FileDiff({
 			themeType: untrack(() => mode.current) ?? "system",
-			unsafeCSS: /* css */ `
+			unsafeCSS: /* css */ ` /* unsafe CSS injection cause shadow DOM + not overridable property otherwise */
                 [data-header-content] [data-title] {
-                    direction: initial;
+                    direction: initial; /* for some reason, the default direction is \`rtl\`, putting the leading dots at the end (\`.github/file.txt\` becomes \`github/file.txt.\`) */
                 }
 			`,
 			...options

@@ -437,7 +437,8 @@ export class GitHubCache {
 					this.#request(
 						kit => kit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
 						createOctokitResponse([])
-					).then(async files => ({
+          ).then(async files => ({
+            // append `raw_file`, the contents of the already-existing `raw_url`, for every file of the response
 						...files,
 						data: await Promise.all(
 							files.data.map(async file => ({
