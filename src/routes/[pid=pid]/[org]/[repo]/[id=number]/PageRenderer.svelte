@@ -770,7 +770,6 @@
 			secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
 			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
-			openByDefault
 		>
 			<div class="flex flex-col gap-2">
 				{#each files as file, i (file.filename)}
@@ -802,14 +801,9 @@
 									})
 							)
 						: []}
-					{#if file.filename.includes("Fragment.js") || i === 0}
-						{console.log(`${aFile}\n${bFile}\n${file.patch}`)}
-					{/if}
 					{#each patches as patch, j (patch.name)}
 						{#if i + j > 0}
 							<Separator />
-						{:else}
-							<!-- <pre>{JSON.stringify(patch, null, 4)}</pre> -->
 						{/if}
 						<DiffRenderer
 							fileDiff={patch}
