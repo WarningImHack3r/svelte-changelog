@@ -1,4 +1,5 @@
 <script lang="ts" module>
+	import { type SupportedLanguages, preloadHighlighter } from "@pierre/diffs";
 	import css from "@shikijs/langs/css";
 	import diff from "@shikijs/langs/diff";
 	import html from "@shikijs/langs/html";
@@ -17,6 +18,11 @@
 		langs: [svelte, typescript, javascript, html, css, json, shell, diff],
 		themes: [githubLight, githubDark],
 		engine: createJavaScriptRegexEngine()
+	});
+
+	preloadHighlighter({
+		langs: highlighter.getLoadedLanguages() as SupportedLanguages[],
+		themes: highlighter.getLoadedThemes()
 	});
 
 	const loadedLanguages = loadLanguages({
@@ -51,6 +57,7 @@
 		MessagesSquare,
 		Tag
 	} from "@lucide/svelte";
+	import { parsePatchFiles } from "@pierre/diffs";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
@@ -78,6 +85,7 @@
 	import Steps from "$lib/components/Steps.svelte";
 	import LinkRenderer from "$lib/components/renderers/LinkRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
+	import DiffRenderer from "./DiffRenderer.svelte";
 	import {
 		transformerDiffMarking,
 		transformerLanguageDetection,
@@ -753,30 +761,67 @@
 	{/if}
 	<!-- Files -->
 	{#if metadata.type === "pull"}
+		{@const [lightTheme, darkTheme] = highlighter
+			.getLoadedThemes()
+			.map(theme => highlighter.getTheme(theme))}
 		<BottomCollapsible
 			icon={FileDiff}
 			label="Files"
 			secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
+			style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
+			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
+			openByDefault
 		>
 			<div class="flex flex-col gap-2">
-				{#each files as file (file.filename)}
-					<div
-						class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
-					>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-						<a href={file.blob_url} class="inline-block hover:*:underline">
-							<span class="wrap-anywhere">{file.filename}</span>
-							{#if file.additions > 0}
-								<span class="font-semibold text-green-500">+{file.additions}</span>
-							{/if}
-							{#if file.deletions > 0}
-								<span class="font-semibold text-destructive">-{file.deletions}</span>
-							{/if}
-						</a>
-						<span class="shrink-0 text-right text-muted-foreground">
-							{file.changes} changes
-						</span>
-					</div>
+				{#each files as file, i (file.filename)}
+					{@const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`}
+					{@const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`}
+					{@const patches = file.patch
+						? parsePatchFiles(`${aFile}\n${bFile}\n${file.patch}`, `diff-${file.filename}`).flatMap(
+								p =>
+									p.files.map(patchFile => {
+										let newType = patchFile.type;
+										switch (file.status) {
+											case "added":
+											case "copied":
+												newType = "new";
+												break;
+											case "removed":
+												newType = "deleted";
+												break;
+											case "renamed":
+												newType = file.changes ? "rename-changed" : "rename-pure";
+												break;
+											case "changed":
+											case "modified":
+											case "unchanged":
+												// stay "changed"
+												break;
+										}
+										return { ...patchFile, type: newType };
+									})
+							)
+						: []}
+					{#if file.filename.includes("Fragment.js") || i === 0}
+						{console.log(`${aFile}\n${bFile}\n${file.patch}`)}
+					{/if}
+					{#each patches as patch, j (patch.name)}
+						{#if i + j > 0}
+							<Separator />
+						{:else}
+							<!-- <pre>{JSON.stringify(patch, null, 4)}</pre> -->
+						{/if}
+						<DiffRenderer
+							fileDiff={patch}
+							newFile={{
+								name: file.filename,
+								contents: file.raw_file
+							}}
+							options={{
+								theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
+							}}
+						/>
+					{/each}
 				{/each}
 			</div>
 			<div class="mt-4 flex items-center justify-between">
