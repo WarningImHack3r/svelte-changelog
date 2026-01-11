@@ -15,6 +15,11 @@ const config = {
 				server: true
 			}
 		}
+	},
+	compilerOptions: {
+		experimental: {
+			async: true
+		}
 	}
 };
 

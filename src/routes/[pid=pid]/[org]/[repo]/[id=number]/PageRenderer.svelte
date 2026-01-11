@@ -11,18 +11,12 @@
 	import githubLight from "@shikijs/themes/github-light-default";
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-	import { preloadHighlighter } from "./DiffRenderer.svelte";
 	import { loadLanguages } from "./syntax-highlighting";
 
 	const highlighter = createHighlighterCoreSync({
 		langs: [svelte, typescript, javascript, html, css, json, shell, diff],
 		themes: [githubLight, githubDark],
 		engine: createJavaScriptRegexEngine()
-	});
-
-	preloadHighlighter({
-		langs: highlighter.getLoadedLanguages(),
-		themes: highlighter.getLoadedThemes()
 	});
 
 	const loadedLanguages = loadLanguages({
@@ -780,6 +774,7 @@
 						{/if}
 						<DiffRenderer
 							fileDiff={patch}
+							langs={highlighter.getLoadedLanguages()}
 							options={{
 								theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
 							}}
