@@ -762,37 +762,35 @@
 			label="Files"
 			secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
-			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:overflow-visible [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
+			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:flex [&_*]:data-accordion-content:flex-col [&_*]:data-accordion-content:gap-2 [&_*]:data-accordion-content:overflow-visible [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
 		>
-			<div class="flex flex-col gap-2">
-				{#each files as file, i (file.filename)}
-					<!-- this should effectively always be a 1-sized array -->
-					{@const patches = parsePatchFiles(file)}
-					{#each patches as patch, j (patch.name)}
-						{#if i + j > 0}
-							<Separator />
-						{/if}
-						<DiffRenderer
-							fileDiff={patch}
-							langs={highlighter.getLoadedLanguages()}
-							options={{
-								theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
-							}}
-						/>
-					{/each}
+			{#each files as file, i (file.filename)}
+				<!-- this should effectively always be a 1-sized array -->
+				{@const patches = parsePatchFiles(file)}
+				{#each patches as patch, j (patch.name)}
+					{#if i + j > 0}
+						<Separator />
+					{/if}
+					<DiffRenderer
+						fileDiff={patch}
+						langs={highlighter.getLoadedLanguages()}
+						options={{
+							theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
+						}}
+					/>
 				{/each}
-			</div>
+			{/each}
 			<Separator />
 			<div class="mt-4 flex items-center justify-between">
 				<span class="font-semibold">Total</span>
-				<div class="flex items-center gap-2">
-					<span class="font-semibold text-destructive">
+				<span class="space-x-0.5 font-mono">
+					<span class="text-destructive">
 						-{files.reduce((acc, file) => acc + file.deletions, 0)}
 					</span>
-					<span class="font-semibold text-green-500">
+					<span class="text-green-500">
 						+{files.reduce((acc, file) => acc + file.additions, 0)}
 					</span>
-				</div>
+				</span>
 			</div>
 		</BottomCollapsible>
 	{/if}

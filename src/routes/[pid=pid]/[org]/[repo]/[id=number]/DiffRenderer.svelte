@@ -25,6 +25,9 @@
 	 * @returns an array of diffs metadata to provide to this very component
 	 */
 	export function parsePatchFiles(file: PullRequestDetails["files"][number]): FileDiffMetadata[] {
+		// all the additional processing done here is to bring the otherwise native
+		// formatting features (or make them working at all) as they were originally
+		// designed for large native GitHub .patch files
 		const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`;
 		const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`;
 		return file.patch
