@@ -54,7 +54,7 @@
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
-	import remarkGithub from "remark-github";
+	import remarkGitHub from "remark-github";
 	import type { Plugin } from "svelte-exmarkdown";
 	import type {
 		DiscussionDetails,
@@ -385,7 +385,7 @@
 						additionalPlugins={[
 							{
 								remarkPlugin: [
-									remarkGithub,
+									remarkGitHub,
 									{ repository: `${entity.repository.owner}/${entity.repository.name}` }
 								]
 							},
@@ -466,7 +466,7 @@
 					parseRawHtml
 					class="max-w-full"
 					additionalPlugins={[
-						{ remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }] },
+						{ remarkPlugin: [remarkGitHub, { repository: `${metadata.org}/${metadata.repo}` }] },
 						{ remarkPlugin: remarkGemoji },
 						{ rehypePlugin: rehypeSlug },
 						shikiPlugin
@@ -622,7 +622,7 @@
 							class="max-w-none"
 							additionalPlugins={[
 								{
-									remarkPlugin: [remarkGithub, { repository: `${metadata.org}/${metadata.repo}` }]
+									remarkPlugin: [remarkGitHub, { repository: `${metadata.org}/${metadata.repo}` }]
 								},
 								{ remarkPlugin: remarkGemoji },
 								shikiPlugin

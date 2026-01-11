@@ -20,7 +20,7 @@
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import remarkGemoji from "remark-gemoji";
-	import remarkGithub from "remark-github";
+	import remarkGitHub from "remark-github";
 	import semver from "semver";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
@@ -377,7 +377,7 @@
 					{
 						remarkPlugin:
 							repo.owner && repo.name
-								? [remarkGithub, { repository: `${repo.owner}/${repo.name}` }]
+								? [remarkGitHub, { repository: `${repo.owner}/${repo.name}` }]
 								: undefined
 					},
 					{ remarkPlugin: remarkGemoji },
