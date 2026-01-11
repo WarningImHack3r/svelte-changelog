@@ -69,6 +69,12 @@
 		new FileDiff({
 			themeType: untrack(() => mode.current) ?? "system",
 			unsafeCSS: /* css */ ` /* unsafe CSS injection cause shadow DOM + not overridable property otherwise */
+			    [data-diffs-header] {
+					position: sticky;
+					top: 3.5rem; /* won't work with banner and is hardcoded but I can't really do much better */
+					z-index: 30;
+				}
+
                 [data-header-content] [data-title] {
                     direction: initial; /* for some reason, the default direction is \`rtl\`, putting the leading dots at the end (\`.github/file.txt\` becomes \`github/file.txt.\`) */
                 }

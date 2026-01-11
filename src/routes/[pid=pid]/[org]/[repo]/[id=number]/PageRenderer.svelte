@@ -768,7 +768,7 @@
 			label="Files"
 			secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
-			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
+			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:overflow-visible [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
 		>
 			<div class="flex flex-col gap-2">
 				{#each files as file, i (file.filename)}
