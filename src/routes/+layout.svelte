@@ -297,11 +297,11 @@
 			<MarkdownRenderer
 				markdown={newsToDisplay.content}
 				inline
-				class="mx-auto my-1 px-4 text-center text-foreground prose-a:font-semibold prose-a:text-foreground prose-a:underline"
+				class="mx-auto my-1 max-w-3/4 px-4 text-center text-foreground prose-a:font-semibold prose-a:text-foreground prose-a:underline"
 			/>
 			<AnimatedButton
 				variant="ghost"
-				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-background/0"
+				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-accent/0 dark:hover:bg-accent/0"
 				onclick={markCurrentNewsAsRead}
 			>
 				<X class="size-4" />
