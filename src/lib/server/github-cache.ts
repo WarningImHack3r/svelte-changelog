@@ -77,7 +77,7 @@ export type ListedPullRequest = Awaited<ReturnType<Pulls["list"]>>["data"][numbe
 export type PullRequestDetails = ItemDetails & {
 	info: PullRequest;
 	commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
-	files: (Awaited<ReturnType<Pulls["listFiles"]>>["data"][number] & { raw_file: string })[];
+	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
 };
 
@@ -437,16 +437,7 @@ export class GitHubCache {
 					this.#request(
 						kit => kit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
 						createOctokitResponse([])
-					).then(async files => ({
-						// append `raw_file`, the contents of the already-existing `raw_url`, for every file of the response
-						...files,
-						data: await Promise.all(
-							files.data.map(async file => ({
-								...file,
-								raw_file: await (await fetch(file.raw_url)).text()
-							}))
-						)
-					})),
+					),
 					this.#getLinkedIssues(owner, repo, id)
 				]),
 			([{ data: info }, { data: comments }, { data: commits }, { data: files }, linkedIssues]) => ({

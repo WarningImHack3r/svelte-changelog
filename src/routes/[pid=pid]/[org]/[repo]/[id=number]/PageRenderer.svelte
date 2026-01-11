@@ -1,5 +1,4 @@
 <script lang="ts" module>
-	import { type SupportedLanguages, preloadHighlighter } from "@pierre/diffs";
 	import css from "@shikijs/langs/css";
 	import diff from "@shikijs/langs/diff";
 	import html from "@shikijs/langs/html";
@@ -12,6 +11,7 @@
 	import githubLight from "@shikijs/themes/github-light-default";
 	import { createHighlighterCoreSync } from "shiki";
 	import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+	import { preloadHighlighter } from "./DiffRenderer.svelte";
 	import { loadLanguages } from "./syntax-highlighting";
 
 	const highlighter = createHighlighterCoreSync({
@@ -21,7 +21,7 @@
 	});
 
 	preloadHighlighter({
-		langs: highlighter.getLoadedLanguages() as SupportedLanguages[],
+		langs: highlighter.getLoadedLanguages(),
 		themes: highlighter.getLoadedThemes()
 	});
 
@@ -57,7 +57,6 @@
 		MessagesSquare,
 		Tag
 	} from "@lucide/svelte";
-	import { parsePatchFiles } from "@pierre/diffs";
 	import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
@@ -85,7 +84,7 @@
 	import Steps from "$lib/components/Steps.svelte";
 	import LinkRenderer from "$lib/components/renderers/LinkRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
-	import DiffRenderer from "./DiffRenderer.svelte";
+	import DiffRenderer, { parsePatchFiles } from "./DiffRenderer.svelte";
 	import {
 		transformerDiffMarking,
 		transformerLanguageDetection,
@@ -769,48 +768,18 @@
 			label="Files"
 			secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 			style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
-			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
+			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
 		>
 			<div class="flex flex-col gap-2">
 				{#each files as file, i (file.filename)}
-					{@const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`}
-					{@const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`}
-					{@const patches = file.patch
-						? parsePatchFiles(`${aFile}\n${bFile}\n${file.patch}`, `diff-${file.filename}`).flatMap(
-								p =>
-									p.files.map(patchFile => {
-										let newType = patchFile.type;
-										switch (file.status) {
-											case "added":
-											case "copied":
-												newType = "new";
-												break;
-											case "removed":
-												newType = "deleted";
-												break;
-											case "renamed":
-												newType = file.changes ? "rename-changed" : "rename-pure";
-												break;
-											case "changed":
-											case "modified":
-											case "unchanged":
-												// stay "changed"
-												break;
-										}
-										return { ...patchFile, type: newType };
-									})
-							)
-						: []}
+					<!-- this should effectively always be a 1-sized array -->
+					{@const patches = parsePatchFiles(file)}
 					{#each patches as patch, j (patch.name)}
 						{#if i + j > 0}
 							<Separator />
 						{/if}
 						<DiffRenderer
 							fileDiff={patch}
-							newFile={{
-								name: file.filename,
-								contents: file.raw_file
-							}}
 							options={{
 								theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
 							}}
@@ -818,14 +787,15 @@
 					{/each}
 				{/each}
 			</div>
+			<Separator />
 			<div class="mt-4 flex items-center justify-between">
 				<span class="font-semibold">Total</span>
 				<div class="flex items-center gap-2">
-					<span class="font-semibold text-green-500">
-						+{files.reduce((acc, file) => acc + file.additions, 0)}
-					</span>
 					<span class="font-semibold text-destructive">
 						-{files.reduce((acc, file) => acc + file.deletions, 0)}
+					</span>
+					<span class="font-semibold text-green-500">
+						+{files.reduce((acc, file) => acc + file.additions, 0)}
 					</span>
 				</div>
 			</div>

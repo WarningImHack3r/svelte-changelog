@@ -8,7 +8,7 @@
 	type Props = {
 		icon?: typeof Icon;
 		label: string;
-		secondaryLabel?: string | undefined;
+		secondaryLabel?: string;
 		openByDefault?: boolean;
 		style?: string;
 		class?: ClassValue;
