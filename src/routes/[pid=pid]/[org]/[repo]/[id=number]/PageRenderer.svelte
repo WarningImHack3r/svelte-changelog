@@ -778,6 +778,11 @@
 							theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
 						}}
 					/>
+				{:else}
+					{#if i > 0}
+						<Separator />
+					{/if}
+					<div class="my-4 font-semibold">No diff parsed for <code>{file.filename}</code> :(</div>
 				{/each}
 			{/each}
 			<Separator />

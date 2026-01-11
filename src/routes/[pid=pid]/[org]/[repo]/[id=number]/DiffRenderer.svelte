@@ -118,6 +118,5 @@
 	div {
 		--diffs-font-family: var(--font-mono);
 		--diffs-header-font-family: var(--font-sans);
-		--diffs-dark-bg: white !important;
 	}
 </style>
