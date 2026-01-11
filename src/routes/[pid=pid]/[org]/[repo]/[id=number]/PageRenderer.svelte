@@ -78,6 +78,7 @@
 	import Steps from "$lib/components/Steps.svelte";
 	import LinkRenderer from "$lib/components/renderers/LinkRenderer.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
+	import DiffRenderer, { parsePatchFiles } from "./DiffRenderer.svelte";
 	import {
 		transformerDiffMarking,
 		transformerLanguageDetection,
@@ -753,42 +754,48 @@
 	{/if}
 	<!-- Files -->
 	{#if metadata.type === "pull"}
+		{@const [lightTheme, darkTheme] = highlighter
+			.getLoadedThemes()
+			.map(theme => highlighter.getTheme(theme))}
 		<BottomCollapsible
 			icon={FileDiff}
 			label="Files"
 			secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
+			style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
+			class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:flex [&_*]:data-accordion-content:flex-col [&_*]:data-accordion-content:gap-2 [&_*]:data-accordion-content:overflow-visible [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
 		>
-			<div class="flex flex-col gap-2">
-				{#each files as file (file.filename)}
-					<div
-						class="flex flex-col items-start justify-between xs:flex-row xs:items-center xs:gap-4"
-					>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-						<a href={file.blob_url} class="inline-block hover:*:underline">
-							<span class="wrap-anywhere">{file.filename}</span>
-							{#if file.additions > 0}
-								<span class="font-semibold text-green-500">+{file.additions}</span>
-							{/if}
-							{#if file.deletions > 0}
-								<span class="font-semibold text-destructive">-{file.deletions}</span>
-							{/if}
-						</a>
-						<span class="shrink-0 text-right text-muted-foreground">
-							{file.changes} changes
-						</span>
-					</div>
+			{#each files as file, i (file.filename)}
+				<!-- this should effectively always be a 1-sized array -->
+				{@const patches = parsePatchFiles(file)}
+				{#each patches as patch, j (patch.name)}
+					{#if i + j > 0}
+						<Separator />
+					{/if}
+					<DiffRenderer
+						fileDiff={patch}
+						langs={highlighter.getLoadedLanguages()}
+						options={{
+							theme: { light: githubLight.name ?? "", dark: githubDark.name ?? "" }
+						}}
+					/>
+				{:else}
+					{#if i > 0}
+						<Separator />
+					{/if}
+					<div class="my-4 font-semibold">No diff parsed for <code>{file.filename}</code> :(</div>
 				{/each}
-			</div>
+			{/each}
+			<Separator />
 			<div class="mt-4 flex items-center justify-between">
 				<span class="font-semibold">Total</span>
-				<div class="flex items-center gap-2">
-					<span class="font-semibold text-green-500">
-						+{files.reduce((acc, file) => acc + file.additions, 0)}
-					</span>
-					<span class="font-semibold text-destructive">
+				<span class="space-x-0.5 font-mono">
+					<span class="text-destructive">
 						-{files.reduce((acc, file) => acc + file.deletions, 0)}
 					</span>
-				</div>
+					<span class="text-green-500">
+						+{files.reduce((acc, file) => acc + file.additions, 0)}
+					</span>
+				</span>
 			</div>
 		</BottomCollapsible>
 	{/if}
