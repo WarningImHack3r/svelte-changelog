@@ -61,6 +61,7 @@
 
 <script lang="ts" generics="T">
 	import { untrack } from "svelte";
+	import { MediaQuery } from "svelte/reactivity";
 	import {
 		FileDiff,
 		type FileDiffOptions,
@@ -77,9 +78,12 @@
 	let { options, langs, ...props }: Props = $props();
 	let id = $props.id();
 
+	let mobile = new MediaQuery("width < 800px");
+
 	let fileDiff = $derived(
 		new FileDiff(
 			{
+				diffStyle: untrack(() => mobile.current) ? "unified" : undefined,
 				themeType: untrack(() => mode.current) ?? "system",
 				unsafeCSS: /* css */ ` /* unsafe CSS injection cause shadow DOM + not overridable property otherwise */
     			    [data-diffs-header] {
@@ -106,6 +110,12 @@
 		});
 
 		return () => fileDiff.cleanUp();
+	});
+
+	// Mobile diff type change
+	$effect(() => {
+		fileDiff.setOptions({ diffStyle: mobile.current ? "unified" : undefined });
+		fileDiff.rerender();
 	});
 
 	// Theme change
