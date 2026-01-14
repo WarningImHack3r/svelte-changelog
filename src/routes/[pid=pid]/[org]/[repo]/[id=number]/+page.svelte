@@ -1,5 +1,16 @@
 <script lang="ts">
+	import { replaceState } from "$app/navigation";
+	import { page } from "$app/state";
 	import PageRenderer from "./PageRenderer.svelte";
+
+	$effect(() => {
+		// removes stuff like `#issuecomment-xxx` from the GH redirection
+		// (query params are removed by default by SvelteKit, but not hashes for some reason)
+		if (page.url.hash) {
+			// this would technically nuke hashes I could choose to add in the future, but it's not a thing now sooo
+			replaceState("", {});
+		}
+	});
 
 	let { data } = $props();
 
