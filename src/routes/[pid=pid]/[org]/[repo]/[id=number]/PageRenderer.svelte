@@ -351,7 +351,11 @@
 								class="leading-normal text-foreground"
 							/>
 							<span class="ml-1 font-light text-muted-foreground">
-								#{entity.number}
+								{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
+									#{entity.number}
+								{:else}
+									{entity.repository.owner}/{entity.repository.name}#{entity.number}
+								{/if}
 							</span>
 						</span>
 						<!-- Author & Date -->
@@ -812,21 +816,21 @@
 	<div class="flex flex-col-reverse items-end gap-4 md:flex-row md:items-center">
 		{#if linkedEntities.length > 0}
 			<div class="flex flex-wrap justify-end gap-4">
-				{#each linkedEntities as closingIssue (closingIssue.number)}
+				{#each linkedEntities as entity (entity.number)}
 					<AnimatedButton
 						href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
 							pid: metadata.type === "pull" ? "issues" : "pull",
-							org: closingIssue.repository.owner,
-							repo: closingIssue.repository.name,
-							id: `${closingIssue.number}`
+							org: entity.repository.owner,
+							repo: entity.repository.name,
+							id: `${entity.number}`
 						})}
 						variant="secondary"
 					>
 						Open {metadata.type === "pull" ? "issue" : "pull request"}
-						{#if closingIssue.repository.owner === metadata.org && closingIssue.repository.name === metadata.repo}
-							#{closingIssue.number}
+						{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
+							#{entity.number}
 						{:else}
-							{closingIssue.repository.owner}/{closingIssue.repository.name}#{closingIssue.number}
+							{entity.repository.owner}/{entity.repository.name}#{entity.number}
 						{/if}
 					</AnimatedButton>
 				{/each}
