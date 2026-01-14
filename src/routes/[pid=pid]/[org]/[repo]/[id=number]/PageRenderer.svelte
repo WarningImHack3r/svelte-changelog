@@ -761,6 +761,8 @@
 		{@const [lightTheme, darkTheme] = highlighter
 			.getLoadedThemes()
 			.map(theme => highlighter.getTheme(theme))}
+		{@const deletions = files.reduce((acc, file) => acc + file.deletions, 0)}
+		{@const additions = files.reduce((acc, file) => acc + file.additions, 0)}
 		<BottomCollapsible
 			icon={FileDiff}
 			label="Files"
@@ -793,12 +795,16 @@
 			<div class="mt-4 flex items-center justify-between">
 				<span class="font-semibold">Total</span>
 				<span class="space-x-0.5 font-mono">
-					<span class="text-destructive">
-						-{files.reduce((acc, file) => acc + file.deletions, 0)}
-					</span>
-					<span class="text-green-500">
-						+{files.reduce((acc, file) => acc + file.additions, 0)}
-					</span>
+					{#if deletions}
+						<span class="text-destructive">
+							-{deletions}
+						</span>
+					{/if}
+					{#if additions}
+						<span class="text-green-500">
+							+{additions}
+						</span>
+					{/if}
 				</span>
 			</div>
 		</BottomCollapsible>
