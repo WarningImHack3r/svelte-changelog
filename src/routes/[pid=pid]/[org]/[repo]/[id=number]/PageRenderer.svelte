@@ -342,22 +342,36 @@
 		{#each linkedEntities as entity (entity.number)}
 			<Accordion.Item value={`${entity.number}`}>
 				<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:shrink-0">
-					<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:gap-14">
+					<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:justify-between">
 						<!-- Title -->
-						<span class="text-left group-hover:*:underline">
-							<MarkdownRenderer
-								markdown={entity.title}
-								inline
-								class="leading-normal text-foreground"
+						<div class="flex gap-4">
+							<GHBadge
+								type={entity.type}
+								status={entity.state === "MERGED"
+									? "merged"
+									: entity.state === "CLOSED"
+										? entity.stateReason === "COMPLETED"
+											? "solved"
+											: "closed"
+										: "open"}
+								mode="minimal"
+								class="shrink-0"
 							/>
-							<span class="ml-1 font-light text-muted-foreground">
-								{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
-									#{entity.number}
-								{:else}
-									{entity.repository.owner}/{entity.repository.name}#{entity.number}
-								{/if}
+							<span class="text-left group-hover:*:underline">
+								<MarkdownRenderer
+									markdown={entity.title}
+									inline
+									class="leading-normal text-foreground"
+								/>
+								<span class="ml-1 font-light text-muted-foreground">
+									{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
+										#{entity.number}
+									{:else}
+										{entity.repository.owner}/{entity.repository.name}#{entity.number}
+									{/if}
+								</span>
 							</span>
-						</span>
+						</div>
 						<!-- Author & Date -->
 						<div
 							class="mr-4 flex shrink-0 flex-col items-end gap-1 text-right text-sm text-muted-foreground xs:ml-auto xs:flex-row xs:items-center"

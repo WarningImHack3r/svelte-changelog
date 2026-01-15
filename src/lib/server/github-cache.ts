@@ -12,6 +12,10 @@ import type {
 	Issue as GQLIssue,
 	PullRequest as GQLPullRequest,
 	Repository as GQLRepository,
+	IssueState,
+	IssueStateReason,
+	MergeStateStatus,
+	PullRequestState,
 	ReactionConnection,
 	ReactionContent,
 	ReferencedSubject
@@ -142,6 +146,9 @@ export type LinkedItem = {
 		owner: string;
 		name: string;
 	};
+	type: "pull" | "issue" | "discussion";
+	state: IssueState | PullRequestState | "DRAFT";
+	stateReason: IssueStateReason | PullRequestState | MergeStateStatus;
 	reactions: GitHubRelease["reactions"];
 	number: number;
 	title: string;
@@ -519,6 +526,9 @@ export class GitHubCache {
 										subject {
 											... on PullRequest {
 												url
+												state
+												mergeStateStatus
+												isDraft
 												reactions(first: $count) {
 													nodes {
 														content
@@ -545,6 +555,9 @@ export class GitHubCache {
 										source {
 											... on PullRequest {
 												url
+												state
+												mergeStateStatus
+												isDraft
 												reactions(first: $count) {
 													nodes {
 														content
@@ -592,11 +605,11 @@ export class GitHubCache {
 			if ("subject" in item) {
 				const issueOrPr = item.subject;
 				if (!issueOrPr || !("number" in issueOrPr)) continue;
-				linkedPRs.set(issueOrPr.number, this.#gqlToLinkedItem(issueOrPr));
+				linkedPRs.set(issueOrPr.number, this.#gqlToLinkedItem("pull", issueOrPr));
 			} else if ("source" in item) {
 				const referencedSubject = item.source;
 				if (!referencedSubject || !("number" in referencedSubject)) continue;
-				linkedPRs.set(referencedSubject.number, this.#gqlToLinkedItem(referencedSubject));
+				linkedPRs.set(referencedSubject.number, this.#gqlToLinkedItem("pull", referencedSubject));
 			}
 		}
 
@@ -623,6 +636,8 @@ export class GitHubCache {
 							closingIssuesReferences(first: $count) {
 								nodes {
 									url
+									state
+									stateReason
 									reactions(first: $count) {
 										nodes {
 											content
@@ -664,7 +679,7 @@ export class GitHubCache {
 		const closingIssues = result?.repository?.pullRequest?.closingIssuesReferences?.nodes ?? [];
 		for (const issue of closingIssues) {
 			if (!issue) continue;
-			linkedIssues.set(issue.number, this.#gqlToLinkedItem(issue));
+			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issue", issue));
 		}
 
 		return Array.from(linkedIssues.values());
@@ -676,18 +691,20 @@ export class GitHubCache {
 	 * @param gql the raw GraphQL item
 	 * @returns the mapped LinkedItem
 	 */
-	#gqlToLinkedItem({
-		url,
-		repository,
-		reactions,
-		...rest
-	}: GQLIssue | GQLPullRequest | ReferencedSubject): LinkedItem {
+	#gqlToLinkedItem(
+		itemType: LinkedItem["type"],
+		{ url, repository, reactions, ...rest }: GQLIssue | GQLPullRequest | ReferencedSubject
+	): LinkedItem {
 		function getReactionCount(reactions: ReactionConnection, content: ReactionContent) {
 			return reactions.nodes?.filter(reaction => reaction?.content === content).length ?? 0;
 		}
 
 		return {
 			...rest,
+			type: itemType,
+			state: "isDraft" in rest && rest.isDraft ? "DRAFT" : rest.state,
+			stateReason:
+				"mergeStateStatus" in rest ? rest.mergeStateStatus : (rest.stateReason ?? "CLOSED"),
 			html_url: url,
 			repository: {
 				owner: repository.owner.login,
