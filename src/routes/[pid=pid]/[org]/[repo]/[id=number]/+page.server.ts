@@ -3,9 +3,7 @@ import { resolve } from "$app/paths";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
-import type { BranchCommit } from "$lib/types";
-
-type Type = "pull" | "issue" | "discussion";
+import type { BranchCommit, PID } from "$lib/types";
 
 export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 	const isKnownRepo = uniqueRepos.some(({ owner, name }) => org === owner && repo === name);
@@ -40,7 +38,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 			id: +id,
 			type: type === "issues" ? "issue" : type === "discussions" ? "discussion" : type
 		} satisfies {
-			type: Type;
+			type: PID;
 			[key: string]: unknown;
 		},
 		item,

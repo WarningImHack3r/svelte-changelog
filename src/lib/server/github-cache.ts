@@ -26,7 +26,7 @@ import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
-import type { Issues, Pulls } from "$lib/types";
+import type { Issues, PID, Pulls } from "$lib/types";
 import { CacheHandler, type RedisJson } from "./cache-handler";
 import {
 	commit,
@@ -146,7 +146,7 @@ export type LinkedItem = {
 		owner: string;
 		name: string;
 	};
-	type: "pull" | "issue" | "discussion";
+	type: PID;
 	state: IssueState | PullRequestState | "DRAFT";
 	stateReason: IssueStateReason | PullRequestState | MergeStateStatus;
 	reactions: GitHubRelease["reactions"];

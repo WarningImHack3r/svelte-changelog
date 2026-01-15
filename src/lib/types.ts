@@ -62,6 +62,12 @@ export type Category = (typeof availableCategory)[number];
 export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
 export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
 /**
+ * The Pull, Issue or Discussion type.
+ * Matches the slug in GitHub URLs.
+ */
+export type PID = "pull" | "issue" | "discussion";
+
+/**
  * The JSON API response for `https://github.com/{user}/{repo}/branch_commits/{sha}`
  */
 export type BranchCommit = {

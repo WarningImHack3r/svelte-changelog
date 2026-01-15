@@ -254,7 +254,9 @@
 		<Separator class="mt-0.5" />
 
 		<!-- Version filtering -->
-		<div class={["flex items-center", headless && "flex-col items-start gap-2" || "justify-between"]}>
+		<div
+			class={["flex items-center", (headless && "flex-col items-start gap-2") || "justify-between"]}
+		>
 			<span class="text-sm leading-none font-medium text-nowrap">Show release types:</span>
 			<ToggleGroup.Root
 				type="single"

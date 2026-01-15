@@ -62,6 +62,7 @@
 		LinkedItem,
 		PullRequestDetails
 	} from "$lib/server/github-cache";
+	import type { PID } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
@@ -110,7 +111,7 @@
 		metadata: {
 			org: string;
 			repo: string;
-			type: "pull" | "issue" | "discussion";
+			type: PID;
 		};
 		info: IssueDetails["info"] | PullRequestDetails["info"] | DiscussionDetails["info"];
 		comments: IssueDetails["comments"] | DiscussionDetails["comments"];
