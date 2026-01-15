@@ -90,11 +90,11 @@
     					position: sticky;
     					top: 3.5rem; /* won't work with banner and is hardcoded but I can't really do much better */
     					z-index: 30;
-    				}
 
-                    [data-header-content] [data-title] {
-                        direction: initial; /* for some reason, the default direction is \`rtl\`, putting the leading dots at the end (\`.github/file.txt\` becomes \`github/file.txt.\`) */
-                    }
+                        & [data-header-content] [data-title] {
+                            direction: initial; /* for some reason, the default direction is \`rtl\`, putting the leading dots at the end (\`.github/file.txt\` becomes \`github/file.txt.\`) */
+                        }
+    				}
     			`,
 				...options
 			},
@@ -114,7 +114,7 @@
 
 	// Mobile diff type change
 	$effect(() => {
-		fileDiff.setOptions({ diffStyle: mobile.current ? "unified" : undefined });
+		fileDiff.setOptions({ ...fileDiff.options, diffStyle: mobile.current ? "unified" : undefined });
 		fileDiff.rerender();
 	});
 
