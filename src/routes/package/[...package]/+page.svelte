@@ -2,23 +2,19 @@
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
-	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
-	import { ChevronRight, CircleAlert, Info, LoaderCircle, Rss } from "@lucide/svelte";
+	import { CircleAlert, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import semver from "semver";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
-	import * as Collapsible from "$lib/components/ui/collapsible";
-	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 	import { SettingsUtils, getPackageSettings } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
-	import HeaderBanner from "./HeaderBanner.svelte";
+	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
+	import TopBanner from "./TopBanner.svelte";
 
 	const loadingSentences = [
 		"Loading",
@@ -32,7 +28,7 @@
 	];
 
 	let { data } = $props();
-	let viewTransitionName = $derived(data.currentPackage.pkg.name.replace(/[@/-]/g, ""));
+
 	let latestRelease = $derived(
 		data.currentPackage.category.slug === ALL_SLUG
 			? undefined
@@ -103,7 +99,7 @@
 	});
 
 	// Hash management
-	let wantsReducedMotion = new MediaQuery("(prefers-reduced-motion: reduce)");
+	let wantsReducedMotion = new MediaQuery("prefers-reduced-motion: reduce");
 	$effect(() => {
 		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
 
@@ -116,46 +112,7 @@
 			});
 	});
 
-	// Registries
-	let registries = $derived.by<
-		Record<string, { iconUrl: string; url: string; additionalClasses?: string }>
-	>(() => {
-		const pkg = data.currentPackage.pkg.name;
-		return data.currentPackage.category.slug === ALL_SLUG
-			? Object.fromEntries([])
-			: {
-					npmjs: {
-						iconUrl: "/npm.svg",
-						url: `https://npmjs.com/package/${pkg}`,
-						additionalClasses:
-							"[&>img]:filter-[grayscale(1)_contrast(100)_brightness(1)] dark:[&>img]:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
-					}
-				};
-	});
-
-	// RSS
-	const rssEntries: Record<string, string> = {
-		XML: "rss.xml",
-		ATOM: "atom.xml",
-		JSON: "rss.json"
-	};
-
-	/**
-	 * Append a segment at the end of an URL, cleanly.
-	 *
-	 * @param origin the URL origin
-	 * @param pathname the URL pathname
-	 * @param segment the segment to add
-	 * @returns the new URL with an added segment
-	 */
-	function appendToPath(origin: string, pathname: string, segment: string) {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const u = new URL(pathname, origin);
-		u.pathname = `${u.pathname.replace(/\/$/, "")}/${segment}`;
-		return u.href;
-	}
-
-	// Persistance
+	// Persistence
 	let activeSettingsReminder = $derived(
 		new PersistedState(
 			`${data.currentPackage.pkg.name.toLowerCase().replace(/ /g, "-")}-active-settings-reminder`,
@@ -201,113 +158,21 @@
 		{@render loading()}
 	{:then}
 		<div class="flex flex-col">
-			<div class="my-8">
-				<h1
-					class="text-3xl font-semibold text-primary text-shadow-sm motion-safe:[view-transition-name:var(--vt-name)] md:text-5xl"
-					style:--vt-name="title-{viewTransitionName}"
-				>
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
-				</h1>
-				<div class="flex flex-col items-start xs:flex-row xs:items-center">
-					{#snippet verticalSeparator()}
-						<Separator
-							orientation="vertical"
-							class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
-						/>
-					{/snippet}
-					<!-- Repo name -->
-					{#if data.currentPackage.repoOwner && data.currentPackage.repoName}
-						<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
-							<a
-								href="https://github.com/{data.currentPackage.repoOwner}/{data.currentPackage
-									.repoName}"
-								target="_blank"
-								class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
-							>
-								<span
-									class="motion-safe:[view-transition-name:var(--vt-name)]"
-									style:--vt-name="owner-{viewTransitionName}"
-								>
-									{data.currentPackage.repoOwner}
-								</span>/<wbr /><span
-									class="motion-safe:[view-transition-name:var(--vt-name)]"
-									style:--vt-name="repo-name-{viewTransitionName}"
-								>
-									{data.currentPackage.repoName}
-								</span>
-							</a>
-						</h2>
-						{@render verticalSeparator()}
-					{/if}
-					<!-- JS registries -->
-					{#each Object.entries(registries) as [name, { iconUrl: src, url: href, additionalClasses }], index (name)}
-						<Button
-							variant="ghost"
-							size="icon"
-							class={["size-7", additionalClasses]}
-							{href}
-							target="_blank"
-						>
-							<img {src} alt={name} class="h-4" />
-						</Button>
-
-						<!-- Only shows if there are registries available for this package -->
-						{#if index === Object.keys(registries).length - 1}
-							{@render verticalSeparator()}
-						{/if}
-					{/each}
-					<!-- RSS -->
-					<Collapsible.Root class="flex items-center">
-						<Collapsible.Trigger>
-							{#snippet child({ props })}
-								<AnimatedButton
-									{...props}
-									variant="ghost"
-									size="sm"
-									class="peer h-6 px-1! data-[state=open]:text-primary"
-								>
-									<Rss />
-									<span class="sr-only">RSS</span>
-								</AnimatedButton>
-								<ChevronRight
-									class="size-4 -translate-x-1 scale-75 opacity-0 transition-all peer-hover:translate-x-0 peer-hover:scale-100 peer-hover:opacity-100 peer-data-[state=open]:translate-x-0 peer-data-[state=open]:scale-100 peer-data-[state=open]:rotate-180 peer-data-[state=open]:opacity-100"
-								/>
-							{/snippet}
-						</Collapsible.Trigger>
-						<AnimatedCollapsibleContent axis="x" class="ml-2">
-							{#each Object.entries(rssEntries) as [name, file] (name)}
-								<Button
-									variant="link"
-									size="sm"
-									class="h-auto px-1 py-0 text-foreground"
-									href={appendToPath(
-										page.url.origin,
-										resolve("/package/[...package]", {
-											package: data.currentPackage.pkg.name
-										}),
-										file
-									)}
-									data-sveltekit-preload-data="tap"
-								>
-									{name}
-								</Button>
-							{/each}
-						</AnimatedCollapsibleContent>
-					</Collapsible.Root>
-				</div>
-				{#if data.currentPackage.pkg.description}
-					<h3
-						class="mt-4 italic motion-safe:[view-transition-name:var(--vt-name)]"
-						style:--vt-name="desc-{viewTransitionName}"
-					>
-						{data.currentPackage.pkg.description}
-					</h3>
-				{/if}
-			</div>
+			<Header
+				packageInfo={{
+					name: data.currentPackage.pkg.name,
+					description: data.currentPackage.pkg.description,
+					categorySlug: data.currentPackage.category.slug
+				}}
+				currentRepo={{
+					owner: data.currentPackage.repoOwner,
+					name: data.currentPackage.repoName
+				}}
+				class="my-8"
+			/>
 			<Accordion.Root type="multiple" bind:value={expandableReleases} class="w-full space-y-2">
 				{#if data.currentPackage.pkg.deprecated}
-					<HeaderBanner
+					<TopBanner
 						icon={CircleAlert}
 						title="Deprecated"
 						markdown={data.currentPackage.pkg.deprecated}
@@ -317,7 +182,7 @@
 				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
 					{@const markdown =
 						"This package has trouble tagging its releases, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
-					<HeaderBanner
+					<TopBanner
 						icon={CircleAlert}
 						title="Note"
 						{markdown}
@@ -328,7 +193,7 @@
 					{@const markdown = `The following filters are active:\n${SettingsUtils.modificationString(
 						packageSettings.current
 					)}`}
-					<HeaderBanner
+					<TopBanner
 						icon={Info}
 						title="Settings changed"
 						{markdown}
@@ -343,7 +208,7 @@
 								Remind me later for this package
 							</Button>
 						{/snippet}
-					</HeaderBanner>
+					</TopBanner>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
