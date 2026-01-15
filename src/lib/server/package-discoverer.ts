@@ -21,7 +21,7 @@ export type CategorizedPackage = Prettify<
 	}
 >;
 
-export class PackageDiscoverer {
+class PackageDiscoverer {
 	readonly #cache: GitHubCache;
 	readonly #repos: Repository[] = [];
 	#packages: DiscoveredPackage[] = [];

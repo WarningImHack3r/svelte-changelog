@@ -56,8 +56,8 @@ export type RepoInfo = {
 	changelogContentsReplacer?: (file: string) => string;
 };
 
-export const availableCategory = ["svelte", "kit", "others"] as const;
-export type Category = (typeof availableCategory)[number];
+export const availableCategories = ["svelte", "kit", "others"] as const;
+export type Category = (typeof availableCategories)[number];
 
 export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];
 export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
