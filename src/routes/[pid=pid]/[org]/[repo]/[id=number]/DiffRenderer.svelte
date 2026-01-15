@@ -1,13 +1,16 @@
 <script lang="ts" module>
 	import { browser } from "$app/environment";
 	import { type FileDiffMetadata, parsePatchFiles as pierreParsePatchFiles } from "@pierre/diffs";
-	import type { WorkerInitializationRenderOptions } from "@pierre/diffs/worker";
+	import {
+		type WorkerInitializationRenderOptions,
+		getOrCreateWorkerPoolSingleton
+	} from "@pierre/diffs/worker";
 	import type { PullRequestDetails } from "$lib/server/github-cache";
 	import { workerFactory } from "./workers";
 
-	async function getWorker(options: WorkerInitializationRenderOptions) {
-		if (!browser) return undefined; // the import is client-only
-		return (await import("@pierre/diffs/worker")).getOrCreateWorkerPoolSingleton({
+	function getWorker(options: WorkerInitializationRenderOptions) {
+		if (!browser) return undefined; // worker is browser-only
+		return getOrCreateWorkerPoolSingleton({
 			poolOptions: {
 				workerFactory
 				// poolSize defaults to 8. More workers = more parallelism but
@@ -98,7 +101,7 @@
     			`,
 				...options
 			},
-			await getWorker({ ...options, langs: langs as SupportedLanguages[] })
+			getWorker({ ...options, langs: langs as SupportedLanguages[] })
 		)
 	);
 

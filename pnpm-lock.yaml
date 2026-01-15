@@ -52,8 +52,8 @@ importers:
         specifier: ^16.0.0
         version: 16.0.0
       '@pierre/diffs':
-        specifier: ^1.0.5
-        version: 1.0.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: ^1.0.6
+        version: 1.0.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@prgm/sveltekit-progress-bar':
         specifier: ^3.0.2
         version: 3.0.2(@sveltejs/kit@2.49.5(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.46.4)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.46.4)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.46.4)
@@ -133,8 +133,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       posthog-js:
-        specifier: ^1.323.0
-        version: 1.323.0
+        specifier: ^1.324.1
+        version: 1.324.1
       posthog-node:
         specifier: ^5.21.0
         version: 5.21.0
@@ -1028,8 +1028,8 @@ packages:
     resolution: {integrity: sha512-kocjix+/sSggfJhwXqClZ3i9Y/MI0fp7b+g7kCRm6psy2dsf8uApTRclwG18h8Avm7C9+fnt+O36PspJ/OzoWg==}
     engines: {node: '>=14'}
 
-  '@pierre/diffs@1.0.5':
-    resolution: {integrity: sha512-QcFhO6BW1Zz3BP+WFuH1tO2DjFJY5Sb6NmRjmEoVeEu1AVOd3HoUEFTnztxgxn+2c2ZFyFZP+6T4X/g8LDuZLw==}
+  '@pierre/diffs@1.0.6':
+    resolution: {integrity: sha512-VoFvtGCSPi+wAj4Ap+0j80/KPnQbYZsvztjIP4nHsjCgcVUBF7+X1nHFqjl/xbTqSc0okZG1tHYb49CUON9ZXQ==}
     peerDependencies:
       react: ^18.3.1 || ^19.0.0
       react-dom: ^18.3.1 || ^19.0.0
@@ -1040,8 +1040,8 @@ packages:
   '@posthog/core@1.9.1':
     resolution: {integrity: sha512-kRb1ch2dhQjsAapZmu6V66551IF2LnCbc1rnrQqnR7ArooVyJN9KOPXre16AJ3ObJz2eTfuP7x25BMyS2Y5Exw==}
 
-  '@posthog/types@1.323.0':
-    resolution: {integrity: sha512-+EQhG1o6CW40PiUhB+49vtDwGqP2BSikpysWqqpc0I0FcmzovJYRWO4M8Ii1e8QuiuB92OsGKng6R4QzlEdV6w==}
+  '@posthog/types@1.324.1':
+    resolution: {integrity: sha512-OV1DWoLFwYVMiIz6dTkzxOp502brOb8XGh6YHUJ3411Qi8gHyWY1lEGTcWnPFkTKE2KW+6alHlj7g3MMSCZ1kw==}
 
   '@prgm/sveltekit-progress-bar@3.0.2':
     resolution: {integrity: sha512-RilKiPC2Lt/ahC1qmqvL5B8YJPmpwcz/PVebhOmGA7VRcU97xvbn83428r3pVfRNVlxKjHm9NatbIgQim/ccJA==}
@@ -2573,8 +2573,8 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.323.0:
-    resolution: {integrity: sha512-CJcHd/JymNOxCDhZQ8n88e/iIXd0QzSvyZ3mDexst+bnMI3uHFl75EnjxyuGEj5AweZ1xWyscXIYVsJ44Ri4jg==}
+  posthog-js@1.324.1:
+    resolution: {integrity: sha512-V9mum4EK9BrN6KzVLnamdTcjLBP80mY7q8f+Y3VIvVexUtU6egUwniFeq2efrTFG3sWnU78DERhByePx86nbeQ==}
 
   posthog-node@5.21.0:
     resolution: {integrity: sha512-M7v/+Zyz/z3ZDC4u896K2Lb/pLbPA1Czo6Tp/WeQ1vuBsJtJajqWO3vRev3BHFTP92nao5YCrU0aIM+Flwbv1A==}
@@ -3953,7 +3953,7 @@ snapshots:
 
   '@opentelemetry/semantic-conventions@1.38.0': {}
 
-  '@pierre/diffs@1.0.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@pierre/diffs@1.0.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@shikijs/core': 3.21.0
       '@shikijs/engine-javascript': 3.21.0
@@ -3971,7 +3971,7 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
 
-  '@posthog/types@1.323.0': {}
+  '@posthog/types@1.324.1': {}
 
   '@prgm/sveltekit-progress-bar@3.0.2(@sveltejs/kit@2.49.5(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.46.4)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.46.4)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.46.4)':
     dependencies:
@@ -5614,7 +5614,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.323.0:
+  posthog-js@1.324.1:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.208.0
@@ -5622,7 +5622,7 @@ snapshots:
       '@opentelemetry/resources': 2.4.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-logs': 0.208.0(@opentelemetry/api@1.9.0)
       '@posthog/core': 1.9.1
-      '@posthog/types': 1.323.0
+      '@posthog/types': 1.324.1
       core-js: 3.47.0
       dompurify: 3.3.1
       fflate: 0.4.8
