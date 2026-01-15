@@ -47,7 +47,7 @@
 	class={["group text-pretty *:inline", isBreaking && "font-semibold dark:font-bold"]}
 >
 	{@render children?.()}
-	{#if allLinks.length > 0}
+	{#if allLinks.length}
 		<Button
 			href={ghLinkToHref(allLinks[0] ?? "")}
 			variant="link"

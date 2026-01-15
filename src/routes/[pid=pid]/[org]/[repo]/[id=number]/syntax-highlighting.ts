@@ -1,6 +1,20 @@
 import { browser } from "$app/environment";
+import css from "@shikijs/langs/css";
+import diff from "@shikijs/langs/diff";
+import html from "@shikijs/langs/html";
+import javascript from "@shikijs/langs/javascript";
+import json from "@shikijs/langs/json";
+import shell from "@shikijs/langs/shell";
+import svelte from "@shikijs/langs/svelte";
+import typescript from "@shikijs/langs/typescript";
+import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
+import githubDark from "@shikijs/themes/github-dark-default";
+import githubLight from "@shikijs/themes/github-light-default";
 import posthog from "posthog-js";
 import { type LanguageRegistration, type ShikiTransformer, isPlainLang } from "shiki";
+import { createHighlighterCoreSync } from "shiki";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+import type { Plugin } from "svelte-exmarkdown";
 import { ddebug } from "$lib/debug";
 
 /**
@@ -213,4 +227,36 @@ export const transformerDiffMarking: ShikiTransformer = {
 			}
 		}
 	}
+};
+
+export const highlighter = createHighlighterCoreSync({
+	langs: [svelte, typescript, javascript, html, css, json, shell, diff],
+	themes: [githubLight, githubDark],
+	engine: createJavaScriptRegexEngine()
+});
+
+const loadedLanguages = loadLanguages({
+	sh: shell,
+	json,
+	css,
+	html,
+	js: javascript,
+	ts: typescript,
+	svelte
+});
+
+export const shikiPlugin: Plugin = {
+	rehypePlugin: [
+		rehypeShikiFromHighlighter,
+		highlighter,
+		{
+			themes: { light: "github-light-default", dark: "github-dark-default" },
+			transformers: [
+				transformerTrimCode,
+				transformerLanguageDetection(loadedLanguages),
+				transformerDiffMarking
+			],
+			defaultLanguage: "text"
+		} satisfies Parameters<typeof rehypeShikiFromHighlighter>[1]
+	]
 };
