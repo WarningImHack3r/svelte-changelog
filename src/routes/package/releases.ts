@@ -20,15 +20,6 @@ export async function getPackageReleases(
 	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
 	posthog?: PostHog
 ) {
-	let currentPackage:
-		| Prettify<
-				Omit<Repository, "dataFilter" | "metadataFromTag" | "changelogContentsReplacer"> &
-					Pick<(typeof allPackages)[number]["packages"][number], "pkg">
-		  >
-		| undefined = undefined;
-	const foundVersions = new Set<string>();
-	const releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] = [];
-
 	dlog("Starting loading releases...");
 
 	// Step 1: First identify all matching packages and create fetch tasks
@@ -120,6 +111,14 @@ export async function getPackageReleases(
 	);
 
 	// Step 3: Process all results sequentially to maintain consistent result
+	const foundVersions = new Set<string>();
+	const releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] = [];
+	let currentPackage:
+		| Prettify<
+				Omit<Repository, "dataFilter" | "metadataFromTag" | "changelogContentsReplacer"> &
+					Pick<(typeof allPackages)[number]["packages"][number], "pkg">
+		  >
+		| undefined = undefined;
 	for (const { category, repo, validReleases } of taskResults) {
 		// For each release, check if it is already found, searching by versions
 		const { dataFilter, metadataFromTag, changelogContentsReplacer, ...serializableRepo } = repo;
@@ -130,14 +129,14 @@ export async function getPackageReleases(
 
 			// If not, add its version to the set and itself to the final version
 			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
-			ddebug("Current newest version", currentNewestVersion);
+			ddebug("Current newest version", currentNewestVersion ?? "<none>");
 			foundVersions.add(cleanVersion);
 			releases.push({ cleanName, cleanVersion, ...release });
 
 			// If it is newer than the newest we got, set this repo as the "final repo"
 			if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
 				ddebug(
-					`Current newest version "${currentNewestVersion}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as final repo`
+					`Current newest version "${currentNewestVersion ?? "<none>"}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as candidate repo`
 				);
 				currentPackage = {
 					category,
