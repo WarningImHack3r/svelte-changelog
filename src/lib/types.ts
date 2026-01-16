@@ -11,6 +11,22 @@ export type Entries<T> = {
 
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 
+export type RepoEntry = {
+	/**
+	 * The name of the entry, displayed across the website
+	 */
+	name: string;
+	/**
+	 * The description of the entry.
+	 * Defaults to the name.
+	 */
+	description?: string;
+	/**
+	 * The list of repositories included in this category
+	 */
+	repos: RepoInfo[];
+};
+
 export type RepoInfo = {
 	/**
 	 * Mode to fetch the releases of the repo.
@@ -33,6 +49,7 @@ export type RepoInfo = {
 	/**
 	 * Filter function to apply to the releases of the repo.
 	 * If it returns false, the release is filtered out.
+	 * By default, no filtering is applied.
 	 *
 	 * @param release The release to filter
 	 * @returns whether we want to keep the release
@@ -56,7 +73,7 @@ export type RepoInfo = {
 	changelogContentsReplacer?: (file: string) => string;
 };
 
-export const availableCategories = ["svelte", "kit", "others"] as const;
+export const availableCategories = ["svelte", "kit", "tools", "libs"] as const;
 export type Category = (typeof availableCategories)[number];
 
 export type Issues = InstanceType<typeof Octokit>["rest"]["issues"];

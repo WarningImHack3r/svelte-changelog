@@ -141,7 +141,9 @@
 					<li class="space-y-2">
 						{#if packages.length > 1}
 							<!-- Categories with sub-items -->
-							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
+							<h3 class="text-xl font-bold text-primary" title={category.description}>
+								{category.name}
+							</h3>
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each packages as { pkg } (pkg.name)}
@@ -191,7 +193,10 @@
 							{@const linkedBadgeData = getBadgeDataFromOther(firstPackageName)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<!-- Active category -->
-								<h3 class="text-xl font-bold text-primary underline underline-offset-4">
+								<h3
+									class="text-xl font-bold text-primary underline underline-offset-4"
+									title={category.description}
+								>
 									{category.name}
 								</h3>
 							{:else}
@@ -202,7 +207,12 @@
 									})}
 									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary"
 								>
-									<span class="underline-offset-4 group-hover:underline">{category.name}</span>
+									<span
+										class="underline-offset-4 group-hover:underline"
+										title={category.description}
+									>
+										{category.name}
+									</span>
 									<span class="ml-auto flex items-center gap-1">
 										{#if linkedBadgeData}
 											{#await linkedBadgeData then data}

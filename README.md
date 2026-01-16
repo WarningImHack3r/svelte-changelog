@@ -61,8 +61,9 @@ The site's code has been architectured to be as flexible as possible, here's how
 const repos = {
     svelte: {/* ... */},
     kit: {/* ... */},
-    others: {
-        name: "Other",
+    tools: {
+        name: "Tooling",
+        description: "...",
         repos: [
             {
                 ...
@@ -80,4 +81,4 @@ const repos = {
 };
 ```
 
-And that's it! The site will automatically adapt to the new package(s).
+Add your repo where you see fit (tools or libs), and that's it! The site will automatically discover & adapt to the new package(s).

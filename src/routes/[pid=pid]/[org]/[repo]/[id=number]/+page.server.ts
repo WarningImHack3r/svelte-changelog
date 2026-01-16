@@ -6,7 +6,11 @@ import { discoverer } from "$lib/server/package-discoverer";
 import type { BranchCommit, PID } from "$lib/types";
 
 export async function load({ params: { pid: type, org, repo, id }, fetch }) {
-	const isKnownRepo = uniqueRepos.some(({ owner, name }) => org === owner && repo === name);
+	const isKnownRepo = uniqueRepos.some(
+		({ owner, name }) =>
+			org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
+			repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
+	);
 	if (!isKnownRepo) {
 		error(403, {
 			message: "Unknown repository",
@@ -29,7 +33,11 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 		redirect(307, resolve("/[pid=pid]/[org]/[repo]/[id=number]", { pid: realType, org, repo, id }));
 	}
 
-	const matchingRepo = publicRepos.find(r => r.repoOwner === org && r.repoName === repo);
+	const matchingRepo = publicRepos.find(
+		({ repoOwner, repoName }) =>
+			repoOwner.localeCompare(org, undefined, { sensitivity: "base" }) === 0 &&
+			repoName.localeCompare(repo, undefined, { sensitivity: "base" }) === 0
+	);
 
 	return {
 		itemMetadata: {
@@ -45,6 +53,12 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
 			// Credit to Refined GitHub: https://github.com/refined-github/refined-github/blob/main/source/features/closing-remarks.tsx
 
+			// Early exit
+			if (!matchingRepo) {
+				resolve(undefined); // unknown repo for some reason; very likely a bug
+				return;
+			}
+
 			// Get the merged PR's sha, otherwise it is not a proper target for this
 			if (!("merged" in item.info)) {
 				resolve(undefined);
@@ -57,35 +71,34 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 			}
 
 			// Compute or gather all the known packages to avoid rare 404s
-			discoverer
-				.getOrDiscover()
-				.then(items => items.flatMap(({ packages }) => packages).map(({ name }) => name))
-				.then(knownPackages => {
-					const knownPackagesSet = new Set(knownPackages);
+			discoverer.getOrDiscover().then(items => {
+				const knownPackages = new Set(
+					items.flatMap(({ packages }) => packages).map(({ name }) => name)
+				);
 
-					// Fetch the merge commit's info
-					fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
-						headers: {
-							Accept: "application/json"
+				// Fetch the merge commit's info
+				fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
+					headers: {
+						Accept: "application/json"
+					}
+				})
+					.then(res => res.json() as Promise<BranchCommit>)
+					.then(({ tags }) => {
+						const earliestTag = tags.findLast(tag => {
+							// The info is right here after a little filtering :D
+							const isValid = !tag.includes("nightly") && /\d[.]\d/.test(tag);
+							if (!isValid) return false;
+							const [pkgName] = matchingRepo.metadataFromTag(tag);
+							return knownPackages.has(pkgName);
+						});
+						if (!earliestTag) {
+							resolve(undefined);
+							return;
 						}
+						resolve(matchingRepo.metadataFromTag(earliestTag));
 					})
-						.then(res => res.json() as Promise<BranchCommit>)
-						.then(({ tags }) => {
-							const earliestTag = tags.findLast(tag => {
-								// The info is right here after a little filtering :D
-								const isValid = !tag.includes("nightly") && /\d[.]\d/.test(tag);
-								if (!isValid || !matchingRepo) return false;
-								const [pkgName] = matchingRepo.metadataFromTag(tag);
-								return knownPackagesSet.has(pkgName);
-							});
-							if (!earliestTag) {
-								resolve(undefined);
-								return;
-							}
-							resolve(matchingRepo?.metadataFromTag(earliestTag));
-						})
-						.catch(reject);
-				});
+					.catch(reject);
+			});
 		})
 	};
 }
