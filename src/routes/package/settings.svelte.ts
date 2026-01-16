@@ -7,15 +7,12 @@ const DEFAULT_SETTINGS: PackageSettings = {
 	releasesType: "all"
 };
 
-export class SettingsUtils {
-	static hasChanged(settings: PackageSettings) {
-		return (
-			settings.showPrereleases !== DEFAULT_SETTINGS.showPrereleases ||
-			settings.releasesType !== DEFAULT_SETTINGS.releasesType
-		);
-	}
+export const settingsUtils = {
+	hasChanged: (settings: PackageSettings) =>
+		settings.showPrereleases !== DEFAULT_SETTINGS.showPrereleases ||
+		settings.releasesType !== DEFAULT_SETTINGS.releasesType,
 
-	static modificationString(settings: PackageSettings) {
+	modificationString: (settings: PackageSettings) => {
 		const result = [];
 		if (settings.showPrereleases !== DEFAULT_SETTINGS.showPrereleases) {
 			result.push("prereleases are hidden");
@@ -28,7 +25,7 @@ export class SettingsUtils {
 			.map(item => `- ${item}`)
 			.join("\n");
 	}
-}
+};
 
 class PackagesSettings {
 	#settingsMap = new Map<string, PersistedState<PackageSettings>>();

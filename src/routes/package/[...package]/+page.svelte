@@ -10,7 +10,7 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
 	import { Skeleton } from "$lib/components/ui/skeleton";
-	import { SettingsUtils, getPackageSettings } from "../settings.svelte";
+	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
@@ -32,22 +32,28 @@
 	let latestRelease = $derived(
 		data.currentPackage.category.slug === ALL_SLUG
 			? undefined
-			: data.releases.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
+			: data.releases
+					.filter(({ prerelease }) => !prerelease)
+					.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
 	);
 	let earliestForMajors = $derived.by<Record<number, (typeof data.releases)[number]>>(() => {
 		if (data.currentPackage.category.slug === ALL_SLUG) return {};
-		const allWithSemver = data.releases
-			.map(release => ({ coerced: semver.coerce(release.cleanVersion), ...release }))
-			.filter(({ coerced }) => coerced);
-		const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced!.major))];
+		const allWithSemver = data.releases.flatMap(release => {
+			const coerced = semver.coerce(release.cleanVersion);
+			return coerced ? [{ coerced, ...release }] : [];
+		});
+		const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced.major))];
 		return Object.fromEntries(
-			uniqueMajors.map(major => {
-				const sorted = allWithSemver
-					.filter(({ coerced, prerelease }) => coerced!.major === major && !prerelease)
-					.sort((a, b) => semver.compare(a.coerced!, b.coerced!));
-				const { coerced, ...rest } = sorted[0]!;
-				return [major, rest];
-			})
+			uniqueMajors
+				.map(major => {
+					const firstSorted = allWithSemver
+						.filter(({ coerced, prerelease }) => coerced.major === major && !prerelease)
+						.sort((a, b) => semver.compare(a.coerced, b.coerced))[0];
+					if (!firstSorted) return undefined;
+					const { coerced, ...rest } = firstSorted;
+					return [major, rest];
+				})
+				.filter(Boolean)
 		);
 	});
 	const sharedSettings = getPackageSettings();
@@ -189,8 +195,8 @@
 						class="border-sky-500 bg-sky-400/20 prose-a:text-sky-500"
 					/>
 				{/if}
-				{#if SettingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
-					{@const markdown = `The following filters are active:\n${SettingsUtils.modificationString(
+				{#if settingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
+					{@const markdown = `The following filters are active:\n${settingsUtils.modificationString(
 						packageSettings.current
 					)}`}
 					<TopBanner

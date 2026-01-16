@@ -63,10 +63,12 @@
 		particles = regenerateParticles();
 
 		if (!snowflakes) return;
-		const ctx = snowflakes.getContext("2d")!;
+		const ctx = snowflakes.getContext("2d");
+		if (!ctx) return;
 
 		// Draw the flakes
 		function draw() {
+			if (!ctx) return; // redundant but TypeScript (rightfully?) complains otherwise
 			ctx.clearRect(0, 0, width, height);
 
 			for (let particle of particles) {
