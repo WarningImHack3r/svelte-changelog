@@ -3,7 +3,8 @@
 	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ChevronRight } from "@lucide/svelte";
+	import { ChevronRight, Pin } from "@lucide/svelte";
+	import { PersistedState } from "runed";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import { type PackageSettings, type Prettify, releasesTypes } from "$lib/types";
@@ -13,6 +14,7 @@
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
+	import { Toggle } from "$lib/components/ui/toggle";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
@@ -56,6 +58,15 @@
 		class: className
 	}: Props = $props();
 	let id = $props.id();
+
+	// Pins
+	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
+	/**
+	 * A set proxy to quickly query the pinned items.
+	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
+	 * as it isn't reactive (enough).
+	 */
+	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
 
 	/**
 	 * Extract the data from the {@link Props.otherReleases|otherReleases}
@@ -140,15 +151,36 @@
 					{/if}
 					<li class="space-y-2">
 						{#if packages.length > 1}
+							{@const sortedPackages = packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
+								const isAPinned = pinnedROProxy.has(pkgA.name);
+								const isBPinned = pinnedROProxy.has(pkgB.name);
+								return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
+							})}
 							<!-- Categories with sub-items -->
 							<h3 class="text-xl font-bold text-primary" title={category.description}>
 								{category.name}
 							</h3>
 							<ul class="space-y-2">
 								<!-- Sub-items -->
-								{#each packages as { pkg } (pkg.name)}
+								{#each sortedPackages as { pkg } (pkg.name)}
 									{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
-									<li>
+									<li class="group inline-flex w-full gap-1">
+										<Toggle
+											size="sm"
+											pressed={pinnedROProxy.has(pkg.name)}
+											class="me-0.5 h-auto min-w-0 shrink-0 px-0 hover:bg-inherit hover:text-inherit hover:opacity-100 data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
+											onPressedChange={pressed => {
+												if (pressed) {
+													if (!pinnedROProxy.has(pkg.name)) pinnedPackages.current.push(pkg.name);
+												} else {
+													pinnedPackages.current = pinnedPackages.current.filter(
+														item => item !== pkg.name
+													);
+												}
+											}}
+										>
+											<Pin />
+										</Toggle>
 										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
 											<!-- Active sub-item -->
 											<span class="font-semibold">{pkg.name}</span>

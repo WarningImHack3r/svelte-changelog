@@ -1,12 +1,23 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
-	import { ChevronRight } from "@lucide/svelte";
+	import { ChevronRight, Pin } from "@lucide/svelte";
+	import { PersistedState } from "runed";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Separator } from "$lib/components/ui/separator";
+	import { Toggle } from "$lib/components/ui/toggle";
 
 	let { data } = $props();
+
+	// Pins
+	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
+	/**
+	 * A set proxy to quickly query the pinned items.
+	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
+	 * as it isn't reactive (enough).
+	 */
+	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
 
 	/**
 	 * Extract the data from the {@link import('./$types').data.otherReleases|otherReleases}
@@ -57,10 +68,15 @@
 
 <ul class="space-y-8">
 	{#each data.displayablePackages as { category, packages } (category)}
+		{@const sortedPackages = packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
+			const isAPinned = pinnedROProxy.has(pkgA.name);
+			const isBPinned = pinnedROProxy.has(pkgB.name);
+			return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
+		})}
 		<li>
 			<h3 class="font-display text-3xl text-primary text-shadow-sm">{category.name}</h3>
 			<ul class="mt-2">
-				{#each packages as { repoOwner, repoName, pkg }, index (pkg.name)}
+				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
 					{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
 					{#if index > 0}
@@ -71,9 +87,29 @@
 							href={resolve("/package/[...package]", {
 								package: pkg.name
 							})}
-							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+							onclick={e => {
+								if (!(e.target instanceof HTMLAnchorElement)) e.preventDefault();
+							}}
+							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-muted"
 							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 						>
+							{#if sortedPackages.length > 1}
+								<Toggle
+									pressed={pinnedROProxy.has(pkg.name)}
+									class="shrink-0 hover:opacity-100 data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
+									onPressedChange={pressed => {
+										if (pressed) {
+											if (!pinnedROProxy.has(pkg.name)) pinnedPackages.current.push(pkg.name);
+										} else {
+											pinnedPackages.current = pinnedPackages.current.filter(
+												item => item !== pkg.name
+											);
+										}
+									}}
+								>
+									<Pin />
+								</Toggle>
+							{/if}
 							<div class="flex flex-col">
 								<h4
 									class="inline-flex flex-col items-start gap-2 font-medium motion-safe:[view-transition-name:var(--vt-name)] xs:flex-row xs:items-center"
