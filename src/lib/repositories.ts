@@ -171,7 +171,7 @@ export type Repository = Prettify<
 		category: {
 			slug: string;
 			name: string;
-			description: string;
+			description?: string;
 		};
 	} & WithRequired<RepoInfo, "repoOwner">
 >;
@@ -192,7 +192,7 @@ export const publicRepos: Repository[] = iterableRepos.flatMap(
 			category: {
 				slug,
 				name,
-				description: description || name
+				description
 			},
 			...repo,
 			repoOwner: repo.repoOwner || DEFAULT_OWNER

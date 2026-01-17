@@ -33,7 +33,12 @@
 			return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
 		})}
 		<li>
-			<h3 class="font-display text-3xl text-primary text-shadow-sm">{category.name}</h3>
+			<h3 class="space-x-2 font-display">
+				<span class="text-3xl text-primary text-shadow-sm">{category.name}</span>
+				{#if category.description}
+					<span>{category.description}</span>
+				{/if}
+			</h3>
 			<ul class="mt-2">
 				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
@@ -56,7 +61,7 @@
 								<Toggle
 									aria-label={pinnedROProxy.has(pkg.name) ? `Unpin ${pkg.name}` : `Pin ${pkg.name}`}
 									pressed={pinnedROProxy.has(pkg.name)}
-									class="shrink-0 hover:opacity-100 data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
+									class="shrink-0 hover:bg-inherit hover:text-inherit hover:opacity-100! data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
 									onPressedChange={pressed => {
 										if (pressed) {
 											if (!pinnedROProxy.has(pkg.name)) pinnedPackages.current.push(pkg.name);
