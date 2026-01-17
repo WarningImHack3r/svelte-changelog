@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
-	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
+	import { getBadgeDataFromRecord, getUnvisitedReleases } from "$lib/badges";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import { type PackageSettings, type Prettify, releasesTypes } from "$lib/types";
@@ -67,46 +67,6 @@
 	 * as it isn't reactive (enough).
 	 */
 	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
-
-	/**
-	 * Extract the data from the {@link Props.otherReleases|otherReleases}
-	 * props.
-	 *
-	 * @param pkgName the package name to extract releases fo
-	 * @returns the {@link Promise} of releases, or `undefined`
-	 */
-	function getBadgeDataFromOther(pkgName: string) {
-		const data = Object.entries(otherReleases).find(
-			([k]) => k.localeCompare(pkgName, undefined, { sensitivity: "base" }) === 0
-		);
-		if (!data) return undefined;
-		const [, v] = data;
-		return v;
-	}
-
-	/**
-	 * Filter the releases to exclude those that have already been seen
-	 *
-	 * @param pkgName the package name for the releases
-	 * @param releases the releases to filter
-	 * @returns the filtered releases
-	 */
-	function getUnvisitedReleases(pkgName: string, releases: CleanRelease[] | undefined) {
-		if (!releases || !browser) return [];
-
-		const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
-		if (!lastVisitedItem) {
-			return releases.filter(
-				({ created_at, published_at }) =>
-					new Date(published_at ?? created_at).getTime() > Date.now() - 1000 * 60 * 60 * 24 * 7
-			);
-		}
-		const lastVisitedDate = new Date(lastVisitedItem);
-
-		return releases.filter(
-			({ created_at, published_at }) => new Date(published_at ?? created_at) > lastVisitedDate
-		);
-	}
 </script>
 
 {#snippet newBadge(count: number)}
@@ -163,9 +123,12 @@
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each sortedPackages as { pkg } (pkg.name)}
-									{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
+									{@const linkedBadgeData = getBadgeDataFromRecord(otherReleases, pkg.name)}
 									<li class="group inline-flex w-full gap-1">
 										<Toggle
+											aria-label={pinnedROProxy.has(pkg.name)
+												? `Unpin ${pkg.name}`
+												: `Pin ${pkg.name}`}
 											size="sm"
 											pressed={pinnedROProxy.has(pkg.name)}
 											class="me-0.5 h-auto min-w-0 shrink-0 px-0 hover:bg-inherit hover:text-inherit hover:opacity-100 data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
@@ -203,13 +166,11 @@
 													{pkg.name}
 												</span>
 												<span class="ml-auto flex items-center gap-1">
-													{#if linkedBadgeData}
-														{#await linkedBadgeData then data}
-															{@render newBadge(
-																getUnvisitedReleases(pkg.name, data?.releases).length
-															)}
-														{/await}
-													{/if}
+													{#await linkedBadgeData then data}
+														{@render newBadge(
+															getUnvisitedReleases(pkg.name, data?.releases ?? []).length
+														)}
+													{/await}
 													<ChevronRight
 														class="size-4 text-primary transition-transform group-hover:translate-x-1"
 													/>
@@ -222,7 +183,7 @@
 						{:else}
 							<!-- Categories with 1 sub-item -->
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
-							{@const linkedBadgeData = getBadgeDataFromOther(firstPackageName)}
+							{@const linkedBadgeData = getBadgeDataFromRecord(otherReleases, firstPackageName)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<!-- Active category -->
 								<h3
@@ -246,13 +207,11 @@
 										{category.name}
 									</span>
 									<span class="ml-auto flex items-center gap-1">
-										{#if linkedBadgeData}
-											{#await linkedBadgeData then data}
-												{@render newBadge(
-													getUnvisitedReleases(firstPackageName, data?.releases).length
-												)}
-											{/await}
-										{/if}
+										{#await linkedBadgeData then data}
+											{@render newBadge(
+												getUnvisitedReleases(firstPackageName, data?.releases ?? []).length
+											)}
+										{/await}
 										<ChevronRight
 											class="size-4 text-primary transition-transform group-hover:translate-x-1"
 										/>

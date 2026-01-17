@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import { getBadgeDataFromRecord, getUnvisitedReleases } from "$lib/badges";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Toggle } from "$lib/components/ui/toggle";
@@ -18,46 +17,6 @@
 	 * as it isn't reactive (enough).
 	 */
 	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
-
-	/**
-	 * Extract the data from the {@link import('./$types').data.otherReleases|otherReleases}
-	 * props.
-	 *
-	 * @param pkgName the package name to extract releases fo
-	 * @returns the {@link Promise} of releases, or `undefined`
-	 */
-	function getBadgeDataFromOther(pkgName: string) {
-		const releases = Object.entries(data.allReleases).find(
-			([k]) => k.localeCompare(pkgName, undefined, { sensitivity: "base" }) === 0
-		);
-		if (!releases) return undefined;
-		const [, v] = releases;
-		return v;
-	}
-
-	/**
-	 * Filter the releases to exclude those that have already been seen
-	 *
-	 * @param pkgName the package name for the releases
-	 * @param releases the releases to filter
-	 * @returns the filtered releases
-	 */
-	function getUnvisitedReleases(pkgName: string, releases: GitHubRelease[] | undefined) {
-		if (!releases || !browser) return [];
-
-		const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
-		if (!lastVisitedItem) {
-			return releases.filter(
-				({ created_at, published_at }) =>
-					new Date(published_at ?? created_at).getTime() > Date.now() - 1000 * 60 * 60 * 24 * 7
-			);
-		}
-		const lastVisitedDate = new Date(lastVisitedItem);
-
-		return releases.filter(
-			({ created_at, published_at }) => new Date(published_at ?? created_at) > lastVisitedDate
-		);
-	}
 </script>
 
 {#snippet newBadge(count: number)}
@@ -78,7 +37,7 @@
 			<ul class="mt-2">
 				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
-					{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
+					{@const linkedBadgeData = getBadgeDataFromRecord(data.allReleases, pkg.name)}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}
@@ -95,6 +54,7 @@
 						>
 							{#if sortedPackages.length > 1}
 								<Toggle
+									aria-label={pinnedROProxy.has(pkg.name) ? `Unpin ${pkg.name}` : `Pin ${pkg.name}`}
 									pressed={pinnedROProxy.has(pkg.name)}
 									class="shrink-0 hover:opacity-100 data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
 									onPressedChange={pressed => {
@@ -155,11 +115,9 @@
 								</span>
 							</div>
 							<span class="mr-1 ml-auto flex shrink-0 items-center gap-1">
-								{#if linkedBadgeData}
-									{#await linkedBadgeData then d}
-										{@render newBadge(getUnvisitedReleases(pkg.name, d?.releases).length)}
-									{/await}
-								{/if}
+								{#await linkedBadgeData then d}
+									{@render newBadge(getUnvisitedReleases(pkg.name, d?.releases ?? []).length)}
+								{/await}
 								<ChevronRight class="transition-transform group-hover:translate-x-1" />
 							</span>
 						</a>
