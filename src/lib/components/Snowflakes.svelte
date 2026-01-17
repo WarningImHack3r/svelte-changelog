@@ -1,74 +1,42 @@
 <script lang="ts">
-	import { tick } from "svelte";
+	import type { Attachment } from "svelte/attachments";
 	import type { ClassValue } from "svelte/elements";
-	import { MediaQuery } from "svelte/reactivity";
+	import { innerHeight, innerWidth } from "svelte/reactivity/window";
 	import { mode } from "mode-watcher";
 
 	type Props = {
 		enabled?: boolean;
+		maxParticles?: number;
+		speed?: number;
 		class?: ClassValue;
 	};
 
-	let { enabled = true, class: className }: Props = $props();
+	let { enabled = true, maxParticles = 100, speed = 300, class: className }: Props = $props();
 
-	const maxParticles = 100;
-	const speed = 300;
 	const snowLightColor = "rgba(0, 0, 0, 0.2)";
 	const snowDarkColor = "rgba(255, 255, 255, 0.2)";
 
-	let width = $state(0);
-	let height = $state(0);
-	let snowflakes = $state<HTMLCanvasElement>();
-	let particles: {
-		x: number;
-		y: number;
-		radius: number;
-		density: number;
-	}[] = [];
 	let frame: ReturnType<typeof requestAnimationFrame>;
 	let timeout: ReturnType<typeof setTimeout>;
 
-	function resize() {
-		if (!snowflakes) return;
-
-		width = window.innerWidth;
-		height = window.innerHeight;
-
-		snowflakes.width = width;
-		snowflakes.height = height;
-	}
-
-	function debounceResize() {
-		clearTimeout(timeout);
-		cancelAnimationFrame(frame);
-		timeout = setTimeout(startSnow, 100);
-	}
-
-	function regenerateParticles() {
-		const newParticles: typeof particles = [];
+	function startSnow(ctx: CanvasRenderingContext2D, width: number, height: number) {
+		const particles: {
+			x: number;
+			y: number;
+			radius: number;
+			density: number;
+		}[] = [];
 		for (let i = 0; i < maxParticles; i++) {
-			newParticles.push({
+			particles.push({
 				x: Math.random() * width,
 				y: Math.random() * height,
 				radius: 1 + Math.random() * 2,
 				density: Math.random() * maxParticles
 			});
 		}
-		return newParticles;
-	}
-
-	function startSnow() {
-		resize();
-
-		particles = regenerateParticles();
-
-		if (!snowflakes) return;
-		const ctx = snowflakes.getContext("2d");
-		if (!ctx) return;
 
 		// Draw the flakes
 		function draw() {
-			if (!ctx) return; // redundant but TypeScript (rightfully?) complains otherwise
 			ctx.clearRect(0, 0, width, height);
 
 			for (let particle of particles) {
@@ -81,10 +49,9 @@
 		}
 
 		// Move the snowflakes
-		let angle = 0;
-		let margin = 50;
-		function update(time = Date.now()) {
-			angle = time / 3000;
+		const margin = 50;
+		function update() {
+			const angle = Date.now() / 3000;
 			for (let [i, particle] of particles.entries()) {
 				// Updating X and Y coordinates
 				particle.y += 1 + Math.cos(angle + particle.density) + particle.radius / 2;
@@ -123,22 +90,22 @@
 		draw();
 	}
 
-	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
-	$effect(() => {
-		if (!enabled || reduceMotion.current) {
+	const letItSnow: Attachment<HTMLCanvasElement> = canvas => {
+		canvas.width = innerWidth.current ?? 0; // additionally re-runs the attachment on window resize
+		canvas.height = innerHeight.current ?? 0;
+
+		const context = canvas.getContext("2d");
+
+		if (context && enabled) {
+			startSnow(context, canvas.width, canvas.height);
+		}
+
+		return () => {
 			clearTimeout(timeout);
 			cancelAnimationFrame(frame);
-			snowflakes?.getContext("2d")?.clearRect(0, 0, width, height);
-		} else {
-			tick().then(startSnow);
-		}
-	});
-	$effect(() => () => {
-		clearTimeout(timeout);
-		cancelAnimationFrame(frame);
-	});
+			context?.clearRect(0, 0, canvas.width, canvas.height);
+		};
+	};
 </script>
 
-<svelte:window onresize={debounceResize} />
-
-<canvas aria-hidden="true" bind:this={snowflakes} {width} {height} class={className}></canvas>
+<canvas aria-hidden="true" {@attach letItSnow} class={className}></canvas>

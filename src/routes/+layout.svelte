@@ -129,7 +129,7 @@
 <ModeWatcher />
 {#if isSnowTime}
 	<Snowflakes
-		enabled={isSnowEnabled.current}
+		enabled={isSnowEnabled.current && !reduceMotion.current}
 		class="pointer-events-none fixed inset-0 -z-10 h-screen w-screen"
 	/>
 {/if}
