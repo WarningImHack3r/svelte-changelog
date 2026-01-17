@@ -289,9 +289,7 @@
 			onclick={e => {
 				// Event bubbling from children of MarkdownRenderer
 				if (!e.target || !(e.target instanceof HTMLAnchorElement)) return;
-				if (e.target.tagName.toLowerCase() === "a") {
-					markCurrentNewsAsRead();
-				}
+				markCurrentNewsAsRead();
 			}}
 		>
 			<MarkdownRenderer

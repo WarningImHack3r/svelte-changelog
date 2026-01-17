@@ -91,7 +91,7 @@
 	{@const isUpdated = !areSameDay(lastUpdate, createdAt)}
 
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-	<a href={link} class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+	<a href={link} class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-muted">
 		<GHBadge
 			mode="minimal"
 			type={"base" in item || "pull_request" in item
