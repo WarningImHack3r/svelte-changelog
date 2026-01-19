@@ -23,7 +23,7 @@ jobs:
       has-permissions: ${{ steps.check-output.outputs.has-permissions }}
 
     steps:
-      - name: ❓ Has access to secrets?
+      - name: Has access to secrets?
         id: secrets-check
         continue-on-error: true
         uses: actions/checkout@v6
