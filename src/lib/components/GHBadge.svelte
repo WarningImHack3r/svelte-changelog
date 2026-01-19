@@ -50,7 +50,7 @@
 			open: { icon: MessageSquare, label: "Open", color: "green" },
 			closed: { icon: MessageSquareX, label: "Closed", color: "purple" }
 		}
-	} as const;
+	};
 
 	const COLOR_MAP: Record<BadgeConfig["color"], { text: string; bg: string }> = {
 		green: { text: "text-green-600", bg: "bg-green-600" },
@@ -66,13 +66,6 @@
 		bgColor: string;
 	};
 
-	const FALLBACK_INFO: Info = {
-		icon: undefined,
-		label: "",
-		textColor: "",
-		bgColor: ""
-	} as const;
-
 	type Props = {
 		mode?: "regular" | "minimal";
 		type: PropsObj["type"];
@@ -86,7 +79,12 @@
 		const config = BADGE_CONFIG[type]?.[status];
 
 		if (!config) {
-			return FALLBACK_INFO;
+			return {
+				icon: undefined,
+				label: "",
+				textColor: "",
+				bgColor: ""
+			};
 		}
 
 		const color = COLOR_MAP[config.color];

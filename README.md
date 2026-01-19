@@ -36,8 +36,8 @@ For more info, visit the [v2 release post](https://svelte-changelog.dev/devlog/v
 # 1. Copy the example environment file
 cp .env.example .env
 
-# 2. Add your GitHub token (required)
-# GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+# 2. Edit .env and add your GitHub token:
+#    GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # 3. Install dependencies and run
 pnpm i && pnpm dev
