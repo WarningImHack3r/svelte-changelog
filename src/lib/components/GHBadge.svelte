@@ -52,12 +52,12 @@
 		}
 	} as const;
 
-	const COLOR_MAP = {
+	const COLOR_MAP: Record<BadgeConfig["color"], { text: string; bg: string }> = {
 		green: { text: "text-green-600", bg: "bg-green-600" },
 		neutral: { text: "text-neutral-500", bg: "bg-neutral-500" },
 		purple: { text: "text-purple-500", bg: "bg-purple-500" },
 		red: { text: "text-red-500", bg: "bg-red-500" }
-	} as const;
+	};
 
 	type Info = {
 		icon: typeof Icon | undefined;
