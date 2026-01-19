@@ -48,7 +48,7 @@ jobs:
       - name: 📂 Checkout
         uses: actions/checkout@v6
         with:
-          repository: ${{ github.event.repository.full_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref }}
           token: ${{ needs.permissions-check.outputs.has-permissions == 'false' && github.token || secrets.WORKFLOW_PAT }}
           fetch-depth: ${{ github.event_name == 'push' && 2 || 1 }}
