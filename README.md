@@ -21,6 +21,9 @@ The site makes requests to the GitHub API on the server side to get the latest r
 It smartly caches the data, frequently invalidating it to always be up to date while avoiding hitting GitHub as
 much as possible.
 
+Whilst the repos are [manually curated](#how-to-contribute), the packages are automatically discovered, either
+through the published releases or the contents of the `CHANGELOG.md` file.
+
 Some computations are made to generate the badges, but everything else is a simple cosmetic
 wrapper around GitHub releases.
 **No data alteration is performed by the site other than for styling and rendering purposes**.
@@ -49,15 +52,15 @@ That's it: your GitHub token will do most of the job, and you can run the websit
 - `KV_REST_API_URL` (optional): the URL for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
 - `PUBLIC_POSTHOG_KEY` (optional): the token for the analytics service I use, [PostHog](https://posthog.com). You can leave it empty; analytics are disabled in dev environments.
 
-## Missing a package?
+## Missing a repository?
 
-If you think I missed a package, you can either open an issue or directly contribute.
+If you think I missed a repository, you can either open an issue or directly contribute.
 
-### Package inclusion criteria
+### Repository inclusion criteria
 
 - Must be by the Svelte team or their members
 - Must be on GitHub
-- Must _not_ be an internal package used only by the Svelte team
+- Must _not_ be an internal repo/package used only by the Svelte team
 - Must either have releases on GitHub or at least have tags and a `CHANGELOG.md` file at the root of the repository
 
 ### How to contribute
