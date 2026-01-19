@@ -91,16 +91,12 @@ class PackageDiscoverer {
 	 * @private
 	 */
 	#gitHubDirectoryFromName(name: string): string {
-		switch (name) {
-			case "extensions":
-				return "svelte-vscode";
-			case "sv":
-				return "cli";
-			case "svelte-migrate":
-				return "migrate";
-			default:
-				return name;
-		}
+		const PACKAGE_DIRECTORY_MAP: Record<string, string> = {
+			extensions: "svelte-vscode",
+			sv: "cli",
+			"svelte-migrate": "migrate"
+		};
+		return PACKAGE_DIRECTORY_MAP[name] ?? name;
 	}
 
 	/**
