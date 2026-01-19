@@ -28,6 +28,44 @@
 				status: CommonStatus;
 		  };
 
+	type BadgeConfig = {
+		icon: typeof Icon;
+		label: string;
+		color: "green" | "neutral" | "purple" | "red";
+	};
+
+	const BADGE_CONFIG: Record<string, Record<string, BadgeConfig>> = {
+		pull: {
+			draft: { icon: GitPullRequestDraft, label: "Draft", color: "neutral" },
+			open: { icon: GitPullRequestArrow, label: "Open", color: "green" },
+			merged: { icon: GitMerge, label: "Merged", color: "purple" },
+			closed: { icon: GitPullRequestClosed, label: "Closed", color: "red" }
+		},
+		issue: {
+			open: { icon: CircleDot, label: "Open", color: "green" },
+			closed: { icon: CircleSlash, label: "Closed", color: "neutral" },
+			solved: { icon: CircleCheck, label: "Solved", color: "purple" }
+		},
+		discussion: {
+			open: { icon: MessageSquare, label: "Open", color: "green" },
+			closed: { icon: MessageSquareX, label: "Closed", color: "purple" }
+		}
+	} as const;
+
+	const COLOR_MAP = {
+		green: { text: "text-green-600", bg: "bg-green-600" },
+		neutral: { text: "text-neutral-500", bg: "bg-neutral-500" },
+		purple: { text: "text-purple-500", bg: "bg-purple-500" },
+		red: { text: "text-red-500", bg: "bg-red-500" }
+	} as const;
+
+	const FALLBACK_INFO: Info = {
+		icon: undefined,
+		label: "",
+		textColor: "",
+		bgColor: ""
+	} as const;
+
 	type Props = {
 		mode?: "regular" | "minimal";
 		type: PropsObj["type"];
@@ -36,7 +74,6 @@
 	};
 
 	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
-
 	type Info = {
 		icon: typeof Icon | undefined;
 		label: string;
@@ -45,88 +82,18 @@
 	};
 
 	let { icon, label, textColor, bgColor } = $derived.by<Info>(() => {
-		switch (type) {
-			case "pull":
-				switch (status) {
-					case "draft":
-						return {
-							icon: GitPullRequestDraft,
-							label: "Draft",
-							textColor: "text-neutral-500",
-							bgColor: "bg-neutral-500"
-						};
-					case "open":
-						return {
-							icon: GitPullRequestArrow,
-							label: "Open",
-							textColor: "text-green-600",
-							bgColor: "bg-green-600"
-						};
-					case "merged":
-						return {
-							icon: GitMerge,
-							label: "Merged",
-							textColor: "text-purple-500",
-							bgColor: "bg-purple-500"
-						};
-					case "closed":
-						return {
-							icon: GitPullRequestClosed,
-							label: "Closed",
-							textColor: "text-red-500",
-							bgColor: "bg-red-500"
-						};
-				}
-				break;
-			case "issue":
-				switch (status) {
-					case "open":
-						return {
-							icon: CircleDot,
-							label: "Open",
-							textColor: "text-green-600",
-							bgColor: "bg-green-600"
-						};
-					case "closed":
-						return {
-							icon: CircleSlash,
-							label: "Closed",
-							textColor: "text-neutral-500",
-							bgColor: "bg-neutral-500"
-						};
-					case "solved":
-						return {
-							icon: CircleCheck,
-							label: "Solved",
-							textColor: "text-purple-500",
-							bgColor: "bg-purple-500"
-						};
-				}
-				break;
-			case "discussion":
-				switch (status) {
-					case "open":
-						return {
-							icon: MessageSquare,
-							label: "Open",
-							textColor: "text-green-600",
-							bgColor: "bg-green-600"
-						};
-					case "closed":
-						return {
-							icon: MessageSquareX,
-							label: "Closed",
-							textColor: "text-purple-500",
-							bgColor: "bg-purple-500"
-						};
-				}
-				break;
+		const config = BADGE_CONFIG[type]?.[status];
+
+		if (!config) {
+			return FALLBACK_INFO;
 		}
+
+		const color = COLOR_MAP[config.color];
 		return {
-			icon: undefined,
-			label: "",
-			textColor: "",
-			bgColor: ""
+			icon: config.icon,
+			label: config.label,
+			textColor: color.text,
+			bgColor: color.bg
 		};
 	});
 </script>
