@@ -59,12 +59,28 @@
 		red: { text: "text-red-500", bg: "bg-red-500" }
 	} as const;
 
+	type Props = {
+		mode?: "regular" | "minimal";
+		type: PropsObj["type"];
+		status: PropsObj["status"];
+		class?: ClassValue;
+	};
+
+	type Info = {
+		icon: typeof Icon | undefined;
+		label: string;
+		textColor: string;
+		bgColor: string;
+	};
+
 	const FALLBACK_INFO: Info = {
 		icon: undefined,
 		label: "",
 		textColor: "",
 		bgColor: ""
 	} as const;
+
+	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
 
 	type Props = {
 		mode?: "regular" | "minimal";
