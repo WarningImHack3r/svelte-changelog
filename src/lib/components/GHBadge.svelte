@@ -59,13 +59,6 @@
 		red: { text: "text-red-500", bg: "bg-red-500" }
 	} as const;
 
-	type Props = {
-		mode?: "regular" | "minimal";
-		type: PropsObj["type"];
-		status: PropsObj["status"];
-		class?: ClassValue;
-	};
-
 	type Info = {
 		icon: typeof Icon | undefined;
 		label: string;
@@ -80,8 +73,6 @@
 		bgColor: ""
 	} as const;
 
-	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
-
 	type Props = {
 		mode?: "regular" | "minimal";
 		type: PropsObj["type"];
@@ -90,12 +81,6 @@
 	};
 
 	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
-	type Info = {
-		icon: typeof Icon | undefined;
-		label: string;
-		textColor: string;
-		bgColor: string;
-	};
 
 	let { icon, label, textColor, bgColor } = $derived.by<Info>(() => {
 		const config = BADGE_CONFIG[type]?.[status];
