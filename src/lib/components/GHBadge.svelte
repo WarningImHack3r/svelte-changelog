@@ -1,5 +1,4 @@
-<script lang="ts">
-	import type { ClassValue } from "svelte/elements";
+<script lang="ts" module>
 	import {
 		CircleCheck,
 		CircleDot,
@@ -13,33 +12,35 @@
 		MessageSquareX
 	} from "@lucide/svelte";
 
+	const COLOR_MAP = {
+		green: { text: "text-green-600", bg: "bg-green-600" },
+		neutral: { text: "text-neutral-500", bg: "bg-neutral-500" },
+		purple: { text: "text-purple-500", bg: "bg-purple-500" },
+		red: { text: "text-red-500", bg: "bg-red-500" }
+	} as const;
+
 	type CommonStatus = "open" | "closed";
-	type PropsObj =
-		| {
-				type: "pull";
-				status: "draft" | CommonStatus | "merged";
-		  }
-		| {
-				type: "issue";
-				status: CommonStatus | "solved";
-		  }
-		| {
-				type: "discussion";
-				status: CommonStatus;
-		  };
+
+	type GithubStatus = {
+		pull: CommonStatus | "draft" | "merged";
+		issue: CommonStatus | "solved";
+		discussion: CommonStatus;
+	};
 
 	type BadgeConfig = {
 		icon: typeof Icon;
 		label: string;
-		color: "green" | "neutral" | "purple" | "red";
+		color: keyof typeof COLOR_MAP;
 	};
 
-	const BADGE_CONFIG: Record<string, Record<string, BadgeConfig>> = {
+	const BADGE_MAP: {
+		[GithubType in keyof GithubStatus]: Record<GithubStatus[GithubType], BadgeConfig>;
+	} = {
 		pull: {
-			draft: { icon: GitPullRequestDraft, label: "Draft", color: "neutral" },
 			open: { icon: GitPullRequestArrow, label: "Open", color: "green" },
-			merged: { icon: GitMerge, label: "Merged", color: "purple" },
-			closed: { icon: GitPullRequestClosed, label: "Closed", color: "red" }
+			closed: { icon: GitPullRequestClosed, label: "Closed", color: "red" },
+			draft: { icon: GitPullRequestDraft, label: "Draft", color: "neutral" },
+			merged: { icon: GitMerge, label: "Merged", color: "purple" }
 		},
 		issue: {
 			open: { icon: CircleDot, label: "Open", color: "green" },
@@ -51,32 +52,29 @@
 			closed: { icon: MessageSquareX, label: "Closed", color: "purple" }
 		}
 	};
+</script>
 
-	const COLOR_MAP: Record<BadgeConfig["color"], { text: string; bg: string }> = {
-		green: { text: "text-green-600", bg: "bg-green-600" },
-		neutral: { text: "text-neutral-500", bg: "bg-neutral-500" },
-		purple: { text: "text-purple-500", bg: "bg-purple-500" },
-		red: { text: "text-red-500", bg: "bg-red-500" }
+<script lang="ts" generics="GithubType extends keyof GithubStatus">
+	import type { ClassValue } from "svelte/elements";
+
+	type Props = {
+		mode?: "regular" | "minimal";
+		type: GithubType;
+		status: GithubStatus[GithubType];
+		class?: ClassValue;
 	};
 
-	type Info = {
+	let { mode = "regular", type, status, class: className }: Props = $props();
+
+	type Badge = {
 		icon: typeof Icon | undefined;
 		label: string;
 		textColor: string;
 		bgColor: string;
 	};
 
-	type Props = {
-		mode?: "regular" | "minimal";
-		type: PropsObj["type"];
-		status: PropsObj["status"];
-		class?: ClassValue;
-	};
-
-	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
-
-	let badge = $derived.by<Info>(() => {
-		const config = BADGE_CONFIG[type]?.[status];
+	let badge = $derived.by<Badge>(() => {
+		const config = BADGE_MAP[type]?.[status];
 
 		if (!config) {
 			return {
