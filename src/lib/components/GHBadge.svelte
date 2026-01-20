@@ -75,7 +75,7 @@
 
 	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
 
-	let { icon, label, textColor, bgColor } = $derived.by<Info>(() => {
+	let badge = $derived.by<Info>(() => {
 		const config = BADGE_CONFIG[type]?.[status];
 
 		if (!config) {
@@ -98,14 +98,10 @@
 </script>
 
 {#if mode === "regular"}
-	<div class={["flex items-center rounded-full px-4 py-2 text-white", bgColor, className]}>
-		{#if icon}
-			{@const Component = icon}
-			<Component class="mr-2 size-5" />
-		{/if}
-		<span class="font-semibold">{label}</span>
+	<div class={["flex items-center rounded-full px-4 py-2 text-white", badge.bgColor, className]}>
+		<badge.icon class="mr-2 size-5" />
+		<span class="font-semibold">{badge.label}</span>
 	</div>
-{:else if icon}
-	{@const Component = icon}
-	<Component class={["size-6", textColor, className]} />
+{:else}
+	<badge.icon class={["size-6", badge.textColor, className]} />
 {/if}
