@@ -29,11 +29,11 @@
 							type={entity.type}
 							status={entity.state === "MERGED"
 								? "merged"
-								: entity.state === "CLOSED"
-									? entity.stateReason === "COMPLETED"
+								: entity.state === "OPEN"
+									? "open"
+									: entity.stateReason === "COMPLETED"
 										? "solved"
-										: "closed"
-									: "open"}
+										: "closed"}
 							mode="minimal"
 							class="shrink-0"
 						/>
