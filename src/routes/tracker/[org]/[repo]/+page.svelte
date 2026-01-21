@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import { Image, Info, LoaderCircle } from "@lucide/svelte";
+	import { Image, Info, LoaderCircle, TriangleAlert } from "@lucide/svelte";
 	import remarkGitHub from "remark-github";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { Separator } from "$lib/components/ui/separator";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import { animatedClasses } from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -115,6 +116,21 @@
 		<div class="flex w-full flex-col">
 			<div class="flex justify-between gap-4">
 				<span>
+    				{#if item.html_url.includes("/pull/") && (item.body?.toLowerCase()?.includes("breaking change") || item.title.startsWith("breaking:"))}
+                        <Tooltip.Provider delayDuration={300}>
+                            <Tooltip.Root>
+                                <Tooltip.Trigger>
+                                    <TriangleAlert class="inline-block me-0.5 text-amber-500" />
+                                </Tooltip.Trigger>
+                                <Tooltip.Content
+                                    class="border bg-popover text-popover-foreground"
+									arrowClasses="bg-popover border-b border-r"
+                                >
+                                    This pull request might introduce a breaking change!
+                                </Tooltip.Content>
+                            </Tooltip.Root>
+                        </Tooltip.Provider>
+    				{/if}
 					<MarkdownRenderer markdown={item.title} inline class="text-foreground" />
 					<span class="text-muted-foreground">#{item.number}</span>
 				</span>
