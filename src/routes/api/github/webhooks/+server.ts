@@ -4,7 +4,7 @@ import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "$
 import { githubCache } from "$lib/server/github-cache";
 
 const webhooks = new Webhooks({
-	secret: WEBHOOKS_SECRET ?? "my-secret-if-env-var-is-unset-to-not-throw"
+	secret: WEBHOOKS_SECRET || "my-secret-if-env-var-is-unset-to-not-throw"
 });
 
 webhooks.on(["release.released", "release.prereleased"], async ({ name, payload }) => {
