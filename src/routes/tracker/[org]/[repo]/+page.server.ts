@@ -18,7 +18,9 @@ const closingKeywords = [
 
 export async function load({ params }) {
 	const isKnownRepo = uniqueRepos.some(
-		({ owner, name }) => params.org === owner && params.repo === name
+		({ owner, name }) =>
+			params.org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
+			params.repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!isKnownRepo) {
 		error(403, {
