@@ -119,6 +119,7 @@ export class CacheHandler {
 				return deletedCount > 0;
 			} catch (error) {
 				derror("Redis delete error:", error);
+				return false;
 			}
 		}
 		return result;
