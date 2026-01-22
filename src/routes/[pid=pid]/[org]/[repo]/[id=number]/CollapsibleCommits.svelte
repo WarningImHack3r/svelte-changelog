@@ -89,7 +89,7 @@
 	<Steps class="my-4">
 		<Step icon={GitPullRequestCreateArrow} class="text-base [&>span>svg]:text-green-500">
 			<div class="flex flex-col">
-				<span>Pull request open</span>
+				<span>Pull request opened</span>
 				<span class="text-muted-foreground">
 					{dateTimeFormatter.format(prCreationDate)}
 				</span>
