@@ -104,4 +104,23 @@ export class CacheHandler {
 			}
 		}
 	}
+
+	/**
+	 * Deletes an entry in the cache
+	 *
+	 * @param key the key to delete
+	 * @returns whether the element was actually removed
+	 */
+	async delete(key: string) {
+		const result = this.#memoryCache.delete(key); // memory cache can't be desynced in prod if Redis fails, but it's fine
+		if (!this.#isDev) {
+			try {
+				const deletedCount = await this.#redis.del(key);
+				return deletedCount > 0;
+			} catch (error) {
+				derror("Redis delete error:", error);
+			}
+		}
+		return result;
+	}
 }

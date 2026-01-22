@@ -51,6 +51,9 @@ importers:
       '@octokit/types':
         specifier: ^16.0.0
         version: 16.0.0
+      '@octokit/webhooks':
+        specifier: ^14.2.0
+        version: 14.2.0
       '@pierre/diffs':
         specifier: ^1.0.6
         version: 1.0.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

@@ -30,6 +30,7 @@
 		"@neoconfetti/svelte": "^2.2.2",
 		"@octokit/graphql-schema": "^15.26.1",
 		"@octokit/types": "^16.0.0",
+		"@octokit/webhooks": "^14.2.0",
 		"@pierre/diffs": "^1.0.6",
 		"@prgm/sveltekit-progress-bar": "^3.0.2",
 		"@shikijs/langs": "^3.21.0",
