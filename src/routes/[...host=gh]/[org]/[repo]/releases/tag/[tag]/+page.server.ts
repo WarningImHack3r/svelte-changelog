@@ -20,10 +20,21 @@ export function load({ params: { org, repo, tag } }) {
 		});
 	}
 	const [name, version] = repository.metadataFromTag(tag);
+	if (!name) {
+		error(400, {
+			message: "Failed to parse a valid package name from the release tag",
+			description:
+				"Is this tag a valid package? If so, please open an issue from the GitHub link in the navigation bar.",
+			link: {
+				text: "Go home",
+				href: resolve("/")
+			}
+		});
+	}
 	redirect(
 		307,
 		resolve("/package/[...package]", {
 			package: name
-		}) + `#${version}`
+		}) + (version ? `#${version}` : "") // avoids empty hash, even though it could hide a version parsing issue
 	);
 }
