@@ -1084,6 +1084,22 @@ export class GitHubCache {
 			item => (item.value === false ? DEPRECATIONS_TTL : undefined)
 		);
 	}
+
+	/**
+	 * Delete a repository from the cache
+	 *
+	 * @param owner the owner of the GitHub repository to remove
+	 * from the cache
+	 * @param repo the name of the GitHub repository to remove
+	 * from the cache
+	 * @param type the kind of cache to target
+	 * @returns whether the entry has successfully been deleted
+	 */
+	async deleteRepoEntry(owner: string, repo: string, type: RepoKeyType) {
+		const cacheKey = this.#getRepoKey(owner, repo, type);
+
+		return await this.#cache.delete(cacheKey);
+	}
 }
 
 export const githubCache = new GitHubCache(
