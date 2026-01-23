@@ -1,4 +1,3 @@
-import { json } from "@sveltejs/kit";
 import { derror, dlog } from "$lib/debug";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -7,7 +6,7 @@ import type { ReplicatorEvent } from "./types";
 export async function GET() {
 	const discovered = await discoverer.getOrDiscover();
 	const packages = discovered.flatMap(({ packages }) => packages).map(({ name }) => name);
-	return json([...new Set(packages)]);
+	return Response.json([...new Set(packages)]);
 }
 
 export async function POST({ request }) {
