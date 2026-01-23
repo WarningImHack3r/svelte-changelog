@@ -18,12 +18,12 @@ export type ReplicatorEvent = {
 		author?: { name: string; email?: string } | string;
 		maintainers?: ({ name: string; email?: string } | string)[];
 		contributors?: ({ name: string; email?: string } | string)[];
-    dist: {
-      /**
-       * The npm registry tarball URL
-       * 
-       * @example https://registry.npmjs.org/svelte/-/svelte-5.48.0.tgz
-       */
+		dist: {
+			/**
+			 * The npm registry tarball URL
+			 *
+			 * @example https://registry.npmjs.org/svelte/-/svelte-5.48.0.tgz
+			 */
 			tarball: string;
 			fileCount?: number;
 			unpackedSize?: number;

@@ -7,11 +7,17 @@ import type { ReplicatorEvent } from "./types";
 export async function GET() {
 	const discovered = await discoverer.getOrDiscover();
 	const packages = discovered.flatMap(({ packages }) => packages).map(({ name }) => name);
-	return json(packages);
+	return json([...new Set(packages)]);
 }
 
 export async function POST({ request }) {
-	const { package: pkg } = (await request.json()) as ReplicatorEvent;
+	let event: ReplicatorEvent;
+	try {
+		event = (await request.json()) as ReplicatorEvent;
+	} catch {
+		return new Response("Invalid JSON", { status: 400 });
+	}
+	const { package: pkg } = event;
 	const ghUrl = pkg.repository?.url.replace(/\.git$/, "");
 	if (!ghUrl) return new Response(); // always return a success response to avoid the sender to retry
 	const repoFullName = new URL(ghUrl).pathname.slice(1);
