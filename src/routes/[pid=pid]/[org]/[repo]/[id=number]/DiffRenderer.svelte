@@ -106,14 +106,12 @@
 	);
 
 	// Initial rendering and cleanup handling
-	$effect(() => {
+	$effect(() =>
 		fileDiff.render({
 			containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
 			...props
-		});
-
-		return () => fileDiff.cleanUp();
-	});
+		})
+	);
 
 	// Mobile diff type change
 	$effect(() => {
@@ -123,6 +121,9 @@
 
 	// Theme change
 	$effect(() => fileDiff.setThemeType(mode.current ?? "system"));
+
+	// Unmount cleanup
+	$effect(() => () => fileDiff.cleanUp());
 </script>
 
 <div id="diff-{id}" class="contents"></div>
