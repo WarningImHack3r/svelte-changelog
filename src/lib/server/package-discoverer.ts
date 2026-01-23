@@ -66,7 +66,8 @@ class PackageDiscoverer {
 								description: deprecated
 									? "" // descriptions of deprecated packages are often wrong as their code might be deleted,
 									: // thus falling back to a higher hierarchy description, often a mismatch
-										(descriptions[`packages/${ghName}/package.json`] ??
+										(descriptions[`packages/${pkg}/package.json`] ?? // try first at the expected place in case my info is outdated
+										descriptions[`packages/${ghName}/package.json`] ??
 										descriptions[
 											`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
 										] ??
@@ -91,12 +92,11 @@ class PackageDiscoverer {
 	 * @private
 	 */
 	#gitHubDirectoryFromName(name: string): string {
-		const PACKAGE_DIRECTORY_MAP: Record<string, string> = {
+		const packageDirectoryMap: Record<string, string> = {
 			extensions: "svelte-vscode",
-			sv: "cli",
 			"svelte-migrate": "migrate"
 		};
-		return PACKAGE_DIRECTORY_MAP[name] ?? name;
+		return packageDirectoryMap[name] ?? name;
 	}
 
 	/**
