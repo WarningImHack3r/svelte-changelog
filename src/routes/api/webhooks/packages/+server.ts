@@ -11,17 +11,19 @@ export async function GET() {
 }
 
 export async function POST({ request }) {
-	let event: ReplicatorEvent;
+	let body: ReplicatorEvent;
 	try {
-		event = (await request.json()) as ReplicatorEvent;
+		body = (await request.json()) as ReplicatorEvent;
 	} catch {
 		return new Response("Invalid JSON", { status: 400 });
 	}
-	const { package: pkg } = event;
-	const ghUrl = pkg.repository?.url.replace(/\.git$/, "");
-	if (!ghUrl) return new Response(); // always return a success response to avoid the sender to retry
-	const repoFullName = new URL(ghUrl).pathname.slice(1);
-	const [owner, repo] = repoFullName.split("/");
+	const { event, package: pkg } = body;
+	if (event !== "metadata_updated") return new Response(); // ignoring other events
+	const result = (await discoverer.getOrDiscover()).find(({ packages }) =>
+		new Set(packages.map(({ name }) => name)).has(pkg.name)
+	);
+	if (!result) return new Response(); // always return a success response to avoid the sender to retry
+	const { repoOwner: owner, repoName: repo } = result;
 	if (!owner || !repo) return new Response();
 	dlog(`Received a webhook for ${pkg.name}, invalidating repo ${owner}/${repo}`);
 	const deleted = await githubCache.deleteRepoEntry(owner, repo, "releases");
