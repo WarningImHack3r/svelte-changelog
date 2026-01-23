@@ -111,11 +111,11 @@ export class CacheHandler {
 	 * @param key the key to delete
 	 * @returns whether the element was actually removed
 	 */
-  async delete(key: string) {
-    // In dev mode, we only have the in-memory cache, so we wipe it
+	async delete(key: string) {
+		// In dev mode, we only have the in-memory cache, so we wipe it
 		if (this.#isDev) {
 			return this.#memoryCache.delete(key);
-    }
+		}
 		// In production, we clean Redis and then the memory cache if Redis didn't unexpectedly fail
 		try {
 			const deletedCount = await this.#redis.del(key);
