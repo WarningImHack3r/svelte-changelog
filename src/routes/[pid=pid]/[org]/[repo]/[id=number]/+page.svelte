@@ -276,7 +276,9 @@
 	{/if}
 	<!-- Files -->
 	{#if metadata.type === "pull"}
-		<CollapsibleFiles {files} />
+		{#key files}
+			<CollapsibleFiles {files} />
+		{/key}
 	{/if}
 </div>
 <!-- Bottom links -->
