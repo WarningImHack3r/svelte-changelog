@@ -3,6 +3,7 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { ChevronRight, Rss } from "@lucide/svelte";
+	import type { Package } from "$lib/server/package-discoverer";
 	import { ALL_SLUG } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as Collapsible from "$lib/components/ui/collapsible";
@@ -11,9 +12,7 @@
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 
 	type Props = {
-		packageInfo: {
-			name: string;
-			description?: string;
+		packageInfo: Package & {
 			categorySlug?: string;
 		};
 		currentRepo: { owner: string; name: string };
@@ -28,7 +27,7 @@
 	let registries = $derived<
 		Record<string, { iconUrl: string; url: string; additionalClasses?: string }>
 	>(
-		packageInfo.categorySlug === ALL_SLUG
+		packageInfo.categorySlug === ALL_SLUG || packageInfo.registryExcluded
 			? Object.fromEntries([])
 			: {
 					npmjs: {

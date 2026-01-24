@@ -3,10 +3,11 @@ import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
 import { GitHubCache, githubCache } from "./github-cache";
 
-type Package = {
+export type Package = {
 	name: string;
 	description: string;
 	deprecated?: string;
+	registryExcluded?: boolean;
 };
 
 export type DiscoveredPackage = Prettify<
@@ -24,6 +25,7 @@ export type CategorizedPackage = Prettify<
 class PackageDiscoverer {
 	readonly #cache: GitHubCache;
 	readonly #repos: Repository[] = [];
+	readonly #registryExcludedPackages = new Set(["extensions"]);
 	#packages: DiscoveredPackage[] = [];
 
 	constructor(cache: GitHubCache, repos: Repository[]) {
@@ -73,7 +75,8 @@ class PackageDiscoverer {
 										] ??
 										descriptions["package.json"] ??
 										""),
-								deprecated
+								deprecated,
+								registryExcluded: this.#registryExcludedPackages.has(pkg)
 							};
 						})
 					)

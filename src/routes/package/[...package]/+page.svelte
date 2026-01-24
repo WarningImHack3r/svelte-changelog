@@ -166,8 +166,7 @@
 		<div class="flex flex-col">
 			<Header
 				packageInfo={{
-					name: data.currentPackage.pkg.name,
-					description: data.currentPackage.pkg.description,
+					...data.currentPackage.pkg,
 					categorySlug: data.currentPackage.category.slug
 				}}
 				currentRepo={{
