@@ -1,5 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
+import { dwarn } from "$lib/debug";
 import { uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 
@@ -17,12 +18,12 @@ const closingKeywords = [
 ];
 
 export async function load({ params }) {
-	const isKnownRepo = uniqueRepos.some(
+	const knownRepo = uniqueRepos.find(
 		({ owner, name }) =>
 			params.org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
 			params.repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
-	if (!isKnownRepo) {
+	if (!knownRepo) {
 		error(403, {
 			message: "Unknown repository",
 			description:
@@ -34,14 +35,13 @@ export async function load({ params }) {
 		});
 	}
 
-	const members = await githubCache.getOrganizationMembers(params.org);
-	if (!members.length) error(404, `Organization ${params.org} not found or empty`);
-
-	const membersNames = members.map(({ login }) => login);
+	const members = await githubCache.getOrganizationMembers(knownRepo.owner);
+	if (!members.length) dwarn(`No org members found for "${knownRepo.owner}", is this expected? Returning itself only as a fallback.`);
+	const membersNames = members.length ? members.map(({ login }) => login) : [knownRepo.owner];
 	const now = new Date();
 
 	return {
-		prs: githubCache.getAllPRs(params.org, params.repo).then(unfilteredPRs =>
+		prs: githubCache.getAllPRs(knownRepo.owner, knownRepo.name).then(unfilteredPRs =>
 			unfilteredPRs
 				.filter(({ user, body, updated_at }) => {
 					if (new Date(updated_at).getFullYear() < now.getFullYear() - 1) return false;
@@ -64,7 +64,7 @@ export async function load({ params }) {
 				.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 		),
 		issues: githubCache
-			.getAllIssues(params.org, params.repo)
+			.getAllIssues(knownRepo.owner, knownRepo.name)
 			.then(unfilteredIssues =>
 				unfilteredIssues
 					.filter(
@@ -76,7 +76,7 @@ export async function load({ params }) {
 					.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 			),
 		discussions: githubCache
-			.getAllDiscussions(params.org, params.repo)
+			.getAllDiscussions(knownRepo.owner, knownRepo.name)
 			.then(unfilteredDiscussions =>
 				unfilteredDiscussions
 					.filter(
