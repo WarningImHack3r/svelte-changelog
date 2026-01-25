@@ -36,7 +36,10 @@ export async function load({ params }) {
 	}
 
 	const members = await githubCache.getOrganizationMembers(knownRepo.owner);
-	if (!members.length) dwarn(`No org members found for "${knownRepo.owner}", is this expected? Returning itself only as a fallback.`);
+	if (!members.length)
+		dwarn(
+			`No org members found for "${knownRepo.owner}", is this expected? Returning itself only as a fallback.`
+		);
 	const membersNames = members.length ? members.map(({ login }) => login) : [knownRepo.owner];
 	const now = new Date();
 
