@@ -36,7 +36,7 @@ export async function POST({ request }) {
 	const result = (await discoverer.getOrDiscover()).find(({ packages }) =>
 		packages.some(({ name }) => name === pkg.name)
 	);
-	if (!result) return new Response(undefined, { status: 422 }); // could not found a repo for this package, likely an unknown package
+	if (!result) return new Response(undefined, { status: 422 }); // could not find a repo for this package, likely an unknown package
 
 	// final data handling
 	const { repoOwner: owner, repoName: repo } = result;
