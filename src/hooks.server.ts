@@ -9,10 +9,14 @@ const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 	disabled: dev
 });
 
-export async function handleError({ error, status, event }) {
+export async function handleError({ error, status, event, message }) {
 	if (status !== 404) {
 		dfatal(`[SERVER] ${error}`);
-		client.captureException(error, undefined, event);
+		client.captureException(error, undefined, {
+			...event,
+			status_code: status,
+			error_message: message
+		});
 		await client.shutdown();
 	}
 }
