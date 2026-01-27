@@ -56,13 +56,12 @@
 		// Add missing links to PRs in the release body
 		return repo.owner && repo.name
 			? release.body.replace(
-					/[^[][#\d, ]*?#(\d+)(#issuecomment-\d+)?[#\d, ]*?[^\]]/g,
 					// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
-					(match, prNumber, rest) => {
-						if (!rest) rest = "";
-						const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${rest}`;
-						// replaceception
-						return match.replace(`#${prNumber}${rest}`, `[#${prNumber}${rest}](${prUrl})`);
+					/(?<!\]\([^)]*)\b#(\d+)(#issuecomment-\d+)?(?![^[]*\])/g,
+					(match, prNumber, comment) => {
+						const commentPart = comment ?? "";
+						const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${commentPart}`;
+						return `[${match}](${prUrl})`;
 					}
 				)
 			: release.body;
