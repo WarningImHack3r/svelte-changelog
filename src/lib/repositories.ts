@@ -96,6 +96,13 @@ const repos: Record<Category, RepoEntry> = {
 			},
 			{
 				changesMode: "changelog",
+				repoName: "svelte-loader",
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
+			},
+			{
+				changesMode: "changelog",
 				repoName: "prettier-plugin-svelte",
 				metadataFromTag(tag) {
 					return [this.repoName, tag.replace(/^v/, "")];
