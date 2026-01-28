@@ -6,10 +6,10 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import lucidePreprocess from "vite-plugin-lucide-preprocess";
 
 export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd());
+	const env = loadEnv(mode, process.cwd(), "");
 
-	const POSTHOG_ENV_ID = env.VITE_POSTHOG_ENV_ID;
-	const POSTHOG_SOURCEMAP_API_KEY = env.VITE_POSTHOG_SOURCEMAP_API_KEY;
+	const POSTHOG_ENV_ID = env.POSTHOG_ENV_ID;
+	const POSTHOG_SOURCEMAP_API_KEY = env.POSTHOG_SOURCEMAP_API_KEY;
 
 	return {
 		plugins: [
