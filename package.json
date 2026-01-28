@@ -30,7 +30,7 @@
 		"@neoconfetti/svelte": "^2.2.2",
 		"@octokit/graphql-schema": "^15.26.1",
 		"@octokit/types": "^16.0.0",
-		"@pierre/diffs": "^1.0.8",
+		"@pierre/diffs": "^1.0.9",
 		"@posthog/rollup-plugin": "^1.2.1",
 		"@prgm/sveltekit-progress-bar": "^3.0.2",
 		"@shikijs/langs": "^3.21.0",
@@ -43,7 +43,7 @@
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@trivago/prettier-plugin-sort-imports": "^6.0.2",
 		"@types/eslint-config-prettier": "^6.11.3",
-		"@types/node": "^25.0.10",
+		"@types/node": "^25.1.0",
 		"@types/semver": "^7.7.1",
 		"@upstash/redis": "^1.36.1",
 		"@vercel/speed-insights": "^1.3.1",
@@ -53,12 +53,12 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
 		"feed": "^5.2.0",
-		"globals": "^17.1.0",
+		"globals": "^17.2.0",
 		"marked": "^17.0.1",
 		"mode-watcher": "^1.1.0",
 		"octokit": "^5.0.5",
-		"posthog-js": "^1.335.2",
-		"posthog-node": "^5.24.2",
+		"posthog-js": "^1.336.1",
+		"posthog-node": "^5.24.4",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
@@ -71,7 +71,7 @@
 		"satori-html": "^0.3.2",
 		"semver": "^7.7.3",
 		"shiki": "^3.21.0",
-		"svelte": "^5.48.2",
+		"svelte": "^5.48.5",
 		"svelte-check": "^4.3.5",
 		"svelte-exmarkdown": "^5.0.2",
 		"svelte-meta-tags": "^4.5.0",
@@ -82,7 +82,7 @@
 		"tslib": "^2.8.1",
 		"tw-animate-css": "^1.4.0",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.53.1",
+		"typescript-eslint": "^8.54.0",
 		"vite": "^7.3.1",
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vite-plugin-lucide-preprocess": "^1.4.6"
@@ -98,5 +98,5 @@
 		]
 	},
 	"type": "module",
-	"packageManager": "pnpm@10.28.1"
+	"packageManager": "pnpm@10.28.2"
 }
