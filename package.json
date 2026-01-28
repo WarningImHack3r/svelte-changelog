@@ -31,6 +31,7 @@
 		"@octokit/graphql-schema": "^15.26.1",
 		"@octokit/types": "^16.0.0",
 		"@pierre/diffs": "^1.0.8",
+		"@posthog/rollup-plugin": "^1.2.1",
 		"@prgm/sveltekit-progress-bar": "^3.0.2",
 		"@shikijs/langs": "^3.21.0",
 		"@shikijs/rehype": "^3.21.0",
@@ -89,6 +90,7 @@
 	"pnpm": {
 		"onlyBuiltDependencies": [
 			"@parcel/watcher",
+			"@posthog/cli",
 			"@tailwindcss/oxide",
 			"core-js",
 			"esbuild",
