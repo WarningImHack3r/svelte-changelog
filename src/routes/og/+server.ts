@@ -75,6 +75,6 @@ export const GET: RequestHandler = async ({ url }) => {
 			"Content-Type": "image/png"
 		}
 	});
-	if (dev) response.headers.append("Cache-Control", "public, max-age=31536000, immutable");
+	if (!dev) response.headers.append("Cache-Control", `max-age=${60 * 60 * 24 * 30}, immutable`);
 	return response;
 };

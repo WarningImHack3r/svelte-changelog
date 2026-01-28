@@ -8,7 +8,7 @@ import svelteConfig from "./svelte.config.js";
 
 export default defineConfig(
 	eslint.configs.recommended,
-	tseslint.configs.recommended,
+	tseslint.configs.strict,
 	svelte.configs.recommended,
 	prettierConfig,
 	svelte.configs.prettier,

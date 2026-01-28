@@ -1,4 +1,5 @@
 import type { PostHog } from "posthog-node";
+import { dwarn } from "$lib/debug";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getPackageReleases } from "./package/releases";
 
@@ -19,7 +20,7 @@ export function getAllPackagesReleases(
 	return packages.reduce<Record<string, ReturnType<typeof getPackageReleases>>>(
 		(acc, { pkg: { name } }) => {
 			if (acc[name])
-				console.warn(
+				dwarn(
 					`Duplicate package "${name}" while aggregating packages releases; this should not happen!`
 				);
 			acc[name] = getPackageReleases(name, allPackages, posthog);

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
-	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ChevronRight } from "@lucide/svelte";
+	import { ChevronRight, Pin } from "@lucide/svelte";
+	import { PersistedState } from "runed";
+	import { getBadgeDataFromRecord, getUnvisitedReleases } from "$lib/badges";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import { type PackageSettings, type Prettify, releasesTypes } from "$lib/types";
@@ -13,8 +14,8 @@
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
 	import { Separator } from "$lib/components/ui/separator";
+	import { Toggle } from "$lib/components/ui/toggle";
 	import * as ToggleGroup from "$lib/components/ui/toggle-group";
-	import { DEFAULT_SETTINGS } from "./settings.svelte";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 
@@ -28,8 +29,9 @@
 				>[];
 			}
 		>[];
-		otherReleases?: {
-			[key: string]: Promise<
+		otherReleases?: Record<
+			string,
+			Promise<
 				| {
 						releasesRepo: Prettify<
 							Pick<CategorizedPackage, "category"> &
@@ -41,9 +43,9 @@
 						releases: CleanRelease[] | undefined;
 				  }
 				| undefined
-			>;
-		};
-		settings?: PackageSettings;
+			>
+		>;
+		settings: PackageSettings;
 		headless?: boolean;
 		class?: ClassValue;
 	};
@@ -51,51 +53,20 @@
 		packageName = "",
 		allPackages = [],
 		otherReleases = {},
-		settings = $bindable(DEFAULT_SETTINGS),
+		settings = $bindable(),
 		headless = false,
 		class: className
 	}: Props = $props();
 	let id = $props.id();
 
+	// Pins
+	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
 	/**
-	 * Extract the data from the {@link Props.otherReleases|otherReleases}
-	 * props.
-	 *
-	 * @param pkgName the package name to extract releases fo
-	 * @returns the {@link Promise} of releases, or `undefined`
+	 * A set proxy to quickly query the pinned items.
+	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
+	 * as it isn't reactive (enough).
 	 */
-	function getBadgeDataFromOther(pkgName: string) {
-		const data = Object.entries(otherReleases).find(
-			([k]) => k.localeCompare(pkgName, undefined, { sensitivity: "base" }) === 0
-		);
-		if (!data) return undefined;
-		const [, v] = data;
-		return v;
-	}
-
-	/**
-	 * Filter the releases to exclude those that have already been seen
-	 *
-	 * @param pkgName the package name for the releases
-	 * @param releases the releases to filter
-	 * @returns the filtered releases
-	 */
-	function getUnvisitedReleases(pkgName: string, releases: CleanRelease[] | undefined) {
-		if (!releases || !browser) return [];
-
-		const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
-		if (!lastVisitedItem) {
-			return releases.filter(
-				({ created_at, published_at }) =>
-					new Date(published_at ?? created_at).getTime() > Date.now() - 1000 * 60 * 60 * 24 * 7
-			);
-		}
-		const lastVisitedDate = new Date(lastVisitedItem);
-
-		return releases.filter(
-			({ created_at, published_at }) => new Date(published_at ?? created_at) > lastVisitedDate
-		);
-	}
+	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
 </script>
 
 {#snippet newBadge(count: number)}
@@ -140,13 +111,39 @@
 					{/if}
 					<li class="space-y-2">
 						{#if packages.length > 1}
+							{@const sortedPackages = packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
+								const isAPinned = pinnedROProxy.has(pkgA.name);
+								const isBPinned = pinnedROProxy.has(pkgB.name);
+								return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
+							})}
 							<!-- Categories with sub-items -->
-							<h3 class="text-xl font-bold text-primary">{category.name}</h3>
+							<h3 class="text-xl font-bold text-primary" title={category.description}>
+								{category.name}
+							</h3>
 							<ul class="space-y-2">
 								<!-- Sub-items -->
-								{#each packages as { pkg } (pkg.name)}
-									{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
-									<li>
+								{#each sortedPackages as { pkg } (pkg.name)}
+									{@const linkedBadgeData = getBadgeDataFromRecord(otherReleases, pkg.name)}
+									<li class="group inline-flex w-full gap-1">
+										<Toggle
+											aria-label={pinnedROProxy.has(pkg.name)
+												? `Unpin ${pkg.name}`
+												: `Pin ${pkg.name}`}
+											size="sm"
+											pressed={pinnedROProxy.has(pkg.name)}
+											class="me-0.5 h-auto min-w-0 shrink-0 px-0 hover:bg-inherit hover:text-inherit hover:opacity-100 data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
+											onPressedChange={pressed => {
+												if (pressed) {
+													if (!pinnedROProxy.has(pkg.name)) pinnedPackages.current.push(pkg.name);
+												} else {
+													pinnedPackages.current = pinnedPackages.current.filter(
+														item => item !== pkg.name
+													);
+												}
+											}}
+										>
+											<Pin />
+										</Toggle>
 										{#if page.url.pathname.endsWith(`/${pkg.name}`)}
 											<!-- Active sub-item -->
 											<span class="font-semibold">{pkg.name}</span>
@@ -169,13 +166,11 @@
 													{pkg.name}
 												</span>
 												<span class="ml-auto flex items-center gap-1">
-													{#if linkedBadgeData}
-														{#await linkedBadgeData then data}
-															{@render newBadge(
-																getUnvisitedReleases(pkg.name, data?.releases).length
-															)}
-														{/await}
-													{/if}
+													{#await linkedBadgeData then data}
+														{@render newBadge(
+															getUnvisitedReleases(pkg.name, data?.releases ?? []).length
+														)}
+													{/await}
 													<ChevronRight
 														class="size-4 text-primary transition-transform group-hover:translate-x-1"
 													/>
@@ -188,10 +183,13 @@
 						{:else}
 							<!-- Categories with 1 sub-item -->
 							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
-							{@const linkedBadgeData = getBadgeDataFromOther(firstPackageName)}
+							{@const linkedBadgeData = getBadgeDataFromRecord(otherReleases, firstPackageName)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<!-- Active category -->
-								<h3 class="text-xl font-bold text-primary underline underline-offset-4">
+								<h3
+									class="text-xl font-bold text-primary underline underline-offset-4"
+									title={category.description}
+								>
 									{category.name}
 								</h3>
 							{:else}
@@ -202,15 +200,18 @@
 									})}
 									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary"
 								>
-									<span class="underline-offset-4 group-hover:underline">{category.name}</span>
+									<span
+										class="underline-offset-4 group-hover:underline"
+										title={category.description}
+									>
+										{category.name}
+									</span>
 									<span class="ml-auto flex items-center gap-1">
-										{#if linkedBadgeData}
-											{#await linkedBadgeData then data}
-												{@render newBadge(
-													getUnvisitedReleases(firstPackageName, data?.releases).length
-												)}
-											{/await}
-										{/if}
+										{#await linkedBadgeData then data}
+											{@render newBadge(
+												getUnvisitedReleases(firstPackageName, data?.releases ?? []).length
+											)}
+										{/await}
 										<ChevronRight
 											class="size-4 text-primary transition-transform group-hover:translate-x-1"
 										/>
@@ -239,8 +240,7 @@
 				id="beta-releases-{id}"
 				aria-labelledby="beta-releases-label-{id}"
 				bind:checked={
-					() => settings.showPrereleases ?? DEFAULT_SETTINGS.showPrereleases,
-					newState => (settings.showPrereleases = newState)
+					() => settings.showPrereleases, newState => (settings.showPrereleases = newState)
 				}
 			/>
 			<Label
@@ -255,19 +255,21 @@
 		<Separator class="mt-0.5" />
 
 		<!-- Version filtering -->
-		<div class="flex items-center gap-2">
+		<div
+			class={["flex items-center", (headless && "flex-col items-start gap-2") || "justify-between"]}
+		>
 			<span class="text-sm leading-none font-medium text-nowrap">Show release types:</span>
 			<ToggleGroup.Root
 				type="single"
 				bind:value={
-					() => settings.releasesType ?? DEFAULT_SETTINGS.releasesType,
+					() => settings.releasesType,
 					newType => {
 						// don't take in account deselections, naturally always leaving something selected
 						if (newType) settings.releasesType = newType;
 					}
 				}
 				size="sm"
-				class="w-full"
+				class={[headless && "border"]}
 			>
 				{#each releasesTypes as releaseType (releaseType.toLowerCase())}
 					<ToggleGroup.Item value={releaseType.toLowerCase()} class="h-auto py-0.5">

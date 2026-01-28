@@ -1,24 +1,22 @@
-import type { MetaTagsProps } from "svelte-meta-tags";
+import { definePageMetaTags } from "svelte-meta-tags";
 
 export function load({ url }) {
-	return {
-		pageMetaTags: Object.freeze<MetaTagsProps>({
-			title: "v2 • Devlog",
-			description: "The development blog of Svelte Changelog",
-			openGraph: {
-				images: [
-					{
-						get url() {
-							const ogUrl = new URL("og", url.origin);
-							ogUrl.searchParams.set("title", "v2 • Devlog");
-							return ogUrl.href;
-						}
+	return definePageMetaTags({
+		title: "v2 • Devlog",
+		description: "The development blog of Svelte Changelog",
+		openGraph: {
+			images: [
+				{
+					get url() {
+						const ogUrl = new URL("og", url.origin);
+						ogUrl.searchParams.set("title", "v2 • Devlog");
+						return ogUrl.href;
 					}
-				]
-			},
-			twitter: {
-				cardType: "summary_large_image"
-			}
-		})
-	};
+				}
+			]
+		},
+		twitter: {
+			cardType: "summary_large_image"
+		}
+	});
 }

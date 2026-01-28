@@ -20,12 +20,22 @@ export async function load({ params, locals }) {
 				repoName: "",
 				pkg: {
 					name: "All packages",
-					description: "All the packages of this site."
+					description: "All the packages of this site"
 				}
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
 			releases: await getAllPackagesReleases(categorizedPackages, locals.posthog)
 		};
 	}
+
+	// 1.75. Early check to ensure the package exists
+	const knownPackages = categorizedPackages
+		.flatMap(({ packages }) => packages)
+		.map(({ pkg }) => pkg.name);
+	const exists = knownPackages.some(
+		knownPackage =>
+			knownPackage.localeCompare(slugPackage, undefined, { sensitivity: "base" }) === 0
+	);
+	if (!exists) error(404, `Unknown package "${slugPackage}"`);
 
 	// 2. Get the releases and package info
 	const packageReleases = await getPackageReleases(
@@ -33,7 +43,7 @@ export async function load({ params, locals }) {
 		categorizedPackages,
 		locals.posthog
 	);
-	if (!packageReleases) error(404);
+	if (!packageReleases) error(404, `Unable to retrieve releases for ${slugPackage}`);
 
 	// 3. Return the data
 	const { releasesRepo: currentPackage, releases } = packageReleases;

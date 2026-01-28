@@ -1,4 +1,5 @@
 import type { Redis } from "@upstash/redis";
+import { ddebug, derror } from "$lib/debug";
 
 export type RedisJson = Parameters<InstanceType<typeof Redis>["json"]["set"]>[2];
 
@@ -27,23 +28,23 @@ export class CacheHandler {
 	 */
 	async get<T extends RedisJson>(key: string) {
 		if (this.#isDev) {
-			console.log(`Retrieving ${key} from in-memory cache`);
+			ddebug(`Retrieving ${key} from in-memory cache`);
 			// In dev mode, use memory cache only
 			const entry = this.#memoryCache.get(key);
 
 			if (!entry) {
-				console.log("Nothing to retrieve");
+				ddebug("Nothing to retrieve");
 				return null;
 			}
 
 			// Check if entry is expired
 			if (entry.expiresAt && entry.expiresAt < Date.now()) {
-				console.log("Value expired, purging and returning null");
+				ddebug("Value expired, purging and returning null");
 				this.#memoryCache.delete(key);
 				return null;
 			}
 
-			console.log("Returning found value from in-memory cache");
+			ddebug("Returning found value from in-memory cache");
 			return entry.value as T;
 		}
 
@@ -69,7 +70,7 @@ export class CacheHandler {
 			}
 			return value;
 		} catch (error) {
-			console.error("Redis get error:", error);
+			derror("Redis get error:", error);
 			return null;
 		}
 	}
@@ -83,12 +84,12 @@ export class CacheHandler {
 	 */
 	async set<T extends RedisJson>(key: string, value: T, ttlSeconds?: number) {
 		if (this.#isDev) {
-			console.log(`Setting value for ${key} in memory cache`);
+			ddebug(`Setting value for ${key} in memory cache`);
 			// In dev mode, use memory cache only
 			const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 			if (expiresAt) {
-				console.log(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
-			} else console.log(`No cache set for ${key}`);
+				ddebug(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
+			} else ddebug(`No cache set for ${key}`);
 			this.#memoryCache.set(key, { value, expiresAt });
 		} else {
 			// In production, use both Redis and memory cache
@@ -99,8 +100,30 @@ export class CacheHandler {
 				const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
 			} catch (error) {
-				console.error("Redis set error:", error);
+				derror("Redis set error:", error);
 			}
+		}
+	}
+
+	/**
+	 * Deletes an entry in the cache
+	 *
+	 * @param key the key to delete
+	 * @returns whether the element was actually removed
+	 */
+	async delete(key: string) {
+		// In dev mode, we only have the in-memory cache, so we wipe it
+		if (this.#isDev) {
+			return this.#memoryCache.delete(key);
+		}
+		// In production, we clean Redis and then the memory cache if Redis didn't unexpectedly fail
+		try {
+			const deletedCount = await this.#redis.del(key);
+			this.#memoryCache.delete(key);
+			return deletedCount > 0;
+		} catch (error) {
+			derror("Redis delete error:", error);
+			return false;
 		}
 	}
 }

@@ -25,6 +25,11 @@
 			"id": 4,
 			"content": "Svelte Changelog v2 is here. [Read the announcement](/devlog/v2).",
 			"endDate": "2025-05-01"
+		},
+		{
+			"id": 5,
+			"content": "The details page can now display the full file diffs! Visit a PR details and expand the 'Files' dropdown to see that in action",
+			"endDate": "2026-01-18"
 		}
 	]
 }

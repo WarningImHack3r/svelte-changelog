@@ -3,20 +3,18 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { navigating, page } from "$app/state";
-	import { ChevronRight, CircleAlert, LoaderCircle, Rss } from "@lucide/svelte";
+	import { CircleAlert, Info, LoaderCircle } from "@lucide/svelte";
+	import { PersistedState } from "runed";
 	import semver from "semver";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
-	import * as Alert from "$lib/components/ui/alert";
 	import { Button } from "$lib/components/ui/button";
-	import * as Collapsible from "$lib/components/ui/collapsible";
-	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
-	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import { getPackageSettings } from "../settings.svelte";
+	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
+	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
+	import TopBanner from "./TopBanner.svelte";
 
 	const loadingSentences = [
 		"Loading",
@@ -30,24 +28,34 @@
 	];
 
 	let { data } = $props();
-	let viewTransitionName = $derived(data.currentPackage.pkg.name.replace(/[@/-]/g, ""));
+
 	let latestRelease = $derived(
 		data.currentPackage.category.slug === ALL_SLUG
 			? undefined
-			: data.releases.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
-	);
-	let earliestOfLatestMajor = $derived(
-		data.currentPackage.category.slug === ALL_SLUG
-			? undefined
 			: data.releases
-					.filter(
-						({ prerelease, cleanVersion }) =>
-							(latestRelease
-								? semver.major(cleanVersion) === semver.major(latestRelease.cleanVersion)
-								: false) && !prerelease
-					)
-					.sort((a, b) => semver.compare(a.cleanVersion, b.cleanVersion))[0]
+					.filter(({ prerelease }) => !prerelease)
+					.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
 	);
+	let earliestForMajors = $derived.by<Record<number, (typeof data.releases)[number]>>(() => {
+		if (data.currentPackage.category.slug === ALL_SLUG) return {};
+		const allWithSemver = data.releases.flatMap(release => {
+			const coerced = semver.coerce(release.cleanVersion);
+			return coerced ? [{ coerced, ...release }] : [];
+		});
+		const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced.major))];
+		return Object.fromEntries(
+			uniqueMajors
+				.map(major => {
+					const firstSorted = allWithSemver
+						.filter(({ coerced, prerelease }) => coerced.major === major && !prerelease)
+						.sort((a, b) => semver.compare(a.coerced, b.coerced))[0];
+					if (!firstSorted) return undefined;
+					const { coerced, ...rest } = firstSorted;
+					return [major, rest];
+				})
+				.filter(Boolean)
+		);
+	});
 	const sharedSettings = getPackageSettings();
 	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
@@ -97,7 +105,7 @@
 	});
 
 	// Hash management
-	let wantsReducedMotion = new MediaQuery("(prefers-reduced-motion: reduce)");
+	let wantsReducedMotion = new MediaQuery("prefers-reduced-motion: reduce");
 	$effect(() => {
 		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
 
@@ -109,6 +117,17 @@
 					?.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
 			});
 	});
+
+	// Persistence
+	let activeSettingsReminder = $derived(
+		new PersistedState(
+			`${data.currentPackage.pkg.name.toLowerCase().replace(/ /g, "-")}-active-settings-reminder`,
+			false,
+			{
+				storage: "session"
+			}
+		)
+	);
 
 	export const snapshot: Snapshot<typeof expandableReleases> = {
 		capture: () => expandableReleases,
@@ -145,123 +164,80 @@
 		{@render loading()}
 	{:then}
 		<div class="flex flex-col">
-			<div class="my-8">
-				<h1
-					class="text-3xl font-semibold text-primary text-shadow-sm motion-safe:[view-transition-name:var(--vt-name)] md:text-5xl"
-					style:--vt-name="title-{viewTransitionName}"
-				>
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html data.currentPackage.pkg.name.replace(/\//g, "/<wbr />")}
-				</h1>
-				<div class="flex flex-col items-start xs:flex-row xs:items-center">
-					{#if data.currentPackage.repoOwner && data.currentPackage.repoName}
-						<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
-							<a
-								href="https://github.com/{data.currentPackage.repoOwner}/{data.currentPackage
-									.repoName}"
-								target="_blank"
-								class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
-							>
-								<span
-									class="motion-safe:[view-transition-name:var(--vt-name)]"
-									style:--vt-name="owner-{viewTransitionName}"
-								>
-									{data.currentPackage.repoOwner}
-								</span>/<wbr /><span
-									class="motion-safe:[view-transition-name:var(--vt-name)]"
-									style:--vt-name="repo-name-{viewTransitionName}"
-								>
-									{data.currentPackage.repoName}
-								</span>
-							</a>
-						</h2>
-						<Separator
-							orientation="vertical"
-							class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
-						/>
-					{/if}
-					<Collapsible.Root class="flex items-center">
-						<Collapsible.Trigger>
-							{#snippet child({ props })}
-								<Button
-									{...props}
-									variant="ghost"
-									size="sm"
-									class="peer h-6 !px-1 data-[state=open]:text-primary"
-								>
-									<Rss />
-									<span class="sr-only">RSS</span>
-								</Button>
-								<ChevronRight
-									class="size-4 -translate-x-1 scale-75 opacity-0 transition-all peer-hover:translate-x-0 peer-hover:scale-100 peer-hover:opacity-100 peer-data-[state=open]:translate-x-0 peer-data-[state=open]:scale-100 peer-data-[state=open]:rotate-180 peer-data-[state=open]:opacity-100"
-								/>
-							{/snippet}
-						</Collapsible.Trigger>
-						<AnimatedCollapsibleContent axis="x" class="ml-2">
-							{#each [{ name: "XML", file: "rss.xml" }, { name: "ATOM", file: "atom.xml" }, { name: "JSON", file: "rss.json" }] as { name, file } (name)}
-								<Button
-									variant="link"
-									size="sm"
-									class="h-auto px-1 py-0 text-foreground"
-									href="{page.url}/{file}"
-									data-sveltekit-preload-data="tap"
-								>
-									{name}
-								</Button>
-							{/each}
-						</AnimatedCollapsibleContent>
-					</Collapsible.Root>
-				</div>
-				{#if data.currentPackage.pkg.description}
-					<h3
-						class="mt-4 italic motion-safe:[view-transition-name:var(--vt-name)]"
-						style:--vt-name="desc-{viewTransitionName}"
-					>
-						{data.currentPackage.pkg.description}
-					</h3>
-				{/if}
-			</div>
+			<Header
+				packageInfo={{
+					...data.currentPackage.pkg,
+					categorySlug: data.currentPackage.category.slug
+				}}
+				currentRepo={{
+					owner: data.currentPackage.repoOwner,
+					name: data.currentPackage.repoName
+				}}
+				class="my-8"
+			/>
 			<Accordion.Root type="multiple" bind:value={expandableReleases} class="w-full space-y-2">
 				{#if data.currentPackage.pkg.deprecated}
-					<Alert.Root class="rounded-md border-amber-500 bg-amber-400/10">
-						<CircleAlert class="size-4" />
-						<Alert.Title>Deprecated</Alert.Title>
-						<Alert.Description>
-							<MarkdownRenderer
-								markdown={data.currentPackage.pkg.deprecated}
-								inline
-								class="max-w-full text-sm text-muted-foreground"
+					<TopBanner
+						icon={CircleAlert}
+						title="Deprecated"
+						markdown={data.currentPackage.pkg.deprecated}
+						class="border-amber-500 bg-amber-400/10 prose-a:text-amber-500!"
+					/>
+				{/if}
+				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
+					{@const markdown =
+						"This package has trouble tagging its releases, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
+					<TopBanner
+						icon={CircleAlert}
+						title="Note"
+						{markdown}
+						class="border-sky-500 bg-sky-400/20 prose-a:text-sky-500"
+					/>
+				{/if}
+				{#if settingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
+					{@const markdown = `The following filters are active:\n${settingsUtils.modificationString(
+						packageSettings.current
+					)}`}
+					<TopBanner
+						icon={Info}
+						title="Settings changed"
+						{markdown}
+						class="border-slate-600 bg-slate-400/20 prose-a:text-slate-400"
+					>
+						{#snippet additionalContent()}
+							<Button
+								variant="link"
+								onclick={() => (activeSettingsReminder.current = true)}
+								class="ms-auto h-auto p-0 text-slate-400"
 							>
-								{#snippet a({ style, children, class: className, title, href, hidden, type })}
-									<a {style} class={className} {title} {href} {hidden} {type} target="_blank">
-										{@render children?.()}
-									</a>
-								{/snippet}
-							</MarkdownRenderer>
-						</Alert.Description>
-					</Alert.Root>
+								Remind me later for this package
+							</Button>
+						{/snippet}
+					</TopBanner>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
+					{@const semLatest = semver.coerce(latestRelease?.cleanVersion)}
 					{@const isMajorRelease =
 						!release.prerelease &&
 						semVersion?.minor === 0 &&
 						semVersion?.patch === 0 &&
 						!semVersion?.prerelease.length}
-					{@const releaseDate = new Date(release.published_at ?? release.created_at)}
-					{@const isLatest = release.id === latestRelease?.id}
-					{@const isMaintenance = earliestOfLatestMajor
-						? !isMajorRelease &&
-							/* `semVersion` and `latestRelease` can't be undefined here */
-							semVersion!.major < semver.major(latestRelease!.cleanVersion) &&
-							releaseDate >
-								new Date(earliestOfLatestMajor.published_at ?? earliestOfLatestMajor.created_at)
-						: false}
+					{@const earliestOfNextMajor = semVersion
+						? earliestForMajors[semVersion.major + 1]
+						: undefined}
+					{@const isMaintenance =
+						semVersion && semLatest && earliestOfNextMajor
+							? !isMajorRelease &&
+								semVersion.major < semLatest.major &&
+								new Date(release.published_at ?? release.created_at) >
+									new Date(earliestOfNextMajor.published_at ?? earliestOfNextMajor.created_at)
+							: false}
 					<ReleaseCard
 						{index}
 						repo={{ owner: data.currentPackage.repoOwner, name: data.currentPackage.repoName }}
 						{release}
-						{isLatest}
+						isLatest={release.id === latestRelease?.id}
 						{isMaintenance}
 					/>
 				{:else}

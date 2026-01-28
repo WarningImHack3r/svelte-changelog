@@ -12,15 +12,32 @@ import type {
 	Issue as GQLIssue,
 	PullRequest as GQLPullRequest,
 	Repository as GQLRepository,
+	IssueState,
+	IssueStateReason,
+	MergeStateStatus,
+	PullRequestState,
+	ReactionConnection,
+	ReactionContent,
 	ReferencedSubject
 } from "@octokit/graphql-schema";
 import { Redis } from "@upstash/redis";
 import { App, Octokit } from "octokit";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
+import { ddebug, derror } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
-import type { Issues, Pulls } from "$lib/types";
+import type { Issues, PID, Pulls } from "$lib/types";
 import { CacheHandler, type RedisJson } from "./cache-handler";
+import {
+	commit,
+	createOctokitResponse,
+	discussion,
+	gitTree,
+	gqlRepo,
+	issue,
+	pr,
+	release
+} from "./data-mock";
 
 /**
  * A strict version of Extract.
@@ -95,7 +112,7 @@ export type Discussion = {
 	answer_chosen_by: TeamDiscussion["author"] | null;
 	id: number;
 	user: TeamDiscussion["author"];
-	labels: never[];
+	labels: string[];
 	state: "open" | "closed";
 	state_reason: "resolved" | null;
 	locked: boolean;
@@ -129,6 +146,9 @@ export type LinkedItem = {
 		owner: string;
 		name: string;
 	};
+	type: PID;
+	state: IssueState | PullRequestState | "DRAFT";
+	stateReason: IssueStateReason | PullRequestState | MergeStateStatus;
 	reactions: GitHubRelease["reactions"];
 	number: number;
 	title: string;
@@ -139,6 +159,8 @@ export type LinkedItem = {
 	createdAt: string;
 	body: string;
 };
+
+const MOCK_REQUESTS = false;
 
 /**
  * The maximum items amount to get per-page
@@ -250,6 +272,17 @@ export class GitHubCache {
 	}
 
 	/**
+	 * A request middleware to control calls to the GitHub API.
+	 *
+	 * @param original an endpoint to call using an octokit instance
+	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
+	 * @returns either the original data or the fallback one
+	 */
+	#request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
+		return MOCK_REQUESTS ? Promise.resolve(fallback) : original(this.#octokit);
+	}
+
+	/**
 	 * An abstraction over general processing that:
 	 * 1. tries getting stuff from Redis cache
 	 * 2. calls the promise to get new data if no value is found in cache
@@ -277,11 +310,11 @@ export class GitHubCache {
 		): Promise<RType> => {
 			const cachedValue = await this.#cache.get<RType>(cacheKey);
 			if (cachedValue) {
-				console.log(`Cache hit for ${cacheKey}`);
+				ddebug(`Cache hit for ${cacheKey}`);
 				return cachedValue;
 			}
 
-			console.log(`Cache miss for ${cacheKey}`);
+			ddebug(`Cache miss for ${cacheKey}`);
 
 			const newValue = await transformer(await promise());
 
@@ -330,20 +363,20 @@ export class GitHubCache {
 		try {
 			return await this.getPullRequestDetails(owner, repo, id);
 		} catch (err) {
-			console.error(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
 		}
 
 		try {
 			// doesn't come first because issues will also resolve for prs
 			return await this.getIssueDetails(owner, repo, id);
 		} catch (err) {
-			console.error(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
 		}
 
 		try {
 			return await this.getDiscussionDetails(owner, repo, id);
 		} catch (err) {
-			console.error(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
 		}
 
 		return null;
@@ -363,8 +396,14 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "issue", id),
 			() =>
 				Promise.all([
-					this.#octokit.rest.issues.get({ owner, repo, issue_number: id }),
-					this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
+					this.#request(
+						kit => kit.rest.issues.get({ owner, repo, issue_number: id }),
+						createOctokitResponse(issue)
+					),
+					this.#request(
+						kit => kit.rest.issues.listComments({ owner, repo, issue_number: id }),
+						createOctokitResponse([])
+					),
 					this.#getLinkedPullRequests(owner, repo, id)
 				]),
 			([{ data: info }, { data: comments }, linkedPrs]) => ({
@@ -390,10 +429,22 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "pr", id),
 			() =>
 				Promise.all([
-					this.#octokit.rest.pulls.get({ owner, repo, pull_number: id }),
-					this.#octokit.rest.issues.listComments({ owner, repo, issue_number: id }),
-					this.#octokit.rest.pulls.listCommits({ owner, repo, pull_number: id }),
-					this.#octokit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
+					this.#request(
+						kit => kit.rest.pulls.get({ owner, repo, pull_number: id }),
+						createOctokitResponse(pr)
+					),
+					this.#request(
+						kit => kit.rest.issues.listComments({ owner, repo, issue_number: id }),
+						createOctokitResponse([])
+					),
+					this.#request(
+						kit => kit.rest.pulls.listCommits({ owner, repo, pull_number: id }),
+						createOctokitResponse([])
+					),
+					this.#request(
+						kit => kit.rest.pulls.listFiles({ owner, repo, pull_number: id }),
+						createOctokitResponse([])
+					),
 					this.#getLinkedIssues(owner, repo, id)
 				]),
 			([{ data: info }, { data: comments }, { data: commits }, { data: files }, linkedIssues]) => ({
@@ -421,19 +472,27 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "discussion", id),
 			() =>
 				Promise.all([
-					this.#octokit.request("GET /repos/{owner}/{repo}/discussions/{number}", {
-						owner,
-						repo,
-						number: id
-					}),
-					this.#octokit.paginate<DiscussionComment>(
-						"GET /repos/{owner}/{repo}/discussions/{number}/comments",
-						{
-							owner,
-							repo,
-							number: id,
-							per_page
-						}
+					this.#request(
+						kit =>
+							kit.request("GET /repos/{owner}/{repo}/discussions/{number}", {
+								owner,
+								repo,
+								number: id
+							}),
+						createOctokitResponse(discussion)
+					),
+					this.#request(
+						kit =>
+							kit.paginate<DiscussionComment>(
+								"GET /repos/{owner}/{repo}/discussions/{number}/comments",
+								{
+									owner,
+									repo,
+									number: id,
+									per_page
+								}
+							),
+						[]
 					)
 				]),
 			([{ data: discussion }, comments]) => ({
@@ -454,8 +513,10 @@ export class GitHubCache {
 	 * @private
 	 */
 	async #getLinkedPullRequests(owner: string, repo: string, issueNumber: number) {
-		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
-			`
+		const result = await this.#request(
+			kit =>
+				kit.graphql<{ repository: GQLRepository }>(
+					`
         query($owner: String!, $repo: String!, $issueNumber: Int!, $count: Int!) {
 					repository(owner: $owner, name: $repo) {
 						issue(number: $issueNumber) {
@@ -465,6 +526,9 @@ export class GitHubCache {
 										subject {
 											... on PullRequest {
 												url
+												state
+												mergeStateStatus
+												isDraft
 												reactions(first: $count) {
 													nodes {
 														content
@@ -491,6 +555,9 @@ export class GitHubCache {
 										source {
 											... on PullRequest {
 												url
+												state
+												mergeStateStatus
+												isDraft
 												reactions(first: $count) {
 													nodes {
 														content
@@ -519,12 +586,14 @@ export class GitHubCache {
 					}
         }
 		`,
-			{
-				owner,
-				repo,
-				issueNumber,
-				count: per_page
-			}
+					{
+						owner,
+						repo,
+						issueNumber,
+						count: per_page
+					}
+				),
+			{ repository: gqlRepo }
 		);
 
 		// Extract and deduplicate PRs
@@ -536,11 +605,11 @@ export class GitHubCache {
 			if ("subject" in item) {
 				const issueOrPr = item.subject;
 				if (!issueOrPr || !("number" in issueOrPr)) continue;
-				linkedPRs.set(issueOrPr.number, this.#gqlToLinkedItem(issueOrPr));
+				linkedPRs.set(issueOrPr.number, this.#gqlToLinkedItem("pull", issueOrPr));
 			} else if ("source" in item) {
 				const referencedSubject = item.source;
 				if (!referencedSubject || !("number" in referencedSubject)) continue;
-				linkedPRs.set(referencedSubject.number, this.#gqlToLinkedItem(referencedSubject));
+				linkedPRs.set(referencedSubject.number, this.#gqlToLinkedItem("pull", referencedSubject));
 			}
 		}
 
@@ -557,14 +626,18 @@ export class GitHubCache {
 	 * @private
 	 */
 	async #getLinkedIssues(owner: string, repo: string, prNumber: number) {
-		const result = await this.#octokit.graphql<{ repository: GQLRepository }>(
-			`
+		const result = await this.#request(
+			kit =>
+				kit.graphql<{ repository: GQLRepository }>(
+					`
         query($owner: String!, $repo: String!, $prNumber: Int!, $count: Int!) {
 					repository(owner: $owner, name: $repo) {
 						pullRequest(number: $prNumber) {
 							closingIssuesReferences(first: $count) {
 								nodes {
 									url
+									state
+									stateReason
 									reactions(first: $count) {
 										nodes {
 											content
@@ -590,12 +663,14 @@ export class GitHubCache {
 					}
         }
 		`,
-			{
-				owner,
-				repo,
-				prNumber,
-				count: per_page
-			}
+					{
+						owner,
+						repo,
+						prNumber,
+						count: per_page
+					}
+				),
+			{ repository: gqlRepo }
 		);
 
 		// Extract and deduplicate issues
@@ -604,7 +679,7 @@ export class GitHubCache {
 		const closingIssues = result?.repository?.pullRequest?.closingIssuesReferences?.nodes ?? [];
 		for (const issue of closingIssues) {
 			if (!issue) continue;
-			linkedIssues.set(issue.number, this.#gqlToLinkedItem(issue));
+			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issue", issue));
 		}
 
 		return Array.from(linkedIssues.values());
@@ -616,14 +691,20 @@ export class GitHubCache {
 	 * @param gql the raw GraphQL item
 	 * @returns the mapped LinkedItem
 	 */
-	#gqlToLinkedItem({
-		url,
-		repository,
-		reactions,
-		...rest
-	}: GQLIssue | GQLPullRequest | ReferencedSubject): LinkedItem {
+	#gqlToLinkedItem(
+		itemType: LinkedItem["type"],
+		{ url, repository, reactions, ...rest }: GQLIssue | GQLPullRequest | ReferencedSubject
+	): LinkedItem {
+		function getReactionCount(reactions: ReactionConnection, content: ReactionContent) {
+			return reactions.nodes?.filter(reaction => reaction?.content === content).length ?? 0;
+		}
+
 		return {
 			...rest,
+			type: itemType,
+			state: "isDraft" in rest && rest.isDraft ? "DRAFT" : rest.state,
+			stateReason:
+				"mergeStateStatus" in rest ? rest.mergeStateStatus : (rest.stateReason ?? "CLOSED"),
 			html_url: url,
 			repository: {
 				owner: repository.owner.login,
@@ -633,14 +714,14 @@ export class GitHubCache {
 				? {
 						url: "",
 						total_count: reactions.nodes.length,
-						"+1": reactions.nodes.filter(reaction => reaction?.content === "THUMBS_UP").length,
-						"-1": reactions.nodes.filter(reaction => reaction?.content === "THUMBS_DOWN").length,
-						laugh: reactions.nodes.filter(reaction => reaction?.content === "LAUGH").length,
-						confused: reactions.nodes.filter(reaction => reaction?.content === "CONFUSED").length,
-						heart: reactions.nodes.filter(reaction => reaction?.content === "HEART").length,
-						hooray: reactions.nodes.filter(reaction => reaction?.content === "HOORAY").length,
-						eyes: reactions.nodes.filter(reaction => reaction?.content === "EYES").length,
-						rocket: reactions.nodes.filter(reaction => reaction?.content === "ROCKET").length
+						"+1": getReactionCount(reactions, "THUMBS_UP"),
+						"-1": getReactionCount(reactions, "THUMBS_DOWN"),
+						laugh: getReactionCount(reactions, "LAUGH"),
+						confused: getReactionCount(reactions, "CONFUSED"),
+						heart: getReactionCount(reactions, "HEART"),
+						hooray: getReactionCount(reactions, "HOORAY"),
+						eyes: getReactionCount(reactions, "EYES"),
+						rocket: getReactionCount(reactions, "ROCKET")
 					}
 				: undefined
 		};
@@ -672,42 +753,54 @@ export class GitHubCache {
 	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
 		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
-			const { data: releases } = await this.#octokit.rest.repos.listReleases({
-				owner,
-				repo,
-				per_page
-			});
+			const { data: releases } = await this.#request(
+				kit =>
+					kit.rest.repos.listReleases({
+						owner,
+						repo,
+						per_page
+					}),
+				createOctokitResponse([])
+			);
 			return releases;
 		}
 
 		// Changelog mode: we'll need to get the tags and re-build releases from them
 
 		// 1. Fetch tags
-		const { data: tags } = await this.#octokit.rest.repos.listTags({
-			owner,
-			repo,
-			per_page
-		});
+		const { data: tags } = await this.#request(
+			kit =>
+				kit.rest.repos.listTags({
+					owner,
+					repo,
+					per_page
+				}),
+			createOctokitResponse([])
+		);
 
 		// 2. Fetch changelog
-		const { data: changelogResult } = await this.#octokit.rest.repos.getContent({
-			owner,
-			repo,
-			ref: (() => {
-				try {
-					return owner === "sveltejs" &&
-						repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
-						tags[0] &&
-						semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
-						? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
-						: undefined;
-				} catch {
-					// handle oopsies for invalid versions returned from `metadataFromTag` (or others)
-					return undefined;
-				}
-			})(),
-			path: "CHANGELOG.md"
-		});
+		const { data: changelogResult } = await this.#request(
+			kit =>
+				kit.rest.repos.getContent({
+					owner,
+					repo,
+					ref: (() => {
+						try {
+							return owner === "sveltejs" &&
+								repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
+								tags[0] &&
+								semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
+								? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
+								: undefined;
+						} catch {
+							// handle oopsies for invalid versions returned from `metadataFromTag` (or others)
+							return undefined;
+						}
+					})(),
+					path: "CHANGELOG.md"
+				}),
+			createOctokitResponse([])
+		);
 
 		if (!("content" in changelogResult)) return []; // filter out empty or multiple results
 		const { content, encoding, type } = changelogResult;
@@ -740,16 +833,17 @@ export class GitHubCache {
 				) => {
 					const {
 						data: { author, committer }
-					} = await this.#octokit.rest.git.getCommit({ owner, repo, commit_sha: sha });
+					} = await this.#request(
+						kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
+						createOctokitResponse(commit)
+					);
 					const [, cleanVersion] = repository.metadataFromTag(tag_name);
 					const changelogVersion = versions.find(
 						({ version }) => !!version?.includes(cleanVersion)
 					);
 					return {
-						url: "",
+						...release,
 						html_url: `https://github.com/${owner}/${repo}/releases/tag/${tag_name}`,
-						assets_url: "",
-						upload_url: "",
 						tarball_url,
 						zipball_url,
 						id: simpleHash(`${owner}/${repo}`) + tagIndex,
@@ -757,34 +851,14 @@ export class GitHubCache {
 						tag_name,
 						target_commitish: "main",
 						name: `${repo}@${cleanVersion}`,
-						body: changelogVersion?.body ?? "_No changelog provided._",
-						draft: false,
+						body: changelogVersion?.body || "_No changelog provided._",
 						prerelease: tag_name.includes("-"),
 						created_at: committer.date,
-						published_at: null,
 						author: {
+							...release.author,
 							name: author.name,
-							login: "",
-							email: author.email,
-							id: 0,
-							node_id: "",
-							avatar_url: "",
-							gravatar_id: null,
-							url: "",
-							html_url: "",
-							followers_url: "",
-							following_url: "",
-							gists_url: "",
-							starred_url: "",
-							subscriptions_url: "",
-							organizations_url: "",
-							repos_url: "",
-							events_url: "",
-							received_events_url: "",
-							type: "",
-							site_admin: false
-						},
-						assets: []
+							email: author.email
+						}
 					} satisfies GitHubRelease;
 				}
 			)
@@ -804,15 +878,19 @@ export class GitHubCache {
 	 * @returns a map of paths to descriptions.
 	 */
 	async getDescriptions(owner: string, repo: string) {
-		return await this.#processCached<{ [key: string]: string }>()(
+		return await this.#processCached<Record<string, string>>()(
 			this.#getRepoKey(owner, repo, "descriptions"),
 			() =>
-				this.#octokit.rest.git.getTree({
-					owner,
-					repo,
-					tree_sha: "HEAD",
-					recursive: "true"
-				}),
+				this.#request(
+					kit =>
+						kit.rest.git.getTree({
+							owner,
+							repo,
+							tree_sha: "HEAD",
+							recursive: "true"
+						}),
+					createOctokitResponse(gitTree)
+				),
 			async ({ data: allFiles }) => {
 				const allPackageJson = allFiles.tree
 					.map(({ path }) => path)
@@ -826,11 +904,15 @@ export class GitHubCache {
 
 				const descriptions = new Map<string, string>();
 				for (const path of allPackageJson) {
-					const { data: packageJson } = await this.#octokit.rest.repos.getContent({
-						owner,
-						repo,
-						path
-					});
+					const { data: packageJson } = await this.#request(
+						kit =>
+							kit.rest.repos.getContent({
+								owner,
+								repo,
+								path
+							}),
+						createOctokitResponse([])
+					);
 
 					if (!("content" in packageJson)) continue; // filter out empty or multiple results
 					const { content, encoding, type } = packageJson;
@@ -862,10 +944,14 @@ export class GitHubCache {
 			this.#getOwnerKey(owner, "members"),
 			async () => {
 				try {
-					const { data: members } = await this.#octokit.rest.orgs.listPublicMembers({
-						org: owner,
-						per_page
-					});
+					const { data: members } = await this.#request(
+						kit =>
+							kit.rest.orgs.listPublicMembers({
+								org: owner,
+								per_page
+							}),
+						createOctokitResponse([])
+					);
 					return members;
 				} catch {
 					return [] as Member[];
@@ -888,11 +974,15 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "issues"),
 			async () => {
 				try {
-					const { data: issues } = await this.#octokit.rest.issues.listForRepo({
-						owner,
-						repo,
-						per_page
-					});
+					const { data: issues } = await this.#request(
+						kit =>
+							kit.rest.issues.listForRepo({
+								owner,
+								repo,
+								per_page
+							}),
+						createOctokitResponse([])
+					);
 					return issues;
 				} catch {
 					return [] as Issue[];
@@ -915,11 +1005,15 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "prs"),
 			async () => {
 				try {
-					const { data: prs } = await this.#octokit.rest.pulls.list({
-						owner,
-						repo,
-						per_page
-					});
+					const { data: prs } = await this.#request(
+						kit =>
+							kit.rest.pulls.list({
+								owner,
+								repo,
+								per_page
+							}),
+						createOctokitResponse([])
+					);
 					return prs;
 				} catch {
 					return [] as ListedPullRequest[];
@@ -942,11 +1036,15 @@ export class GitHubCache {
 			this.#getRepoKey(owner, repo, "discussions"),
 			async () => {
 				try {
-					return await this.#octokit.paginate<Discussion>("GET /repos/{owner}/{repo}/discussions", {
-						owner,
-						repo,
-						per_page
-					});
+					return await this.#request(
+						kit =>
+							kit.paginate<Discussion>("GET /repos/{owner}/{repo}/discussions", {
+								owner,
+								repo,
+								per_page
+							}),
+						[]
+					);
 				} catch {
 					return [] as Discussion[];
 				}
@@ -973,7 +1071,7 @@ export class GitHubCache {
 					if (res.status !== 200) return {};
 					return (await res.json()) as { deprecated?: boolean | string };
 				} catch (error) {
-					console.error(`Error fetching npmjs.org for package ${packageName}:`, error);
+					derror(`Error fetching npmjs.org for package ${packageName}:`, error);
 					return {};
 				}
 			},
@@ -985,6 +1083,22 @@ export class GitHubCache {
 			},
 			item => (item.value === false ? DEPRECATIONS_TTL : undefined)
 		);
+	}
+
+	/**
+	 * Delete a repository from the cache
+	 *
+	 * @param owner the owner of the GitHub repository to remove
+	 * from the cache
+	 * @param repo the name of the GitHub repository to remove
+	 * from the cache
+	 * @param type the kind of cache to target
+	 * @returns whether the entry has successfully been deleted
+	 */
+	async deleteRepoEntry(owner: string, repo: string, type: RepoKeyType) {
+		const cacheKey = this.#getRepoKey(owner, repo, type);
+
+		return await this.#cache.delete(cacheKey);
 	}
 }
 

@@ -2,7 +2,7 @@ import { browser, dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 import posthog from "posthog-js";
-import type { MetaTagsProps } from "svelte-meta-tags";
+import { defineBaseMetaTags } from "svelte-meta-tags";
 
 injectSpeedInsights();
 
@@ -20,7 +20,7 @@ export function load({ url, data }) {
 	return {
 		...data,
 		siteName,
-		baseMetaTags: Object.freeze<MetaTagsProps>({
+		...defineBaseMetaTags({
 			title: "Loading...",
 			titleTemplate: `%s | ${siteName}`,
 			description: "A nice UI to stay up-to-date with Svelte releases",

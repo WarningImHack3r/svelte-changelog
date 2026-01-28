@@ -1,7 +1,7 @@
 import { uniq } from "$lib/array";
-import type { Category, Entries, Prettify, RepoInfo, WithRequired } from "$lib/types";
+import type { Category, Entries, Prettify, RepoEntry, RepoInfo, WithRequired } from "$lib/types";
 
-const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
+const repos: Record<Category, RepoEntry> = {
 	svelte: {
 		name: "Svelte",
 		repos: [
@@ -21,8 +21,9 @@ const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 			}
 		]
 	},
-	others: {
-		name: "Other",
+	tools: {
+		name: "Tooling",
+		description: "Adapters, plugins & development tools",
 		repos: [
 			{
 				repoName: "kit",
@@ -95,6 +96,13 @@ const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 			},
 			{
 				changesMode: "changelog",
+				repoName: "svelte-loader",
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
+			},
+			{
+				changesMode: "changelog",
 				repoName: "prettier-plugin-svelte",
 				metadataFromTag(tag) {
 					return [this.repoName, tag.replace(/^v/, "")];
@@ -103,6 +111,38 @@ const repos: Record<Category, { name: string; repos: RepoInfo[] }> = {
 			{
 				repoName: "mcp",
 				metadataFromTag: splitByLastAt
+			}
+		]
+	},
+	libs: {
+		name: "Libraries",
+		description: "Core utilies for the Svelte ecosystem, but not only",
+		repos: [
+			{
+				repoName: "devalue",
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
+			},
+			{
+				repoName: "esrap",
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
+			},
+			{
+				repoName: "zimmerframe",
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
+			},
+			{
+				changesMode: "changelog",
+				repoOwner: "Rich-Harris",
+				repoName: "magic-string",
+				metadataFromTag(tag) {
+					return [this.repoName, tag.replace(/^v/, "")];
+				}
 			}
 		]
 	}
@@ -138,6 +178,7 @@ export type Repository = Prettify<
 		category: {
 			slug: string;
 			name: string;
+			description?: string;
 		};
 	} & WithRequired<RepoInfo, "repoOwner">
 >;
@@ -152,15 +193,17 @@ const DEFAULT_OWNER = "sveltejs";
 /**
  * Get all the repositories in a standard format
  */
-export const publicRepos: Repository[] = iterableRepos.flatMap(([slug, { name, repos }]) =>
-	repos.map(repo => ({
-		category: {
-			slug,
-			name
-		},
-		...repo,
-		repoOwner: repo.repoOwner || DEFAULT_OWNER
-	}))
+export const publicRepos: Repository[] = iterableRepos.flatMap(
+	([slug, { name, description, repos }]) =>
+		repos.map(repo => ({
+			category: {
+				slug,
+				name,
+				description
+			},
+			...repo,
+			repoOwner: repo.repoOwner || DEFAULT_OWNER
+		}))
 );
 
 /**

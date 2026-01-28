@@ -84,8 +84,8 @@
 	on
 	<a href="https://shadcn-svelte.com">shadcn/ui</a>.
 	<br />
-	The routing has also been revamped, now featuring <strong>a page per package</strong> as well as a
-	sidebar for a better packages overview and an eased navigation.
+	The routing has also been revamped, now featuring <strong>a page per package</strong> as well as a sidebar
+	for a better packages overview and an eased navigation.
 </p>
 
 <p>All that now lives under a brand new domain, <a href={resolve("/")}>{page.url.host}</a>.</p>
@@ -109,8 +109,8 @@
 		page (cc <a href="https://github.com/WarningImHack3r/svelte-changelog/issues/45">Thomas</a>!)
 	</li>
 	<li>
-		<strong>Infinite loading</strong> to be able to load as many releases as desired, leveraging the
-		new data fetching layer
+		<strong>Infinite loading</strong> to be able to load as many releases as desired, leveraging the new
+		data fetching layer
 	</li>
 	<li><strong>A dashboard</strong>, using graphs to show stats about releases and more</li>
 	<li><strong>Even more frequent updates</strong> thanks to a revised notification system</li>

@@ -1,3 +1,3 @@
-export function match(value: string) {
+export function match(value) {
 	return /^\d+$/.test(value);
 }

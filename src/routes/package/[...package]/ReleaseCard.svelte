@@ -1,16 +1,32 @@
+<script lang="ts" module>
+	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
+	import { VERSION } from "svelte/compiler";
+
+	const fullDateFormatter = new Intl.DateTimeFormat("en", {
+		dateStyle: "long",
+		timeStyle: "short"
+	});
+
+	const versionedPackages: Record<string, string> = {
+		svelte: VERSION,
+		"@sveltejs/kit": KIT_VERSION
+	};
+</script>
+
 <script lang="ts">
 	import { untrack } from "svelte";
+	import { dev } from "$app/environment";
 	import { page } from "$app/state";
 	import { ArrowUpRight } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import remarkGemoji from "remark-gemoji";
-	import remarkGithub from "remark-github";
+	import remarkGitHub from "remark-github";
 	import semver from "semver";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
-	import { Button } from "$lib/components/ui/button";
 	import * as Tooltip from "$lib/components/ui/tooltip";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Reactions from "$lib/components/Reactions.svelte";
 	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
@@ -38,16 +54,17 @@
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
 		// Add missing links to PRs in the release body
-		return release.body.replace(
-			/[^[][#\d, ]*?#(\d+)(#issuecomment-\d+)?[#\d, ]*?[^\]]/g,
-			// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
-			(match, prNumber, rest) => {
-				if (!rest) rest = "";
-				const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${rest}`;
-				// replaceception
-				return match.replace(`#${prNumber}${rest}`, `[#${prNumber}${rest}](${prUrl})`);
-			}
-		);
+		return repo.owner && repo.name
+			? release.body.replace(
+					// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+					/(?<!\]\([^)]*)\b#(\d+)(#issuecomment-\d+)?(?![^[]*\])/g,
+					(match, prNumber, comment) => {
+						const commentPart = comment ?? "";
+						const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${commentPart}`;
+						return `[${match}](${prUrl})`;
+					}
+				)
+			: release.body;
 	});
 	let isMajorRelease = $derived(
 		!release.prerelease &&
@@ -58,19 +75,54 @@
 	let isOlderThanAWeek = $derived(releaseDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 7);
 
 	$effect(() => {
-		const interval = setInterval(
+		const unsubscribe = setDynamicInterval(
 			() => (releaseDate = new Date(releaseDate)),
-			// this can become wrong when the unit changes
-			// and refresh too frequently for the now greater
-			// unit as $effect is only called once on client
-			// render, but it's an edge case I'm ready to
-			// accept as the user experience remains "live",
-			// it's just a matter of a small optimization
-			getRefreshPeriod(untrack(() => releaseDate))
+			() => getRefreshPeriod(untrack(() => releaseDate))
 		);
 
-		return () => clearInterval(interval);
+		return unsubscribe;
 	});
+
+	/**
+	 * A version of {@link setInterval} that has a dynamic `delay`
+	 * parameter, so it can dynamically adjust.
+	 *
+	 * @param callback the callback given to the {@link setInterval} (internally a {@link setTimeout})
+	 * @param delayFn a function called everytime a new `callback` call is about to begin, specifying
+	 * its firing delay
+	 * @returns an unsubscribe function to stop everything
+	 */
+	function setDynamicInterval(
+		callback: Parameters<typeof setTimeout>[0],
+		delayFn: () => NonNullable<Parameters<typeof setTimeout>[1]>
+	) {
+		let timeoutId: ReturnType<typeof setInterval> | null = null;
+		let stopped = false;
+
+		function schedule() {
+			if (stopped) return;
+
+			const delay = delayFn();
+
+			timeoutId = setTimeout(
+				() => {
+					callback();
+					schedule();
+				},
+				Math.min(delay, 2 ** 31 - 1) // max setTimeout value before it overflows
+			);
+		}
+
+		schedule();
+
+		return function clear() {
+			stopped = true;
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+				timeoutId = null;
+			}
+		};
+	}
 
 	/**
 	 * A small utility function to get the diff between two dates
@@ -80,8 +132,11 @@
 	 */
 	function getDiffBetween(first: Date, second: Date) {
 		return {
+			get milliseconds() {
+				return second.getTime() - first.getTime();
+			},
 			get seconds() {
-				return (second.getTime() - first.getTime()) / 1000;
+				return Math.floor(this.milliseconds / 1000);
 			},
 			get minutes() {
 				return Math.floor(this.seconds / 60);
@@ -110,53 +165,61 @@
 	 * @returns The number of milliseconds to wait for before refreshing
 	 */
 	function getRefreshPeriod(date: Date) {
-		const { minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+		const { milliseconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+
+		function diff(value: number) {
+			return value - (milliseconds % value);
+		}
 
 		if (years > 0) {
-			return 12 * 30 * 24 * 60 * 60 * 1_000;
+			return diff(12 * 30 * 24 * 60 * 60 * 1_000);
 		} else if (months > 0) {
-			return 30 * 24 * 60 * 60 * 1_000;
+			return diff(30 * 24 * 60 * 60 * 1_000);
 		} else if (days > 0) {
-			return 24 * 60 * 60 * 1_000;
+			return diff(24 * 60 * 60 * 1_000);
 		} else if (hours > 0) {
-			return 60 * 60 * 1_000;
+			return diff(60 * 60 * 1_000);
 		} else if (minutes > 0) {
-			return 60 * 1_000;
+			return diff(60 * 1_000);
 		}
-		return 1_000;
+		return diff(1_000);
 	}
 
 	/**
 	 * Converts a date to a relative date string.
 	 * e.g., "2 days ago", "3 hours ago", "1 minute ago"
 	 *
-	 * @param date The date to convert
 	 * @param locale the locale to use for formatting
-	 * @returns the relative date
+	 * @returns a function you input the date to convert in, returning the relative date
 	 */
-	function timeAgo(date: Date, locale = "en") {
-		const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+	function timeAgo(locale = "en") {
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
-		if (years > 0) {
-			return formatter.format(-years, "year");
-		} else if (months > 0) {
-			return formatter.format(-months, "month");
-		} else if (days > 0) {
-			return formatter.format(-days, "day");
-		} else if (hours > 0) {
-			return formatter.format(-hours, "hour");
-		} else if (minutes > 0) {
-			return formatter.format(-minutes, "minute");
-		}
-		return formatter.format(-Math.floor(seconds), "second");
+		return (date: Date) => {
+			const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+
+			if (years > 0) {
+				return formatter.format(-years, "year");
+			} else if (months > 0) {
+				return formatter.format(-months, "month");
+			} else if (days > 0) {
+				return formatter.format(-days, "day");
+			} else if (hours > 0) {
+				return formatter.format(-hours, "hour");
+			} else if (minutes > 0) {
+				return formatter.format(-minutes, "minute");
+			}
+			return formatter.format(-Math.floor(seconds), "second");
+		};
 	}
+
+	const ago = timeAgo();
 </script>
 
 {#snippet badges()}
-	{#if isLatestRelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+	<Tooltip.Provider delayDuration={300}>
+		{#if isLatestRelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge class="bg-green-600 hover:bg-green-600 dark:bg-green-700 hover:dark:bg-green-700">
 						Latest
@@ -169,11 +232,9 @@
 					This is the latest stable release of this package
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{/if}
-	{#if isMajorRelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+		{/if}
+		{#if isMajorRelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge>Major</Badge>
 				</Tooltip.Trigger>
@@ -184,10 +245,8 @@
 					Major update (e.g.: 1.0.0, 2.0.0, 3.0.0...)
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{:else if release.prerelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+		{:else if release.prerelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge variant="outline" class="border-primary text-primary">Prerelease</Badge>
 				</Tooltip.Trigger>
@@ -198,10 +257,8 @@
 					This version is an alpha or a beta, unstable version
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{:else if isMaintenanceRelease}
-		<Tooltip.Provider>
-			<Tooltip.Root delayDuration={300}>
+		{:else if isMaintenanceRelease}
+			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge
 						variant="outline"
@@ -217,17 +274,22 @@
 					An update bringing bug fixes and minor improvements to an older major version
 				</Tooltip.Content>
 			</Tooltip.Root>
-		</Tooltip.Provider>
-	{/if}
+		{/if}
+	</Tooltip.Provider>
 {/snippet}
 
 <Accordion.Item
 	id={release.cleanVersion}
 	value={`${release.id}`}
 	class={[
-		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 data-[state=open]:outline-muted-foreground/20 [&>[data-accordion-content]]:rounded-b-md [&>[data-accordion-content]]:bg-accent/30",
+		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 *:data-accordion-content:rounded-b-md *:data-accordion-content:bg-accent/30 data-[state=open]:outline-muted-foreground/20",
 		{ "border border-primary": isMajorRelease && index < 3 },
-		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` }
+		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` },
+		{
+			"relative mb-2.5 ring-4 ring-primary before:absolute before:-top-6 before:-left-1 before:-z-10 before:rounded-t-lg before:bg-primary before:px-2 before:pb-1.5 before:font-display before:text-white before:content-['Current_version'] before:text-shadow-xs/50 before:text-shadow-black":
+				dev && versionedPackages[release.cleanName] === release.cleanVersion
+		},
+		{ "mt-8": dev && versionedPackages[release.cleanName] == release.cleanVersion && index > 0 }
 	]}
 >
 	<Accordion.Trigger
@@ -283,24 +345,20 @@
 							{isOlderThanAWeek
 								? releaseDate.toLocaleDateString("en", {
 										year:
-											releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15
+											(releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15) ||
+											releaseDate.getFullYear() < new Date().getFullYear()
 												? "numeric"
 												: undefined,
 										month: "long",
 										day: "numeric"
 									})
-								: timeAgo(releaseDate)}
+								: ago(releaseDate)}
 						</Tooltip.Trigger>
 						<Tooltip.Content
 							class="border bg-popover text-sm text-popover-foreground"
 							arrowClasses="bg-popover border-b border-r"
 						>
-							{isOlderThanAWeek
-								? timeAgo(releaseDate)
-								: new Intl.DateTimeFormat("en", {
-										dateStyle: "long",
-										timeStyle: "short"
-									}).format(releaseDate)}
+							{isOlderThanAWeek ? ago(releaseDate) : fullDateFormatter.format(releaseDate)}
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</Tooltip.Provider>
@@ -315,7 +373,12 @@
 			<MarkdownRenderer
 				markdown={releaseBody}
 				additionalPlugins={[
-					{ remarkPlugin: [remarkGithub, { repository: `${repo.owner}/${repo.name}` }] },
+					{
+						remarkPlugin:
+							repo.owner && repo.name
+								? [remarkGitHub, { repository: `${repo.owner}/${repo.name}` }]
+								: undefined
+					},
 					{ remarkPlugin: remarkGemoji },
 					{ renderer: { li: ListElementRenderer } }
 				]}
@@ -325,8 +388,8 @@
 				<!-- Reactions -->
 				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
 				<!-- Open the release on GitHub in a new tab -->
-				<Button variant="outline" size="sm" class="invisible w-16 sm:w-36" />
-				<Button
+				<AnimatedButton variant="outline" size="sm" class="invisible w-16 sm:w-36" />
+				<AnimatedButton
 					href={release.html_url}
 					variant="outline"
 					size="sm"
@@ -342,7 +405,7 @@
 					<ArrowUpRight
 						class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
 					/>
-				</Button>
+				</AnimatedButton>
 			</div>
 		</div>
 	</Accordion.Content>

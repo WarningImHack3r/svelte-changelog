@@ -3,8 +3,8 @@
 	import { resolve } from "$app/paths";
 	import { Menu } from "@lucide/svelte";
 	import { uniqueRepos } from "$lib/repositories";
-	import { Button } from "$lib/components/ui/button";
 	import * as Sheet from "$lib/components/ui/sheet";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import RepoSidePanel from "./RepoSidePanel.svelte";
 
 	let { params, children } = $props();
@@ -50,14 +50,14 @@
 	<Sheet.Root bind:open>
 		<Sheet.Trigger>
 			{#snippet child({ props })}
-				<Button
+				<AnimatedButton
 					{...props}
 					variant="secondary"
 					class="absolute right-0 mt-12 ml-auto sm:mt-16 lg:hidden"
 				>
 					<Menu />
 					<span class="sr-only">Menu</span>
-				</Button>
+				</AnimatedButton>
 			{/snippet}
 		</Sheet.Trigger>
 		<Sheet.Content class="overflow-y-auto">

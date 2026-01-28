@@ -1,5 +1,4 @@
-<script lang="ts">
-	import type { ClassValue } from "svelte/elements";
+<script lang="ts" module>
 	import {
 		CircleCheck,
 		CircleDot,
@@ -13,114 +12,94 @@
 		MessageSquareX
 	} from "@lucide/svelte";
 
+	const COLOR_MAP = {
+		green: { text: "text-green-600", bg: "bg-green-600" },
+		neutral: { text: "text-neutral-500", bg: "bg-neutral-500" },
+		purple: { text: "text-purple-500", bg: "bg-purple-500" },
+		red: { text: "text-red-500", bg: "bg-red-500" }
+	} as const;
+
 	type CommonStatus = "open" | "closed";
-	type PropsObj =
-		| {
-				type: "pull";
-				status: "draft" | CommonStatus | "merged";
-		  }
-		| {
-				type: "issue";
-				status: CommonStatus | "solved";
-		  }
-		| {
-				type: "discussion";
-				status: CommonStatus;
-		  };
+
+	type GithubStatus = {
+		pull: CommonStatus | "draft" | "merged";
+		issue: CommonStatus | "solved";
+		discussion: CommonStatus;
+	};
+
+	type BadgeConfig = {
+		icon: typeof Icon;
+		label: string;
+		color: keyof typeof COLOR_MAP;
+	};
+
+	const BADGE_MAP: {
+		[GithubType in keyof GithubStatus]: Record<GithubStatus[GithubType], BadgeConfig>;
+	} = {
+		pull: {
+			open: { icon: GitPullRequestArrow, label: "Open", color: "green" },
+			closed: { icon: GitPullRequestClosed, label: "Closed", color: "red" },
+			draft: { icon: GitPullRequestDraft, label: "Draft", color: "neutral" },
+			merged: { icon: GitMerge, label: "Merged", color: "purple" }
+		},
+		issue: {
+			open: { icon: CircleDot, label: "Open", color: "green" },
+			closed: { icon: CircleSlash, label: "Closed", color: "neutral" },
+			solved: { icon: CircleCheck, label: "Solved", color: "purple" }
+		},
+		discussion: {
+			open: { icon: MessageSquare, label: "Open", color: "green" },
+			closed: { icon: MessageSquareX, label: "Closed", color: "purple" }
+		}
+	};
+</script>
+
+<script lang="ts" generics="GithubType extends keyof GithubStatus">
+	import type { ClassValue } from "svelte/elements";
 
 	type Props = {
 		mode?: "regular" | "minimal";
-		type: PropsObj["type"];
-		status: PropsObj["status"];
+		type: GithubType;
+		status: GithubStatus[GithubType];
 		class?: ClassValue;
 	};
 
-	let { mode = "regular", type, status, class: className = undefined }: Props = $props();
+	let { mode = "regular", type, status, class: className }: Props = $props();
 
-	let icon = $state<typeof Icon>();
-	let label = $state("");
-	let textColor = $state("");
-	let bgColor = $state("");
+	type Badge = {
+		icon: typeof Icon | undefined;
+		label: string;
+		textColor: string;
+		bgColor: string;
+	};
 
-	switch (type) {
-		case "pull":
-			switch (status) {
-				case "draft":
-					icon = GitPullRequestDraft;
-					label = "Draft";
-					textColor = "text-neutral-500";
-					bgColor = "bg-neutral-500";
-					break;
-				case "open":
-					icon = GitPullRequestArrow;
-					label = "Open";
-					textColor = "text-green-600";
-					bgColor = "bg-green-600";
-					break;
-				case "merged":
-					icon = GitMerge;
-					label = "Merged";
-					textColor = "text-purple-500";
-					bgColor = "bg-purple-500";
-					break;
-				case "closed":
-					icon = GitPullRequestClosed;
-					label = "Closed";
-					textColor = "text-red-500";
-					bgColor = "bg-red-500";
-					break;
-			}
-			break;
-		case "issue":
-			switch (status) {
-				case "open":
-					icon = CircleDot;
-					label = "Open";
-					textColor = "text-green-600";
-					bgColor = "bg-green-600";
-					break;
-				case "closed":
-					icon = CircleSlash;
-					label = "Closed";
-					textColor = "text-neutral-500";
-					bgColor = "bg-neutral-500";
-					break;
-				case "solved":
-					icon = CircleCheck;
-					label = "Solved";
-					textColor = "text-purple-500";
-					bgColor = "bg-purple-500";
-					break;
-			}
-			break;
-		case "discussion":
-			switch (status) {
-				case "open":
-					icon = MessageSquare;
-					label = "Open";
-					textColor = "text-green-600";
-					bgColor = "bg-green-600";
-					break;
-				case "closed":
-					icon = MessageSquareX;
-					label = "Closed";
-					textColor = "text-purple-500";
-					bgColor = "bg-purple-500";
-					break;
-			}
-			break;
-	}
+	let badge = $derived.by<Badge>(() => {
+		const config = BADGE_MAP[type]?.[status];
+
+		if (!config) {
+			return {
+				icon: undefined,
+				label: "",
+				textColor: "",
+				bgColor: ""
+			};
+		}
+
+		const color = COLOR_MAP[config.color];
+		return {
+			icon: config.icon,
+			label: config.label,
+			textColor: color.text,
+			bgColor: color.bg
+		};
+	});
 </script>
 
 {#if mode === "regular"}
-	<div class={["flex items-center rounded-full px-4 py-2 text-white", bgColor, className]}>
-		{#if icon}
-			{@const SvelteComponent = icon}
-			<SvelteComponent class="mr-2 size-5" />
-		{/if}
-		<span class="font-semibold">{label}</span>
+	<div class={["flex items-center rounded-full px-4 py-2 text-white", badge.bgColor, className]}>
+		<badge.icon class="mr-2 size-5" />
+		<span class="font-semibold">{badge.label}</span>
 	</div>
-{:else if icon}
-	{@const Component = icon}
-	<Component class={["size-6", textColor, className]} />
+{:else}
+	<badge.icon class={["size-6", badge.textColor, className]} />
 {/if}

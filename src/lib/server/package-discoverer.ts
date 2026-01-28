@@ -1,11 +1,13 @@
+import { dlog } from "$lib/debug";
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
 import { GitHubCache, githubCache } from "./github-cache";
 
-type Package = {
+export type Package = {
 	name: string;
 	description: string;
 	deprecated?: string;
+	registryExcluded?: boolean;
 };
 
 export type DiscoveredPackage = Prettify<
@@ -20,9 +22,10 @@ export type CategorizedPackage = Prettify<
 	}
 >;
 
-export class PackageDiscoverer {
+class PackageDiscoverer {
 	readonly #cache: GitHubCache;
 	readonly #repos: Repository[] = [];
+	readonly #registryExcludedPackages = new Set(["extensions"]);
 	#packages: DiscoveredPackage[] = [];
 
 	constructor(cache: GitHubCache, repos: Repository[]) {
@@ -48,9 +51,10 @@ export class PackageDiscoverer {
 								const [name] = repo.metadataFromTag(tag_name);
 								return name;
 							})
+							.filter(Boolean)
 					)
 				];
-				console.log(
+				dlog(
 					`Discovered ${packages.length} packages for ${repo.repoOwner}/${repo.repoName}: ${packages.join(", ")}`
 				);
 				return {
@@ -64,13 +68,15 @@ export class PackageDiscoverer {
 								description: deprecated
 									? "" // descriptions of deprecated packages are often wrong as their code might be deleted,
 									: // thus falling back to a higher hierarchy description, often a mismatch
-										(descriptions[`packages/${ghName}/package.json`] ??
+										(descriptions[`packages/${pkg}/package.json`] ?? // try first at the expected place in case my info is outdated
+										descriptions[`packages/${ghName}/package.json`] ??
 										descriptions[
 											`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
 										] ??
 										descriptions["package.json"] ??
 										""),
-								deprecated
+								deprecated,
+								registryExcluded: this.#registryExcludedPackages.has(pkg)
 							};
 						})
 					)
@@ -89,16 +95,11 @@ export class PackageDiscoverer {
 	 * @private
 	 */
 	#gitHubDirectoryFromName(name: string): string {
-		switch (name) {
-			case "extensions":
-				return "svelte-vscode";
-			case "sv":
-				return "cli";
-			case "svelte-migrate":
-				return "migrate";
-			default:
-				return name;
-		}
+		const packageDirectoryMap: Record<string, string> = {
+			extensions: "svelte-vscode",
+			"svelte-migrate": "migrate"
+		};
+		return packageDirectoryMap[name] ?? name;
 	}
 
 	/**

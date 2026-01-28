@@ -1,52 +1,22 @@
 <script lang="ts">
-	import { browser } from "$app/environment";
 	import { resolve } from "$app/paths";
-	import { ChevronRight } from "@lucide/svelte";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import { ChevronRight, Pin } from "@lucide/svelte";
+	import { PersistedState } from "runed";
+	import { getBadgeDataFromRecord, getUnvisitedReleases } from "$lib/badges";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Separator } from "$lib/components/ui/separator";
+	import { Toggle } from "$lib/components/ui/toggle";
 
 	let { data } = $props();
 
+	// Pins
+	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
 	/**
-	 * Extract the data from the {@link import('./$types').data.otherReleases|otherReleases}
-	 * props.
-	 *
-	 * @param pkgName the package name to extract releases fo
-	 * @returns the {@link Promise} of releases, or `undefined`
+	 * A set proxy to quickly query the pinned items.
+	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
+	 * as it isn't reactive (enough).
 	 */
-	function getBadgeDataFromOther(pkgName: string) {
-		const releases = Object.entries(data.allReleases).find(
-			([k]) => k.localeCompare(pkgName, undefined, { sensitivity: "base" }) === 0
-		);
-		if (!releases) return undefined;
-		const [, v] = releases;
-		return v;
-	}
-
-	/**
-	 * Filter the releases to exclude those that have already been seen
-	 *
-	 * @param pkgName the package name for the releases
-	 * @param releases the releases to filter
-	 * @returns the filtered releases
-	 */
-	function getUnvisitedReleases(pkgName: string, releases: GitHubRelease[] | undefined) {
-		if (!releases || !browser) return [];
-
-		const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
-		if (!lastVisitedItem) {
-			return releases.filter(
-				({ created_at, published_at }) =>
-					new Date(published_at ?? created_at).getTime() > Date.now() - 1000 * 60 * 60 * 24 * 7
-			);
-		}
-		const lastVisitedDate = new Date(lastVisitedItem);
-
-		return releases.filter(
-			({ created_at, published_at }) => new Date(published_at ?? created_at) > lastVisitedDate
-		);
-	}
+	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
 </script>
 
 {#snippet newBadge(count: number)}
@@ -57,12 +27,22 @@
 
 <ul class="space-y-8">
 	{#each data.displayablePackages as { category, packages } (category)}
+		{@const sortedPackages = packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
+			const isAPinned = pinnedROProxy.has(pkgA.name);
+			const isBPinned = pinnedROProxy.has(pkgB.name);
+			return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
+		})}
 		<li>
-			<h3 class="font-display text-3xl text-primary text-shadow-sm">{category.name}</h3>
+			<h3 class="space-x-2 font-display">
+				<span class="text-3xl text-primary text-shadow-sm">{category.name}</span>
+				{#if category.description}
+					<span>{category.description}</span>
+				{/if}
+			</h3>
 			<ul class="mt-2">
-				{#each packages as { repoOwner, repoName, pkg }, index (pkg.name)}
+				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
-					{@const linkedBadgeData = getBadgeDataFromOther(pkg.name)}
+					{@const linkedBadgeData = getBadgeDataFromRecord(data.allReleases, pkg.name)}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}
@@ -71,9 +51,30 @@
 							href={resolve("/package/[...package]", {
 								package: pkg.name
 							})}
-							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+							onclick={e => {
+								if (!(e.target instanceof HTMLAnchorElement)) e.preventDefault(); // avoid pinning from navigating
+							}}
+							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-muted"
 							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 						>
+							{#if sortedPackages.length > 1}
+								<Toggle
+									aria-label={pinnedROProxy.has(pkg.name) ? `Unpin ${pkg.name}` : `Pin ${pkg.name}`}
+									pressed={pinnedROProxy.has(pkg.name)}
+									class="shrink-0 hover:bg-inherit hover:text-inherit hover:opacity-100! data-[state=off]:opacity-20 data-[state=off]:group-hover:opacity-50 data-[state=on]:*:fill-amber-500 data-[state=on]:*:stroke-amber-500 hover:data-[state=on]:*:fill-amber-500/30"
+									onPressedChange={pressed => {
+										if (pressed) {
+											if (!pinnedROProxy.has(pkg.name)) pinnedPackages.current.push(pkg.name);
+										} else {
+											pinnedPackages.current = pinnedPackages.current.filter(
+												item => item !== pkg.name
+											);
+										}
+									}}
+								>
+									<Pin />
+								</Toggle>
+							{/if}
 							<div class="flex flex-col">
 								<h4
 									class="inline-flex flex-col items-start gap-2 font-medium motion-safe:[view-transition-name:var(--vt-name)] xs:flex-row xs:items-center"
@@ -119,11 +120,9 @@
 								</span>
 							</div>
 							<span class="mr-1 ml-auto flex shrink-0 items-center gap-1">
-								{#if linkedBadgeData}
-									{#await linkedBadgeData then d}
-										{@render newBadge(getUnvisitedReleases(pkg.name, d?.releases).length)}
-									{/await}
-								{/if}
+								{#await linkedBadgeData then d}
+									{@render newBadge(getUnvisitedReleases(pkg.name, d?.releases ?? []).length)}
+								{/await}
 								<ChevronRight class="transition-transform group-hover:translate-x-1" />
 							</span>
 						</a>

@@ -1,22 +1,30 @@
 <script lang="ts">
 	import "../app.css";
+	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { page } from "$app/state";
-	import { ChevronDown, type Icon, Monitor, Moon, Sun, X } from "@lucide/svelte";
+	import { page, updated } from "$app/state";
+	import type { ResolvedPathname } from "$app/types";
+	import { ChevronDown, type Icon, Monitor, Moon, Snowflake, Sun, X } from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
+	import { PersistedState } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { news } from "$lib/news/news.json";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
-	import { Button, buttonVariants } from "$lib/components/ui/button";
+	import { buttonVariants } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import { Separator } from "$lib/components/ui/separator";
 	import { Toaster } from "$lib/components/ui/sonner";
+	import { Toggle } from "$lib/components/ui/toggle";
+	import * as Tooltip from "$lib/components/ui/tooltip";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
+	import Snowflakes from "$lib/components/Snowflakes.svelte";
 
 	let { data, children } = $props();
 
@@ -37,7 +45,7 @@
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
-	type Mode = Parameters<typeof setMode>[0];
+	type Mode = Parameters<typeof setMode>[0]; // the Mode type isn't exported by mode-watcher
 	type Theme = {
 		label: string;
 		icon: typeof Icon;
@@ -71,6 +79,26 @@
 		newsToDisplay = undefined;
 	}
 
+	// Navbar
+	const navbarBorderThreshold = 25;
+	const navbarItems: Record<string, ResolvedPathname> = {
+		Packages: resolve("/packages"),
+		Tracker: resolve("/tracker"),
+		Devlog: resolve("/devlog")
+	};
+
+	// Snow - enabled during Dec 15th through Jan 15th
+	const currentDate = new Date();
+	const beginningDate = $derived(
+		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? -1 : 0), 11, 15)
+	);
+	const endingDate = $derived(
+		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? 0 : 1), 0, 15)
+	);
+	const isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
+	let isSnowEnabled = new PersistedState("snowlover", true);
+	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
+
 	$effect(() => {
 		// Theme
 		theme =
@@ -99,6 +127,12 @@
 	<ScreenSize />
 {/if}
 <ModeWatcher />
+{#if isSnowTime}
+	<Snowflakes
+		enabled={isSnowEnabled.current && !reduceMotion.current}
+		class="pointer-events-none fixed inset-0 -z-10 h-screen w-screen"
+	/>
+{/if}
 <ProgressBar class="text-primary" zIndex={100} />
 <Toaster />
 <MetaTags {...metaTags} />
@@ -108,7 +142,7 @@
 		"sticky top-0 z-40 w-full transition-shadow duration-500",
 		{
 			"bg-background/95 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60":
-				newsToDisplay || (scrollY.current ?? 0) >= 25
+				newsToDisplay || (scrollY.current ?? 0) >= navbarBorderThreshold
 		}
 	]}
 >
@@ -116,7 +150,7 @@
 		class={[
 			"border-b transition-colors duration-500",
 			{
-				"border-transparent": !newsToDisplay && (scrollY.current ?? 0) < 25
+				"border-transparent": !newsToDisplay && (scrollY.current ?? 0) < navbarBorderThreshold
 			}
 		]}
 	>
@@ -129,9 +163,11 @@
 					class="size-8"
 				/>
 				{#if !page.route.id?.startsWith(resolve("/devlog"))}
-					<span class="hidden text-xl font-semibold text-shadow-xs/10 xs:inline-block">
-						<span class="font-display">Svelte</span>
-						<span class="text-primary">Changelog</span>
+					<span class="hidden gap-1 text-xl font-semibold text-shadow-xs/10 xs:inline-flex">
+						<span style:text-box="trim-both ex alphabetic" class="font-display">Svelte</span>
+						<span style:text-box="trim-both ex alphabetic" class="[font-size:1.30rem] text-primary">
+							Changelog
+						</span>
 					</span>
 				{/if}
 			</a>
@@ -143,26 +179,54 @@
 			<!-- Navigation -->
 			{#if !page.route.id?.startsWith(resolve("/devlog"))}
 				<ul class="ml-6 hidden sm:flex">
-					{#each [{ link: resolve("/packages"), title: "Packages" }, { link: resolve("/tracker"), title: "Tracker" }, { link: resolve("/devlog"), title: "Devlog" }] as { link, title } (link)}
+					{#each Object.entries(navbarItems) as [title, link] (link)}
 						{@const disabled = page.url.pathname.startsWith(link)}
 						<li>
-							<Button
+							<AnimatedButton
 								href={disabled ? undefined : link}
 								variant="ghost"
 								class="hover:bg-accent/75"
 								{disabled}
 							>
 								{title}
-							</Button>
+							</AnimatedButton>
 						</li>
 					{/each}
 				</ul>
 			{/if}
 
 			<!-- Right part -->
-			<div class="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
-				<nav class="flex items-center space-x-1">
-					<Button
+			<div class="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+				<nav class="flex items-center gap-1">
+					{#if isSnowTime}
+						<Tooltip.Provider disabled={!reduceMotion.current}>
+							<Tooltip.Root delayDuration={300}>
+								<Tooltip.Trigger>
+									{#snippet child({ props })}
+										<Toggle
+											{...props}
+											aria-label="Toggle snowflakes"
+											variant="outline"
+											bind:pressed={isSnowEnabled.current}
+											disabled={reduceMotion.current}
+											class="me-1 disabled:pointer-events-auto"
+										>
+											<Snowflake />
+										</Toggle>
+										<Separator orientation="vertical" class="data-[orientation=vertical]:h-lh" />
+									{/snippet}
+								</Tooltip.Trigger>
+								<Tooltip.Content
+									class="border bg-popover text-popover-foreground"
+									arrowClasses="bg-popover border-b border-r"
+								>
+									You can't control the snow as you prefer reduced motion. As a result, snow is
+									disabled.
+								</Tooltip.Content>
+							</Tooltip.Root>
+						</Tooltip.Provider>
+					{/if}
+					<AnimatedButton
 						href="https://github.com/WarningImHack3r/svelte-changelog"
 						target="_blank"
 						variant="ghost"
@@ -170,17 +234,17 @@
 					>
 						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
 						<span class="sr-only">Visit the repository</span>
-					</Button>
+					</AnimatedButton>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
 						<DropdownMenu.Trigger>
 							{#snippet child({ props })}
-								<Button {...props} variant="ghost" size="icon" class="w-14 gap-1">
+								<AnimatedButton {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
 										<Sun
-											class="!size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+											class="size-5! scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
 										/>
 										<Moon
-											class="absolute !size-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+											class="absolute size-5! scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
 										/>
 									</div>
 									<ChevronDown
@@ -189,7 +253,7 @@
 											: ''}"
 									/>
 									<span class="sr-only">Change theme</span>
-								</Button>
+								</AnimatedButton>
 							{/snippet}
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
@@ -225,30 +289,28 @@
 			onclick={e => {
 				// Event bubbling from children of MarkdownRenderer
 				if (!e.target || !(e.target instanceof HTMLAnchorElement)) return;
-				if (e.target.tagName.toLowerCase() === "a") {
-					markCurrentNewsAsRead();
-				}
+				markCurrentNewsAsRead();
 			}}
 		>
 			<MarkdownRenderer
 				markdown={newsToDisplay.content}
 				inline
-				class="mx-auto my-1 px-4 text-center text-foreground prose-a:font-semibold prose-a:text-foreground prose-a:underline"
+				class="mx-auto my-1 max-w-3/4 px-4 text-center text-foreground prose-a:font-semibold prose-a:text-foreground prose-a:underline"
 			/>
-			<Button
+			<AnimatedButton
 				variant="ghost"
-				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-background/0"
+				class="mr-4 h-auto rounded-none px-3 py-2 transition-transform hover:scale-110 hover:rotate-90 hover:bg-accent/0 dark:hover:bg-accent/0"
 				onclick={markCurrentNewsAsRead}
 			>
 				<X class="size-4" />
-			</Button>
+			</AnimatedButton>
 		</div>
 	{/if}
 </header>
 
-<div class="container py-8">
+<main data-sveltekit-reload={updated.current ? "" : "off"} class="container py-8">
 	{@render children?.()}
-</div>
+</main>
 
 <footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">

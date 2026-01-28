@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import { Image, Info, LoaderCircle } from "@lucide/svelte";
+	import { Image, Info, LoaderCircle, TriangleAlert } from "@lucide/svelte";
+	import remarkGitHub from "remark-github";
 	import { Transparent } from "svelte-exmarkdown";
 	import { buttonVariants } from "$lib/components/ui/button";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { Separator } from "$lib/components/ui/separator";
+	import * as Tooltip from "$lib/components/ui/tooltip";
+	import { animatedClasses } from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 
@@ -14,6 +17,9 @@
 		| Awaited<NonNullable<typeof data.issues>>[number]
 		| Awaited<NonNullable<typeof data.prs>>[number]
 		| Awaited<NonNullable<typeof data.discussions>>[number];
+
+	const daysAgoFormatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+	const shortDateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
 	/**
 	 * Checks whether a date is more recent than a month.
@@ -33,7 +39,7 @@
 	 */
 	function daysAgo(date: Date) {
 		const days = Math.floor((Date.now() - date.getTime()) / 1000 / 60 / 60 / 24);
-		return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(-days, "day");
+		return daysAgoFormatter.format(-days, "day");
 	}
 
 	/**
@@ -79,15 +85,14 @@
 	</div>
 {/snippet}
 
+<!-- prettier-ignore -->
 {#snippet listItem(item: Item, link: string)}
 	{@const lastUpdate = new Date(item.updated_at)}
-	{@const isUpdated = !areSameDay(lastUpdate, new Date(item.created_at))}
-	{@const href =
-		/* neat trick to prevent eslint-plugin-svelte from flagging the link as not `resolve`d */ link}
-	<a
-		{href}
-		class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-	>
+	{@const createdAt = new Date(item.created_at)}
+	{@const isUpdated = !areSameDay(lastUpdate, createdAt)}
+
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+	<a href={link} class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-muted">
 		<GHBadge
 			mode="minimal"
 			type={"base" in item || "pull_request" in item
@@ -111,18 +116,29 @@
 		<div class="flex w-full flex-col">
 			<div class="flex justify-between gap-4">
 				<span>
+    				{#if item.html_url.includes("/pull/") && (item.body?.toLowerCase()?.includes("breaking change") || item.title.startsWith("breaking:"))}
+                        <Tooltip.Provider delayDuration={300}>
+                            <Tooltip.Root>
+                                <Tooltip.Trigger>
+                                    <TriangleAlert class="inline-block me-0.5 text-amber-500" />
+                                </Tooltip.Trigger>
+                                <Tooltip.Content
+                                    class="border bg-popover text-popover-foreground"
+									arrowClasses="bg-popover border-b border-r"
+                                >
+                                    This pull request might introduce a breaking change!
+                                </Tooltip.Content>
+                            </Tooltip.Root>
+                        </Tooltip.Provider>
+    				{/if}
 					<MarkdownRenderer markdown={item.title} inline class="text-foreground" />
 					<span class="text-muted-foreground">#{item.number}</span>
 				</span>
-				<span class="text-right">
-					{#if isNew(lastUpdate)}
-						{daysAgo(lastUpdate)} •
+				<span class="text-right text-nowrap">
+					{#if isUpdated && isNew(lastUpdate)}
+						<span class="italic font-semibold">updated {daysAgo(lastUpdate)}</span> •
 					{/if}
-					<span class={{ italic: isUpdated }}>
-						{new Intl.DateTimeFormat("en", {
-							dateStyle: "medium"
-						}).format(lastUpdate)}
-					</span>
+					<span>{shortDateFormatter.format(createdAt)}</span>
 				</span>
 			</div>
 			<MarkdownRenderer
@@ -146,12 +162,15 @@
 							ol: Transparent,
 							li: Transparent
 						}
+					},
+					{
+						remarkPlugin: [remarkGitHub, { repository: `${params.org}/${params.repo}` }]
 					}
 				]}
 			>
 				{#snippet img({ alt })}
 					<div>
-						<Image class="inline-block h-lh" />
+						<Image class="inline-block h-[.9lh]" />
 						{alt}
 					</div>
 				{/snippet}
@@ -177,8 +196,8 @@
 		<Dialog.Root>
 			<Dialog.Trigger
 				class={[
-					buttonVariants({ variant: "ghost", size: "sm" }),
-					"!h-4 !rounded-full !px-0 pt-0.5"
+					buttonVariants({ variant: "ghost", size: "sm", class: animatedClasses }),
+					"h-4! rounded-full! px-0! pt-0.5"
 				]}
 			>
 				<Info />
