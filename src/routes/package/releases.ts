@@ -128,6 +128,7 @@ export async function getPackageReleases(
 			if (foundVersions.has(cleanVersion)) continue;
 
 			// If not, add its version to the set and itself to the final version
+			// eslint-disable-next-line e18e/prefer-array-to-sorted
 			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
 			ddebug("Current newest version", currentNewestVersion ?? "<none>");
 			foundVersions.add(cleanVersion);

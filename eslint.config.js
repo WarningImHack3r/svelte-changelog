@@ -1,3 +1,4 @@
+import e18e from "@e18e/eslint-plugin";
 import eslint from "@eslint/js";
 import prettierConfig from "eslint-config-prettier/flat";
 import svelte from "eslint-plugin-svelte";
@@ -12,6 +13,7 @@ export default defineConfig(
 	svelte.configs.recommended,
 	prettierConfig,
 	svelte.configs.prettier,
+	e18e.configs.recommended,
 	{
 		languageOptions: {
 			globals: {

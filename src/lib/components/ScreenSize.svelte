@@ -25,7 +25,7 @@
 			vh: height / 100
 		};
 
-		return num * (conversions[unit as keyof typeof conversions] || 0);
+		return num * (conversions[unit as keyof typeof conversions] ?? 0);
 	}
 
 	let matchingScreen = $derived(screens.findLast(screen => screen.size <= width));
@@ -35,18 +35,18 @@
 		const styles = getComputedStyle(document.documentElement);
 		// Get all computed styles for Tailwind breakpoints
 		const breakpointPrefix = "--breakpoint-";
-		screens = Array.from(document.styleSheets)
-			.flatMap(styleSheet => Array.from(styleSheet.cssRules))
+		screens = [...document.styleSheets]
+			.flatMap(styleSheet => [...styleSheet.cssRules])
 			.filter(
-				(cssRule: CSSRule): cssRule is CSSLayerBlockRule =>
+				(cssRule): cssRule is CSSLayerBlockRule =>
 					cssRule instanceof CSSLayerBlockRule && cssRule.name === "theme"
 			)
-			.flatMap(themeLayer => Array.from(themeLayer.cssRules))
+			.flatMap(themeLayer => [...themeLayer.cssRules])
 			.filter(
-				(cssRule: CSSRule): cssRule is CSSStyleRule =>
+				(cssRule): cssRule is CSSStyleRule =>
 					cssRule instanceof CSSStyleRule && cssRule.selectorText.includes(":root")
 			)
-			.flatMap(cssRule => Array.from(cssRule.style))
+			.flatMap(cssRule => [...cssRule.style])
 			.filter(style => style.startsWith(breakpointPrefix))
 			.flatMap(breakpoint => {
 				const size = convertToPixels(styles, styles.getPropertyValue(breakpoint).trim());

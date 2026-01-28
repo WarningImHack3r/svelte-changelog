@@ -73,21 +73,21 @@ export default function parseChangelog(text: string): Promise<Changelog> {
  */
 function handleLine(line: string, data: ProcessingData): ProcessingData {
 	// skip line if it's a link label
-	if (/^\[[^[\]]*] *?:/.exec(line)) return data;
+	if (/^\[[^[\]]*] *?:/.test(line)) return data;
 
 	// set the title if it's there
-	if (!data.log.title && /^# ?[^#]/.exec(line)) {
+	if (!data.log.title && /^# ?[^#]/.test(line)) {
 		data.log.title = line.substring(1).trim();
 		return data;
 	}
 
 	// new version found!
-	if (/^##? ?[^#]/.exec(line)) {
+	if (/^##? ?[^#]/.test(line)) {
 		if (data.current?.title) pushCurrent(data);
 
 		data.current = versionFactory();
 
-		if (semver.exec(line)) data.current.version = semver.exec(line)?.at(1) ?? null;
+		if (semver.test(line)) data.current.version = semver.exec(line)?.at(1) ?? null;
 
 		data.current.title = line.substring(2).trim();
 
@@ -105,7 +105,7 @@ function handleLine(line: string, data: ProcessingData): ProcessingData {
 		// handle case where current line is a 'subhead':
 		// - 'handleize' subhead.
 		// - add subhead to 'parsed' data if not already present.
-		if (subhead.exec(line)) {
+		if (subhead.test(line)) {
 			const key = line.replace("###", "").trim();
 
 			if (!data.current.parsed[key]) {
@@ -115,7 +115,7 @@ function handleLine(line: string, data: ProcessingData): ProcessingData {
 		}
 
 		// handle case where current line is a 'list item':
-		if (listItem.exec(line)) {
+		if (listItem.test(line)) {
 			// add line to 'catch all' array
 			data.current.parsed._?.push(line);
 
@@ -125,7 +125,7 @@ function handleLine(line: string, data: ProcessingData): ProcessingData {
 			}
 		}
 	} else {
-		data.log.description = (data.log.description || "") + line + EOL;
+		data.log.description = (data.log.description ?? "") + line + EOL;
 	}
 
 	return data;

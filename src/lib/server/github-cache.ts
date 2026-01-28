@@ -613,7 +613,7 @@ export class GitHubCache {
 			}
 		}
 
-		return Array.from(linkedPRs.values());
+		return [...linkedPRs.values()];
 	}
 
 	/**
@@ -682,7 +682,7 @@ export class GitHubCache {
 			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issue", issue));
 		}
 
-		return Array.from(linkedIssues.values());
+		return [...linkedIssues.values()];
 	}
 
 	/**
