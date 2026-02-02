@@ -3,7 +3,7 @@
 	import { VERSION } from "svelte/compiler";
 
 	const fullDateFormatter = new Intl.DateTimeFormat("en", {
-		dateStyle: "long",
+		dateStyle: "full",
 		timeStyle: "short"
 	});
 
