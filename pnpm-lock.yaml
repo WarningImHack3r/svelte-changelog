@@ -58,8 +58,8 @@ importers:
         specifier: ^1.0.10
         version: 1.0.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@posthog/rollup-plugin':
-        specifier: ^1.2.3
-        version: 1.2.3(rollup@4.57.0)
+        specifier: ^1.2.5
+        version: 1.2.5(rollup@4.57.0)
       '@prgm/sveltekit-progress-bar':
         specifier: ^3.0.2
         version: 3.0.2(@sveltejs/kit@2.50.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.49.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.49.1)
@@ -100,8 +100,8 @@ importers:
         specifier: ^7.7.1
         version: 7.7.1
       '@upstash/redis':
-        specifier: ^1.36.1
-        version: 1.36.1
+        specifier: ^1.36.2
+        version: 1.36.2
       '@vercel/speed-insights':
         specifier: ^1.3.1
         version: 1.3.1(@sveltejs/kit@2.50.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.49.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(react@19.2.4)(svelte@5.49.1)
@@ -136,11 +136,11 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       posthog-js:
-        specifier: ^1.336.4
-        version: 1.336.4
+        specifier: ^1.338.0
+        version: 1.338.0
       posthog-node:
-        specifier: ^5.24.7
-        version: 5.24.7
+        specifier: ^5.24.9
+        version: 5.24.9
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
@@ -1050,16 +1050,16 @@ packages:
     engines: {node: '>=14', npm: '>=6'}
     hasBin: true
 
-  '@posthog/core@1.17.0':
-    resolution: {integrity: sha512-8pDNL+/u9ojzXloA5wILVDXBCV5daJ7w2ipCALQlEEZmL752cCKhRpbyiHn3tjKXh3Hy6aOboJneYa1JdlVHrQ==}
+  '@posthog/core@1.19.0':
+    resolution: {integrity: sha512-OMcdu5cJcvkle2hw0rpe+1mTOFRlerTHTtZKZFvB8z0hgzbN1WeaGZfGFY5wOq42LVTSxwdUgK1MYERyzG1Epw==}
 
-  '@posthog/rollup-plugin@1.2.3':
-    resolution: {integrity: sha512-Dc069Asm2XOfKLab9+oV/DIsnI6iK+AMlFmbq8xGmsWh5iuetxex4MOSwl1zRYNPaiVfSPncw9+0s9eLBzDOgA==}
+  '@posthog/rollup-plugin@1.2.5':
+    resolution: {integrity: sha512-7K4jfYvPdvRal9T5mFHxrG9CKucPk9rGIQZrHPj3cZcv99KAmSGQ6lPjBhAcj06/iANpNdAkZY3KR8KJ1OlnWg==}
     peerDependencies:
       rollup: '>= 4.0.0'
 
-  '@posthog/types@1.336.4':
-    resolution: {integrity: sha512-BY3cq/8segbXEvHbEXx9SWmaKJEM0AGgsOgMFH2yy13AV+rUHsGcp4Z5LDI5pU25DURN9EAZvzcoVyYy/Iokmw==}
+  '@posthog/types@1.338.0':
+    resolution: {integrity: sha512-OruyKCjjovPUnag0p9CEQ0QeSOKhsd1ztDOcr6mISBeKG7bE+Dg8pR1sBHZKiCdkEurB1RcufvSQyNBTddWLMA==}
 
   '@prgm/sveltekit-progress-bar@3.0.2':
     resolution: {integrity: sha512-RilKiPC2Lt/ahC1qmqvL5B8YJPmpwcz/PVebhOmGA7VRcU97xvbn83428r3pVfRNVlxKjHm9NatbIgQim/ccJA==}
@@ -1633,8 +1633,8 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@upstash/redis@1.36.1':
-    resolution: {integrity: sha512-N6SjDcgXdOcTAF+7uNoY69o7hCspe9BcA7YjQdxVu5d25avljTwyLaHBW3krWjrP0FfocgMk94qyVtQbeDp39A==}
+  '@upstash/redis@1.36.2':
+    resolution: {integrity: sha512-C0Yt8hc12vLaQYRG1fMci8iPrLtnTdbJG0HR5T8vKnvEP/1RdMMblsOJs5/jp0JXZJ1oSzMnQz4J9EVezNpI6A==}
 
   '@vercel/nft@1.3.0':
     resolution: {integrity: sha512-i4EYGkCsIjzu4vorDUbqglZc5eFtQI2syHb++9ZUDm6TU4edVywGpVnYDein35x9sevONOn9/UabfQXuNXtuzQ==}
@@ -2742,11 +2742,11 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.336.4:
-    resolution: {integrity: sha512-NX81XaqOjS/gue3UsbAAuJxi6vD0AGy1HUvywBIhAArCwbTXKS04NhEFwUcYJdrmwXUf94MntEIWGoc1pTFDtg==}
+  posthog-js@1.338.0:
+    resolution: {integrity: sha512-Lnoz1YiSh1c3FbmwKYfCCeELHp1MWhYz6b5dEIX2YeDMvUt6xyeVy+MhpiA9xKs0Lbj5kGYk48kGt42qIlqq8A==}
 
-  posthog-node@5.24.7:
-    resolution: {integrity: sha512-IJ0Zj+v+eg/JQMZ75n0Hcp4NzuQzWcZjqFjcUQs6RhW2l5FiQIq09sKJMleXX33hYxD6sfjFsDTqugJlgeAohg==}
+  posthog-node@5.24.9:
+    resolution: {integrity: sha512-afu4kYL+QTEPinnvTF/VimdsGbrpJztqbxIWhQ96C+m24yW/KenEodWH9em989t+MLwGWcnBGhw1vytgeZdySg==}
     engines: {node: ^20.20.0 || >=22.22.0}
 
   preact@10.28.2:
@@ -4166,19 +4166,19 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@posthog/core@1.17.0':
+  '@posthog/core@1.19.0':
     dependencies:
       cross-spawn: 7.0.6
 
-  '@posthog/rollup-plugin@1.2.3(rollup@4.57.0)':
+  '@posthog/rollup-plugin@1.2.5(rollup@4.57.0)':
     dependencies:
       '@posthog/cli': 0.5.26
-      '@posthog/core': 1.17.0
+      '@posthog/core': 1.19.0
       rollup: 4.57.0
     transitivePeerDependencies:
       - debug
 
-  '@posthog/types@1.336.4': {}
+  '@posthog/types@1.338.0': {}
 
   '@prgm/sveltekit-progress-bar@3.0.2(@sveltejs/kit@2.50.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.49.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2)))(svelte@5.49.1)':
     dependencies:
@@ -4685,7 +4685,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@upstash/redis@1.36.1':
+  '@upstash/redis@1.36.2':
     dependencies:
       uncrypto: 0.1.3
 
@@ -5957,15 +5957,15 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.336.4:
+  posthog-js@1.338.0:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.208.0
       '@opentelemetry/exporter-logs-otlp-http': 0.208.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources': 2.5.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-logs': 0.208.0(@opentelemetry/api@1.9.0)
-      '@posthog/core': 1.17.0
-      '@posthog/types': 1.336.4
+      '@posthog/core': 1.19.0
+      '@posthog/types': 1.338.0
       core-js: 3.48.0
       dompurify: 3.3.1
       fflate: 0.4.8
@@ -5973,9 +5973,9 @@ snapshots:
       query-selector-shadow-dom: 1.0.1
       web-vitals: 5.1.0
 
-  posthog-node@5.24.7:
+  posthog-node@5.24.9:
     dependencies:
-      '@posthog/core': 1.17.0
+      '@posthog/core': 1.19.0
 
   preact@10.28.2: {}
 
