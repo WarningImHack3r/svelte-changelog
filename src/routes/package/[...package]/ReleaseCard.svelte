@@ -130,28 +130,43 @@
 	 * @param second The date to compare the first one to
 	 * @returns A diff object with every unit from second to year
 	 */
-	function getDiffBetween(first: Date, second: Date) {
+	function getDiffBetween(d1: Date, d2: Date) {
+		const [earlier, later] = d1 < d2 ? [d1, d2] : [d2, d1];
+
 		return {
 			get milliseconds() {
-				return second.getTime() - first.getTime();
+				return later.getTime() - earlier.getTime();
 			},
 			get seconds() {
-				return Math.floor(this.milliseconds / 1000);
+				return this.milliseconds / 1_000;
 			},
 			get minutes() {
-				return Math.floor(this.seconds / 60);
+				return this.seconds / 60;
 			},
 			get hours() {
-				return Math.floor(this.minutes / 60);
+				return this.minutes / 60;
 			},
 			get days() {
-				return Math.floor(this.hours / 24);
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
+				const norm1 = new Date(earlier);
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
+				const norm2 = new Date(later);
+				norm1.setHours(0, 0, 0, 0);
+				norm2.setHours(0, 0, 0, 0);
+				return (norm2.getTime() - norm1.getTime()) / 86_400_000;
 			},
 			get months() {
-				return Math.floor(this.days / 30);
+				const months =
+					(later.getFullYear() - earlier.getFullYear()) * 12 +
+					(later.getMonth() - earlier.getMonth());
+				return later.getDate() < earlier.getDate() ? months - 1 : months;
 			},
 			get years() {
-				return Math.floor(this.months / 12);
+				const years = later.getFullYear() - earlier.getFullYear();
+				return later.getMonth() < earlier.getMonth() ||
+					(later.getMonth() === earlier.getMonth() && later.getDate() < earlier.getDate())
+					? years - 1
+					: years;
 			}
 		};
 	}
@@ -198,18 +213,18 @@
 		return (date: Date) => {
 			const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
 
-			if (years > 0) {
-				return formatter.format(-years, "year");
-			} else if (months > 0) {
-				return formatter.format(-months, "month");
-			} else if (days > 0) {
-				return formatter.format(-days, "day");
-			} else if (hours > 0) {
-				return formatter.format(-hours, "hour");
-			} else if (minutes > 0) {
-				return formatter.format(-minutes, "minute");
+			if (Math.abs(years) >= 1) {
+				return formatter.format(-Math.round(years), "year");
+			} else if (Math.abs(months) >= 1) {
+				return formatter.format(-Math.round(months), "month");
+			} else if (Math.abs(days) >= 1) {
+				return formatter.format(-Math.round(days), "day");
+			} else if (Math.abs(hours) >= 1) {
+				return formatter.format(-Math.round(hours), "hour");
+			} else if (Math.abs(minutes) >= 1) {
+				return formatter.format(-Math.round(minutes), "minute");
 			}
-			return formatter.format(-Math.floor(seconds), "second");
+			return formatter.format(-Math.round(seconds), "second");
 		};
 	}
 
