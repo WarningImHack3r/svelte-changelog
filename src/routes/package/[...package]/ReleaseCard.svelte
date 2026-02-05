@@ -2,7 +2,7 @@
 	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
 	import { VERSION } from "svelte/compiler";
 
-	const fullDateFormatter = new Intl.DateTimeFormat("en", {
+	const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
 		dateStyle: "full",
 		timeStyle: "short"
 	});
@@ -192,7 +192,7 @@
 	 * @param locale the locale to use for formatting
 	 * @returns a function you input the date to convert in, returning the relative date
 	 */
-	function timeAgo(locale = "en") {
+	function timeAgo(locale = "en-US") {
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		return (date: Date) => {
@@ -343,7 +343,7 @@
 					<Tooltip.Root delayDuration={300}>
 						<Tooltip.Trigger class="text-right">
 							{isOlderThanAWeek
-								? releaseDate.toLocaleDateString("en", {
+								? releaseDate.toLocaleDateString("en-US", {
 										year:
 											(releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15) ||
 											releaseDate.getFullYear() < new Date().getFullYear()

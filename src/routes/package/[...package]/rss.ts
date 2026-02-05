@@ -23,7 +23,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 			atom: url.toString().replace(/[A-z\d]+\.[A-z\d]+$/, "atom.xml")
 		},
 		id: url.toString(),
-		language: "en",
+		language: "en-US",
 		link: url.toString(),
 		title
 	});

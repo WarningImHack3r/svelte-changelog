@@ -4,7 +4,7 @@
 </script>
 
 <h5 class="-mt-8 text-muted-foreground">
-	{new Intl.DateTimeFormat("en", {
+	{new Intl.DateTimeFormat("en-US", {
 		dateStyle: "long"
 	}).format(new Date("2025-04-11"))} • Antoine Lethimonnier
 </h5>

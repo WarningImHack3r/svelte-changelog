@@ -18,8 +18,8 @@
 		| Awaited<NonNullable<typeof data.prs>>[number]
 		| Awaited<NonNullable<typeof data.discussions>>[number];
 
-	const daysAgoFormatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-	const shortDateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+	const daysAgoFormatter = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
+	const shortDateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 
 	/**
 	 * Checks whether a date is more recent than a month.
