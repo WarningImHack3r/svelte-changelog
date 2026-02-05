@@ -283,32 +283,83 @@ export class GitHubCache {
 	}
 
 	/**
-	 * An abstraction over general processing that:
-	 * 1. tries getting stuff from Redis cache
+	 * An abstraction over general processing in this class that:
+	 * 1. tries getting stuff from the cache
 	 * 2. calls the promise to get new data if no value is found in cache
-	 * 3. store this new value back in the cache with an optional TTL before returning the value.
+	 * 3. store this new value back in the cache with an optional TTL before returning the value
 	 *
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<RType extends RedisJson>() {
+	#processCached<Transformed extends RedisJson>() {
+		// justified eslint rule disabling cause this case is quite... unique and I can't do much better
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const self = this;
+
+		async function processFn<NewData>(params: {
+			/**
+			 * The cache key to query the cache with
+			 */
+			cacheKey: string;
+			/**
+			 * The promise to call to get new data if the cache is empty,
+			 * before getting transformed into a cacheable shape
+			 *
+			 * @returns the fetched data
+			 */
+			fn: () => Promise<NewData> | NewData;
+			/**
+			 * The function that transforms the returned value of the promise to the
+			 * returned data
+			 *
+			 * @param from the awaited result of the promise
+			 * @returns the transformed result to use, return & cache
+			 */
+			transformer: (from: Awaited<NewData>) => Transformed | Promise<Transformed>;
+			/**
+			 * The optional TTL to use for the newly cached data
+			 *
+			 * Uses the transformed result as parameter if used as a function
+			 */
+			ttl?: number | ((value: Transformed) => number | undefined) | undefined;
+		}): Promise<Transformed>;
+
+		async function processFn<NewData extends Transformed>(params: {
+			/**
+			 * The cache key to query the cache with
+			 */
+			cacheKey: string;
+			/**
+			 * The promise to call to get new data if the cache is empty,
+			 * directly returned after getting cached
+			 *
+			 * @returns the fetched data
+			 */
+			fn: () => Promise<NewData> | NewData;
+			/**
+			 * The optional TTL to use for the newly cached data
+			 *
+			 * Uses the fetched data as parameter if used as a function
+			 */
+			ttl?: number | ((value: NewData) => number | undefined) | undefined;
+		}): Promise<NewData>;
 		/**
 		 * Inner currying function to circumvent unsupported partial inference
 		 *
-		 * @param cacheKey the cache key to fetch Redis with
-		 * @param promise the promise to call to get new data if the cache is empty
-		 * @param transformer the function that transforms the return from the promise to the target return value
-		 * @param ttl the optional TTL to use for the newly cached data
-		 *
 		 * @see {@link https://github.com/microsoft/TypeScript/issues/26242|Partial type inference discussion}
 		 */
-		return async <PromiseType>(
-			cacheKey: string,
-			promise: () => Promise<PromiseType>,
-			transformer: (from: Awaited<PromiseType>) => RType | Promise<RType>,
-			ttl: number | ((value: RType) => number | undefined) | undefined = undefined
-		): Promise<RType> => {
-			const cachedValue = await this.#cache.get<RType>(cacheKey);
+		async function processFn<NewData>({
+			cacheKey,
+			fn,
+			transformer,
+			ttl
+		}: {
+			cacheKey: string;
+			fn: () => Promise<NewData> | NewData;
+			transformer?: (from: Awaited<NewData>) => Transformed | Promise<Transformed>;
+			ttl?: number | ((value: NewData | Transformed) => number | undefined) | undefined;
+		}): Promise<NewData | Transformed> {
+			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
 			if (cachedValue) {
 				ddebug(`Cache hit for ${cacheKey}`);
 				return cachedValue;
@@ -316,7 +367,8 @@ export class GitHubCache {
 
 			ddebug(`Cache miss for ${cacheKey}`);
 
-			const newValue = await transformer(await promise());
+			const res = await fn();
+			const newValue = transformer ? await transformer(res) : (res as NewData & Transformed);
 
 			let ttlResult: number | undefined = undefined;
 			if (ttl !== undefined) {
@@ -326,10 +378,12 @@ export class GitHubCache {
 					ttlResult = ttl;
 				}
 			}
-			await this.#cache.set(cacheKey, newValue, ttlResult);
+			await self.#cache.set(cacheKey, newValue, ttlResult);
 
 			return newValue;
-		};
+		}
+
+		return processFn;
 	}
 
 	/**
@@ -392,9 +446,9 @@ export class GitHubCache {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<IssueDetails>()(
-			this.#getRepoKey(owner, repo, "issue", id),
-			() =>
+		return await this.#processCached<IssueDetails>()({
+			cacheKey: this.#getRepoKey(owner, repo, "issue", id),
+			fn: () =>
 				Promise.all([
 					this.#request(
 						kit => kit.rest.issues.get({ owner, repo, issue_number: id }),
@@ -406,13 +460,13 @@ export class GitHubCache {
 					),
 					this.#getLinkedPullRequests(owner, repo, id)
 				]),
-			([{ data: info }, { data: comments }, linkedPrs]) => ({
+			transformer: ([{ data: info }, { data: comments }, linkedPrs]) => ({
 				info,
 				comments,
 				linkedPrs
 			}),
-			FULL_DETAILS_TTL
-		);
+			ttl: FULL_DETAILS_TTL
+		});
 	}
 
 	/**
@@ -425,9 +479,9 @@ export class GitHubCache {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<PullRequestDetails>()(
-			this.#getRepoKey(owner, repo, "pr", id),
-			() =>
+		return await this.#processCached<PullRequestDetails>()({
+			cacheKey: this.#getRepoKey(owner, repo, "pr", id),
+			fn: () =>
 				Promise.all([
 					this.#request(
 						kit => kit.rest.pulls.get({ owner, repo, pull_number: id }),
@@ -447,15 +501,21 @@ export class GitHubCache {
 					),
 					this.#getLinkedIssues(owner, repo, id)
 				]),
-			([{ data: info }, { data: comments }, { data: commits }, { data: files }, linkedIssues]) => ({
+			transformer: ([
+				{ data: info },
+				{ data: comments },
+				{ data: commits },
+				{ data: files },
+				linkedIssues
+			]) => ({
 				info,
 				comments,
 				commits,
 				files,
 				linkedIssues
 			}),
-			FULL_DETAILS_TTL
-		);
+			ttl: FULL_DETAILS_TTL
+		});
 	}
 
 	/**
@@ -468,9 +528,9 @@ export class GitHubCache {
 	 * @throws Error if the discussion is not found
 	 */
 	async getDiscussionDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<DiscussionDetails>()(
-			this.#getRepoKey(owner, repo, "discussion", id),
-			() =>
+		return await this.#processCached<DiscussionDetails>()({
+			cacheKey: this.#getRepoKey(owner, repo, "discussion", id),
+			fn: () =>
 				Promise.all([
 					this.#request(
 						kit =>
@@ -495,12 +555,12 @@ export class GitHubCache {
 						[]
 					)
 				]),
-			([{ data: discussion }, comments]) => ({
+			transformer: ([{ data: discussion }, comments]) => ({
 				info: discussion,
 				comments
 			}),
-			FULL_DETAILS_TTL
-		);
+			ttl: FULL_DETAILS_TTL
+		});
 	}
 
 	/**
@@ -734,12 +794,11 @@ export class GitHubCache {
 	 * @returns the releases, either cached or fetched
 	 */
 	async getReleases(repository: Repository) {
-		return await this.#processCached<GitHubRelease[]>()(
-			this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
-			() => this.#fetchReleases(repository),
-			releases => releases,
-			RELEASES_TTL
-		);
+		return await this.#processCached<GitHubRelease[]>()({
+			cacheKey: this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
+			fn: () => this.#fetchReleases(repository),
+			ttl: RELEASES_TTL
+		});
 	}
 
 	/**
@@ -878,9 +937,9 @@ export class GitHubCache {
 	 * @returns a map of paths to descriptions.
 	 */
 	async getDescriptions(owner: string, repo: string) {
-		return await this.#processCached<Record<string, string>>()(
-			this.#getRepoKey(owner, repo, "descriptions"),
-			() =>
+		return await this.#processCached<Record<string, string>>()({
+			cacheKey: this.#getRepoKey(owner, repo, "descriptions"),
+			fn: () =>
 				this.#request(
 					kit =>
 						kit.rest.git.getTree({
@@ -891,7 +950,7 @@ export class GitHubCache {
 						}),
 					createOctokitResponse(gitTree)
 				),
-			async ({ data: allFiles }) => {
+			transformer: async ({ data: allFiles }) => {
 				const allPackageJson = allFiles.tree
 					.map(({ path }) => path)
 					.filter(path => path !== undefined)
@@ -929,8 +988,8 @@ export class GitHubCache {
 				}
 				return Object.fromEntries(descriptions);
 			},
-			DESCRIPTIONS_TTL
-		);
+			ttl: DESCRIPTIONS_TTL
+		});
 	}
 
 	/**
@@ -940,9 +999,9 @@ export class GitHubCache {
 	 * @returns a list of members, or `undefined` if not existing
 	 */
 	async getOrganizationMembers(owner: string) {
-		return await this.#processCached<Member[]>()(
-			this.#getOwnerKey(owner, "members"),
-			async () => {
+		return await this.#processCached<Member[]>()({
+			cacheKey: this.#getOwnerKey(owner, "members"),
+			fn: async () => {
 				try {
 					const { data: members } = await this.#request(
 						kit =>
@@ -957,9 +1016,8 @@ export class GitHubCache {
 					return [] as Member[];
 				}
 			},
-			members => members,
-			MEMBERS_TTL
-		);
+			ttl: MEMBERS_TTL
+		});
 	}
 
 	/**
@@ -970,9 +1028,9 @@ export class GitHubCache {
 	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
-		return await this.#processCached<Issue[]>()(
-			this.#getRepoKey(owner, repo, "issues"),
-			async () => {
+		return await this.#processCached<Issue[]>()({
+			cacheKey: this.#getRepoKey(owner, repo, "issues"),
+			fn: async () => {
 				try {
 					const { data: issues } = await this.#request(
 						kit =>
@@ -988,9 +1046,8 @@ export class GitHubCache {
 					return [] as Issue[];
 				}
 			},
-			issues => issues,
-			FULL_DETAILS_TTL
-		);
+			ttl: FULL_DETAILS_TTL
+		});
 	}
 
 	/**
@@ -1001,9 +1058,9 @@ export class GitHubCache {
 	 * @returns a list of pull requests, empty if not existing
 	 */
 	async getAllPRs(owner: string, repo: string) {
-		return await this.#processCached<ListedPullRequest[]>()(
-			this.#getRepoKey(owner, repo, "prs"),
-			async () => {
+		return await this.#processCached<ListedPullRequest[]>()({
+			cacheKey: this.#getRepoKey(owner, repo, "prs"),
+			fn: async () => {
 				try {
 					const { data: prs } = await this.#request(
 						kit =>
@@ -1019,9 +1076,8 @@ export class GitHubCache {
 					return [] as ListedPullRequest[];
 				}
 			},
-			prs => prs,
-			FULL_DETAILS_TTL
-		);
+			ttl: FULL_DETAILS_TTL
+		});
 	}
 
 	/**
@@ -1032,9 +1088,9 @@ export class GitHubCache {
 	 * @returns a list of discussions, empty if not existing
 	 */
 	async getAllDiscussions(owner: string, repo: string) {
-		return await this.#processCached<Discussion[]>()(
-			this.#getRepoKey(owner, repo, "discussions"),
-			async () => {
+		return await this.#processCached<Discussion[]>()({
+			cacheKey: this.#getRepoKey(owner, repo, "discussions"),
+			fn: async () => {
 				try {
 					return await this.#request(
 						kit =>
@@ -1049,9 +1105,8 @@ export class GitHubCache {
 					return [] as Discussion[];
 				}
 			},
-			discussions => discussions,
-			FULL_DETAILS_TTL
-		);
+			ttl: FULL_DETAILS_TTL
+		});
 	}
 
 	/**
@@ -1061,9 +1116,9 @@ export class GitHubCache {
 	 * @returns the deprecation status message if any, `false` otherwise
 	 */
 	async getPackageDeprecation(packageName: string) {
-		return await this.#processCached<{ value: string | false }>()(
-			this.#getPackageKey(packageName, "deprecation"),
-			async () => {
+		return await this.#processCached<{ value: string | false }>()({
+			cacheKey: this.#getPackageKey(packageName, "deprecation"),
+			fn: async () => {
 				try {
 					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that
 					// GitHub owns npmjs.org okay??
@@ -1075,14 +1130,14 @@ export class GitHubCache {
 					return {};
 				}
 			},
-			({ deprecated }) => {
+			transformer: ({ deprecated }) => {
 				if (deprecated === undefined) return { value: false };
 				if (typeof deprecated === "boolean")
 					return { value: deprecated && "This package is deprecated" };
 				return { value: deprecated || "This package is deprecated" };
 			},
-			item => (item.value === false ? DEPRECATIONS_TTL : undefined)
-		);
+			ttl: item => (item.value === false ? DEPRECATIONS_TTL : undefined)
+		});
 	}
 
 	/**
