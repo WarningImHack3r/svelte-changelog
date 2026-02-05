@@ -7,14 +7,16 @@ import { defineBaseMetaTags } from "svelte-meta-tags";
 injectSpeedInsights();
 
 const siteName = "Svelte Changelog";
+let phInit = false;
 
 export function load({ url, data }) {
-	if (browser && !dev) {
+	if (!phInit && browser && !dev) {
 		posthog.init(PUBLIC_POSTHOG_KEY, {
 			api_host: `${url.origin}/ingest`,
 			ui_host: "https://eu.posthog.com",
 			person_profiles: "always"
 		});
+		phInit = true;
 	}
 
 	return {
