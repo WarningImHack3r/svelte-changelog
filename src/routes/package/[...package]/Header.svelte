@@ -24,17 +24,20 @@
 	let viewTransitionName = $derived(packageInfo.name.replace(/[@/-]/g, ""));
 
 	// Registries
-	let registries = $derived<
-		Record<string, { iconUrl: string; url: string; additionalClasses?: string }>
-	>(
+	let registries = $derived<Record<string, { iconUrl: string; url: string; imgClasses?: string }>>(
 		packageInfo.categorySlug === ALL_SLUG || packageInfo.registryExcluded
 			? Object.fromEntries([])
 			: {
 					npmjs: {
 						iconUrl: "/npm.svg",
 						url: `https://npmjs.com/package/${packageInfo.name}`,
-						additionalClasses:
-							"[&>img]:filter-[grayscale(1)_contrast(100)_brightness(1)] dark:[&>img]:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
+						imgClasses:
+							"filter-[grayscale(1)_contrast(100)_brightness(1)] dark:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
+					},
+					npmx: {
+						iconUrl: "https://npmx.dev/logo.svg",
+						url: `https://npmx.dev/package/${packageInfo.name}`,
+						imgClasses: "scale-110"
 					}
 				}
 	);
@@ -100,15 +103,15 @@
 		<!-- Sub-items -->
 		<div class="inline-flex items-center">
 			<!-- JS registries -->
-			{#each Object.entries(registries) as [name, { iconUrl: src, url: href, additionalClasses }], index (name)}
+			{#each Object.entries(registries) as [name, { iconUrl: src, url: href, imgClasses }], index (name)}
 				<Button
 					variant="ghost"
 					size="icon"
-					class={["size-7", additionalClasses]}
+					class="size-7"
 					{href}
 					target="_blank"
 				>
-					<img {src} alt={name} class="h-4" />
+					<img {src} alt={name} class={["h-4", imgClasses]} />
 				</Button>
 
 				<!-- Only shows if there are registries available for this package -->
