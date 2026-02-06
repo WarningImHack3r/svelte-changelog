@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ResolvedPathname } from "$app/types";
 	import { FileDiff } from "@lucide/svelte";
 	import type { PullRequestDetails } from "$lib/server/github-cache";
 	import { Separator } from "$lib/components/ui/separator";
@@ -7,10 +8,11 @@
 	import { highlighter } from "./syntax-highlighting";
 
 	type Props = {
+		route: ResolvedPathname;
 		files?: PullRequestDetails["files"];
 	};
 
-	let { files = [] }: Props = $props();
+	let { route, files = [] }: Props = $props();
 
 	let deletions = $derived(files.reduce((acc, file) => acc + file.deletions, 0));
 	let additions = $derived(files.reduce((acc, file) => acc + file.additions, 0));
@@ -36,6 +38,7 @@
 				<Separator />
 			{/if}
 			<DiffRenderer
+				{route}
 				fileDiff={patch}
 				langs={highlighter.getLoadedLanguages()}
 				options={{

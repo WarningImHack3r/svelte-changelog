@@ -65,6 +65,7 @@
 <script lang="ts" generics="T">
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
+	import type { ResolvedPathname } from "$app/types";
 	import {
 		FileDiff,
 		type FileDiffOptions,
@@ -72,13 +73,15 @@
 		type SupportedLanguages
 	} from "@pierre/diffs";
 	import { mode } from "mode-watcher";
+	import posthog from "posthog-js";
 
 	type Props = Omit<FileDiffRenderProps<T>, "containerWrapper" | "fileContainer"> & {
+		route: ResolvedPathname;
 		options: FileDiffOptions<T>;
 		langs?: (SupportedLanguages | (string & {}))[];
 	};
 
-	let { options, langs, ...props }: Props = $props();
+	let { route, options, langs, ...props }: Props = $props();
 	let id = $props.id();
 
 	let mobile = new MediaQuery("width < 800px");
@@ -99,6 +102,7 @@
                         }
     				}
     			`,
+				disableErrorHandling: true,
 				...options
 			},
 			getWorker({ ...options, langs: langs as SupportedLanguages[] })
@@ -106,17 +110,37 @@
 	);
 
 	// Initial rendering and cleanup handling
-	$effect(() =>
-		fileDiff.render({
-			containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
-			...props
-		})
-	);
+	$effect(() => {
+		try {
+			fileDiff.render({
+				containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
+				...props
+			});
+		} catch (e) {
+			posthog.captureException(e, {
+				fileName: props.fileDiff?.name ?? "unknown",
+				pr: route
+			});
+			const el = document.getElementById(`diff-${id}`);
+			if (el)
+				el.innerText = `\nFailed to render the diff for "${props.fileDiff?.name ?? "<unknown>"}". Please try again. This issue has been reported.\n\n`;
+		}
+	});
 
 	// Mobile diff type change
 	$effect(() => {
 		fileDiff.setOptions({ ...fileDiff.options, diffStyle: mobile.current ? "unified" : undefined });
-		fileDiff.rerender();
+		try {
+			fileDiff.rerender();
+		} catch (e) {
+			posthog.captureException(e, {
+				fileName: props.fileDiff?.name ?? "unknown",
+				pr: route
+			});
+			const el = document.getElementById(`diff-${id}`);
+			if (el)
+				el.innerText = `\nFailed to render the diff for "${props.fileDiff?.name ?? "<unknown>"}". Please try again. This issue has been reported.\n\n`;
+		}
 	});
 
 	// Theme change

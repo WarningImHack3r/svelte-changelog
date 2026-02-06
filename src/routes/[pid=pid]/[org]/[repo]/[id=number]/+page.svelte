@@ -276,7 +276,15 @@
 	{/if}
 	<!-- Files -->
 	{#if metadata.type === "pull"}
-		<CollapsibleFiles {files} />
+		<CollapsibleFiles
+			route={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+				pid: metadata.type,
+				org: metadata.org,
+				repo: metadata.repo,
+				id: `${info.number}`
+			})}
+			{files}
+		/>
 	{/if}
 </div>
 <!-- Bottom links -->
