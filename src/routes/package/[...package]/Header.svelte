@@ -70,13 +70,7 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html packageInfo.name.replace(/\//g, "/<wbr />")}
 	</h1>
-	<div class="flex flex-col items-start xs:flex-row xs:items-center">
-		{#snippet verticalSeparator()}
-			<Separator
-				orientation="vertical"
-				class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
-			/>
-		{/snippet}
+	<div class="flex flex-col xs:flex-row xs:items-center">
 		<!-- Repo name -->
 		{#if currentRepo.owner && currentRepo.name}
 			<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
@@ -98,63 +92,72 @@
 					</span>
 				</a>
 			</h2>
-			{@render verticalSeparator()}
+			<Separator
+				orientation="vertical"
+				class="mx-2 hidden bg-muted-foreground/50 data-[orientation=vertical]:h-lh xs:block"
+			/>
 		{/if}
-		<!-- JS registries -->
-		{#each Object.entries(registries) as [name, { iconUrl: src, url: href, additionalClasses }], index (name)}
-			<Button
-				variant="ghost"
-				size="icon"
-				class={["size-7", additionalClasses]}
-				{href}
-				target="_blank"
-			>
-				<img {src} alt={name} class="h-4" />
-			</Button>
+		<!-- Sub-items -->
+		<div class="inline-flex items-center">
+			<!-- JS registries -->
+			{#each Object.entries(registries) as [name, { iconUrl: src, url: href, additionalClasses }], index (name)}
+				<Button
+					variant="ghost"
+					size="icon"
+					class={["size-7", additionalClasses]}
+					{href}
+					target="_blank"
+				>
+					<img {src} alt={name} class="h-4" />
+				</Button>
 
-			<!-- Only shows if there are registries available for this package -->
-			{#if index === Object.keys(registries).length - 1}
-				{@render verticalSeparator()}
-			{/if}
-		{/each}
-		<!-- RSS -->
-		<Collapsible.Root class="flex items-center">
-			<Collapsible.Trigger>
-				{#snippet child({ props })}
-					<AnimatedButton
-						{...props}
-						variant="ghost"
-						size="sm"
-						class="peer h-6 px-1! data-[state=open]:text-primary"
-					>
-						<Rss />
-						<span class="sr-only">RSS</span>
-					</AnimatedButton>
-					<ChevronRight
-						class="size-4 -translate-x-1 scale-75 opacity-0 transition-all peer-hover:translate-x-0 peer-hover:scale-100 peer-hover:opacity-100 peer-data-[state=open]:translate-x-0 peer-data-[state=open]:scale-100 peer-data-[state=open]:rotate-180 peer-data-[state=open]:opacity-100"
+				<!-- Only shows if there are registries available for this package -->
+				{#if index === Object.keys(registries).length - 1}
+					<Separator
+						orientation="vertical"
+						class="mx-2 bg-muted-foreground/50 data-[orientation=vertical]:h-lh"
 					/>
-				{/snippet}
-			</Collapsible.Trigger>
-			<AnimatedCollapsibleContent axis="x" class="ml-2">
-				{#each Object.entries(rssEntries) as [name, file] (name)}
-					<Button
-						variant="link"
-						size="sm"
-						class="h-auto px-1 py-0 text-foreground"
-						href={appendToPath(
-							page.url.origin,
-							resolve("/package/[...package]", {
-								package: packageInfo.name
-							}),
-							file
-						)}
-						data-sveltekit-preload-data="tap"
-					>
-						{name}
-					</Button>
-				{/each}
-			</AnimatedCollapsibleContent>
-		</Collapsible.Root>
+				{/if}
+			{/each}
+			<!-- RSS -->
+			<Collapsible.Root class="flex items-center">
+				<Collapsible.Trigger>
+					{#snippet child({ props })}
+						<AnimatedButton
+							{...props}
+							variant="ghost"
+							size="sm"
+							class="peer h-6 px-1! data-[state=open]:text-primary"
+						>
+							<Rss />
+							<span class="sr-only">RSS</span>
+						</AnimatedButton>
+						<ChevronRight
+							class="size-4 -translate-x-1 scale-75 opacity-0 transition-all peer-hover:translate-x-0 peer-hover:scale-100 peer-hover:opacity-100 peer-data-[state=open]:translate-x-0 peer-data-[state=open]:scale-100 peer-data-[state=open]:rotate-180 peer-data-[state=open]:opacity-100"
+						/>
+					{/snippet}
+				</Collapsible.Trigger>
+				<AnimatedCollapsibleContent axis="x" class="ml-2">
+					{#each Object.entries(rssEntries) as [name, file] (name)}
+						<Button
+							variant="link"
+							size="sm"
+							class="h-auto px-1 py-0 text-foreground"
+							href={appendToPath(
+								page.url.origin,
+								resolve("/package/[...package]", {
+									package: packageInfo.name
+								}),
+								file
+							)}
+							data-sveltekit-preload-data="tap"
+						>
+							{name}
+						</Button>
+					{/each}
+				</AnimatedCollapsibleContent>
+			</Collapsible.Root>
+		</div>
 	</div>
 	{#if packageInfo.description}
 		<h3
