@@ -24,6 +24,17 @@ export default defineConfig(({ mode }) => {
 						host: "https://eu.i.posthog.com"
 					})
 				: undefined
-		]
+		],
+		ssr: {
+			external: ["@resvg/resvg-js"]
+		},
+		optimizeDeps: {
+			exclude: ["@resvg/resvg-js"]
+		},
+		build: {
+			rollupOptions: {
+				external: ["@resvg/resvg-js"]
+			}
+		}
 	};
 });
