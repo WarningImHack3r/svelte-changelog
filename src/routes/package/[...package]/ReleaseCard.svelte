@@ -186,15 +186,15 @@
 			return value - (milliseconds % value);
 		}
 
-		if (years > 0) {
+		if (years >= 1) {
 			return diff(12 * 30 * 24 * 60 * 60 * 1_000);
-		} else if (months > 0) {
+		} else if (months >= 1) {
 			return diff(30 * 24 * 60 * 60 * 1_000);
-		} else if (days > 0) {
+		} else if (days >= 1) {
 			return diff(24 * 60 * 60 * 1_000);
-		} else if (hours > 0) {
+		} else if (hours >= 1) {
 			return diff(60 * 60 * 1_000);
-		} else if (minutes > 0) {
+		} else if (minutes >= 1) {
 			return diff(60 * 1_000);
 		}
 		return diff(1_000);
@@ -213,15 +213,15 @@
 		return (date: Date) => {
 			const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
 
-			if (Math.abs(years) >= 1) {
+			if (years >= 1) {
 				return formatter.format(-Math.round(years), "year");
-			} else if (Math.abs(months) >= 1) {
+			} else if (months >= 1) {
 				return formatter.format(-Math.round(months), "month");
-			} else if (Math.abs(days) >= 1) {
+			} else if (days >= 1) {
 				return formatter.format(-Math.round(days), "day");
-			} else if (Math.abs(hours) >= 1) {
+			} else if (hours >= 1) {
 				return formatter.format(-Math.round(hours), "hour");
-			} else if (Math.abs(minutes) >= 1) {
+			} else if (minutes >= 1) {
 				return formatter.format(-Math.round(minutes), "minute");
 			}
 			return formatter.format(-Math.round(seconds), "second");
