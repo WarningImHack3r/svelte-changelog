@@ -1001,21 +1001,16 @@ export class GitHubCache {
 	async getOrganizationMembers(owner: string) {
 		return await this.#processCached<Member[]>()({
 			cacheKey: this.#getOwnerKey(owner, "members"),
-			fn: async () => {
-				try {
-					const { data: members } = await this.#request(
-						kit =>
-							kit.rest.orgs.listPublicMembers({
-								org: owner,
-								per_page
-							}),
-						createOctokitResponse([])
-					);
-					return members;
-				} catch {
-					return [] as Member[];
-				}
-			},
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.rest.orgs.listPublicMembers({
+							org: owner,
+							per_page
+						}),
+					createOctokitResponse([])
+				),
+			transformer: ({ data: members }) => members,
 			ttl: MEMBERS_TTL
 		});
 	}
@@ -1030,22 +1025,17 @@ export class GitHubCache {
 	async getAllIssues(owner: string, repo: string) {
 		return await this.#processCached<Issue[]>()({
 			cacheKey: this.#getRepoKey(owner, repo, "issues"),
-			fn: async () => {
-				try {
-					const { data: issues } = await this.#request(
-						kit =>
-							kit.rest.issues.listForRepo({
-								owner,
-								repo,
-								per_page
-							}),
-						createOctokitResponse([])
-					);
-					return issues;
-				} catch {
-					return [] as Issue[];
-				}
-			},
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.rest.issues.listForRepo({
+							owner,
+							repo,
+							per_page
+						}),
+					createOctokitResponse([])
+				),
+			transformer: ({ data: issues }) => issues,
 			ttl: FULL_DETAILS_TTL
 		});
 	}
@@ -1060,22 +1050,17 @@ export class GitHubCache {
 	async getAllPRs(owner: string, repo: string) {
 		return await this.#processCached<ListedPullRequest[]>()({
 			cacheKey: this.#getRepoKey(owner, repo, "prs"),
-			fn: async () => {
-				try {
-					const { data: prs } = await this.#request(
-						kit =>
-							kit.rest.pulls.list({
-								owner,
-								repo,
-								per_page
-							}),
-						createOctokitResponse([])
-					);
-					return prs;
-				} catch {
-					return [] as ListedPullRequest[];
-				}
-			},
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.rest.pulls.list({
+							owner,
+							repo,
+							per_page
+						}),
+					createOctokitResponse([])
+				),
+			transformer: ({ data: prs }) => prs,
 			ttl: FULL_DETAILS_TTL
 		});
 	}
@@ -1090,21 +1075,16 @@ export class GitHubCache {
 	async getAllDiscussions(owner: string, repo: string) {
 		return await this.#processCached<Discussion[]>()({
 			cacheKey: this.#getRepoKey(owner, repo, "discussions"),
-			fn: async () => {
-				try {
-					return await this.#request(
-						kit =>
-							kit.paginate<Discussion>("GET /repos/{owner}/{repo}/discussions", {
-								owner,
-								repo,
-								per_page
-							}),
-						[]
-					);
-				} catch {
-					return [] as Discussion[];
-				}
-			},
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.paginate<Discussion>("GET /repos/{owner}/{repo}/discussions", {
+							owner,
+							repo,
+							per_page
+						}),
+					[]
+				),
 			ttl: FULL_DETAILS_TTL
 		});
 	}

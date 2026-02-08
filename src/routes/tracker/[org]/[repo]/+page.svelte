@@ -13,10 +13,12 @@
 
 	let { data, params } = $props();
 
-	type Item =
+	type Item = Exclude<
 		| Awaited<NonNullable<typeof data.issues>>[number]
 		| Awaited<NonNullable<typeof data.prs>>[number]
-		| Awaited<NonNullable<typeof data.discussions>>[number];
+		| Awaited<NonNullable<typeof data.discussions>>[number],
+		string // "error" case
+	>;
 
 	const daysAgoFormatter = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
 	const shortDateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
@@ -60,7 +62,7 @@
 
 {#snippet list<T extends Item>(
 	title: string,
-	items: T[] | Promise<T[]>,
+	items: T[] | string | Promise<T[] | string>,
 	itemToLink: (item: T) => string
 )}
 	<div>
@@ -71,16 +73,22 @@
 				Loading (this may take a while)...
 			</p>
 		{:then loadedItems}
-			{#each loadedItems as item, i (item.id)}
-				{#if i > 0}
-					<Separator class="my-1" />
-				{/if}
-				{@render listItem(item, itemToLink(item))}
+			{#if typeof loadedItems === "string"}
+				<em class="text-lg">{loadedItems}</em>
 			{:else}
-				<p class="text-lg">Nothing to show there :/</p>
-			{/each}
+				{#each loadedItems as item, i (item.id)}
+					{#if i > 0}
+						<Separator class="my-1" />
+					{/if}
+					{@render listItem(item, itemToLink(item))}
+				{:else}
+					<p class="text-lg">Nothing to show there :/</p>
+				{/each}
+			{/if}
 		{:catch e}
-			<p class="text-lg text-destructive">Failed to load elements: {e}</p>
+			<p class="text-lg text-destructive">
+				Failed to load elements: {e instanceof Error ? e.message : e}
+			</p>
 		{/await}
 	</div>
 {/snippet}

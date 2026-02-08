@@ -1,6 +1,5 @@
 import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { dwarn } from "$lib/debug";
 import { uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 
@@ -35,37 +34,41 @@ export async function load({ params }) {
 		});
 	}
 
-	const members = await githubCache.getOrganizationMembers(knownRepo.owner);
-	if (!members.length)
-		dwarn(
-			`No org members found for "${knownRepo.owner}", is this expected? Returning itself only as a fallback.`
-		);
+	let members: Awaited<ReturnType<(typeof githubCache)["getOrganizationMembers"]>> = [];
+	try {
+		members = await githubCache.getOrganizationMembers(knownRepo.owner);
+	} catch {
+		// probably not an organization
+	}
 	const membersNames = members.length ? members.map(({ login }) => login) : [knownRepo.owner];
 	const now = new Date();
 
 	return {
-		prs: githubCache.getAllPRs(knownRepo.owner, knownRepo.name).then(unfilteredPRs =>
-			unfilteredPRs
-				.filter(({ user, body, updated_at }) => {
-					if (new Date(updated_at).getFullYear() < now.getFullYear() - 1) return false;
-					if (!membersNames.includes(user?.login ?? "")) return false;
-					if (!body) return true;
-					const lowerBody = body.toLowerCase();
-					for (const keyword of closingKeywords) {
-						if (
-							lowerBody.includes(`${keyword} #`) ||
-							lowerBody.includes(`${keyword}: #`) ||
-							lowerBody.includes(`${keyword} https://github.com`) ||
-							lowerBody.includes(`${keyword}: https://github.com`) ||
-							new RegExp(`${keyword} [A-Za-z0-9_-]+/[A-Za-z0-9_-]+#[0-9]+`).test(lowerBody)
-						) {
-							return false;
+		prs: githubCache
+			.getAllPRs(knownRepo.owner, knownRepo.name)
+			.then(unfilteredPRs =>
+				unfilteredPRs
+					.filter(({ user, body, updated_at }) => {
+						if (new Date(updated_at).getFullYear() < now.getFullYear() - 1) return false;
+						if (!membersNames.includes(user?.login ?? "")) return false;
+						if (!body) return true;
+						const lowerBody = body.toLowerCase();
+						for (const keyword of closingKeywords) {
+							if (
+								lowerBody.includes(`${keyword} #`) ||
+								lowerBody.includes(`${keyword}: #`) ||
+								lowerBody.includes(`${keyword} https://github.com`) ||
+								lowerBody.includes(`${keyword}: https://github.com`) ||
+								new RegExp(`${keyword} [A-Za-z0-9_-]+/[A-Za-z0-9_-]+#[0-9]+`).test(lowerBody)
+							) {
+								return false;
+							}
 						}
-					}
-					return true;
-				})
-				.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-		),
+						return true;
+					})
+					.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+			)
+			.catch(() => "Pull requests are not available for this repo"),
 		issues: githubCache
 			.getAllIssues(knownRepo.owner, knownRepo.name)
 			.then(unfilteredIssues =>
@@ -77,7 +80,8 @@ export async function load({ params }) {
 							new Date(updated_at).getFullYear() >= now.getFullYear() - 1
 					)
 					.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-			),
+			)
+			.catch(() => "Issues are not available for this repo"),
 		discussions: githubCache
 			.getAllDiscussions(knownRepo.owner, knownRepo.name)
 			.then(unfilteredDiscussions =>
@@ -89,5 +93,6 @@ export async function load({ params }) {
 					)
 					.toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 			)
+			.catch(() => "Discussions are not available for this repo")
 	};
 }
