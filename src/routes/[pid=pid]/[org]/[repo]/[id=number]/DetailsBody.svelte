@@ -6,6 +6,7 @@
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
 	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { ConditionalKeys, RemoveIndexSignature } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as HoverCard from "$lib/components/ui/hover-card";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -33,7 +34,7 @@
 </script>
 
 {#snippet headingRenderer(
-	heading: Extract<keyof SvelteHTMLElements, `h${number}`> | (string & {}),
+	heading: ConditionalKeys<RemoveIndexSignature<SvelteHTMLElements>, `h${number}`>,
 	{ children, id, class: className, ...props }: HTMLAttributes<HTMLHeadingElement>
 )}
 	{@const shouldRender = id && renderSlug}

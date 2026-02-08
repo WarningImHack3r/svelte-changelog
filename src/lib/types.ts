@@ -1,6 +1,8 @@
 import type { Octokit } from "octokit";
 import type { GitHubRelease } from "$lib/server/github-cache";
 
+// ===== UTILITIES (my lil type-fest)
+
 export type Prettify<T> = {
 	[K in keyof T]: T[K];
 } & {};
@@ -10,6 +12,56 @@ export type Entries<T> = {
 }[keyof T][];
 
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+
+/**
+ * Removes index signatures from a type, keeping only explicitly defined keys.
+ *
+ * This is useful when you need to work with the actual property names of a type
+ * that has an index signature like `[key: string]: any`, which would otherwise
+ * make `keyof T` resolve to `string | number` instead of a union of literal keys.
+ *
+ * @template T - The type from which to remove index signatures
+ *
+ * @example
+ * interface MyType {
+ *   foo: string;
+ *   bar: number;
+ *   [key: string]: any;
+ * }
+ *
+ * type Keys = keyof MyType;
+ * // Result: string | number
+ *
+ * type ExplicitKeys = keyof RemoveIndexSignature<MyType>;
+ * // Result: "foo" | "bar"
+ */
+export type RemoveIndexSignature<T> = {
+	[K in keyof T as string extends K ? never : number extends K ? never : K]: T[K];
+};
+
+/**
+ * Extracts keys from a type that match a specific condition pattern.
+ *
+ * @template T - The type from which to extract keys
+ * @template Condition - The string pattern that keys must match
+ *
+ * @example
+ * interface Elements {
+ *   h1: HTMLHeadingElement;
+ *   h2: HTMLHeadingElement;
+ *   h3: HTMLHeadingElement;
+ *   div: HTMLDivElement;
+ *   span: HTMLSpanElement;
+ * }
+ *
+ * type HeadingKeys = ConditionalKeys<Elements, `h${number}`>;
+ * // Result: "h1" | "h2" | "h3"
+ */
+export type ConditionalKeys<T, Condition> = {
+	[K in keyof T]: K extends Condition ? K : never;
+}[keyof T];
+
+// ===== GLOBAL TYPES
 
 export type RepoEntry = {
 	/**
