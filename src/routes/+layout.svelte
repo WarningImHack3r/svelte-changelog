@@ -265,9 +265,7 @@
 										class="cursor-pointer data-disabled:opacity-75"
 										value={mode}
 										disabled={theme === mode}
-										onclick={() => {
-											return mode === "system" ? resetMode() : setMode(mode);
-										}}
+										onclick={() => (mode === "system" ? resetMode() : setMode(mode))}
 									>
 										<availableTheme.icon class="mr-2 size-4" />
 										<span>{availableTheme.label}</span>

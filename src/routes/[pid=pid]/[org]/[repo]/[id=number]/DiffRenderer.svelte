@@ -150,11 +150,9 @@
 	$effect(() => () => fileDiff.cleanUp());
 </script>
 
-<div id="diff-{id}" class="contents"></div>
-
-<style>
-	div {
-		--diffs-font-family: var(--font-mono);
-		--diffs-header-font-family: var(--font-sans);
-	}
-</style>
+<div
+	id="diff-{id}"
+	class="contents"
+	style:--diffs-font-family="var(--font-mono)"
+	style:--diffs-header-font-family="var(--font-sans)"
+></div>
