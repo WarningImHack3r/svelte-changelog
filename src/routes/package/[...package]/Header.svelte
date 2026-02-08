@@ -37,7 +37,7 @@
 					npmx: {
 						iconUrl: "https://npmx.dev/logo.svg",
 						url: `https://npmx.dev/package/${packageInfo.name}`,
-						imgClasses: "scale-110"
+						imgClasses: "scale-110 dark:invert"
 					}
 				}
 	);
@@ -104,13 +104,7 @@
 		<div class="inline-flex items-center">
 			<!-- JS registries -->
 			{#each Object.entries(registries) as [name, { iconUrl: src, url: href, imgClasses }], index (name)}
-				<Button
-					variant="ghost"
-					size="icon"
-					class="size-7"
-					{href}
-					target="_blank"
-				>
+				<Button variant="ghost" size="icon" class="size-7" {href} target="_blank">
 					<img {src} alt={name} class={["h-4", imgClasses]} />
 				</Button>
 
