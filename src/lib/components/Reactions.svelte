@@ -53,7 +53,6 @@
 				class="gap-1.5 text-sm select-none"
 				onclick={() =>
 					toast(ReactionToast, {
-						duration: 5_000,
 						componentProps: { href: reactionItemUrl }
 					})}
 			>

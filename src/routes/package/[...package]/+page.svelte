@@ -173,7 +173,7 @@
 					owner: data.currentPackage.repoOwner,
 					name: data.currentPackage.repoName
 				}}
-				class="my-8"
+				class="my-8 *:w-fit *:max-w-5/6"
 			/>
 			<Accordion.Root type="multiple" bind:value={expandableReleases} class="w-full space-y-2">
 				{#if data.currentPackage.pkg.deprecated}

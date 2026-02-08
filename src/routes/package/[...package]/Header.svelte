@@ -2,7 +2,8 @@
 	import type { ClassValue } from "svelte/elements";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ChevronRight, Rss } from "@lucide/svelte";
+	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 	import type { Package } from "$lib/server/package-discoverer";
 	import { ALL_SLUG } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
@@ -66,13 +67,37 @@
 </script>
 
 <div class={classValue}>
-	<h1
-		class="text-3xl font-semibold text-primary text-shadow-sm motion-safe:[view-transition-name:var(--vt-name)] md:text-5xl"
-		style:--vt-name="title-{viewTransitionName}"
-	>
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html packageInfo.name.replace(/\//g, "/<wbr />")}
-	</h1>
+	<div class="group relative">
+		<h1
+			class="text-3xl font-semibold text-primary text-shadow-sm motion-safe:[view-transition-name:var(--vt-name)] md:text-5xl"
+			style:--vt-name="title-{viewTransitionName}"
+		>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html packageInfo.name.replace(/\//g, "/<wbr />")}
+		</h1>
+		<div
+			class="absolute start-0 top-4.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-6 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8"
+		>
+			<button
+				type="button"
+				onclick={() =>
+					navigator.clipboard
+						.writeText(packageInfo.name)
+						.then(() =>
+							toast.success("Package name copied", {
+								description: `"${packageInfo.name}" has been successfully copied to your clipboard!`
+							})
+						)
+						.catch(e =>
+							toast.error("Failed to copy", {
+								description: `Could not copy "${packageInfo.name}" to your clipboard: ${e}"`
+							})
+						)}
+			>
+				<Copy class="size-5 text-muted-foreground hover:text-primary-foreground" />
+			</button>
+		</div>
+	</div>
 	<div class="flex flex-col xs:flex-row xs:items-center">
 		<!-- Repo name -->
 		{#if currentRepo.owner && currentRepo.name}

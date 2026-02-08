@@ -134,7 +134,7 @@
 	/>
 {/if}
 <ProgressBar class="text-primary" zIndex={100} />
-<Toaster />
+<Toaster duration={5000} />
 <MetaTags {...metaTags} />
 
 <header
