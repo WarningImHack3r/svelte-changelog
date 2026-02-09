@@ -2,7 +2,7 @@
 	import { resolve } from "$app/paths";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import { getBadgeDataFromRecord, getUnvisitedReleases } from "$lib/badges";
+	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "$lib/badges";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Toggle } from "$lib/components/ui/toggle";
@@ -18,12 +18,6 @@
 	 */
 	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
 </script>
-
-{#snippet newBadge(count: number)}
-	{#if count > 0}
-		<Badge>{count} new</Badge>
-	{/if}
-{/snippet}
 
 <ul class="space-y-8">
 	{#each data.displayablePackages as { category, packages } (category)}
@@ -88,6 +82,11 @@
 									>
 										{pkg.name}
 									</span>
+									{#await linkedBadgeData then d}
+										{#if isPackageNew(pkg.name, d?.releases ?? [])}
+											<Badge class="shrink-0">New!</Badge>
+										{/if}
+									{/await}
 									{#if pkg.deprecated}
 										<Badge variant="outline" class="mb-2 border-amber-600 text-amber-600 xs:mb-0">
 											Deprecated
@@ -121,7 +120,12 @@
 							</div>
 							<span class="mr-1 ml-auto flex shrink-0 items-center gap-1">
 								{#await linkedBadgeData then d}
-									{@render newBadge(getUnvisitedReleases(pkg.name, d?.releases ?? []).length)}
+									{#if !isPackageNew(pkg.name, d?.releases ?? [])}
+										{@const newCount = getUnvisitedReleases(pkg.name, d?.releases ?? []).length}
+										{#if newCount > 0}
+											<Badge class="shrink-0">{newCount} new</Badge>
+										{/if}
+									{/if}
 								{/await}
 								<ChevronRight class="transition-transform group-hover:translate-x-1" />
 							</span>

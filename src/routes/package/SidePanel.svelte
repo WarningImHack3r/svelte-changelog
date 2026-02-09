@@ -4,7 +4,7 @@
 	import { page } from "$app/state";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import { getBadgeDataFromRecord, getUnvisitedReleases } from "$lib/badges";
+	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "$lib/badges";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import { type PackageSettings, type Prettify, releasesTypes } from "$lib/types";
@@ -69,7 +69,11 @@
 	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
 </script>
 
-{#snippet newBadge(count: number)}
+{#snippet newPackageBadge()}
+	<Badge class="mr-1 shrink-0 px-1 py-0">New!</Badge>
+{/snippet}
+
+{#snippet newCountBadge(count: number)}
 	{#if count > 0}
 		<Badge class="shrink-0 px-1 py-0">{count} new</Badge>
 	{/if}
@@ -116,7 +120,7 @@
 								const isBPinned = pinnedROProxy.has(pkgB.name);
 								return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
 							})}
-							<!-- Categories with sub-items -->
+							<!-- Categories with multiple sub-items -->
 							<h3 class="text-xl font-bold text-primary" title={category.description}>
 								{category.name}
 							</h3>
@@ -155,6 +159,11 @@
 												})}
 												class="group inline-flex w-full items-center gap-1"
 											>
+												{#await linkedBadgeData then data}
+													{#if isPackageNew(pkg.name, data?.releases ?? [])}
+														{@render newPackageBadge()}
+													{/if}
+												{/await}
 												<span
 													class={[
 														"underline-offset-4 group-hover:underline",
@@ -167,9 +176,11 @@
 												</span>
 												<span class="ml-auto flex items-center gap-1">
 													{#await linkedBadgeData then data}
-														{@render newBadge(
-															getUnvisitedReleases(pkg.name, data?.releases ?? []).length
-														)}
+														{#if !isPackageNew(pkg.name, data?.releases ?? [])}
+															{@render newCountBadge(
+																getUnvisitedReleases(pkg.name, data?.releases ?? []).length
+															)}
+														{/if}
 													{/await}
 													<ChevronRight
 														class="size-4 text-primary transition-transform group-hover:translate-x-1"
@@ -200,6 +211,11 @@
 									})}
 									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary"
 								>
+									{#await linkedBadgeData then data}
+										{#if isPackageNew(firstPackageName, data?.releases ?? [])}
+											{@render newPackageBadge()}
+										{/if}
+									{/await}
 									<span
 										class="underline-offset-4 group-hover:underline"
 										title={category.description}
@@ -208,9 +224,11 @@
 									</span>
 									<span class="ml-auto flex items-center gap-1">
 										{#await linkedBadgeData then data}
-											{@render newBadge(
-												getUnvisitedReleases(firstPackageName, data?.releases ?? []).length
-											)}
+											{#if !isPackageNew(firstPackageName, data?.releases ?? [])}
+												{@render newCountBadge(
+													getUnvisitedReleases(firstPackageName, data?.releases ?? []).length
+												)}
+											{/if}
 										{/await}
 										<ChevronRight
 											class="size-4 text-primary transition-transform group-hover:translate-x-1"
