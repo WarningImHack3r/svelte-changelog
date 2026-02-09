@@ -6,7 +6,7 @@
 	import { replaceState } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
-	import { ArrowUpRight, ChevronLeft, Lock, Tag } from "@lucide/svelte";
+	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
@@ -14,6 +14,7 @@
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import TopBanner from "$lib/components/TopBanner.svelte";
 	import CollapsibleComments from "./CollapsibleComments.svelte";
 	import CollapsibleCommits from "./CollapsibleCommits.svelte";
 	import CollapsibleFiles from "./CollapsibleFiles.svelte";
@@ -113,6 +114,14 @@
 	}
 </script>
 
+{#if data.devOnlyRepo}
+	<TopBanner
+		icon={CircleAlert}
+		title="Dev-only repo"
+		markdown="This repository is only visible in dev mode for testing purposes, it will be forbidden in production as it's not known by this site."
+		class="mb-8 border-red-500 bg-red-400/10 text-red-500 prose-a:text-red-500!"
+	/>
+{/if}
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 	<a href={info.html_url}>

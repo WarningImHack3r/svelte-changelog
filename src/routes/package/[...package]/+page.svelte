@@ -10,11 +10,11 @@
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
 	import { Skeleton } from "$lib/components/ui/skeleton";
+	import TopBanner from "$lib/components/TopBanner.svelte";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
-	import TopBanner from "./TopBanner.svelte";
 
 	const loadingSentences = [
 		"Loading",

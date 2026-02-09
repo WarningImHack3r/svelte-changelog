@@ -1,4 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
+import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
@@ -11,7 +12,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 			org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
 			repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
-	if (!isKnownRepo) {
+	if (!dev && !isKnownRepo) {
 		error(403, {
 			message: "Unknown repository",
 			description:
@@ -40,6 +41,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 	);
 
 	return {
+		devOnlyRepo: dev && !isKnownRepo,
 		itemMetadata: {
 			org,
 			repo,
