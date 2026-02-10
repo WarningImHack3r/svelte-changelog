@@ -6,7 +6,7 @@
 	import { replaceState } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
-	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
+	import { ArrowUpRight, ChevronLeft, CircleAlert, Lightbulb, Lock, Tag } from "@lucide/svelte";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
@@ -21,6 +21,10 @@
 	import DetailsBody from "./DetailsBody.svelte";
 	import LinkedEntitiesList from "./LinkedEntitiesList.svelte";
 	import { dateTimeFormatter } from "./formatters";
+
+	const proTips = [
+		"You can prefix GitHub URLs of issues, PRs or discussions with **`svcl.dev/`** to view them on this page! Also try it on a GitHub release ;)"
+	];
 
 	let { data } = $props();
 
@@ -340,6 +344,18 @@
 		</AnimatedButton>
 	</div>
 </div>
+<!-- Pro tips -->
+{#if proTips.length}
+	{@const proTip = proTips[Math.floor(Math.random() * proTips.length)]}
+	{#if proTip}
+		<div
+			class="mt-12 flex justify-center gap-1 text-center opacity-50 transition-opacity duration-300 hover:opacity-100"
+		>
+			<Lightbulb class="size-5 shrink-0" />
+			<MarkdownRenderer markdown="**Pro tip:** {proTip}" inline class="prose-sm max-w-full" />
+		</div>
+	{/if}
+{/if}
 
 <style>
 	:global(html.dark .shiki),
