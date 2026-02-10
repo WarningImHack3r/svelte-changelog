@@ -12,6 +12,7 @@ let phInit = false;
 export function load({ url, data }) {
 	if (!phInit && browser && !dev) {
 		posthog.init(PUBLIC_POSTHOG_KEY, {
+			__add_tracing_headers: [url.host],
 			api_host: `${url.origin}/ingest`,
 			ui_host: "https://eu.posthog.com",
 			person_profiles: "always"
