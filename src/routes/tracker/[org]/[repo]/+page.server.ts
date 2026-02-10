@@ -1,5 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
+import { siteName } from "$lib/properties";
 import { uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 
@@ -25,8 +26,7 @@ export async function load({ params }) {
 	if (!knownRepo) {
 		error(404, {
 			message: "Unknown repository",
-			description:
-				"Svelte Changelog can only track known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",
+			description: `${siteName} can only track known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Tracker home page",
 				href: resolve("/tracker")

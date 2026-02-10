@@ -3,10 +3,10 @@ import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 import posthog from "posthog-js";
 import { defineBaseMetaTags } from "svelte-meta-tags";
+import { siteName } from "$lib/properties";
 
 injectSpeedInsights();
 
-const siteName = "Svelte Changelog";
 let phInit = false;
 
 export function load({ url, data }) {

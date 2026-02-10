@@ -1,6 +1,7 @@
 import { type RequestHandler, error } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { marked } from "marked";
+import { authorFullName, siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
@@ -14,8 +15,8 @@ import { getAllPackagesReleases, getPackageReleases } from "../releases";
  */
 function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single") {
 	const feed = new Feed({
-		copyright: "Antoine Lethimonnier & GitHub Inc.",
-		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by Svelte Changelog.`,
+		copyright: `${authorFullName} & GitHub Inc.`,
+		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by ${siteName}.`,
 		favicon: "https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg",
 		feedLinks: {
 			xml: url.toString().replace(/[A-z\d]+\.[A-z\d]+$/, "rss.xml"),
@@ -29,7 +30,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 	});
 	feed.addCategory("Technology");
 	feed.addContributor({
-		name: "Antoine Lethimonnier",
+		name: authorFullName,
 		link: "https://github.com/WarningImHack3r"
 	});
 	return feed;

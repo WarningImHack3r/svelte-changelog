@@ -1,6 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
+import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -15,8 +16,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 	if (!dev && !isKnownRepo) {
 		error(404, {
 			message: "Unknown repository",
-			description:
-				"Svelte Changelog can only display the details of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",
+			description: `${siteName} can only display the details of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Go home",
 				href: resolve("/")

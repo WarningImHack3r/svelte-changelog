@@ -1,9 +1,10 @@
 import { definePageMetaTags } from "svelte-meta-tags";
+import { siteName } from "$lib/properties";
 
 export function load({ url }) {
 	return definePageMetaTags({
 		title: "v2 • Devlog",
-		description: "The development blog of Svelte Changelog",
+		description: `The development blog of ${siteName}`,
 		openGraph: {
 			images: [
 				{

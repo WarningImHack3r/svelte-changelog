@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import { authorFullName } from "$lib/properties";
 </script>
 
 <h5 class="-mt-8 text-muted-foreground">
 	{new Intl.DateTimeFormat("en-US", {
 		dateStyle: "long"
-	}).format(new Date("2025-04-11"))} • Antoine Lethimonnier
+	}).format(new Date("2025-04-11"))} • {authorFullName}
 </h5>
 
 <p>
@@ -137,4 +138,6 @@
 	software, and <strong>thank you to everyone supporting me</strong> and enjoying this site and my projects!
 </p>
 
-<div class="mt-12 text-muted-foreground">~ Antoine</div>
+<div class="mt-12 text-muted-foreground">
+	~ {authorFullName.split(" ", 1)[0] ?? authorFullName}
+</div>

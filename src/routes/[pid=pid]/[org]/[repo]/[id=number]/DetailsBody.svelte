@@ -5,6 +5,7 @@
 	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
+	import { siteName } from "$lib/properties";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { ConditionalKeys, RemoveIndexSignature } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
@@ -104,7 +105,7 @@
 									})}
 									class="group h-auto p-0! text-base"
 								>
-									Open in Svelte Changelog
+									Open in {siteName}
 									<ChevronRight class="transition-transform group-hover:translate-x-1" />
 								</Button>
 							</HoverCard.Content>

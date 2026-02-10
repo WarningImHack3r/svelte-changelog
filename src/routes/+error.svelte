@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { siteName } from "$lib/properties";
 	import { Button } from "$lib/components/ui/button";
 </script>
 
 <svelte:head>
-	<title>Error {page.status} | Svelte Changelog</title>
+	<title>Error {page.status} | {siteName}</title>
 </svelte:head>
 
 <div

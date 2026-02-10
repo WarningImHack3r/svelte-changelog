@@ -1,4 +1,5 @@
 import { error } from "@sveltejs/kit";
+import { siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
@@ -20,7 +21,7 @@ export async function load({ params, locals }) {
 				repoName: "",
 				pkg: {
 					name: "All packages",
-					description: "All the packages of this site"
+					description: `All the packages listed on ${siteName}`
 				}
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
 			releases: await getAllPackagesReleases(categorizedPackages, locals.posthog)
