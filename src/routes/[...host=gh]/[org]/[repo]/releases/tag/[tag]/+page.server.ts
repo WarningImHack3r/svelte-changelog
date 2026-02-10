@@ -9,7 +9,7 @@ export function load({ params: { org, repo, tag } }) {
 			repo.localeCompare(repoName, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!repository) {
-		error(403, {
+		error(404, {
 			message: "Unknown repository",
 			description:
 				"Svelte Changelog can only display releases for the packages of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",

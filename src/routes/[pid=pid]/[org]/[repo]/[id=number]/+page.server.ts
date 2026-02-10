@@ -13,7 +13,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 			repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!dev && !isKnownRepo) {
-		error(403, {
+		error(404, {
 			message: "Unknown repository",
 			description:
 				"Svelte Changelog can only display the details of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",

@@ -23,7 +23,7 @@ export async function load({ params }) {
 			params.repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!knownRepo) {
-		error(403, {
+		error(404, {
 			message: "Unknown repository",
 			description:
 				"Svelte Changelog can only track known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!",
