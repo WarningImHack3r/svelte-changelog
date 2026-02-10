@@ -53,18 +53,30 @@
 	let releaseDate = $derived(new Date(release.published_at ?? release.created_at));
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
+		if (!repo.owner || !repo.name) return release.body;
 		// Add missing links to PRs in the release body
-		return repo.owner && repo.name
-			? release.body.replace(
-					// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
-					/(?<!\]\([^)]*)\b#(\d+)(#issuecomment-\d+)?(?![^[]*\])/g,
-					(match, prNumber, comment) => {
-						const commentPart = comment ?? "";
-						const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${commentPart}`;
-						return `[${match}](${prUrl})`;
-					}
-				)
-			: release.body;
+		// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+		const placeholder = `__MDLINK_${Math.random().toString(36)}_`;
+		const savedLinks: string[] = [];
+
+		const bodyWithPlaceholders = release.body.replace(/\[([^\]]+)\]\(([^)]+)\)/g, match => {
+			savedLinks.push(match);
+			return `${placeholder}${savedLinks.length - 1}${placeholder}`;
+		});
+
+		const bodyWithNewLinks = bodyWithPlaceholders.replace(
+			/\b#(\d+)(#issuecomment-\d+)?/g,
+			(match, prNumber, comment) => {
+				const commentPart = comment ?? "";
+				const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${commentPart}`;
+				return `[${match}](${prUrl})`;
+			}
+		);
+
+		return bodyWithNewLinks.replace(
+			new RegExp(`${placeholder}(\\d+)${placeholder}`, "g"),
+			(_match, index) => savedLinks[parseInt(index, 10)] ?? ""
+		);
 	});
 	let isMajorRelease = $derived(
 		!release.prerelease &&
