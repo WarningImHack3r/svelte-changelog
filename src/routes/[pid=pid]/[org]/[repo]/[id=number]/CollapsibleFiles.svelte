@@ -49,7 +49,9 @@
 			{#if i > 0}
 				<Separator />
 			{/if}
-			<div class="my-4 font-semibold">No diff found for <code>{file.filename}</code>, it's likely too big! :(</div>
+			<div class="my-4 font-semibold">
+				No diff found for <code>{file.filename}</code>, it's likely too big! :(
+			</div>
 		{/each}
 	{/each}
 	<Separator />
