@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { ArrowUpRight } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
 	import type { LinkedItem } from "$lib/server/github-cache";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Avatar from "$lib/components/ui/avatar";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Reactions from "$lib/components/Reactions.svelte";
@@ -93,6 +95,23 @@
 					]}
 				/>
 				<Reactions reactions={entity.reactions} reactionItemUrl={entity.html_url} class="mt-4" />
+				<AnimatedButton
+					href={entity.html_url}
+					target="_blank"
+					variant="secondary"
+					class="group ms-auto mt-4 flex w-fit gap-0"
+				>
+					Open
+					{#if entity.repository.owner === currentRepo.owner && entity.repository.name === currentRepo.name}
+						#{entity.number}
+					{:else}
+						{entity.repository.owner}/{entity.repository.name}#{entity.number}
+					{/if}
+					on GitHub
+					<ArrowUpRight
+						class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+					/>
+				</AnimatedButton>
 			</Accordion.Content>
 		</Accordion.Item>
 	{/each}
