@@ -14,6 +14,17 @@ export type Entries<T> = {
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 
 /**
+ * A basic "string.replaceAll()" with TypeScript types.
+ * Not exported, local utility.
+ */
+type Replace<
+	T extends string,
+	S extends string,
+	D extends string,
+	A extends string = ""
+> = T extends `${infer L}${S}${infer R}` ? Replace<R, S, D, `${A}${L}${D}`> : `${A}${T}`;
+
+/**
  * Removes index signatures from a type, keeping only explicitly defined keys.
  *
  * This is useful when you need to work with the actual property names of a type
@@ -200,5 +211,7 @@ export const ALL_SLUG = "all";
 export type PackageSettings = {
 	showPrereleases: boolean;
 	releasesType: Lowercase<(typeof releasesTypes)[number]>;
+	expandState: Replace<Lowercase<(typeof expandStates)[number]>, " ", "-">;
 };
 export const releasesTypes = ["All", "Major", "Minor", "Patch"] as const;
+export const expandStates = ["Expand all", "Smart", "Collapse all"] as const;

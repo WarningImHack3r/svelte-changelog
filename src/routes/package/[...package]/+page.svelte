@@ -94,12 +94,19 @@
 		const aWeekAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
 		return displayableReleases
 			.filter(({ created_at, published_at, tag_name }, index) => {
-				if (page.url.hash && tag_name.includes(page.url.hash.replace(/^#/, ""))) return true;
-				// Only expand releases that are less than a week old
-				const creationTimestamp = new Date(published_at ?? created_at).getTime();
-				if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
-				const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
-				return creationTimestamp > maxDate;
+				switch (packageSettings.current.expandState) {
+					case "collapse-all":
+						return false;
+					case "expand-all":
+						return true;
+					case "smart":
+						if (page.url.hash && tag_name.includes(page.url.hash.replace(/^#/, ""))) return true;
+						// Only expand releases that are less than a week old
+						const creationTimestamp = new Date(published_at ?? created_at).getTime();
+						if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
+						const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
+						return creationTimestamp > maxDate;
+				}
 			})
 			.map(({ id }) => `${id}`);
 	});

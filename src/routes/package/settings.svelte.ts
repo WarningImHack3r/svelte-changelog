@@ -4,7 +4,8 @@ import type { PackageSettings } from "$lib/types";
 
 const DEFAULT_SETTINGS: PackageSettings = {
 	showPrereleases: true,
-	releasesType: "all"
+	releasesType: "all",
+	expandState: "smart"
 };
 
 export const settingsUtils = {

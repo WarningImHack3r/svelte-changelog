@@ -7,7 +7,7 @@
 	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "$lib/badges";
 	import type { GitHubRelease } from "$lib/server/github-cache";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
-	import { type PackageSettings, type Prettify, releasesTypes } from "$lib/types";
+	import { type PackageSettings, type Prettify, expandStates, releasesTypes } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as Card from "$lib/components/ui/card";
@@ -287,11 +287,41 @@
 					}
 				}
 				size="sm"
-				class={[headless && "border"]}
+				class="border"
 			>
 				{#each releasesTypes as releaseType (releaseType.toLowerCase())}
 					<ToggleGroup.Item value={releaseType.toLowerCase()} class="h-auto py-0.5">
 						{releaseType}
+					</ToggleGroup.Item>
+				{/each}
+			</ToggleGroup.Root>
+		</div>
+
+		<Separator class="mt-0.5" />
+
+		<!-- Expanding/collapsing state -->
+		<div
+			class={["flex items-center", (headless && "flex-col items-start gap-2") || "justify-between"]}
+		>
+			<span class="text-sm leading-none font-medium text-nowrap">Initial state:</span>
+			<ToggleGroup.Root
+				type="single"
+				bind:value={
+					() => settings.expandState,
+					newType => {
+						// don't take in account deselections, naturally always leaving something selected
+						if (newType) settings.expandState = newType;
+					}
+				}
+				size="sm"
+				class="border"
+			>
+				{#each expandStates as expandState (expandState.toLowerCase())}
+					<ToggleGroup.Item
+						value={expandState.toLowerCase().replace(/ /g, "-")}
+						class="h-auto py-0.5"
+					>
+						{expandState}
 					</ToggleGroup.Item>
 				{/each}
 			</ToggleGroup.Root>
