@@ -841,6 +841,9 @@ export class GitHubCache {
 		const { data: changelogResult } = await this.#request(
 			kit =>
 				kit.rest.repos.getContent({
+					mediaType: {
+						format: "raw"
+					},
 					owner,
 					repo,
 					ref: (() => {
@@ -861,11 +864,7 @@ export class GitHubCache {
 			createOctokitResponse([])
 		);
 
-		if (!("content" in changelogResult)) return []; // filter out empty or multiple results
-		const { content, encoding, type } = changelogResult;
-		if (type !== "file" || !content) return []; // filter out directories and empty files
-		const changelogFileContents =
-			encoding === "base64" ? Buffer.from(content, "base64").toString() : content;
+		const changelogFileContents = changelogResult as unknown as string;
 		// Actually parse the changelog file
 		const { versions } = await parseChangelog(
 			changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
@@ -966,6 +965,9 @@ export class GitHubCache {
 					const { data: packageJson } = await this.#request(
 						kit =>
 							kit.rest.repos.getContent({
+								mediaType: {
+									format: "raw"
+								},
 								owner,
 								repo,
 								path
@@ -973,14 +975,10 @@ export class GitHubCache {
 						createOctokitResponse([])
 					);
 
-					if (!("content" in packageJson)) continue; // filter out empty or multiple results
-					const { content, encoding, type } = packageJson;
-					if (type !== "file" || !content) continue; // filter out directories and empty files
-					const packageFile =
-						encoding === "base64" ? Buffer.from(content, "base64").toString() : content;
-
 					try {
-						const { description } = JSON.parse(packageFile) as { description: string };
+						const { description } = JSON.parse(packageJson as unknown as string) as {
+							description: string;
+						};
 						if (description) descriptions.set(path, description);
 					} catch {
 						// ignore
