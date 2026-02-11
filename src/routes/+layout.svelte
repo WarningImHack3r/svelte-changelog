@@ -13,6 +13,7 @@
 	import { PersistedState } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { news } from "$lib/news/news.json";
+	import { siteName } from "$lib/properties";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import { buttonVariants } from "$lib/components/ui/button";
@@ -163,11 +164,17 @@
 					class="size-8"
 				/>
 				{#if !page.route.id?.startsWith(resolve("/devlog"))}
+					{@const [first = "huh?", second] = siteName.split(" ", 2)}
 					<span class="hidden gap-1 text-xl font-semibold text-shadow-xs/10 xs:inline-flex">
-						<span style:text-box="trim-both ex alphabetic" class="font-display">Svelte</span>
-						<span style:text-box="trim-both ex alphabetic" class="[font-size:1.30rem] text-primary">
-							Changelog
-						</span>
+						<span style:text-box="trim-both ex alphabetic" class="font-display">{first}</span>
+						{#if second}
+							<span
+								style:text-box="trim-both ex alphabetic"
+								class="[font-size:1.30rem] text-primary"
+							>
+								{second}
+							</span>
+						{/if}
 					</span>
 				{/if}
 			</a>

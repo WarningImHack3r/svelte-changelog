@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { siteName } from "$lib/properties";
+
 	type Props = {
 		title: string;
 		description?: string;
 	};
 
 	let { title, description }: Props = $props();
+	const [first = "huh?", second] = siteName.split(" ", 2);
 </script>
 
 <div
@@ -25,8 +28,10 @@
 				class="w-16"
 			/>
 			<span class="flex text-4xl" style:gap="6">
-				<span style:font-family="DisplayFont">Svelte</span>
-				<span class="text-orange-600" style:font-family="SansFontSemibold">Changelog</span>
+				<span style:font-family="DisplayFont">{first}</span>
+				{#if second}
+					<span class="text-orange-600" style:font-family="SansFontSemibold">{second}</span>
+				{/if}
 			</span>
 		</div>
 		<div class="my-auto flex flex-col justify-center">
