@@ -46,7 +46,7 @@
 								package: pkg.name
 							})}
 							onclick={e => {
-								if (!(e.target instanceof HTMLAnchorElement)) e.preventDefault(); // avoid pinning from navigating
+								if (e.target instanceof HTMLButtonElement) e.preventDefault(); // avoid pinning from navigating
 							}}
 							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-muted"
 							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
