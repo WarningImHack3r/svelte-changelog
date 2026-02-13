@@ -99,13 +99,14 @@
 						return false;
 					case "expand-all":
 						return true;
-					case "smart":
+					case "smart": {
 						if (page.url.hash && tag_name.includes(page.url.hash.replace(/^#/, ""))) return true;
 						// Only expand releases that are less than a week old
 						const creationTimestamp = new Date(published_at ?? created_at).getTime();
 						if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
 						const maxDate = lastUpdateDate?.getTime() ?? aWeekAgo;
 						return creationTimestamp > maxDate;
+					}
 				}
 			})
 			.map(({ id }) => `${id}`);
