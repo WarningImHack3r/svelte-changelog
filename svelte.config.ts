@@ -1,7 +1,7 @@
+import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-vercel";
 
-/** @type {import("@sveltejs/kit").Config} */
-const config = {
+const config: Config = {
 	kit: {
 		adapter: adapter(),
 		// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
