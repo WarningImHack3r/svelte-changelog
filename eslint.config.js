@@ -36,7 +36,18 @@ export default defineConfig(
 	{
 		rules: {
 			"svelte/no-unused-props": ["error", { allowUnusedNestedProperties: true }],
-			"@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }]
+			"@typescript-eslint/no-unused-vars": [
+				"error",
+				{
+					args: "all",
+					argsIgnorePattern: "^_",
+					caughtErrors: "all",
+					caughtErrorsIgnorePattern: "^_",
+					destructuredArrayIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+					ignoreRestSiblings: true
+				}
+			]
 		}
 	},
 	globalIgnores([
