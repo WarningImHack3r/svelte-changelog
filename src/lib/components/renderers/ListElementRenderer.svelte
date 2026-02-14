@@ -15,7 +15,7 @@
 	const linksFinder: Attachment<HTMLLIElement> = node => {
 		const pullsLinks: string[] = [];
 		const issuesLinks: string[] = [];
-		const links = node.innerHTML.match(/https?:\/\/[^"]+/g) ?? [];
+		const links = node.innerHTML.match(/https?:\/\/[^")#]+/g) ?? [];
 		for (const link of links) {
 			if (link.includes("/pull/")) {
 				pullsLinks.push(link);
