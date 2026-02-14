@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	const reactLike = html(`<style>${renderedComponent.head}</style>${renderedComponent.body}`);
 
-	const svg = await satori(reactLike, {
+	const svg = await satori(decodeVNode(reactLike), {
 		width: OG_WIDTH,
 		height: OG_HEIGHT,
 		fonts: [
@@ -78,3 +78,50 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (!dev) response.headers.append("Cache-Control", `max-age=${60 * 60 * 24 * 30}, immutable`);
 	return response;
 };
+
+type VNode = ReturnType<typeof html>;
+
+/**
+ * Decodes the XML-ified parts of string subnodes
+ * to revert to the original content
+ *
+ * @param original the original node
+ * @returns the node with replaced leaves
+ */
+function decodeVNode(original: VNode): VNode {
+	const children = original.props.children;
+
+	if (!children) {
+		return original;
+	}
+
+	const decodedChildren =
+		typeof children === "string"
+			? decodeXML(children)
+			: Array.isArray(children)
+				? children.map(decodeVNode)
+				: decodeVNode(children);
+
+	if (decodedChildren === children) {
+		return original;
+	}
+
+	return {
+		...original,
+		props: { ...original.props, children: decodedChildren }
+	};
+}
+
+const XML_ENTITIES: Record<string, string> = {
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&quot;": '"',
+	"&apos;": "'"
+};
+
+const XML_ENTITY_REGEX = /&(?:amp|lt|gt|quot|apos);/g;
+
+function decodeXML(original: string) {
+	return original.replace(XML_ENTITY_REGEX, match => XML_ENTITIES[match] ?? match);
+}
