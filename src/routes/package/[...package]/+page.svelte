@@ -1,15 +1,21 @@
+<script lang="ts" module>
+	const listFormatter = new Intl.ListFormat("en-US");
+</script>
+
 <script lang="ts">
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { navigating, page } from "$app/state";
-	import { CircleAlert, Info, LoaderCircle } from "@lucide/svelte";
+	import { CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import semver from "semver";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
+	import { Separator } from "$lib/components/ui/separator";
 	import { Skeleton } from "$lib/components/ui/skeleton";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import TopBanner from "$lib/components/TopBanner.svelte";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
@@ -142,6 +148,60 @@
 		capture: () => expandableReleases,
 		restore: item => (expandableReleases = item)
 	};
+
+	/**
+	 * Regular expressions that represent changelog lines where support for something
+	 * new or a new (major) version of something has been added
+	 */
+	const supportRegexes = [
+		// stuff with version
+		/: add(?:ed)? (?:experimental )?support for ([\w-]+) v?(\d+)/i,
+		/\(\w+\) add(?:ed)? (?:experimental )?support for ([\w-]+) v?(\d+)/i,
+		/Add(?:ed)? (?:experimental )?support for ([\w-]+) v?(\d+)/,
+		/: ([\w-]+) v?(\d+) support/i,
+		/: support ([\w-]+) v?(\d+)/i,
+		/Support ([\w-]+) v?(\d+)/,
+		// "new" stuff
+		/feat: add(?:ed)? (?:experimental )?support for ([\w-]+)/i,
+		/\(feat\) add(?:ed)? (?:experimental )?support for ([\w-]+)/i,
+		/Add(?:ed)? (?:experimental )?support for ([\w-]+)/
+	];
+	/**
+	 * A blacklist to help avoiding false positives; dirty but can't think of a better
+	 * solution that would support all the edge cases..
+	 */
+	const supportPackagesBlacklist = new Set([
+		"loading",
+		"the",
+		"flat",
+		"modern",
+		"formatting",
+		"object",
+		"event",
+		"style",
+		"generics"
+	]);
+	/**
+	 * Computes the packages or package versions for which support
+	 * has been added in the current version.
+	 *
+	 * @param releaseBody the text body of the version
+	 * @returns a list of newly supported packages/versions, empty if none
+	 */
+	function supportAddedFor(releaseBody: string): string[] {
+		return releaseBody
+			.split(/\r?\n/g)
+			.map(line => {
+				for (const regex of supportRegexes) {
+					const match = line.match(regex);
+					if (match && match[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
+						return match[2] ? `${match[1]} ${match[2]}` : match[1];
+					}
+				}
+				return null;
+			})
+			.filter(Boolean);
+	}
 </script>
 
 {#snippet loading()}
@@ -242,6 +302,7 @@
 								new Date(release.published_at ?? release.created_at) >
 									new Date(earliestOfNextMajor.published_at ?? earliestOfNextMajor.created_at)
 							: false}
+					{@const addedSupportFor = supportAddedFor(release.body ?? "")}
 					<ReleaseCard
 						{index}
 						repo={{ owner: data.currentPackage.repoOwner, name: data.currentPackage.repoName }}
@@ -249,6 +310,37 @@
 						isLatest={release.id === latestRelease?.id}
 						{isMaintenance}
 					/>
+					{#if addedSupportFor.length && !release.prerelease && semVersion?.patch === 0}
+						<div class="flex items-center gap-2">
+							<Separator
+								class="grow rounded-s-full bg-primary/75 data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-auto"
+							/>
+							<div class="flex items-center gap-1.5 text-center text-sm font-semibold">
+								Support added for {listFormatter.format(addedSupportFor)}
+								<Tooltip.Provider delayDuration={300}>
+									<Tooltip.Root>
+										<Tooltip.Trigger class="opacity-50 hover:opacity-100">
+											<CircleQuestionMark class="size-4" />
+										</Tooltip.Trigger>
+										<Tooltip.Content
+											class="max-w-prose border bg-popover text-base text-popover-foreground"
+											arrowClasses="bg-popover border-b border-r"
+										>
+											<h3 class="text-md mb-1 font-semibold">What's this?</h3>
+											<span>
+												This is an experimental detection feature that analyzes the contents of the
+												release above, and gets created if relevant. False positives or missing
+												detections can happen, please reach out to help improving it!
+											</span>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</Tooltip.Provider>
+							</div>
+							<Separator
+								class="grow rounded-e-full bg-primary/75 data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-auto"
+							/>
+						</div>
+					{/if}
 				{:else}
 					<div class="mt-8">
 						<p class="font-display text-2xl font-semibold">Nothing to show here!</p>
