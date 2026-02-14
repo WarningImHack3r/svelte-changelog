@@ -76,7 +76,7 @@
 			{@html packageInfo.name.replace(/\//g, "/<wbr />")}
 		</h1>
 		<div
-			class="absolute start-0 top-4.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-6 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8"
+			class="absolute start-0 top-2.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-5 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8 md:top-4.5 md:group-hover:-translate-x-6"
 		>
 			<button
 				type="button"
@@ -94,7 +94,7 @@
 							})
 						)}
 			>
-				<Copy class="size-5 text-muted-foreground hover:text-primary-foreground" />
+				<Copy class="size-4 text-muted-foreground hover:text-primary-foreground md:size-5" />
 			</button>
 		</div>
 	</div>
