@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { ResolvedPathname } from "$app/types";
 	import { FileDiff } from "@lucide/svelte";
+	import posthog from "posthog-js";
 	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 	import DiffRenderer, { parsePatchFiles } from "./DiffRenderer.svelte";
@@ -37,14 +39,37 @@
 			{#if i + j > 0}
 				<Separator />
 			{/if}
-			<DiffRenderer
-				{route}
-				fileDiff={patch}
-				langs={highlighter.getLoadedLanguages()}
-				options={{
-					theme: { light: lightTheme?.name ?? "", dark: darkTheme?.name ?? "" }
-				}}
-			/>
+			<svelte:boundary
+				onerror={e =>
+					posthog.captureException(e, {
+						fileName: patch.name,
+						pr: route
+					})}
+			>
+				{#snippet failed(_error, reset)}
+					<div
+						class="-mx-4 flex flex-col border-[0.5px] border-b-red-500/75 bg-red-500/25 px-8 py-4"
+					>
+						<span class="font-semibold">Rendering error</span>
+						<span>Failed to render the diff for "{patch.name}". This error has been reported.</span>
+						<span>You can try again to attempt fixing the problem.</span>
+						<Button
+							class="ml-auto border border-red-500/50 bg-red-300/30 hover:bg-red-300/50"
+							onclick={reset}
+						>
+							Retry
+						</Button>
+					</div>
+				{/snippet}
+
+				<DiffRenderer
+					fileDiff={patch}
+					langs={highlighter.getLoadedLanguages()}
+					options={{
+						theme: { light: lightTheme?.name ?? "", dark: darkTheme?.name ?? "" }
+					}}
+				/>
+			</svelte:boundary>
 		{:else}
 			{#if i > 0}
 				<Separator />
