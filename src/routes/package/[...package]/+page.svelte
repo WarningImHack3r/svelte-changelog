@@ -7,7 +7,7 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { navigating, page } from "$app/state";
-	import { CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
+	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import semver from "semver";
 	import { ALL_SLUG } from "$lib/types";
@@ -312,8 +312,9 @@
 					/>
 					{#if addedSupportFor.length && !release.prerelease && semVersion?.patch === 0}
 						<div class="flex items-center gap-2">
+							<ChevronUp class="size-4 text-primary" />
 							<Separator
-								class="grow rounded-s-full bg-primary/75 data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-auto"
+								class="grow bg-primary/75 data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-auto"
 							/>
 							<div class="flex items-center gap-1.5 text-center text-sm font-semibold">
 								Support added for {listFormatter.format(addedSupportFor)}
@@ -337,8 +338,9 @@
 								</Tooltip.Provider>
 							</div>
 							<Separator
-								class="grow rounded-e-full bg-primary/75 data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-auto"
+								class="grow bg-primary/75 data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-auto"
 							/>
+							<ChevronUp class="size-4 text-primary" />
 						</div>
 					{/if}
 				{:else}
