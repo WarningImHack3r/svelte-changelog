@@ -36,7 +36,7 @@
 					]}
 				>
 					<Menu />
-					<span class="sr-only">Menu</span>
+					<span class="sr-only">Packages list menu</span>
 				</AnimatedButton>
 			{/snippet}
 		</Sheet.Trigger>

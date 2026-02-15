@@ -7,7 +7,21 @@
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
 	import type { ResolvedPathname } from "$app/types";
-	import { ChevronDown, type Icon, Monitor, Moon, Snowflake, Sun, X } from "@lucide/svelte";
+	import {
+		ChevronDown,
+		ChevronRight,
+		House,
+		type Icon,
+		Menu,
+		Monitor,
+		Moon,
+		Newspaper,
+		Package,
+		Radar,
+		Snowflake,
+		Sun,
+		X
+	} from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { PersistedState } from "runed";
@@ -16,9 +30,10 @@
 	import { siteName } from "$lib/properties";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
-	import { buttonVariants } from "$lib/components/ui/button";
+	import { Button, buttonVariants } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { Separator } from "$lib/components/ui/separator";
+	import * as Sheet from "$lib/components/ui/sheet";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import { Toggle } from "$lib/components/ui/toggle";
 	import * as Tooltip from "$lib/components/ui/tooltip";
@@ -82,11 +97,21 @@
 
 	// Navbar
 	const navbarBorderThreshold = 25;
-	const navbarItems: Record<string, ResolvedPathname> = {
-		Packages: resolve("/packages"),
-		Tracker: resolve("/tracker"),
-		Devlog: resolve("/devlog")
+	const navbarItems: Record<
+		"Home" | "Packages" | "Tracker" | "Devlog",
+		{ icon: typeof Icon; link: ResolvedPathname }
+	> = {
+		Home: { icon: House, link: resolve("/") },
+		Packages: { icon: Package, link: resolve("/packages") },
+		Tracker: { icon: Radar, link: resolve("/tracker") },
+		Devlog: { icon: Newspaper, link: resolve("/devlog") }
 	};
+	onNavigate(({ from, to, type }) => {
+		if (from?.route.id === to?.route.id || type === "form") return;
+		open = false;
+	});
+
+	let open = $state(false);
 
 	// Snow - enabled during Dec 15th through Jan 15th
 	const currentDate = new Date();
@@ -135,7 +160,7 @@
 	/>
 {/if}
 <ProgressBar class="text-primary" zIndex={100} />
-<Toaster duration={5000} />
+<Toaster duration={5_000} />
 <MetaTags {...metaTags} />
 
 <header
@@ -157,6 +182,40 @@
 	>
 		<div class="mx-auto flex h-14 w-full items-center px-6 xs:px-8">
 			<!-- Left part -->
+			<Sheet.Root bind:open>
+				<Sheet.Trigger>
+					{#snippet child({ props })}
+						<AnimatedButton {...props} variant="ghost" class="-ms-3 sm:hidden">
+							<Menu />
+							<span class="sr-only">Site menu</span>
+						</AnimatedButton>
+					{/snippet}
+				</Sheet.Trigger>
+				<Sheet.Content side="left" class="overflow-y-auto">
+					<Sheet.Header>
+						<Sheet.Title class="text-xl">{siteName}</Sheet.Title>
+					</Sheet.Header>
+					<ul class="flex flex-col gap-1 px-2">
+						{#each Object.entries(navbarItems) as [title, { icon: Icon, link }] (link)}
+							{@const disabled = page.url.pathname.startsWith(link === "/" ? "/package/" : link)}
+							<li
+								class="inline-flex items-center gap-3 rounded-md px-2 has-disabled:bg-accent has-disabled:opacity-50"
+							>
+								<Icon class="size-4 shrink-0 text-primary" />
+								<Button
+									href={disabled ? undefined : link}
+									variant="link"
+									{disabled}
+									class="grow justify-start py-0 text-foreground has-[>svg]:px-0"
+								>
+									{title}
+									<ChevronRight class="ml-auto size-4 shrink-0 in-disabled:hidden" />
+								</Button>
+							</li>
+						{/each}
+					</ul>
+				</Sheet.Content>
+			</Sheet.Root>
 			<a href={resolve("/")} class="flex items-center gap-2">
 				<img
 					src="https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg"
@@ -168,10 +227,7 @@
 					<span class="hidden gap-1 text-xl font-semibold text-shadow-xs/10 xs:inline-flex">
 						<span style:text-box="trim-both ex alphabetic" class="font-display">{first}</span>
 						{#if second}
-							<span
-								style:text-box="trim-both ex alphabetic"
-								class="[font-size:1.30rem] text-primary"
-							>
+							<span style:text-box="trim-both ex alphabetic" class="text-[1.3rem] text-primary">
 								{second}
 							</span>
 						{/if}
@@ -181,12 +237,13 @@
 			{#if page.route.id?.startsWith(resolve("/devlog"))}
 				<div class="mx-4 h-8 w-0.5 rotate-25 rounded-full bg-muted-foreground/40"></div>
 				<span class="text-xl font-semibold">Blog</span>
-			{/if}
-
-			<!-- Navigation -->
-			{#if !page.route.id?.startsWith(resolve("/devlog"))}
+			{:else}
+				<!-- Navigation -->
+				{@const largeNavigatables = (
+					Object.entries(navbarItems) as Entries<typeof navbarItems>
+				).filter(([title]) => title !== "Home")}
 				<ul class="ml-6 hidden sm:flex">
-					{#each Object.entries(navbarItems) as [title, link] (link)}
+					{#each largeNavigatables as [title, { link }] (link)}
 						{@const disabled = page.url.pathname.startsWith(link)}
 						<li>
 							<AnimatedButton
