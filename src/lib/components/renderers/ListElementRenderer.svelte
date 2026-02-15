@@ -15,7 +15,11 @@
 	const linksFinder: Attachment<HTMLLIElement> = node => {
 		const pullsLinks: string[] = [];
 		const issuesLinks: string[] = [];
-		const links = node.innerHTML.match(/https?:\/\/[^")#]+/g) ?? [];
+		const filtered = node.cloneNode(true) as typeof node;
+		for (const el of filtered.querySelectorAll("li")) {
+			el.remove();
+		}
+		const links = filtered.innerHTML.match(/https?:\/\/[^")#]+/g) ?? [];
 		for (const link of links) {
 			if (link.includes("/pull/")) {
 				pullsLinks.push(link);
@@ -25,7 +29,7 @@
 		}
 
 		allLinks = [...pullsLinks, ...issuesLinks];
-		isBreaking = node.innerText.trim().startsWith("breaking:");
+		isBreaking = filtered.innerText.trim().startsWith("breaking:");
 	};
 
 	/**
@@ -44,14 +48,18 @@
 
 <li
 	{@attach linksFinder}
-	class={["group text-pretty *:inline", isBreaking && "font-semibold dark:font-bold"]}
+	class={[
+		"text-pretty *:inline",
+		isBreaking && "font-semibold dark:font-bold",
+		allLinks.length && "group"
+	]}
 >
 	{@render children?.()}
 	{#if allLinks.length}
 		<Button
 			href={ghLinkToHref(allLinks[0] ?? "")}
 			variant="link"
-			class="ml-2 inline-flex! h-auto p-0! transition-[translate,opacity] duration-300 group-hover:translate-x-0 group-hover:opacity-100 md:ml-4 md:-translate-x-2 md:opacity-0 lg:mr-8"
+			class="pointer-events-none ml-2 inline-flex! h-auto p-0! transition-[translate,opacity] duration-300 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 md:ml-4 md:-translate-x-2 md:opacity-0 lg:mr-8"
 		>
 			Open details
 			<ArrowRight class="size-4" />
