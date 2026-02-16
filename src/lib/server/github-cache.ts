@@ -215,7 +215,8 @@ export class GitHubCache {
 		this.#cache = new CacheHandler(
 			new Redis({
 				url: redisUrl,
-				token: redisToken
+				token: redisToken,
+				enableAutoPipelining: true
 			}),
 			dev
 		);
