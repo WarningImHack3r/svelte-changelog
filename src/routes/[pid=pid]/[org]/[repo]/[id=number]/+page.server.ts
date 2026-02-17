@@ -7,6 +7,8 @@ import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { BranchCommit, PID } from "$lib/types";
 
+const versionDigitsRegex = /\d\.\d/;
+
 export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 	const isKnownRepo = uniqueRepos.some(
 		({ owner, name }) =>
@@ -88,7 +90,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 					.then(({ tags }) => {
 						const earliestTag = tags.findLast(tag => {
 							// The info is right here after a little filtering :D
-							const isValid = !tag.includes("nightly") && /\d[.]\d/.test(tag);
+							const isValid = !tag.includes("nightly") && versionDigitsRegex.test(tag);
 							if (!isValid) return false;
 							const [pkgName] = matchingRepo.metadataFromTag(tag);
 							return knownPackages.has(pkgName);

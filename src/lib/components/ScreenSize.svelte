@@ -8,12 +8,13 @@
 
 	let width = $derived(innerWidth.current ?? 0);
 	let height = $derived(innerHeight.current ?? 0);
+	const insensitiveLetterRegex = /[a-z]+$/i;
 
 	function convertToPixels(rootStyles: CSSStyleDeclaration, value: string | number) {
 		if (typeof value === "number") return value;
 
 		const num = parseFloat(value);
-		const unit = value.match(/[a-z]+$/i)?.[0]?.toLowerCase();
+		const unit = value.match(insensitiveLetterRegex)?.[0]?.toLowerCase();
 
 		if (!num || !unit) return null;
 

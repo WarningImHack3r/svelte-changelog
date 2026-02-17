@@ -133,15 +133,19 @@ export function detectLanguage(
 	return languageCandidate;
 }
 
+const leadingOrTrailingNewlineRegex = /(^\r?\n|\r?\n$)/g;
 /**
  * A transformer that trims unnecessary whitespace at the beginning and end of the string.
  */
 export const transformerTrimCode: ShikiTransformer = {
 	preprocess(code) {
-		return code.replace(/(^\r?\n|\r?\n$)/g, "");
+		return code.replace(leadingOrTrailingNewlineRegex, "");
 	}
 };
 
+const leadingPlusMinusRegex = /^[+-]/;
+const isJsRegex = /^js$/;
+const isTsRegex = /^ts$/;
 /**
  * A Shiki transformer used for language detection and setting the appropriate language metadata
  * in code blocks. Useful for handling code snippets with "diff" language and converting them
@@ -157,7 +161,7 @@ export function transformerLanguageDetection(
 				// - /issues/sveltejs/svelte/14280
 				const cleanedCode = code
 					.split("\n")
-					.map(line => line.replace(/^[+-]/, ""))
+					.map(line => line.replace(leadingPlusMinusRegex, ""))
 					.join("\n");
 				const detectedLanguage = detectLanguage(cleanedCode, languages);
 				if (!detectedLanguage) {
@@ -183,8 +187,8 @@ export function transformerLanguageDetection(
 		pre(node) {
 			node.properties["data-language"] = this.options.lang
 				.toLowerCase()
-				.replace(/^js$/, "javascript")
-				.replace(/^ts$/, "typescript");
+				.replace(isJsRegex, "javascript")
+				.replace(isTsRegex, "typescript");
 		}
 	};
 }

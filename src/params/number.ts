@@ -1,3 +1,5 @@
+const numberRegex = /^\d+$/;
+
 export function match(value) {
-	return /^\d+$/.test(value);
+	return numberRegex.test(value);
 }

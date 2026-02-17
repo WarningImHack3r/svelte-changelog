@@ -50,6 +50,7 @@
 		JSON: "rss.json"
 	};
 
+	const trailingSlashRegex = /\/$/;
 	/**
 	 * Append a segment at the end of an URL, cleanly.
 	 *
@@ -61,7 +62,7 @@
 	function appendToPath(origin: string, pathname: string, segment: string) {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const u = new URL(pathname, origin);
-		u.pathname = `${u.pathname.replace(/\/$/, "")}/${segment}`;
+		u.pathname = `${u.pathname.replace(trailingSlashRegex, "")}/${segment}`;
 		return u.href;
 	}
 </script>

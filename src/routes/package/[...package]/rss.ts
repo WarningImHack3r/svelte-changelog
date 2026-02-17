@@ -6,6 +6,7 @@ import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
+const dottedAlphaRegex = /[A-z\d]+\.[A-z\d]+$/;
 /**
  * Get the base info to build an RSS feed upon
  * @param url the page URL; must be an RSS feed
@@ -19,9 +20,9 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by ${siteName}.`,
 		favicon: "https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg",
 		feedLinks: {
-			xml: url.toString().replace(/[A-z\d]+\.[A-z\d]+$/, "rss.xml"),
-			json: url.toString().replace(/[A-z\d]+\.[A-z\d]+$/, "rss.json"),
-			atom: url.toString().replace(/[A-z\d]+\.[A-z\d]+$/, "atom.xml")
+			xml: url.toString().replace(dottedAlphaRegex, "rss.xml"),
+			json: url.toString().replace(dottedAlphaRegex, "rss.json"),
+			atom: url.toString().replace(dottedAlphaRegex, "atom.xml")
 		},
 		id: url.toString(),
 		language: "en-US",

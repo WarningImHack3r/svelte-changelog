@@ -6,8 +6,12 @@ import { EOL } from "node:os";
 // patterns
 const semver = /\[?v?([\w.-]+\.[\w.-]+[a-zA-Z0-9])]?/;
 const date = /.* \(?(\d\d?\d?\d?[-/.]\d\d?[-/.]\d\d?\d?\d?)\)?.*/;
+const title = /^# ?[^#]/;
 const subhead = /^###/;
 const listItem = /^[*-]/;
+const newline = /\r\n?|\n/gm;
+const version = /^##? ?[^#]/;
+const linklabel = /^\[[^[\]]*] *?:/;
 
 type Changelog = {
 	title: string;
@@ -49,7 +53,7 @@ export default function parseChangelog(text: string): Promise<Changelog> {
 	};
 
 	return new Promise(resolve => {
-		for (const line of text.split(/\r\n?|\n/gm)) {
+		for (const line of text.split(newline)) {
 			data = handleLine(line, data);
 		}
 
@@ -73,16 +77,16 @@ export default function parseChangelog(text: string): Promise<Changelog> {
  */
 function handleLine(line: string, data: ProcessingData): ProcessingData {
 	// skip line if it's a link label
-	if (/^\[[^[\]]*] *?:/.test(line)) return data;
+	if (linklabel.test(line)) return data;
 
 	// set the title if it's there
-	if (!data.log.title && /^# ?[^#]/.test(line)) {
+	if (!data.log.title && title.test(line)) {
 		data.log.title = line.substring(1).trim();
 		return data;
 	}
 
 	// new version found!
-	if (/^##? ?[^#]/.test(line)) {
+	if (version.test(line)) {
 		if (data.current?.title) pushCurrent(data);
 
 		data.current = versionFactory();

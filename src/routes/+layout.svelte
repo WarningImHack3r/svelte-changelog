@@ -129,7 +129,7 @@
 		// Theme
 		theme =
 			"mode-watcher-mode" in localStorage
-				? localStorage["mode-watcher-mode"].replace(/"/g, "")
+				? localStorage["mode-watcher-mode"].replaceAll('"', "")
 				: "system";
 
 		// Legacy news key

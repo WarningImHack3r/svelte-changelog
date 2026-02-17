@@ -32,7 +32,7 @@ class PackagesSettings {
 	#settingsMap = new Map<string, PersistedState<PackageSettings>>();
 
 	get(packageName: string) {
-		const key = `${packageName.toLowerCase().replace(/ /g, "-")}-settings`;
+		const key = `${packageName.toLowerCase().replaceAll(" ", "-")}-settings`;
 		let defaultSettings = DEFAULT_SETTINGS;
 		const storedValue = this.#settingsMap.get(packageName);
 		if (storedValue) {

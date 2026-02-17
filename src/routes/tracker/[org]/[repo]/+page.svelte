@@ -20,6 +20,7 @@
 		string // "error" case
 	>;
 
+	const pidAndIdUrlRegex = /\/[A-z]+\/\d+$/;
 	const daysAgoFormatter = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
 	const shortDateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 
@@ -254,7 +255,7 @@
 {@render list("Issues", data.issues, issue => {
 	const [org = "", repo = ""] = issue.html_url
 		.replace("https://github.com/", "")
-		.replace(/\/[A-z]+\/\d+$/, "")
+		.replace(pidAndIdUrlRegex, "")
 		.split("/");
 	return resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
 		pid: "issues",

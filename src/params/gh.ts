@@ -1,3 +1,5 @@
+const urlSchemeRegex = /^https?:\/\/?/;
+
 export function match(param) {
-	return param.replace(/^https?:\/\/?/, "") === "github.com";
+	return param.replace(urlSchemeRegex, "") === "github.com";
 }

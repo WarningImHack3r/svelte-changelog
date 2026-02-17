@@ -106,7 +106,7 @@
 					case "expand-all":
 						return true;
 					case "smart": {
-						if (page.url.hash && tag_name.includes(page.url.hash.replace(/^#/, ""))) return true;
+						if (page.url.hash && tag_name.includes(page.url.hash.replace("#", ""))) return true;
 						if (displayableReleases.length <= 5) return true;
 						// Only expand releases that are less than a week old
 						const creationTimestamp = new Date(published_at ?? created_at).getTime();
@@ -128,7 +128,7 @@
 			.then(() => new Promise(resolve => setTimeout(resolve, 300))) // wait for the accordions to expand (+ better UX)
 			.then(() => {
 				document
-					.getElementById(page.url.hash.replace(/^#/, ""))
+					.getElementById(page.url.hash.replace("#", ""))
 					?.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
 			});
 	});
@@ -181,6 +181,7 @@
 		"style",
 		"generics"
 	]);
+	const newLineRegex = /\r?\n/g;
 	/**
 	 * Computes the packages or package versions for which support
 	 * has been added in the current version.
@@ -190,7 +191,7 @@
 	 */
 	function supportAddedFor(releaseBody: string): string[] {
 		return releaseBody
-			.split(/\r?\n/g)
+			.split(newLineRegex)
 			.map(line => {
 				for (const regex of supportRegexes) {
 					const match = line.match(regex);

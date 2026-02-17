@@ -1,6 +1,10 @@
 import { uniq } from "$lib/array";
 import type { Category, Entries, Prettify, RepoEntry, RepoInfo, WithRequired } from "$lib/types";
 
+const vPrefixRegex = /^v/;
+const containsAtRegex = /@\d/;
+const mdTitleRegex = /^# \[/gm;
+
 const repos: Record<Category, RepoEntry> = {
 	svelte: {
 		name: "Svelte",
@@ -44,25 +48,25 @@ const repos: Record<Category, RepoEntry> = {
 					if (tag.includes("@")) {
 						return splitByLastAt(tag);
 					}
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				repoName: "eslint-config",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				repoName: "svelte-eslint-parser",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				repoName: "language-tools",
 				metadataFromTag: tag => {
-					if (/@\d/.test(tag)) return splitByLastAt(tag);
+					if (containsAtRegex.test(tag)) return splitByLastAt(tag);
 					const lastIndex = tag.lastIndexOf("-");
 					return [tag.substring(0, lastIndex), tag.substring(lastIndex + 1)];
 				}
@@ -70,42 +74,42 @@ const repos: Record<Category, RepoEntry> = {
 			{
 				repoName: "acorn-typescript",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				repoName: "svelte-devtools",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				changesMode: "changelog",
 				repoName: "svelte-preprocess",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				},
-				changelogContentsReplacer: file => file.replace(/^# \[/gm, "## [")
+				changelogContentsReplacer: file => file.replace(mdTitleRegex, "## [")
 			},
 			{
 				changesMode: "changelog",
 				repoName: "rollup-plugin-svelte",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				changesMode: "changelog",
 				repoName: "svelte-loader",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				changesMode: "changelog",
 				repoName: "prettier-plugin-svelte",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
@@ -121,19 +125,19 @@ const repos: Record<Category, RepoEntry> = {
 			{
 				repoName: "devalue",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				repoName: "esrap",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
 				repoName: "zimmerframe",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
@@ -141,7 +145,7 @@ const repos: Record<Category, RepoEntry> = {
 				repoOwner: "Rich-Harris",
 				repoName: "magic-string",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(/^v/, "")];
+					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			}
 		]

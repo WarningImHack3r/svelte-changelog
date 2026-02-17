@@ -1,4 +1,3 @@
-import { redirect } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { PostHog } from "posthog-node";
@@ -22,10 +21,6 @@ export async function handleError({ error, status, event, message }) {
 }
 
 export async function handle({ event, resolve }) {
-	if (event.url.pathname === "/blog" || event.url.pathname.startsWith("/blog/")) {
-		redirect(307, event.url.pathname.replace(/^\/blog/, "/devlog"));
-	}
-
 	event.locals.posthog = client;
 	return await resolve(event);
 }

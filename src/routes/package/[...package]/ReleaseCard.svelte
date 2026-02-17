@@ -49,6 +49,9 @@
 		isMaintenance: isMaintenanceRelease = false
 	}: Props = $props();
 
+	const placeholderRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+	const hashWithCommentRegex = /\b#(\d+)(#issuecomment-\d+)?/g;
+
 	let semVersion = $derived(semver.coerce(release.cleanVersion));
 	let releaseDate = $derived(new Date(release.published_at ?? release.created_at));
 	let releaseBody = $derived.by(() => {
@@ -59,13 +62,13 @@
 		const placeholder = `__MDLINK_${Math.random().toString(36)}_`;
 		const savedLinks: string[] = [];
 
-		const bodyWithPlaceholders = release.body.replace(/\[([^\]]+)\]\(([^)]+)\)/g, match => {
+		const bodyWithPlaceholders = release.body.replace(placeholderRegex, match => {
 			savedLinks.push(match);
 			return `${placeholder}${savedLinks.length - 1}${placeholder}`;
 		});
 
 		const bodyWithNewLinks = bodyWithPlaceholders.replace(
-			/\b#(\d+)(#issuecomment-\d+)?/g,
+			hashWithCommentRegex,
 			(match, prNumber, comment) => {
 				const commentPart = comment ?? "";
 				const prUrl = `https://github.com/${repo.owner}/${repo.name}/pull/${prNumber}${commentPart}`;

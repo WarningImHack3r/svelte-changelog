@@ -31,6 +31,9 @@
 		currentRepo
 	}: Props = $props();
 
+	const urlRegex = /(https?:\/\/[^ ]+)/g;
+	const parenthesisHashRegex = /\(#(\d+)\)/g;
+	const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 	/**
 	 * Linkify the commit message by wrapping all its non-link text inside
 	 * markdown links if it already contains a link
@@ -42,12 +45,11 @@
 	function formatCommitMessage(message: string | null | undefined, wrapperUrl: string) {
 		if (!message) return `[_No message provided_](${wrapperUrl})`;
 		message = message
-			.replace(/(https?:\/\/[^ ]+)/g, `[$1]($1)`)
+			.replace(urlRegex, `[$1]($1)`)
 			.replace(
-				/\(#(\d+)\)/g,
+				parenthesisHashRegex,
 				`([#$1](https://github.com/${currentRepo.owner}/${currentRepo.name}/issues/$1))`
 			);
-		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 		const links: { index: number; length: number }[] = [];
 		let match;
 

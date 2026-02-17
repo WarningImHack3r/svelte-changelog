@@ -12,6 +12,7 @@
 
 	let allLinks = $state<string[]>([]);
 	let isBreaking = $state(false);
+	const htmlUrlRegex = /https?:\/\/[^")#]+/g;
 	const linksFinder: Attachment<HTMLLIElement> = node => {
 		const pullsLinks: string[] = [];
 		const issuesLinks: string[] = [];
@@ -19,7 +20,7 @@
 		for (const el of filtered.querySelectorAll("li")) {
 			el.remove();
 		}
-		const links = filtered.innerHTML.match(/https?:\/\/[^")#]+/g) ?? [];
+		const links = filtered.innerHTML.match(htmlUrlRegex) ?? [];
 		for (const link of links) {
 			if (link.includes("/pull/")) {
 				pullsLinks.push(link);
@@ -32,6 +33,7 @@
 		isBreaking = filtered.innerText.trim().startsWith("breaking:");
 	};
 
+	const pidUrlRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/(pull|issues|discussions)\/(\d+)/;
 	/**
 	 * Replaces a link with `https://github.com/username/repo/[pull|issues]/123`
 	 * format to `/[pull|issues]/username/repo/123`
@@ -39,10 +41,7 @@
 	 * @param link - The link to transform
 	 */
 	function ghLinkToHref(link: string) {
-		return link.replace(
-			/https:\/\/github.com\/([^/]+)\/([^/]+)\/(pull|issues)\/(\d+)/,
-			"/$3/$1/$2/$4"
-		);
+		return link.replace(pidUrlRegex, "/$3/$1/$2/$4");
 	}
 </script>
 
