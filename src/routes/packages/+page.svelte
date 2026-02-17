@@ -27,7 +27,7 @@
 			return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
 		})}
 		<li>
-			<h3 class="space-x-2 font-display">
+			<h3 class="flex flex-col font-display sm:flex-row sm:items-baseline sm:gap-2">
 				<span class="text-3xl text-primary text-shadow-sm">{category.name}</span>
 				{#if category.description}
 					<span>{category.description}</span>
@@ -48,7 +48,7 @@
 							onclick={e => {
 								if (e.target instanceof HTMLButtonElement) e.preventDefault(); // avoid pinning from navigating
 							}}
-							class="group flex items-center gap-4 rounded-md px-4 py-3 transition-colors hover:bg-muted"
+							class="group flex items-center gap-2 rounded-md py-3 transition-colors hover:bg-muted xs:gap-4 xs:px-4"
 							title={pkg.deprecated ? `Deprecated: ${pkg.deprecated}` : undefined}
 						>
 							{#if sortedPackages.length > 1}
