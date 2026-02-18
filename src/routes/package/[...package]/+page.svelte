@@ -35,33 +35,61 @@
 
 	let { data } = $props();
 
-	let latestRelease = $derived(
-		data.currentPackage.category.slug === ALL_SLUG
-			? undefined
-			: data.releases
-					.filter(({ prerelease }) => !prerelease)
-					.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
+	/**
+	 * { "my-package": <release> | undefined }
+	 */
+	let latestReleases = $derived<Record<string, (typeof data.releases)[number] | undefined>>(
+		/* 4. convert it back to an object (`{ "my-package": GitHubRelease | undefined }`) */
+		Object.fromEntries(
+			/* 2. convert them to entries for manipulation (`["my-package", GitHubRelease[]][]`) */
+			Object.entries(
+				/* 1. group releases by package name (`{ "my-package": GitHubRelease[] }`) */
+				Object.groupBy(data.releases, ({ cleanName }) => cleanName)
+			).map(
+				/* 3. map releases to the latest release for the given package (`["my-package", GitHubRelease | undefined][]`) */
+				/* no clue how the releases array can be undefined btw */
+				([packageName, releases = []]) => [
+					packageName,
+					releases
+						.filter(({ prerelease }) => !prerelease)
+						.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
+				]
+			)
+		)
 	);
-	let earliestForMajors = $derived.by<Record<number, (typeof data.releases)[number]>>(() => {
-		if (data.currentPackage.category.slug === ALL_SLUG) return {};
-		const allWithSemver = data.releases.flatMap(release => {
-			const coerced = semver.coerce(release.cleanVersion);
-			return coerced ? [{ coerced, ...release }] : [];
-		});
-		const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced.major))];
-		return Object.fromEntries(
-			uniqueMajors
-				.map(major => {
-					const firstSorted = allWithSemver
-						.filter(({ coerced, prerelease }) => coerced.major === major && !prerelease)
-						.sort((a, b) => semver.compare(a.coerced, b.coerced))[0];
-					if (!firstSorted) return undefined;
-					const { coerced, ...rest } = firstSorted;
-					return [major, rest];
-				})
-				.filter(Boolean)
-		);
-	});
+	/**
+	 * { "my-package": { 2: <release> } }
+	 *
+	 * same logic as for `latestReleases`
+	 */
+	let earliestsForMajors = $derived<Record<string, Record<number, (typeof data.releases)[number]>>>(
+		Object.fromEntries(
+			Object.entries(Object.groupBy(data.releases, ({ cleanName }) => cleanName)).map(
+				([packageName, releases = []]) => {
+					const allWithSemver = releases.flatMap(release => {
+						const coerced = semver.coerce(release.cleanVersion);
+						return coerced ? [{ coerced, ...release }] : [];
+					});
+					const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced.major))];
+					return [
+						packageName,
+						Object.fromEntries(
+							uniqueMajors
+								.map(major => {
+									const firstSorted = allWithSemver
+										.filter(({ coerced, prerelease }) => coerced.major === major && !prerelease)
+										.sort((a, b) => semver.compare(a.coerced, b.coerced))[0];
+									if (!firstSorted) return undefined;
+									const { coerced, ...rest } = firstSorted;
+									return [major, rest];
+								})
+								.filter(Boolean)
+						)
+					];
+				}
+			)
+		)
+	);
 	const sharedSettings = getPackageSettings();
 	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
@@ -190,18 +218,20 @@
 	 * @returns a list of newly supported packages/versions, empty if none
 	 */
 	function supportAddedFor(releaseBody: string): string[] {
-		return releaseBody
-			.split(newLineRegex)
-			.map(line => {
-				for (const regex of supportRegexes) {
-					const match = line.match(regex);
-					if (match && match[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
-						return match[2] ? `${match[1]} ${match[2]}` : match[1];
-					}
-				}
-				return null;
-			})
-			.filter(Boolean);
+		return data.currentPackage.category.slug === ALL_SLUG
+			? [] /* even if we could, don't show those lines for All releases as it looks like a mess */
+			: releaseBody
+					.split(newLineRegex)
+					.map(line => {
+						for (const regex of supportRegexes) {
+							const match = line.match(regex);
+							if (match && match[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
+								return match[2] ? `${match[1]} ${match[2]}` : match[1];
+							}
+						}
+						return null;
+					})
+					.filter(Boolean);
 	}
 </script>
 
@@ -286,6 +316,8 @@
 					</TopBanner>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
+					{@const latestRelease = latestReleases[release.cleanName]}
+					{@const earliestForMajors = earliestsForMajors[release.cleanName]}
 					{@const semVersion = semver.coerce(release.cleanVersion)}
 					{@const semLatest = semver.coerce(latestRelease?.cleanVersion)}
 					{@const isMajorRelease =
@@ -294,7 +326,7 @@
 						semVersion?.patch === 0 &&
 						!semVersion?.prerelease.length}
 					{@const earliestOfNextMajor = semVersion
-						? earliestForMajors[semVersion.major + 1]
+						? earliestForMajors?.[semVersion.major + 1]
 						: undefined}
 					{@const isMaintenance =
 						semVersion && semLatest && earliestOfNextMajor

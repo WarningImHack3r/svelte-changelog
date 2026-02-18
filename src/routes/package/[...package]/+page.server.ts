@@ -20,8 +20,8 @@ export async function load({ params, locals }) {
 				repoOwner: "",
 				repoName: "",
 				pkg: {
-					name: "All packages",
-					description: `All the packages listed on ${siteName}`
+					name: "All releases",
+					description: `All the releases of the packages listed on ${siteName}`
 				}
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
 			releases: await getAllPackagesReleases(categorizedPackages, locals.posthog)
