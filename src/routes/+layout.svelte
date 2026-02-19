@@ -1,12 +1,12 @@
 <script lang="ts">
 	import "../app.css";
+	import type { ComponentProps } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
 	import { onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
-	import type { ResolvedPathname } from "$app/types";
 	import {
 		ChevronDown,
 		ChevronRight,
@@ -26,6 +26,7 @@
 	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
 	import { PersistedState } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
+	import { uniq } from "$lib/array";
 	import { news } from "$lib/news/news.json";
 	import { authorVCSProfile, authorVCSUsername, siteName, siteRepo } from "$lib/properties";
 	import type { Entries } from "$lib/types";
@@ -41,6 +42,7 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import Snowflakes from "$lib/components/Snowflakes.svelte";
+	import DesktopNavigation from "./DesktopNavigation.svelte";
 
 	let { data, children } = $props();
 
@@ -97,15 +99,45 @@
 
 	// Navbar
 	const navbarBorderThreshold = 25;
-	const navbarItems: Record<
-		"Home" | "Packages" | "Tracker" | "Devlog",
-		{ icon: typeof Icon; link: ResolvedPathname }
-	> = {
-		Home: { icon: House, link: resolve("/") },
-		Packages: { icon: Package, link: resolve("/packages") },
-		Tracker: { icon: Radar, link: resolve("/tracker") },
-		Devlog: { icon: Newspaper, link: resolve("/devlog") }
-	};
+	let navbarItems = $derived<
+		(NonNullable<ComponentProps<typeof DesktopNavigation>["items"]>[number] & {
+			icon: typeof Icon;
+		})[]
+	>([
+		{ name: "Home", icon: House, href: resolve("/") },
+		{
+			name: "Packages",
+			icon: Package,
+			dropdownItems: uniq(
+				data.displayablePackages.flatMap(({ packages }) => packages.map(({ pkg }) => pkg.name)),
+				name => name
+			)
+				.toSorted((a, b) => a.localeCompare(b))
+				.map(pkgName => ({
+					title: pkgName,
+					href: resolve("/package/[...package]", { package: pkgName })
+				}))
+				.slice(0, 3 * 3 - 1),
+			moreHref: resolve("/packages")
+		},
+		{
+			name: "Tracker",
+			icon: Radar,
+			dropdownItems: uniq(
+				data.displayablePackages.flatMap(({ packages }) =>
+					packages.map(({ repoOwner, repoName }) => ({ owner: repoOwner, name: repoName }))
+				),
+				({ owner, name }) => `${owner}/${name}`
+			)
+				.map(({ owner, name }) => ({
+					title: `${owner}/${name}`,
+					href: resolve("/tracker/[org]/[repo]", { org: owner, repo: name })
+				}))
+				.slice(0, 3 * 5 - 1),
+			moreHref: resolve("/tracker")
+		},
+		{ name: "Devlog", icon: Newspaper, href: resolve("/devlog") }
+	]);
 	onNavigate(({ from, to, type }) => {
 		if (from?.route.id === to?.route.id || type === "form") return;
 		open = false;
@@ -185,7 +217,7 @@
 			<Sheet.Root bind:open>
 				<Sheet.Trigger>
 					{#snippet child({ props })}
-						<AnimatedButton {...props} variant="ghost" class="-ms-3 sm:hidden">
+						<AnimatedButton {...props} variant="ghost" class="-ms-3 md:hidden">
 							<Menu />
 							<span class="sr-only">Site menu</span>
 						</AnimatedButton>
@@ -196,19 +228,20 @@
 						<Sheet.Title class="text-xl">{siteName}</Sheet.Title>
 					</Sheet.Header>
 					<ul class="flex flex-col gap-1 px-2">
-						{#each Object.entries(navbarItems) as [title, { icon: Icon, link }] (link)}
+						{#each navbarItems as item (item.name)}
+							{@const link = "href" in item ? item.href : (item.moreHref ?? "/")}
 							{@const disabled = page.url.pathname.startsWith(link === "/" ? "/package/" : link)}
 							<li
 								class="inline-flex items-center gap-3 rounded-md px-2 has-disabled:bg-accent has-disabled:opacity-50"
 							>
-								<Icon class="size-4 shrink-0 text-primary" />
+								<item.icon class="size-4 shrink-0 text-primary" />
 								<Button
 									href={disabled ? undefined : link}
 									variant="link"
 									{disabled}
 									class="grow justify-start py-0 text-foreground has-[>svg]:px-0"
 								>
-									{title}
+									{item.name}
 									<ChevronRight class="ml-auto size-4 shrink-0 in-disabled:hidden" />
 								</Button>
 							</li>
@@ -239,24 +272,10 @@
 				<span class="text-xl font-semibold">Blog</span>
 			{:else}
 				<!-- Navigation -->
-				{@const largeNavigatables = (
-					Object.entries(navbarItems) as Entries<typeof navbarItems>
-				).filter(([title]) => title !== "Home")}
-				<ul class="ml-6 hidden sm:flex">
-					{#each largeNavigatables as [title, { link }] (link)}
-						{@const disabled = page.url.pathname.startsWith(link)}
-						<li>
-							<AnimatedButton
-								href={disabled ? undefined : link}
-								variant="ghost"
-								class="hover:bg-accent/75"
-								{disabled}
-							>
-								{title}
-							</AnimatedButton>
-						</li>
-					{/each}
-				</ul>
+				<DesktopNavigation
+					items={navbarItems.filter(({ name }) => name !== "Home")}
+					class="ms-6 hidden md:flex"
+				/>
 			{/if}
 
 			<!-- Right part -->
