@@ -27,7 +27,7 @@
 	import { PersistedState } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { news } from "$lib/news/news.json";
-	import { siteName } from "$lib/properties";
+	import { authorVCSProfile, authorVCSUsername, siteName, siteRepo } from "$lib/properties";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -290,12 +290,7 @@
 							</Tooltip.Root>
 						</Tooltip.Provider>
 					{/if}
-					<AnimatedButton
-						href="https://github.com/WarningImHack3r/svelte-changelog"
-						target="_blank"
-						variant="ghost"
-						size="icon"
-					>
+					<AnimatedButton href={siteRepo} target="_blank" variant="ghost" size="icon">
 						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
 						<span class="sr-only">Visit the repository</span>
 					</AnimatedButton>
@@ -378,7 +373,7 @@
 	<div class="mx-auto flex h-12 w-full items-center px-8">
 		<p class="text-sm text-muted-foreground">
 			Built by <a
-				href="https://github.com/WarningImHack3r"
+				href={authorVCSProfile}
 				target="_blank"
 				class={cn(
 					buttonVariants({
@@ -387,7 +382,7 @@
 					"h-auto p-0"
 				)}
 			>
-				WarningImHack3r
+				{authorVCSUsername}
 			</a>.
 		</p>
 	</div>

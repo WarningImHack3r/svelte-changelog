@@ -1,7 +1,7 @@
 import { type RequestHandler, error } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { marked } from "marked";
-import { authorFullName, siteName } from "$lib/properties";
+import { authorFullName, authorVCSProfile, siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
@@ -32,7 +32,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 	feed.addCategory("Technology");
 	feed.addContributor({
 		name: authorFullName,
-		link: "https://github.com/WarningImHack3r"
+		link: authorVCSProfile
 	});
 	return feed;
 }

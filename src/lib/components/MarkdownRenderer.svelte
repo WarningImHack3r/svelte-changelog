@@ -11,6 +11,7 @@
 	import rehypeRaw from "rehype-raw";
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
+	import { siteRepo } from "$lib/properties";
 	import { cn } from "$lib/utils";
 	import AnimatedButton from "./AnimatedButton.svelte";
 
@@ -69,7 +70,7 @@
 						class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">{message}</pre>
 					<span>
 						It's now rendered with a minimal look to avoid further errors. Please <a
-							href="https://github.com/WarningImHack3r/svelte-changelog/issues"
+							href="{siteRepo}/issues"
 							target="_blank"
 						>
 							report this issue

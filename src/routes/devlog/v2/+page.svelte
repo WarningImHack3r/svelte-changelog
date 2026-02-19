@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { authorFullName } from "$lib/properties";
+	import { authorFullName, authorVCSProfile, siteRepo } from "$lib/properties";
 </script>
 
 <h5 class="-mt-8 text-muted-foreground">
@@ -25,7 +25,7 @@
 		This Week in Svelte
 	</a>, because I saw a need in the "old way" of browsing the releases: directly and manually
 	through GitHub. This site was born in an afternoon.<br />Since then, it has become
-	<a href="https://github.com/WarningImHack3r?tab=repositories&type=source&sort=stargazers">
+	<a href="{authorVCSProfile}?tab=repositories&type=source&sort=stargazers">
 		my most starred GitHub repository
 	</a>, and has been featured <strong>every week</strong> in TWIS. I can't be more grateful for all this.
 </p>
@@ -107,7 +107,7 @@
 	</li>
 	<li>
 		<strong>More filters</strong> to allow you to customize even more what's shown on your releases
-		page (cc <a href="https://github.com/WarningImHack3r/svelte-changelog/issues/45">Thomas</a>!)
+		page (cc <a href="{siteRepo}/issues/45">Thomas</a>!)
 	</li>
 	<li>
 		<strong>Infinite loading</strong> to be able to load as many releases as desired, leveraging the new
@@ -116,9 +116,7 @@
 	<li><strong>A dashboard</strong>, using graphs to show stats about releases and more</li>
 	<li><strong>Even more frequent updates</strong> thanks to a revised notification system</li>
 	<li>
-		and even more! Check the <a href="https://github.com/WarningImHack3r/svelte-changelog/issues">
-			open issues
-		</a> for sneak peeks ;)
+		and even more! Check the <a href="{siteRepo}/issues"> open issues </a> for sneak peeks ;)
 	</li>
 </ul>
 
@@ -128,7 +126,7 @@
 	I really hope you'll like everything I put into this release!
 	<br />
 	As always, I'm open to feedbacks and contributions, visit
-	<a href="https://github.com/WarningImHack3r/svelte-changelog">the repo</a>!
+	<a href={siteRepo}>the repo</a>!
 </p>
 
 <p>

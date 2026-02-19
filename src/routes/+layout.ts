@@ -22,7 +22,6 @@ export function load({ url, data }) {
 
 	return {
 		...data,
-		siteName,
 		...defineBaseMetaTags({
 			title: "Loading...",
 			titleTemplate: `%s | ${siteName}`,

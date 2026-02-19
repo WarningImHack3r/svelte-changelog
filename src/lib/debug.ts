@@ -1,9 +1,10 @@
 import { browser, dev } from "$app/environment";
 import { logs } from "@opentelemetry/api-logs";
 import util from "node:util";
+import { siteRepoName } from "./properties";
 
 const DEBUG = false;
-const logger = logs.getLogger("svelte-changelog-logs");
+const logger = logs.getLogger(`${siteRepoName}-logs`);
 
 export function dlog(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.log(message, ...optionalParams);

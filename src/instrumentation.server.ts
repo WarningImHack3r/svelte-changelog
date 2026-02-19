@@ -3,10 +3,11 @@ import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { NodeSDK } from "@opentelemetry/sdk-node";
+import { siteRepoName } from "$lib/properties";
 
 const sdk = new NodeSDK({
 	resource: resourceFromAttributes({
-		"service.name": "svelte-changelog"
+		"service.name": siteRepoName
 	}),
 	logRecordProcessors: [
 		new BatchLogRecordProcessor(
