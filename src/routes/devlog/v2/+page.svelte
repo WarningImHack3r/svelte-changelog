@@ -116,7 +116,7 @@
 	<li><strong>A dashboard</strong>, using graphs to show stats about releases and more</li>
 	<li><strong>Even more frequent updates</strong> thanks to a revised notification system</li>
 	<li>
-		and even more! Check the <a href="{siteRepo}/issues"> open issues </a> for sneak peeks ;)
+		and even more! Check the <a href="{siteRepo}/issues">open issues</a> for sneak peeks ;)
 	</li>
 </ul>
 
