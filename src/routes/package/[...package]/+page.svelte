@@ -10,6 +10,7 @@
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import semver from "semver";
+	import { groupBy } from "$lib/polyfills";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Button } from "$lib/components/ui/button";
@@ -44,7 +45,7 @@
 			/* 2. convert them to entries for manipulation (`["my-package", GitHubRelease[]][]`) */
 			Object.entries(
 				/* 1. group releases by package name (`{ "my-package": GitHubRelease[] }`) */
-				Object.groupBy(data.releases, ({ cleanName }) => cleanName)
+				groupBy(data.releases, ({ cleanName }) => cleanName)
 			).map(
 				/* 3. map releases to the latest release for the given package (`["my-package", GitHubRelease | undefined][]`) */
 				/* no clue how the releases array can be undefined btw */
@@ -64,7 +65,7 @@
 	 */
 	let earliestsForMajors = $derived<Record<string, Record<number, (typeof data.releases)[number]>>>(
 		Object.fromEntries(
-			Object.entries(Object.groupBy(data.releases, ({ cleanName }) => cleanName)).map(
+			Object.entries(groupBy(data.releases, ({ cleanName }) => cleanName)).map(
 				([packageName, releases = []]) => {
 					const allWithSemver = releases.flatMap(release => {
 						const coerced = semver.coerce(release.cleanVersion);
