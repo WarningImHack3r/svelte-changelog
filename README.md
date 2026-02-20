@@ -48,8 +48,6 @@ That's it: your GitHub token will do most of the job, and you can run the websit
 #### Environment Variables
 
 - `GITHUB_TOKEN`: a [classic GitHub token](https://github.com/settings/tokens) with the `public_repo` scope (that's it), required for API requests.
-- `KV_REST_API_TOKEN` (optional): the token for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
-- `KV_REST_API_URL` (optional): the URL for the API of the KV service (Redis). You can leave it empty; an in-memory cache is used during development.
 - `PUBLIC_POSTHOG_KEY` (optional): the token for the analytics service I use, [PostHog](https://posthog.com). You can leave it empty; analytics are disabled in dev environments.
 - `WEBHOOKS_REPLICATOR_TOKEN` (optional): the token for webhook reception, not useful in a dev environment but has to be present still.
 

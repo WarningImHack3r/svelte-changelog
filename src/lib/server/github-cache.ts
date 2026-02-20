@@ -23,7 +23,7 @@ import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
 import type { Issues, PID, Pulls } from "$lib/types";
-import { CacheHandler, type RedisJson } from "./cache-handler";
+import { CacheHandler, type CacheJson } from "./cache-handler";
 import {
 	commit,
 	createOctokitResponse,
@@ -213,7 +213,7 @@ export class GitHubCache {
 	}
 
 	/**
-	 * Generates a Redis key from the passed info.
+	 * Generates a cache key from the passed info.
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param type the kind of cache to use
@@ -229,7 +229,7 @@ export class GitHubCache {
 	}
 
 	/**
-	 * Generates a Redis key from the passed info.
+	 * Generates a cache key from the passed info.
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
@@ -246,7 +246,7 @@ export class GitHubCache {
 	}
 
 	/**
-	 * Generates a Redis key from the passed info.
+	 * Generates a cache key from the passed info.
 	 *
 	 * @param packageName the package name
 	 * @param args the optional additional values to append
@@ -346,7 +346,7 @@ export class GitHubCache {
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<Transformed extends RedisJson>() {
+	#processCached<Transformed extends CacheJson>() {
 		// justified eslint rule disabling cause this case is quite... unique and I can't do much better
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;

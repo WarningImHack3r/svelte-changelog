@@ -2,7 +2,7 @@ import { remult } from "remult";
 import { CacheEntry } from "./db/CacheEntry";
 import { ddebug } from "$lib/debug";
 
-export type RedisJson = Record<string, unknown> | unknown[] | string | number | boolean | null;
+export type CacheJson = Record<string, unknown> | unknown[] | string | number | boolean | null;
 
 export class CacheHandler {
 	readonly #repo = remult.repo(CacheEntry);
@@ -25,7 +25,7 @@ export class CacheHandler {
 		this.#stats = { hits: 0, misses: 0, sets: 0, deletes: 0 };
 	}
 
-	async get<T extends RedisJson>(key: string) {
+	async get<T extends CacheJson>(key: string) {
 		ddebug(`Retrieving ${key} from SQLite cache`);
 		const entry = await this.#repo.findFirst({ key });
 
@@ -49,7 +49,7 @@ export class CacheHandler {
 		return entry.value as T;
 	}
 
-	async set<T extends RedisJson>(key: string, value: T, ttlSeconds?: number) {
+	async set<T extends CacheJson>(key: string, value: T, ttlSeconds?: number) {
 		this.#stats.sets++;
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
 		console.log(`[cache] SET ${key} ttl=${ttlSeconds ?? "none"}s`);
@@ -64,7 +64,7 @@ export class CacheHandler {
 		}
 	}
 
-	async getStale<T extends RedisJson>(key: string): Promise<{ value: T; etag: string } | null> {
+	async getStale<T extends CacheJson>(key: string): Promise<{ value: T; etag: string } | null> {
 		const entry = await this.#repo.findFirst({ key });
 		if (entry?.etag) {
 			return { value: entry.value as T, etag: entry.etag };
@@ -80,7 +80,7 @@ export class CacheHandler {
 		console.log(`[cache] REFRESH-TTL ${key} ttl=${ttlSeconds ?? "none"}s`);
 	}
 
-	async setWithEtag<T extends RedisJson>(key: string, value: T, etag: string, ttlSeconds?: number) {
+	async setWithEtag<T extends CacheJson>(key: string, value: T, etag: string, ttlSeconds?: number) {
 		this.#stats.sets++;
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
 		console.log(`[cache] SET ${key} ttl=${ttlSeconds ?? "none"}s`);
