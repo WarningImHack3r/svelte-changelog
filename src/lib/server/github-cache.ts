@@ -173,7 +173,7 @@ const MOCK_REQUESTS = false;
  *
  * @see {@link https://docs.github.com/en/rest/releases/releases#list-releases|GitHub Docs}
  */
-const per_page = 100;
+const per_page = 10;
 /**
  * The TTL of the cached releases, in seconds.
  */
@@ -222,6 +222,14 @@ export class GitHubCache {
 		);
 
 		this.#octokit = octokit;
+
+		// Hook to inject If-None-Match header for conditional requests
+		this.#octokit.hook.wrap("request", (request, options) => {
+			if (this.#pendingEtag) {
+				options.headers = { ...options.headers, "if-none-match": this.#pendingEtag };
+			}
+			return request(options);
+		});
 	}
 
 	/**
@@ -279,8 +287,74 @@ export class GitHubCache {
 	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
 	 * @returns either the original data or the fallback one
 	 */
-	#request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
-		return MOCK_REQUESTS ? Promise.resolve(fallback) : original(this.#octokit);
+	static #apiCallCount = 0;
+	static #rateLimitRemaining: number | null = null;
+	static #rateLimitReset: Date | null = null;
+
+	/**
+	 * Extract the ETag header from an Octokit response, if present.
+	 */
+	#extractEtag(res: unknown): string | null {
+		if (res && typeof res === "object" && "headers" in res) {
+			const headers = (res as { headers: Record<string, string> }).headers;
+			return headers["etag"] ?? null;
+		}
+		return null;
+	}
+
+	// Stored etag to inject into the next request (set before calling fn, cleared after)
+	#pendingEtag: string | null = null;
+
+	async #request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
+		if (MOCK_REQUESTS) return fallback;
+
+		GitHubCache.#apiCallCount++;
+		const callNum = GitHubCache.#apiCallCount;
+
+		const etag = this.#pendingEtag;
+		const rateInfo =
+			GitHubCache.#rateLimitRemaining !== null
+				? ` (remaining=${GitHubCache.#rateLimitRemaining}, reset=${GitHubCache.#rateLimitReset?.toLocaleTimeString()})`
+				: "";
+		const etagInfo = etag ? " [conditional]" : "";
+		console.log(`[github-api] call #${callNum}${etagInfo}${rateInfo}`);
+
+		try {
+			const result = await original(this.#octokit);
+			// Extract rate limit headers from Octokit responses
+			if (result && typeof result === "object" && "headers" in result) {
+				const headers = (result as { headers: Record<string, string> }).headers;
+				const remaining = headers["x-ratelimit-remaining"];
+				const reset = headers["x-ratelimit-reset"];
+				if (remaining !== undefined) {
+					GitHubCache.#rateLimitRemaining = Number(remaining);
+				}
+				if (reset !== undefined) {
+					GitHubCache.#rateLimitReset = new Date(Number(reset) * 1000);
+				}
+				if (GitHubCache.#rateLimitRemaining !== null && GitHubCache.#rateLimitRemaining < 100) {
+					console.warn(
+						`[github-api] LOW RATE LIMIT: ${GitHubCache.#rateLimitRemaining} remaining, resets at ${GitHubCache.#rateLimitReset?.toLocaleTimeString()}`
+					);
+				}
+			}
+			return result;
+		} catch (error: unknown) {
+			// Log rate limit info from error responses too
+			if (error && typeof error === "object" && "response" in error) {
+				const resp = (error as { response: { headers: Record<string, string> } }).response;
+				const remaining = resp?.headers?.["x-ratelimit-remaining"];
+				const reset = resp?.headers?.["x-ratelimit-reset"];
+				if (remaining !== undefined) GitHubCache.#rateLimitRemaining = Number(remaining);
+				if (reset !== undefined) GitHubCache.#rateLimitReset = new Date(Number(reset) * 1000);
+				if ((error as unknown as { status: number }).status !== 304) {
+					console.error(
+						`[github-api] REQUEST FAILED #${callNum} - remaining=${GitHubCache.#rateLimitRemaining}, reset=${GitHubCache.#rateLimitReset?.toLocaleTimeString()}`
+					);
+				}
+			}
+			throw error;
+		}
 	}
 
 	/**
@@ -363,13 +437,50 @@ export class GitHubCache {
 			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
 			if (cachedValue) {
 				ddebug(`Cache hit for ${cacheKey}`);
+				console.log(`[github-cache] SAVED API call for ${cacheKey}`);
 				return cachedValue;
 			}
 
-			ddebug(`Cache miss for ${cacheKey}`);
+			// Cache expired — check if we have stale data + etag for conditional request
+			const stale = self.#cache.getStale<Transformed>(cacheKey);
 
-			const res = await fn();
-			const newValue = transformer ? await transformer(res) : (res as NewData & Transformed);
+			ddebug(`Cache miss for ${cacheKey}`);
+			console.log(`[github-cache] FETCHING from GitHub: ${cacheKey}${stale ? " (conditional)" : ""}`);
+
+			// Set pending etag for conditional request (injected via Octokit hook)
+			if (stale?.etag) {
+				self.#pendingEtag = stale.etag;
+			}
+
+			let res: NewData;
+			try {
+				res = await fn();
+			} catch (error: unknown) {
+				// On 304 Not Modified, reuse stale data (free, no quota used)
+				if (
+					stale &&
+					error &&
+					typeof error === "object" &&
+					"status" in error &&
+					(error as { status: number }).status === 304
+				) {
+					self.#pendingEtag = null;
+					console.log(`[github-cache] 304 NOT MODIFIED for ${cacheKey} (free, no quota used)`);
+					let ttlResult: number | undefined = undefined;
+					if (ttl !== undefined) {
+						ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
+					}
+					await self.#cache.refreshTtl(cacheKey, ttlResult);
+					return stale.value;
+				}
+				self.#pendingEtag = null;
+				throw error;
+			}
+
+			self.#pendingEtag = null;
+			const newValue = transformer
+				? await transformer(res as Awaited<NewData>)
+				: (res as NewData & Transformed);
 
 			let ttlResult: number | undefined = undefined;
 			if (ttl !== undefined) {
@@ -379,7 +490,14 @@ export class GitHubCache {
 					ttlResult = ttl;
 				}
 			}
-			await self.#cache.set(cacheKey, newValue, ttlResult);
+
+			// Store with etag if the response has one
+			const etag = self.#extractEtag(res);
+			if (etag) {
+				await self.#cache.setWithEtag(cacheKey, newValue, etag, ttlResult);
+			} else {
+				await self.#cache.set(cacheKey, newValue, ttlResult);
+			}
 
 			return newValue;
 		}
@@ -961,30 +1079,38 @@ export class GitHubCache {
 							(path === "package.json" || path.endsWith("/package.json"))
 					);
 
-				const descriptions = new Map<string, string>();
-				for (const path of allPackageJson) {
-					const { data: packageJson } = await this.#request(
-						kit =>
-							kit.rest.repos.getContent({
-								mediaType: {
-									format: "raw"
-								},
-								owner,
-								repo,
-								path
-							}),
-						createOctokitResponse([])
-					);
+				console.log(
+					`[github-api] getDescriptions(${owner}/${repo}): fetching ${allPackageJson.length} package.json files`
+				);
 
-					try {
-						const { description } = JSON.parse(packageJson as unknown as string) as {
-							description: string;
-						};
-						if (description) descriptions.set(path, description);
-					} catch {
-						// ignore
-					}
-				}
+				const descriptions = new Map<string, string>();
+				// Fetch in parallel instead of sequentially to be faster,
+				// but the real saving is the 10-day TTL cache
+				await Promise.all(
+					allPackageJson.map(async path => {
+						const { data: packageJson } = await this.#request(
+							kit =>
+								kit.rest.repos.getContent({
+									mediaType: {
+										format: "raw"
+									},
+									owner,
+									repo,
+									path
+								}),
+							createOctokitResponse([])
+						);
+
+						try {
+							const { description } = JSON.parse(packageJson as unknown as string) as {
+								description: string;
+							};
+							if (description) descriptions.set(path, description);
+						} catch {
+							// ignore
+						}
+					})
+				);
 				return Object.fromEntries(descriptions);
 			},
 			ttl: DESCRIPTIONS_TTL
