@@ -1,4 +1,5 @@
 import {
+	DEFAULT_PER_PAGE,
 	GH_APP_ID,
 	GH_APP_INSTALLATION_TOKEN,
 	GH_APP_PRIV_KEY_BASE64,
@@ -169,7 +170,7 @@ const MOCK_REQUESTS = false;
  *
  * @see {@link https://docs.github.com/en/rest/releases/releases#list-releases|GitHub Docs}
  */
-const per_page = 10;
+const per_page = Number(DEFAULT_PER_PAGE);
 /**
  * The TTL of the cached releases, in seconds.
  */
@@ -878,7 +879,8 @@ export class GitHubCache {
 	async getReleases(repository: Repository) {
 		return await this.#processCached<GitHubRelease[]>()({
 			cacheKey: this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
-			fn: () => this.#fetchReleases(repository),
+			fn: () => this.#fetchReleasesRaw(repository),
+			transformer: (res) => ("data" in res ? res.data : res) as GitHubRelease[],
 			ttl: RELEASES_TTL
 		});
 	}
@@ -891,10 +893,10 @@ export class GitHubCache {
 	 * @returns the fetched releases
 	 * @private
 	 */
-	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
+	async #fetchReleasesRaw(repository: Repository) {
 		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
-			const { data: releases } = await this.#request(
+			return await this.#request(
 				kit =>
 					kit.rest.repos.listReleases({
 						owner,
@@ -903,7 +905,6 @@ export class GitHubCache {
 					}),
 				createOctokitResponse([])
 			);
-			return releases;
 		}
 
 		// Changelog mode: we'll need to get the tags and re-build releases from them
