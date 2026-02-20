@@ -191,6 +191,10 @@ const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
  * The TTL for non-deprecated packages, in seconds
  */
 const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
+/**
+ * The TTL for commit data, in seconds. Commits are immutable.
+ */
+const COMMIT_TTL = 60 * 60 * 24 * 30; // 30 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -879,8 +883,7 @@ export class GitHubCache {
 	async getReleases(repository: Repository) {
 		return await this.#processCached<GitHubRelease[]>()({
 			cacheKey: this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
-			fn: () => this.#fetchReleasesRaw(repository),
-			transformer: (res) => ("data" in res ? res.data : res) as GitHubRelease[],
+			fn: () => this.#fetchReleases(repository),
 			ttl: RELEASES_TTL
 		});
 	}
@@ -893,61 +896,69 @@ export class GitHubCache {
 	 * @returns the fetched releases
 	 * @private
 	 */
-	async #fetchReleasesRaw(repository: Repository) {
+	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
 		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
-			return await this.#request(
-				kit =>
-					kit.rest.repos.listReleases({
-						owner,
-						repo,
-						per_page
-					}),
-				createOctokitResponse([])
-			);
+			return await this.#processCached<GitHubRelease[]>()({
+				cacheKey: `internal:${owner}/${repo}:listReleases`,
+				fn: () =>
+					this.#request(
+						kit => kit.rest.repos.listReleases({ owner, repo, per_page }),
+						createOctokitResponse([])
+					),
+				transformer: ({ data }) => data,
+				ttl: RELEASES_TTL
+			});
 		}
 
 		// Changelog mode: we'll need to get the tags and re-build releases from them
 
+		type TagData = Awaited<
+			ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listTags"]>
+		>["data"][number];
+
 		// 1. Fetch tags
-		const { data: tags } = await this.#request(
-			kit =>
-				kit.rest.repos.listTags({
-					owner,
-					repo,
-					per_page
-				}),
-			createOctokitResponse([])
-		);
+		const tags = await this.#processCached<TagData[]>()({
+			cacheKey: `internal:${owner}/${repo}:tags`,
+			fn: () =>
+				this.#request(
+					kit => kit.rest.repos.listTags({ owner, repo, per_page }),
+					createOctokitResponse([])
+				),
+			transformer: ({ data }) => data,
+			ttl: RELEASES_TTL
+		});
 
 		// 2. Fetch changelog
-		const { data: changelogResult } = await this.#request(
-			kit =>
-				kit.rest.repos.getContent({
-					mediaType: {
-						format: "raw"
-					},
-					owner,
-					repo,
-					ref: (() => {
-						try {
-							return owner === "sveltejs" &&
-								repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
-								tags[0] &&
-								semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
-								? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
-								: undefined;
-						} catch {
-							// handle oopsies for invalid versions returned from `metadataFromTag` (or others)
-							return undefined;
-						}
-					})(),
-					path: "CHANGELOG.md"
-				}),
-			createOctokitResponse([])
-		);
+		const changelogFileContents = await this.#processCached<string>()({
+			cacheKey: `internal:${owner}/${repo}:changelog`,
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.rest.repos.getContent({
+							mediaType: { format: "raw" },
+							owner,
+							repo,
+							ref: (() => {
+								try {
+									return owner === "sveltejs" &&
+										repo === "prettier-plugin-svelte" &&
+										tags[0] &&
+										semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
+										? "version-3"
+										: undefined;
+								} catch {
+									return undefined;
+								}
+							})(),
+							path: "CHANGELOG.md"
+						}),
+					createOctokitResponse([])
+				),
+			transformer: ({ data }) => data as unknown as string,
+			ttl: RELEASES_TTL
+		});
 
-		const changelogFileContents = changelogResult as unknown as string;
 		// Actually parse the changelog file
 		const { versions } = await parseChangelog(
 			changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
@@ -965,6 +976,11 @@ export class GitHubCache {
 			);
 		}
 
+		type CommitData = {
+			author: { name: string; email: string; date: string };
+			committer: { name: string; email: string; date: string };
+		};
+
 		// 3. Return the recreated releases
 		return await Promise.all(
 			tags.map(
@@ -972,12 +988,16 @@ export class GitHubCache {
 					{ name: tag_name, commit: { sha }, zipball_url, tarball_url, node_id },
 					tagIndex
 				) => {
-					const {
-						data: { author, committer }
-					} = await this.#request(
-						kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
-						createOctokitResponse(commit)
-					);
+					const { author, committer } = await this.#processCached<CommitData>()({
+						cacheKey: `internal:${owner}/${repo}:commit:${sha}`,
+						fn: () =>
+							this.#request(
+								kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
+								createOctokitResponse(commit)
+							),
+						transformer: ({ data: { author, committer } }) => ({ author, committer }),
+						ttl: COMMIT_TTL
+					});
 					const [, cleanVersion] = repository.metadataFromTag(tag_name);
 					const changelogVersion = versions.find(
 						({ version }) => !!version?.includes(cleanVersion)
