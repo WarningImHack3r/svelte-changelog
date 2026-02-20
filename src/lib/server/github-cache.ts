@@ -1,11 +1,8 @@
-import { dev } from "$app/environment";
 import {
 	GH_APP_ID,
 	GH_APP_INSTALLATION_TOKEN,
 	GH_APP_PRIV_KEY_BASE64,
-	GITHUB_TOKEN,
-	KV_REST_API_TOKEN,
-	KV_REST_API_URL
+	GITHUB_TOKEN
 } from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
@@ -20,7 +17,6 @@ import type {
 	ReactionContent,
 	ReferencedSubject
 } from "@octokit/graphql-schema";
-import { Redis } from "@upstash/redis";
 import { App, Octokit } from "octokit";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
@@ -203,24 +199,8 @@ export class GitHubCache {
 	readonly #cache: CacheHandler;
 	readonly #octokit: Octokit;
 
-	/**
-	 * Creates a new {@link GitHubCache} with the required auth info.
-	 *
-	 * @param redisUrl the Redis cache URL
-	 * @param redisToken the Redis cache token
-	 * @param githubToken the GitHub token for uncached API requests
-	 * @constructor
-	 */
-	constructor(redisUrl: string, redisToken: string, octokit: Octokit) {
-		this.#cache = new CacheHandler(
-			new Redis({
-				url: redisUrl,
-				token: redisToken,
-				enableAutoPipelining: true
-			}),
-			dev
-		);
-
+	constructor(octokit: Octokit) {
+		this.#cache = new CacheHandler();
 		this.#octokit = octokit;
 
 		// Hook to inject If-None-Match header for conditional requests
@@ -442,7 +422,7 @@ export class GitHubCache {
 			}
 
 			// Cache expired — check if we have stale data + etag for conditional request
-			const stale = self.#cache.getStale<Transformed>(cacheKey);
+			const stale = await self.#cache.getStale<Transformed>(cacheKey);
 
 			ddebug(`Cache miss for ${cacheKey}`);
 			console.log(`[github-cache] FETCHING from GitHub: ${cacheKey}${stale ? " (conditional)" : ""}`);
@@ -1263,8 +1243,6 @@ export class GitHubCache {
 }
 
 export const githubCache = new GitHubCache(
-	KV_REST_API_URL,
-	KV_REST_API_TOKEN,
 	GITHUB_TOKEN
 		? new Octokit({
 				auth: GITHUB_TOKEN
