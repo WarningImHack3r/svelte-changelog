@@ -160,7 +160,7 @@ export type LinkedItem = {
 	body: string;
 };
 
-const MOCK_REQUESTS = true;
+const MOCK_REQUESTS = false;
 
 /**
  * The maximum items amount to get per-page
