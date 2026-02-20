@@ -15,141 +15,143 @@ const repos: Record<Category, RepoEntry> = {
 			}
 		]
 	},
-	kit: {
-		name: "SvelteKit",
-		repos: [
-			{
-				repoName: "kit",
-				dataFilter: ({ tag_name }) => tag_name.includes("/kit@"),
-				metadataFromTag: splitByLastAt
-			}
-		]
-	},
+	// kit: {
+	// 	name: "SvelteKit",
+	// 	repos: [
+	// 		{
+	// 			repoName: "kit",
+	// 			dataFilter: ({ tag_name }) => tag_name.includes("/kit@"),
+	// 			metadataFromTag: splitByLastAt
+	// 		}
+	// 	]
+	// },
 	tools: {
 		name: "Tooling",
 		description: "Adapters, plugins & development tools",
 		repos: [
-			{
-				repoName: "kit",
-				dataFilter: ({ tag_name }) => !tag_name.includes("/kit@"),
-				metadataFromTag: splitByLastAt
-			},
+			// 		{
+			// 			repoName: "kit",
+			// 			dataFilter: ({ tag_name }) => !tag_name.includes("/kit@"),
+			// 			metadataFromTag: splitByLastAt
+			// 		},
 			{
 				repoName: "cli",
 				metadataFromTag: splitByLastAt
-			},
-			{
-				repoName: "vite-plugin-svelte",
-				metadataFromTag: splitByLastAt
-			},
-			{
-				repoName: "eslint-plugin-svelte",
-				metadataFromTag(tag) {
-					if (tag.includes("@")) {
-						return splitByLastAt(tag);
-					}
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "eslint-config",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "svelte-eslint-parser",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "language-tools",
-				metadataFromTag: tag => {
-					if (containsAtRegex.test(tag)) return splitByLastAt(tag);
-					const lastIndex = tag.lastIndexOf("-");
-					return [tag.substring(0, lastIndex), tag.substring(lastIndex + 1)];
-				}
-			},
-			{
-				repoName: "acorn-typescript",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "svelte-devtools",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				changesMode: "changelog",
-				repoName: "svelte-preprocess",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				},
-				changelogContentsReplacer: file => file.replace(mdTitleRegex, "## [")
-			},
-			{
-				changesMode: "changelog",
-				repoName: "rollup-plugin-svelte",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				changesMode: "changelog",
-				repoName: "svelte-loader",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				changesMode: "changelog",
-				repoName: "prettier-plugin-svelte",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "mcp",
-				metadataFromTag: splitByLastAt
 			}
+			// 		{
+			// 			repoName: "vite-plugin-svelte",
+			// 			metadataFromTag: splitByLastAt
+			// 		},
+			// 		{
+			// 			repoName: "eslint-plugin-svelte",
+			// 			metadataFromTag(tag) {
+			// 				if (tag.includes("@")) {
+			// 					return splitByLastAt(tag);
+			// 				}
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			repoName: "eslint-config",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			repoName: "svelte-eslint-parser",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			repoName: "language-tools",
+			// 			metadataFromTag: tag => {
+			// 				if (containsAtRegex.test(tag)) return splitByLastAt(tag);
+			// 				const lastIndex = tag.lastIndexOf("-");
+			// 				return [tag.substring(0, lastIndex), tag.substring(lastIndex + 1)];
+			// 			}
+			// 		},
+			// 		{
+			// 			repoName: "acorn-typescript",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			repoName: "svelte-devtools",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			changesMode: "changelog",
+			// 			repoName: "svelte-preprocess",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			},
+			// 			changelogContentsReplacer: file => file.replace(mdTitleRegex, "## [")
+			// 		},
+			// 		{
+			// 			changesMode: "changelog",
+			// 			repoName: "rollup-plugin-svelte",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			changesMode: "changelog",
+			// 			repoName: "svelte-loader",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			changesMode: "changelog",
+			// 			repoName: "prettier-plugin-svelte",
+			// 			metadataFromTag(tag) {
+			// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+			// 			}
+			// 		},
+			// 		{
+			// 			repoName: "mcp",
+			// 			metadataFromTag: splitByLastAt
+			// 		}
 		]
 	},
-	libs: {
-		name: "Libraries",
-		description: "Core utilies for the Svelte ecosystem, but not only",
-		repos: [
-			{
-				repoName: "devalue",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "esrap",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				repoName: "zimmerframe",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			},
-			{
-				changesMode: "changelog",
-				repoOwner: "Rich-Harris",
-				repoName: "magic-string",
-				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
-			}
-		]
-	}
+	// libs: {
+	// 	name: "Libraries",
+	// 	description: "Core utilies for the Svelte ecosystem, but not only",
+	// 	repos: [
+	// 		{
+	// 			repoName: "devalue",
+	// 			metadataFromTag(tag) {
+	// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+	// 			}
+	// 		},
+	// 		{
+	// 			repoName: "esrap",
+	// 			metadataFromTag(tag) {
+	// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+	// 			}
+	// 		},
+	// 		{
+	// 			repoName: "zimmerframe",
+	// 			metadataFromTag(tag) {
+	// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+	// 			}
+	// 		},
+	// 		{
+	// 			changesMode: "changelog",
+	// 			repoOwner: "Rich-Harris",
+	// 			repoName: "magic-string",
+	// 			metadataFromTag(tag) {
+	// 				return [this.repoName, tag.replace(vPrefixRegex, "")];
+	// 			}
+	// 		}
+	// 	]
+	// }
+	kit: { name: "SvelteKit", repos: [] },
+	libs: { name: "Libraries", repos: [] }
 };
 
 /**
