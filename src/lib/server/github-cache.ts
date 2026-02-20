@@ -267,7 +267,6 @@ export class GitHubCache {
 	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
 	 * @returns either the original data or the fallback one
 	 */
-	static #apiCallCount = 0;
 	static #rateLimitRemaining: number | null = null;
 	static #rateLimitReset: Date | null = null;
 
@@ -288,17 +287,6 @@ export class GitHubCache {
 	async #request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
 		if (MOCK_REQUESTS) return fallback;
 
-		GitHubCache.#apiCallCount++;
-		const callNum = GitHubCache.#apiCallCount;
-
-		const etag = this.#pendingEtag;
-		const rateInfo =
-			GitHubCache.#rateLimitRemaining !== null
-				? ` (remaining=${GitHubCache.#rateLimitRemaining}, reset=${GitHubCache.#rateLimitReset?.toLocaleTimeString()})`
-				: "";
-		const etagInfo = etag ? " [conditional]" : "";
-		console.log(`[github-api] call #${callNum}${etagInfo}${rateInfo}`);
-
 		try {
 			const result = await original(this.#octokit);
 			// Extract rate limit headers from Octokit responses
@@ -312,9 +300,9 @@ export class GitHubCache {
 				if (reset !== undefined) {
 					GitHubCache.#rateLimitReset = new Date(Number(reset) * 1000);
 				}
-				if (GitHubCache.#rateLimitRemaining !== null && GitHubCache.#rateLimitRemaining < 100) {
-					console.warn(
-						`[github-api] LOW RATE LIMIT: ${GitHubCache.#rateLimitRemaining} remaining, resets at ${GitHubCache.#rateLimitReset?.toLocaleTimeString()}`
+				if (GitHubCache.#rateLimitRemaining !== null) {
+					console.info(
+						`[github-api] remaining=${GitHubCache.#rateLimitRemaining}, resets at ${GitHubCache.#rateLimitReset?.toLocaleTimeString()}`
 					);
 				}
 			}
@@ -327,11 +315,6 @@ export class GitHubCache {
 				const reset = resp?.headers?.["x-ratelimit-reset"];
 				if (remaining !== undefined) GitHubCache.#rateLimitRemaining = Number(remaining);
 				if (reset !== undefined) GitHubCache.#rateLimitReset = new Date(Number(reset) * 1000);
-				if ((error as unknown as { status: number }).status !== 304) {
-					console.error(
-						`[github-api] REQUEST FAILED #${callNum} - remaining=${GitHubCache.#rateLimitRemaining}, reset=${GitHubCache.#rateLimitReset?.toLocaleTimeString()}`
-					);
-				}
 			}
 			throw error;
 		}
@@ -417,7 +400,7 @@ export class GitHubCache {
 			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
 			if (cachedValue) {
 				ddebug(`Cache hit for ${cacheKey}`);
-				console.log(`[github-cache] SAVED API call for ${cacheKey}`);
+				console.info(`[github-cache-hit] ${cacheKey}`);
 				return cachedValue;
 			}
 
@@ -425,7 +408,6 @@ export class GitHubCache {
 			const stale = await self.#cache.getStale<Transformed>(cacheKey);
 
 			ddebug(`Cache miss for ${cacheKey}`);
-			console.log(`[github-cache] FETCHING from GitHub: ${cacheKey}${stale ? " (conditional)" : ""}`);
 
 			// Set pending etag for conditional request (injected via Octokit hook)
 			if (stale?.etag) {
@@ -445,7 +427,8 @@ export class GitHubCache {
 					(error as { status: number }).status === 304
 				) {
 					self.#pendingEtag = null;
-					console.log(`[github-cache] 304 NOT MODIFIED for ${cacheKey} (free, no quota used)`);
+					ddebug(`Cache 304 hit for ${cacheKey}`);
+					console.info(`[github-cache-304-hit] ${cacheKey}`);
 					let ttlResult: number | undefined = undefined;
 					if (ttl !== undefined) {
 						ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
@@ -1058,10 +1041,6 @@ export class GitHubCache {
 							!path.includes("/e2e-tests/") &&
 							(path === "package.json" || path.endsWith("/package.json"))
 					);
-
-				console.log(
-					`[github-api] getDescriptions(${owner}/${repo}): fetching ${allPackageJson.length} package.json files`
-				);
 
 				const descriptions = new Map<string, string>();
 				// Fetch in parallel instead of sequentially to be faster,
