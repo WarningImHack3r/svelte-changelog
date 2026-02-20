@@ -1,5 +1,4 @@
 import {
-	DEFAULT_PER_PAGE,
 	GH_APP_ID,
 	GH_APP_INSTALLATION_TOKEN,
 	GH_APP_PRIV_KEY_BASE64,
@@ -170,7 +169,7 @@ const MOCK_REQUESTS = false;
  *
  * @see {@link https://docs.github.com/en/rest/releases/releases#list-releases|GitHub Docs}
  */
-const per_page = Number(DEFAULT_PER_PAGE);
+const per_page = 100;
 /**
  * The TTL of the cached releases, in seconds.
  */
