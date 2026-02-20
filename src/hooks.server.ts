@@ -16,7 +16,11 @@ export async function handleError({ error, status, event, message }) {
 			status_code: status,
 			error_message: message
 		});
-		await client.shutdown();
+		try {
+			await client.shutdown();
+		} catch {
+			// Mitigate https://github.com/PostHog/posthog-js/issues/2615
+		}
 	}
 }
 
