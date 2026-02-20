@@ -1,12 +1,10 @@
-import { remult } from "remult";
+import { repo } from "remult";
 import { CacheEntry } from "./db/CacheEntry";
 import { ddebug } from "$lib/debug";
 
 export type CacheJson = Record<string, unknown> | unknown[] | string | number | boolean | null;
 
 export class CacheHandler {
-	readonly #repo = remult.repo(CacheEntry);
-
 	// Cache stats tracking
 	#stats = { hits: 0, misses: 0, sets: 0, deletes: 0 };
 	#statsInterval: ReturnType<typeof setInterval> | null = null;
@@ -27,7 +25,7 @@ export class CacheHandler {
 
 	async get<T extends CacheJson>(key: string) {
 		ddebug(`Retrieving ${key} from SQLite cache`);
-		const entry = await this.#repo.findFirst({ key });
+		const entry = await repo(CacheEntry).findFirst({ key });
 
 		if (!entry) {
 			ddebug("Nothing to retrieve");
@@ -54,18 +52,11 @@ export class CacheHandler {
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
 		console.log(`[cache] SET ${key} ttl=${ttlSeconds ?? "none"}s`);
 
-		const existing = await this.#repo.findFirst({ key });
-		if (existing) {
-			existing.value = value as {};
-			existing.expiresAt = expiresAt;
-			await this.#repo.save(existing);
-		} else {
-			await this.#repo.insert({ key, value: value as {}, expiresAt });
-		}
+		await repo(CacheEntry).upsert({ where: { key }, set: { value: value as {}, expiresAt } });
 	}
 
 	async getStale<T extends CacheJson>(key: string): Promise<{ value: T; etag: string } | null> {
-		const entry = await this.#repo.findFirst({ key });
+		const entry = await repo(CacheEntry).findFirst({ key });
 		if (entry?.etag) {
 			return { value: entry.value as T, etag: entry.etag };
 		}
@@ -73,10 +64,10 @@ export class CacheHandler {
 	}
 
 	async refreshTtl(key: string, ttlSeconds?: number) {
-		const entry = await this.#repo.findFirst({ key });
+		const entry = await repo(CacheEntry).findFirst({ key });
 		if (!entry) return;
 		entry.expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await this.#repo.save(entry);
+		await repo(CacheEntry).save(entry);
 		console.log(`[cache] REFRESH-TTL ${key} ttl=${ttlSeconds ?? "none"}s`);
 	}
 
@@ -85,24 +76,16 @@ export class CacheHandler {
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
 		console.log(`[cache] SET ${key} ttl=${ttlSeconds ?? "none"}s`);
 
-		const existing = await this.#repo.findFirst({ key });
-		if (existing) {
-			existing.value = value as {};
-			existing.expiresAt = expiresAt;
-			existing.etag = etag;
-			await this.#repo.save(existing);
-		} else {
-			await this.#repo.insert({ key, value: value as {}, expiresAt, etag });
-		}
+		await repo(CacheEntry).upsert({ where: { key }, set: { value: value as {}, expiresAt, etag } });
 		console.log(`[cache] ETAG stored for ${key}: ${etag.substring(0, 20)}...`);
 	}
 
 	async delete(key: string) {
 		this.#stats.deletes++;
 		console.log(`[cache] DELETE ${key}`);
-		const entry = await this.#repo.findFirst({ key });
+		const entry = await repo(CacheEntry).findFirst({ key });
 		if (!entry) return false;
-		await this.#repo.delete(entry);
+		await repo(CacheEntry).delete(entry);
 		return true;
 	}
 }
