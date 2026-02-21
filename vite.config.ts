@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		ssr: {
-			external: ["remult"]
+			external: ["better-sqlite3"]
 		},
 		plugins: [
 			devtoolsJson(),
