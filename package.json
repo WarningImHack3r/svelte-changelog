@@ -20,7 +20,8 @@
 		"@opentelemetry/resources": "^2.5.1",
 		"@opentelemetry/sdk-logs": "^0.212.0",
 		"@opentelemetry/sdk-node": "^0.212.0",
-		"@resvg/resvg-js": "^2.6.2"
+		"@resvg/resvg-js": "^2.6.2",
+		"remult": "^3.3.6"
 	},
 	"devDependencies": {
 		"@e18e/eslint-plugin": "^0.2.0",
@@ -68,7 +69,6 @@
 		"rehype-slug": "^6.0.0",
 		"remark-gemoji": "^8.0.0",
 		"remark-github": "^12.0.0",
-		"remult": "^3.3.6",
 		"runed": "^0.37.1",
 		"satori": "^0.19.2",
 		"satori-html": "^0.3.2",

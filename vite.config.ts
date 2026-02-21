@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		ssr: {
-			noExternal: ["remult"]
+			external: ["remult"]
 		},
 		plugins: [
 			devtoolsJson(),
