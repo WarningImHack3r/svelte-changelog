@@ -394,6 +394,7 @@
 			Built by <a
 				href={authorVCSProfile}
 				target="_blank"
+				rel="external"
 				class={cn(
 					buttonVariants({
 						variant: "link"

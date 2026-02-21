@@ -69,12 +69,9 @@
 					<pre
 						class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">{message}</pre>
 					<span>
-						It's now rendered with a minimal look to avoid further errors. Please <a
-							href="{siteRepo}/issues"
-							target="_blank"
-						>
-							report this issue
-						</a> if it's not already known.
+						It's now rendered with a minimal look to avoid further errors. Please
+						<a href="{siteRepo}/issues" target="_blank" rel="external">report this issue</a> if it's not
+						already known.
 					</span>
 					<AnimatedButton
 						variant="outline"

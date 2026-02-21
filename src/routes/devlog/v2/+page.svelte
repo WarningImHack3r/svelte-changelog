@@ -21,11 +21,12 @@
 <p>
 	More than a year ago now, I started this project after watching <a
 		href="https://www.youtube.com/@SvelteSociety/streams"
+		rel="external"
 	>
 		This Week in Svelte
 	</a>, because I saw a need in the "old way" of browsing the releases: directly and manually
 	through GitHub. This site was born in an afternoon.<br />Since then, it has become
-	<a href="{authorVCSProfile}?tab=repositories&type=source&sort=stargazers">
+	<a href="{authorVCSProfile}?tab=repositories&type=source&sort=stargazers" rel="external">
 		my most starred GitHub repository
 	</a>, and has been featured <strong>every week</strong> in TWIS. I can't be more grateful for all this.
 </p>
@@ -33,26 +34,37 @@
 <p>
 	Since then, it's got a few evolutions like <a
 		href="https://twitter.com/PaoloRicciuti/status/1814402700794310677"
+		rel="external"
 	>
 		the details page
 	</a>, a
-	<a href="https://twitter.com/probably_coding/status/1814394782481035526">syntax highlighter</a>,
-	and
-	<a href="https://twitter.com/probably_coding/status/1828201003260486051">a login mechanism</a>. It
-	came as I thought about it, but also from live feedbacks (and bugs) reported from TWIS.
+	<a href="https://twitter.com/probably_coding/status/1814394782481035526" rel="external">
+		syntax highlighter
+	</a>, and
+	<a href="https://twitter.com/probably_coding/status/1828201003260486051" rel="external">
+		a login mechanism
+	</a>. It came as I thought about it, but also from live feedbacks (and bugs) reported from TWIS.
 </p>
 
 <p>
 	But as new features and notable migrations were introduced, I started realizing the mess of a
-	codebase it was starting to become. <a href="https://ricciuti.me">Paolo</a> (TWIS host) himself also
-	said the old "Others" tab was unreadable (and I thank him for his feedback!).
+	codebase it was starting to become. <a href="https://ricciuti.me" rel="external">Paolo</a> (TWIS host)
+	himself also said the old "Others" tab was unreadable (and I thank him for his feedback!).
 </p>
 
 <p>
-	All of this indicated it was <a href="https://bsky.app/profile/antleth.fr/post/3lco2v2awqk2i">
+	All of this indicated it was <a
+		href="https://bsky.app/profile/antleth.fr/post/3lco2v2awqk2i"
+		rel="external"
+	>
 		time for a change
 	</a>. So, with a bit of prototyping and help from
-	<a href="https://www.thomasglopes.com">Thomas</a> (<a href="https://melt-ui.com">Melt UI</a>
+	<a href="https://www.thomasglopes.com" rel="external">Thomas</a> (<a
+		href="https://melt-ui.com"
+		rel="external"
+	>
+		Melt UI
+	</a>
 	creator) and 3 weeks of work in the middle of moving to a new flat, <strong>here we are</strong>.
 </p>
 
@@ -73,17 +85,17 @@
 	to a brand new server-side data fetching layer.
 	<br />
 	Under the hood, I now use a dedicated Redis instance, hosted on
-	<a href="https://upstash.com/docs/redis/overall/getstarted">Upstash</a>. Thanks to a granular
-	cache TTL, data fetched with my token on the server is automatically purged and re-fetched
-	periodically.
+	<a href="https://upstash.com/docs/redis/overall/getstarted" rel="external">Upstash</a>. Thanks to
+	a granular cache TTL, data fetched with my token on the server is automatically purged and
+	re-fetched periodically.
 </p>
 
 <p>
-	The UI also got a design refresh, vibing more with <a href="https://svelte.dev">
+	The UI also got a design refresh, vibing more with <a href="https://svelte.dev" rel="external">
 		the new Svelte site
 	</a>. Alongside new fonts and updated colors, the site now uses modernized components, still based
 	on
-	<a href="https://shadcn-svelte.com">shadcn/ui</a>.
+	<a href="https://shadcn-svelte.com" rel="external">shadcn/ui</a>.
 	<br />
 	The routing has also been revamped, now featuring <strong>a page per package</strong> as well as a sidebar
 	for a better packages overview and an eased navigation.
@@ -102,12 +114,13 @@
 
 <ul>
 	<li>
-		<strong>A global search</strong> based on <a href="https://typesense.org">TypeSense</a>,
-		allowing to search for packages or even release details
+		<strong>A global search</strong> based on
+		<a href="https://typesense.org" rel="external">TypeSense</a>, allowing to search for packages or
+		even release details
 	</li>
 	<li>
 		<strong>More filters</strong> to allow you to customize even more what's shown on your releases
-		page (cc <a href="{siteRepo}/issues/45">Thomas</a>!)
+		page (cc <a href="{siteRepo}/issues/45" rel="external">Thomas</a>!)
 	</li>
 	<li>
 		<strong>Infinite loading</strong> to be able to load as many releases as desired, leveraging the new
@@ -116,7 +129,8 @@
 	<li><strong>A dashboard</strong>, using graphs to show stats about releases and more</li>
 	<li><strong>Even more frequent updates</strong> thanks to a revised notification system</li>
 	<li>
-		and even more! Check the <a href="{siteRepo}/issues">open issues</a> for sneak peeks ;)
+		and even more! Check the <a href="{siteRepo}/issues" rel="external">open issues</a> for sneak peeks
+		;)
 	</li>
 </ul>
 
@@ -126,7 +140,7 @@
 	I really hope you'll like everything I put into this release!
 	<br />
 	As always, I'm open to feedbacks and contributions, visit
-	<a href={siteRepo}>the repo</a>!
+	<a href={siteRepo} rel="external">the repo</a>!
 </p>
 
 <p>
