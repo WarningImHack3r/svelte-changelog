@@ -72,10 +72,9 @@
 	I rewrote almost everything from scratch, moving from a bring-your-own-token client-only paradigm
 	to a brand new server-side data fetching layer.
 	<br />
-	Under the hood, I now use a dedicated Redis instance, hosted on
-	<a href="https://upstash.com/docs/redis/overall/getstarted">Upstash</a>. Thanks to a granular
-	cache TTL, data fetched with my token on the server is automatically purged and re-fetched
-	periodically.
+	Under the hood, I now use a local SQLite database via
+	<a href="https://remult.dev">Remult</a>. Thanks to a granular cache TTL, data fetched with my
+	token on the server is automatically purged and re-fetched periodically.
 </p>
 
 <p>

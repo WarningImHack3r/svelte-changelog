@@ -1,7 +1,10 @@
+import type { Handle } from "@sveltejs/kit";
+import { sequence } from "@sveltejs/kit/hooks";
 import { dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { PostHog } from "posthog-node";
 import { dfatal } from "$lib/debug";
+import { api } from "$lib/server/remultApi";
 
 const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 	host: "https://eu.i.posthog.com",
@@ -23,7 +26,9 @@ export async function handleError({ error, status, event, message }) {
 	}
 }
 
-export async function handle({ event, resolve }) {
+const appHandle: Handle = async ({ event, resolve }) => {
 	event.locals.posthog = client;
 	return await resolve(event);
-}
+};
+
+export const handle = sequence(api, appHandle);
