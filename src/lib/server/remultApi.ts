@@ -6,7 +6,7 @@ import { remultApi } from "remult/remult-sveltekit";
 import { CacheEntry } from "./db/CacheEntry";
 
 export const api = remultApi({
-	dataProvider: new SqlDatabase(new BetterSqlite3DataProvider(new Database("./data/db.sqlite"))),
+	dataProvider: new SqlDatabase(new BetterSqlite3DataProvider(new Database("./db.sqlite"))),
 	entities: [CacheEntry],
 	admin: dev
 });
