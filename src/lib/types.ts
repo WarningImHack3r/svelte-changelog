@@ -72,6 +72,17 @@ export type ConditionalKeys<T, Condition> = {
 	[K in keyof T]: K extends Condition ? K : never;
 }[keyof T];
 
+/**
+ * Replaces `undefined` by `null` to be Redis-compatible
+ */
+export type JSONCompatible<T> = T extends undefined
+	? null
+	: T extends (infer U)[]
+		? JSONCompatible<U>[]
+		: T extends object
+			? { [K in keyof T]-?: JSONCompatible<T[K]> }
+			: T;
+
 // ===== GLOBAL TYPES
 
 export type RepoEntry = {

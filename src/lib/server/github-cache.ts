@@ -4,8 +4,7 @@ import {
 	GH_APP_INSTALLATION_TOKEN,
 	GH_APP_PRIV_KEY_BASE64,
 	GITHUB_TOKEN,
-	KV_REST_API_TOKEN,
-	KV_REST_API_URL
+	REDIS_URL
 } from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
@@ -20,14 +19,14 @@ import type {
 	ReactionContent,
 	ReferencedSubject
 } from "@octokit/graphql-schema";
-import { Redis } from "@upstash/redis";
 import { App, Octokit } from "octokit";
+import { type RedisJSON, createClient } from "redis";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/debug";
 import type { Repository } from "$lib/repositories";
-import type { Issues, PID, Pulls } from "$lib/types";
-import { CacheHandler, type RedisJson } from "./cache-handler";
+import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
+import { CacheHandler } from "./cache-handler";
 import {
 	commit,
 	createOctokitResponse,
@@ -206,17 +205,18 @@ export class GitHubCache {
 	/**
 	 * Creates a new {@link GitHubCache} with the required auth info.
 	 *
-	 * @param redisUrl the Redis cache URL
-	 * @param redisToken the Redis cache token
+	 * @param redisUrl the Redis cache TCP URL
 	 * @param githubToken the GitHub token for uncached API requests
 	 * @constructor
 	 */
-	constructor(redisUrl: string, redisToken: string, octokit: Octokit) {
+	constructor(redisUrl: string, octokit: Octokit) {
 		this.#cache = new CacheHandler(
-			new Redis({
+			createClient({
 				url: redisUrl,
-				token: redisToken,
-				enableAutoPipelining: true
+				socket: {
+					tls: true,
+					rejectUnauthorized: false // allows self-hosted
+				}
 			}),
 			dev
 		);
@@ -292,7 +292,7 @@ export class GitHubCache {
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<Transformed extends RedisJson>() {
+	#processCached<Transformed extends RedisJSON>() {
 		// justified eslint rule disabling cause this case is quite... unique and I can't do much better
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
@@ -388,6 +388,23 @@ export class GitHubCache {
 	}
 
 	/**
+	 * Converts the input type into a Redis-compatible type
+	 *
+	 * @param value the value to convert
+	 * @returns the converted value
+	 */
+	#toRedisJSON<T>(value: T): JSONCompatible<T> {
+		if (value === undefined) return null as JSONCompatible<T>;
+		if (Array.isArray(value)) return value.map(this.#toRedisJSON) as JSONCompatible<T>;
+		if (value !== null && typeof value === "object") {
+			return Object.fromEntries(
+				Object.entries(value).map(([k, v]) => [k, this.#toRedisJSON(v)])
+			) as JSONCompatible<T>;
+		}
+		return value as JSONCompatible<T>;
+	}
+
+	/**
 	 * Get the item (issue or pr) with the given information.
 	 * Return the appropriate value if the type is defined or
 	 * try to coerce it otherwise.
@@ -447,7 +464,7 @@ export class GitHubCache {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<IssueDetails>()({
+		return await this.#processCached<JSONCompatible<IssueDetails>>()({
 			cacheKey: this.#getRepoKey(owner, repo, "issue", id),
 			fn: () =>
 				Promise.all([
@@ -462,9 +479,9 @@ export class GitHubCache {
 					this.#getLinkedPullRequests(owner, repo, id)
 				]),
 			transformer: ([{ data: info }, { data: comments }, linkedPrs]) => ({
-				info,
-				comments,
-				linkedPrs
+				info: this.#toRedisJSON(info),
+				comments: this.#toRedisJSON(comments),
+				linkedPrs: this.#toRedisJSON(linkedPrs)
 			}),
 			ttl: FULL_DETAILS_TTL
 		});
@@ -480,7 +497,7 @@ export class GitHubCache {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<PullRequestDetails>()({
+		return await this.#processCached<JSONCompatible<PullRequestDetails>>()({
 			cacheKey: this.#getRepoKey(owner, repo, "pr", id),
 			fn: () =>
 				Promise.all([
@@ -509,11 +526,11 @@ export class GitHubCache {
 				{ data: files },
 				linkedIssues
 			]) => ({
-				info,
-				comments,
-				commits,
-				files,
-				linkedIssues
+				info: this.#toRedisJSON(info),
+				comments: this.#toRedisJSON(comments),
+				commits: this.#toRedisJSON(commits),
+				files: this.#toRedisJSON(files),
+				linkedIssues: this.#toRedisJSON(linkedIssues)
 			}),
 			ttl: FULL_DETAILS_TTL
 		});
@@ -862,7 +879,11 @@ export class GitHubCache {
 					})(),
 					path: "CHANGELOG.md"
 				}),
-			createOctokitResponse([])
+			createOctokitResponse(
+				"" as unknown as Awaited<
+					ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+				>["data"]
+			)
 		);
 
 		const changelogFileContents = changelogResult as unknown as string;
@@ -1022,7 +1043,7 @@ export class GitHubCache {
 	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
-		return await this.#processCached<Issue[]>()({
+		return await this.#processCached<JSONCompatible<Issue[]>>()({
 			cacheKey: this.#getRepoKey(owner, repo, "issues"),
 			fn: () =>
 				this.#request(
@@ -1034,7 +1055,7 @@ export class GitHubCache {
 						}),
 					createOctokitResponse([])
 				),
-			transformer: ({ data: issues }) => issues,
+			transformer: ({ data: issues }) => this.#toRedisJSON(issues),
 			ttl: FULL_DETAILS_TTL
 		});
 	}
@@ -1137,8 +1158,7 @@ export class GitHubCache {
 }
 
 export const githubCache = new GitHubCache(
-	KV_REST_API_URL,
-	KV_REST_API_TOKEN,
+	REDIS_URL,
 	GITHUB_TOKEN
 		? new Octokit({
 				auth: GITHUB_TOKEN

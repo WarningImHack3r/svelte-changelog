@@ -1,12 +1,11 @@
-import type { Redis } from "@upstash/redis";
+import type { RedisClientType, RedisJSON } from "redis";
 import { ddebug, derror } from "$lib/debug";
 
-export type RedisJson = Parameters<InstanceType<typeof Redis>["json"]["set"]>[2];
-
 export class CacheHandler {
-	readonly #redis: Redis;
+	readonly #redis: RedisClientType; // TODO: disconnect after usage?
 	readonly #memoryCache: Map<string, { value: unknown; expiresAt: number | null }>;
 	readonly #isDev: boolean;
+	#connectPromise: Promise<RedisClientType> | null = null;
 
 	/**
 	 * Initialize the cache handler
@@ -14,10 +13,29 @@ export class CacheHandler {
 	 * @param redis the Redis instance
 	 * @param isDev whether we're in dev or prod
 	 */
-	constructor(redis: Redis, isDev: boolean) {
-		this.#redis = redis;
+	constructor(redis: RedisClientType, isDev: boolean) {
+		this.#redis = redis.on("error", derror);
 		this.#memoryCache = new Map();
 		this.#isDev = isDev;
+	}
+
+	/**
+	 * Lazily connect the Redis client to the server as needed,
+	 * supporting concurrent connections
+	 *
+	 * @returns a usable client
+	 */
+	async #connectClient(): Promise<RedisClientType> {
+		if (this.#redis?.isReady) return this.#redis;
+
+		if (this.#connectPromise) return this.#connectPromise;
+
+		this.#connectPromise = this.#redis.connect().then(() => {
+			this.#connectPromise = null;
+			return this.#redis;
+		});
+
+		return this.#connectPromise;
 	}
 
 	/**
@@ -26,7 +44,7 @@ export class CacheHandler {
 	 * @param key the key to get the result for
 	 * @returns the cached value, or `null` if not present
 	 */
-	async get<T extends RedisJson>(key: string) {
+	async get<T extends RedisJSON>(key: string): Promise<T | null> {
 		if (this.#isDev) {
 			ddebug(`Retrieving ${key} from in-memory cache`);
 			// In dev mode, use memory cache only
@@ -61,16 +79,17 @@ export class CacheHandler {
 
 		// No cache entry, try Redis
 		try {
-			const value = await this.#redis.json.get<T>(key);
+			await this.#connectClient();
+			const value = await this.#redis.json.get(key);
 			if (value !== null) {
 				// Get TTL only when populating the cache for the first time
 				const ttl = await this.#redis.ttl(key);
 				const expiresAt = ttl > 0 ? Date.now() + ttl * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
 			}
-			return value;
+			return value as T;
 		} catch (error) {
-			derror("Redis get error:", error);
+			derror("Redis get error:", error instanceof Error ? error.message : error);
 			return null;
 		}
 	}
@@ -82,7 +101,7 @@ export class CacheHandler {
 	 * @param value the value to store
 	 * @param ttlSeconds the optional TTL to set for expiration
 	 */
-	async set<T extends RedisJson>(key: string, value: T, ttlSeconds?: number) {
+	async set<T extends RedisJSON>(key: string, value: T, ttlSeconds?: number) {
 		if (this.#isDev) {
 			ddebug(`Setting value for ${key} in memory cache`);
 			// In dev mode, use memory cache only
@@ -94,13 +113,15 @@ export class CacheHandler {
 		} else {
 			// In production, use both Redis and memory cache
 			try {
+				await this.#connectClient();
+				if (!this.#redis.isReady) await this.#redis.connect();
 				await this.#redis.json.set(key, "$", value);
 				if (ttlSeconds) await this.#redis.expire(key, ttlSeconds);
 				// Mirror in the memory cache
 				const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
 			} catch (error) {
-				derror("Redis set error:", error);
+				derror("Redis set error:", error instanceof Error ? error.message : error);
 			}
 		}
 	}
