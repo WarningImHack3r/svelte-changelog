@@ -203,6 +203,12 @@ export class GitHubCache {
 	readonly #cache: CacheHandler;
 	readonly #octokit: Octokit;
 
+	/**
+	 * Creates a new {@link GitHubCache} with the required auth info.
+	 *
+	 * @param octokit the Octokit instance to use for API requests
+	 * @constructor
+	 */
 	constructor(octokit: Octokit) {
 		this.#cache = new CacheHandler();
 		this.#octokit = octokit;
