@@ -1,6 +1,7 @@
 @import "tailwindcss" theme(static);
 @import "tw-animate-css";
-@import "./fonts.css";
+@import "@fontsource/dm-serif-display";
+@import "@fontsource/pretendard";
 
 @plugin "@tailwindcss/typography";
 
