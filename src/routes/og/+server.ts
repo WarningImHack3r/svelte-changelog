@@ -7,7 +7,6 @@ import PretendardSemibold from "@fontsource/pretendard/files/pretendard-latin-60
 import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
 import { html } from "satori-html";
-import type { RequestHandler } from "./$types";
 import Thumbnail from "./Thumbnail.svelte";
 import { OG_HEIGHT, OG_WIDTH } from "./constants";
 
@@ -17,7 +16,7 @@ const displayFont = read(DMSerifDisplay).arrayBuffer();
 
 // Sources: https://github.com/huggingface/chat-ui/blob/ebeff50ac0ac4367a8e1a32b46dcc5ac2e8fc43f/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82
 // https://geoffrich.net/posts/svelte-social-image/
-export const GET: RequestHandler = async ({ url }) => {
+export async function GET({ url }) {
 	const renderedComponent = render(Thumbnail, {
 		props: {
 			title: url.searchParams.get("title") ?? "",
@@ -77,7 +76,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	});
 	if (!dev) response.headers.append("Cache-Control", `max-age=${60 * 60 * 24 * 30}, immutable`);
 	return response;
-};
+}
 
 type VNode = ReturnType<typeof html>;
 
