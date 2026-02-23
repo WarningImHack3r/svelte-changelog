@@ -174,9 +174,14 @@ const MOCK_REQUESTS = false;
  */
 const per_page = 100;
 /**
- * The TTL of the cached releases, in seconds.
+ * The TTL of the releases, in seconds.
+ *
+ * Still quite short despite webhooks because we want
+ * live-ish reactions update, especially for fresh releases.
+ * As we can't be granular for releases, we have to set that
+ * for all.
  */
-const RELEASES_TTL = 60 * 15; // 15 min
+const RELEASES_TTL = 60 * 30; // 30 min
 /**
  * The TTL of the full issue/pr details, in seconds.
  */
