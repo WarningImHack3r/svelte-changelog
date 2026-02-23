@@ -400,7 +400,7 @@ export class GitHubCache {
 	 */
 	#toRedisJSON<T>(value: T): JSONCompatible<T> {
 		if (value === undefined) return null as JSONCompatible<T>;
-		if (Array.isArray(value)) return value.map(this.#toRedisJSON) as JSONCompatible<T>;
+		if (Array.isArray(value)) return value.map(v => this.#toRedisJSON(v)) as JSONCompatible<T>;
 		if (value !== null && typeof value === "object") {
 			return Object.fromEntries(
 				Object.entries(value).map(([k, v]) => [k, this.#toRedisJSON(v)])
