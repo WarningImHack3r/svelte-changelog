@@ -3,6 +3,7 @@
 	import { FileDiff } from "@lucide/svelte";
 	import posthog from "posthog-js";
 	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import type { JSONCompatible } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
@@ -11,7 +12,7 @@
 
 	type Props = {
 		route: ResolvedPathname;
-		files?: PullRequestDetails["files"];
+		files?: JSONCompatible<PullRequestDetails["files"]>;
 	};
 
 	let { route, files = [] }: Props = $props();

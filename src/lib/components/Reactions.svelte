@@ -2,12 +2,12 @@
 	import type { ClassValue } from "svelte/elements";
 	import { toast } from "svelte-sonner";
 	import type { GitHubRelease } from "$lib/server/github-cache";
-	import type { Entries } from "$lib/types";
+	import type { Entries, JSONCompatible } from "$lib/types";
 	import { Badge } from "$lib/components/ui/badge";
 	import ReactionToast from "$lib/components/ReactionToast.svelte";
 
 	type Props = {
-		reactions?: GitHubRelease["reactions"] | undefined;
+		reactions?: JSONCompatible<GitHubRelease["reactions"]> | undefined;
 		reactionItemUrl?: string;
 		class?: ClassValue;
 	};

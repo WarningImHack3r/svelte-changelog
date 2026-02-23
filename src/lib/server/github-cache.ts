@@ -551,7 +551,7 @@ export class GitHubCache {
 	 * @throws Error if the discussion is not found
 	 */
 	async getDiscussionDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<DiscussionDetails>()({
+		return await this.#processCached<JSONCompatible<DiscussionDetails>>()({
 			cacheKey: this.#getRepoKey(owner, repo, "discussion", id),
 			fn: () =>
 				Promise.all([
@@ -580,7 +580,7 @@ export class GitHubCache {
 				]),
 			transformer: ([{ data: discussion }, comments]) => ({
 				info: discussion,
-				comments
+				comments: this.#toRedisJSON(comments)
 			}),
 			ttl: FULL_DETAILS_TTL
 		});
