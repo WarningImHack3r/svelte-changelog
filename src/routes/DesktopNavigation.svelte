@@ -88,7 +88,7 @@
 								{@render listItem({
 									title: "See more",
 									href: menuItem.moreHref,
-									className:
+									itemClass:
 										"text-primary underline-offset-4 *:first:after:ml-2 *:first:after:inline-block *:first:after:transition-transform *:first:after:duration-200 *:first:after:content-['→'] hover:text-primary hover:underline hover:*:first:after:translate-x-1"
 								})}
 							{/if}
