@@ -269,7 +269,7 @@
 			</a>
 			{#if page.route.id?.startsWith(resolve("/devlog"))}
 				<div class="mx-4 h-8 w-0.5 rotate-25 rounded-full bg-muted-foreground/40"></div>
-				<span class="text-xl font-semibold">Blog</span>
+				<span class="text-xl font-semibold">Devlog</span>
 			{:else}
 				<!-- Navigation -->
 				<DesktopNavigation
