@@ -25,7 +25,7 @@ export type CategorizedPackage = Prettify<
 class PackageDiscoverer {
 	readonly #cache: GitHubCache;
 	readonly #repos: Repository[] = [];
-	readonly #registryExcludedPackages = new Set(["extensions"]);
+	readonly #notNpmPackages = new Set(["extensions"]);
 	#packages: DiscoveredPackage[] = [];
 
 	constructor(cache: GitHubCache, repos: Repository[]) {
@@ -60,7 +60,7 @@ class PackageDiscoverer {
 				return {
 					...repo,
 					packages: await Promise.all(
-						packages.map(async (pkg): Promise<Package> => {
+						packages.map<Promise<Package>>(async pkg => {
 							const ghName = this.#gitHubDirectoryFromName(pkg);
 							const deprecated = (await this.#cache.getPackageDeprecation(pkg)).value || undefined;
 							return {
@@ -76,7 +76,7 @@ class PackageDiscoverer {
 										descriptions["package.json"] ??
 										""),
 								deprecated,
-								registryExcluded: this.#registryExcludedPackages.has(pkg)
+								registryExcluded: this.#notNpmPackages.has(pkg)
 							};
 						})
 					)

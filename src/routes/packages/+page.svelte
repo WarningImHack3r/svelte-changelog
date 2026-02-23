@@ -16,7 +16,7 @@
 	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
 	 * as it isn't reactive (enough).
 	 */
-	const pinnedROProxy = $derived(new Set(pinnedPackages.current));
+	let pinnedROProxy = $derived(new Set(pinnedPackages.current));
 </script>
 
 <ul class="space-y-8">

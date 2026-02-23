@@ -147,13 +147,13 @@
 
 	// Snow - enabled during Dec 15th through Jan 15th
 	const currentDate = new Date();
-	const beginningDate = $derived(
+	let beginningDate = $derived(
 		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? -1 : 0), 11, 15)
 	);
-	const endingDate = $derived(
+	let endingDate = $derived(
 		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? 0 : 1), 0, 15)
 	);
-	const isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
+	let isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
 	let isSnowEnabled = new PersistedState("snowlover", true);
 	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
 

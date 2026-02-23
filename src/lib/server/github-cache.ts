@@ -316,7 +316,7 @@ export class GitHubCache {
 			 * @param from the awaited result of the promise
 			 * @returns the transformed result to use, return & cache
 			 */
-			transformer: (from: Awaited<NewData>) => Transformed | Promise<Transformed>;
+			transformer: (from: Awaited<NewData>) => Transformed;
 			/**
 			 * The optional TTL to use for the newly cached data
 			 *
@@ -357,7 +357,7 @@ export class GitHubCache {
 		}: {
 			cacheKey: string;
 			fn: () => Promise<NewData> | NewData;
-			transformer?: (from: Awaited<NewData>) => Transformed | Promise<Transformed>;
+			transformer?: (from: Awaited<NewData>) => Transformed;
 			ttl?: number | ((value: NewData | Transformed) => number | undefined) | undefined;
 		}): Promise<NewData | Transformed> {
 			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
@@ -369,7 +369,7 @@ export class GitHubCache {
 			ddebug(`Cache miss for ${cacheKey}`);
 
 			const res = await fn();
-			const newValue = transformer ? await transformer(res) : (res as NewData & Transformed);
+			const newValue = transformer?.(res) ?? (res as NewData & Transformed);
 
 			let ttlResult: number | undefined = undefined;
 			if (ttl !== undefined) {
@@ -960,8 +960,8 @@ export class GitHubCache {
 	async getDescriptions(owner: string, repo: string) {
 		return await this.#processCached<Record<string, string>>()({
 			cacheKey: this.#getRepoKey(owner, repo, "descriptions"),
-			fn: () =>
-				this.#request(
+			fn: async () => {
+				const { data: allFiles } = await this.#request(
 					kit =>
 						kit.rest.git.getTree({
 							owner,
@@ -970,8 +970,8 @@ export class GitHubCache {
 							recursive: "true"
 						}),
 					createOctokitResponse(gitTree)
-				),
-			transformer: async ({ data: allFiles }) => {
+				);
+
 				const allPackageJson = allFiles.tree
 					.map(({ path }) => path)
 					.filter(path => path !== undefined)
