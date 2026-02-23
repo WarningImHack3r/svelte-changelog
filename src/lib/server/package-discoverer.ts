@@ -1,4 +1,3 @@
-import { uniq } from "$lib/array";
 import { dlog } from "$lib/debug";
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
@@ -41,7 +40,7 @@ class PackageDiscoverer {
 	 */
 	async discoverAll() {
 		this.#packages = await Promise.all(
-			uniq(this.#repos, ({ repoOwner, repoName }) => `${repoOwner}/${repoName}`).map(async repo => {
+			this.#repos.map(async repo => {
 				const releases = await this.#cache.getReleases(repo);
 				const descriptions = await this.#cache.getDescriptions(repo.repoOwner, repo.repoName);
 				const packages = [
