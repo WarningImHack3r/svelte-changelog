@@ -26,7 +26,7 @@ export async function load({ params }) {
 	if (!knownRepo) {
 		error(404, {
 			message: "Unknown repository",
-			description: `${siteName} can only track known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
+			description: `${siteName} can only track repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Tracker home page",
 				href: resolve("/tracker")

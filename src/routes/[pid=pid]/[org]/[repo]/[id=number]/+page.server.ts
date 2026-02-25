@@ -18,7 +18,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 	if (!dev && !isKnownRepo) {
 		error(404, {
 			message: "Unknown repository",
-			description: `${siteName} can only display the details of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
+			description: `${siteName} can only display the details of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Go home",
 				href: resolve("/")

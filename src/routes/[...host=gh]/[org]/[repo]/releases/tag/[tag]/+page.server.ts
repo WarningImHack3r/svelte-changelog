@@ -12,7 +12,7 @@ export function load({ params: { org, repo, tag } }) {
 	if (!repository) {
 		error(404, {
 			message: "Unknown repository",
-			description: `${siteName} can only display releases for the packages of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
+			description: `${siteName} can only display releases for the packages of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Go home",
 				href: resolve("/")
