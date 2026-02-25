@@ -1,4 +1,5 @@
-import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
+import { resolve } from "$app/paths";
+import { PRERENDER_BYPASS_TOKEN, WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
 import { derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -13,7 +14,7 @@ export async function GET() {
 	return Response.json([...new Set(packages)]);
 }
 
-export async function POST({ request }) {
+export async function POST({ request, fetch }) {
 	// auth
 	const auth = request.headers.get("authorization");
 	if (!auth) return new Response(undefined, { status: 401 });
@@ -47,5 +48,19 @@ export async function POST({ request }) {
 	} else {
 		derror(`Failed to delete the entry for ${owner}/${repo}`);
 	}
+
+	// invalidate the relevant route
+	fetch(
+		resolve("/package/[...package]", {
+			package: pkg.name
+		}),
+		{
+			method: "HEAD",
+			headers: {
+				"x-prerender-revalidate": PRERENDER_BYPASS_TOKEN
+			}
+		}
+	);
+
 	return new Response();
 }
