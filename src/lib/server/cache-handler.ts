@@ -1,5 +1,5 @@
 import type { RedisClientType, RedisJSON } from "redis";
-import { ddebug, derror } from "$lib/debug";
+import { ddebug, derror } from "$lib/logging";
 
 export class CacheHandler {
 	readonly #redis: RedisClientType; // TODO: disconnect after usage?

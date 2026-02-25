@@ -15,7 +15,7 @@ import { type LanguageRegistration, type ShikiTransformer, isPlainLang } from "s
 import { createHighlighterCoreSync } from "shiki";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Plugin } from "svelte-exmarkdown";
-import { ddebug } from "$lib/debug";
+import { ddebug } from "$lib/logging";
 
 /**
  * Pre-load the languages by returning regular expressions from language

@@ -1,5 +1,5 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { derror, dlog } from "$lib/debug";
+import { derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { ReplicatorEvent } from "./types";

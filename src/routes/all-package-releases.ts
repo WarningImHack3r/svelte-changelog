@@ -1,5 +1,5 @@
 import type { PostHog } from "posthog-node";
-import { dwarn } from "$lib/debug";
+import { dwarn } from "$lib/logging";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getPackageReleases } from "./package/releases";
 

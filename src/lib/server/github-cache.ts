@@ -23,7 +23,7 @@ import { App, Octokit } from "octokit";
 import { type RedisJSON, createClient } from "redis";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
-import { ddebug, derror } from "$lib/debug";
+import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
 import { CacheHandler } from "./cache-handler";

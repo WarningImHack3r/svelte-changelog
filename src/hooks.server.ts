@@ -1,8 +1,8 @@
 import { dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { PostHog } from "posthog-node";
-import { dfatal } from "$lib/debug";
 import { stringify } from "$lib/errors";
+import { dfatal } from "$lib/logging";
 
 const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 	host: "https://eu.i.posthog.com",

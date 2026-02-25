@@ -1,6 +1,6 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
-import { ddebug, dlog, dwarn } from "$lib/debug";
+import { ddebug, dlog, dwarn } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import { type GitHubRelease, githubCache } from "$lib/server/github-cache";
 import type { discoverer } from "$lib/server/package-discoverer";
