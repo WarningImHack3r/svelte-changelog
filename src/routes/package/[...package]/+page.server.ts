@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { PRERENDER_BYPASS_TOKEN } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { Config } from "@sveltejs/adapter-vercel";
 import { siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -9,7 +9,7 @@ import { getAllPackagesReleases, getPackageReleases } from "../releases";
 export const config: Config = {
 	isr: {
 		expiration: 10 * 60, // 10 min, good for frequent sidebar update
-		bypassToken: PRERENDER_BYPASS_TOKEN // bypass for instant refresh on new release from the webhooks
+		bypassToken: env.PRERENDER_BYPASS_TOKEN || undefined // bypass for instant refresh on new release from the webhooks
 	}
 };
 

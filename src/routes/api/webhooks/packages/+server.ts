@@ -1,5 +1,6 @@
 import { resolve } from "$app/paths";
-import { PRERENDER_BYPASS_TOKEN, WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
+import { env } from "$env/dynamic/private";
+import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
 import { derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -49,18 +50,26 @@ export async function POST({ request, fetch }) {
 		derror(`Failed to delete the entry for ${owner}/${repo}`);
 	}
 
-	// invalidate the relevant route
-	fetch(
-		resolve("/package/[...package]", {
-			package: pkg.name
-		}),
-		{
-			method: "HEAD",
-			headers: {
-				"x-prerender-revalidate": PRERENDER_BYPASS_TOKEN
-			}
+	if (env.PRERENDER_BYPASS_TOKEN) {
+		// invalidate the relevant route
+		try {
+			const res = await fetch(
+				resolve("/package/[...package]", {
+					package: pkg.name
+				}),
+				{
+					method: "HEAD",
+					headers: {
+						"x-prerender-revalidate": env.PRERENDER_BYPASS_TOKEN
+					}
+				}
+			);
+			if (!res.ok)
+				throw new Error(`HTTP code ${res.status}: ${(await res.text()) || "no further info"}`);
+		} catch (err) {
+			derror(`Failed to invalidate cache for ${pkg.name}:`, err);
 		}
-	);
+	}
 
 	return new Response();
 }
