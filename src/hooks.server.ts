@@ -2,6 +2,7 @@ import { dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { PostHog } from "posthog-node";
 import { dfatal } from "$lib/debug";
+import { stringify } from "$lib/errors";
 
 const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 	host: "https://eu.i.posthog.com",
@@ -10,9 +11,10 @@ const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 
 export async function handleError({ error, status, event, message }) {
 	if (status === 404) return;
-	dfatal(`[SERVER] ${error}`);
+	const stringified = stringify(error);
+	dfatal(`[SERVER][${status}] ${stringified}`);
 	try {
-		client.captureException(error, undefined, {
+		client.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
 			...event,
 			status_code: status,
 			error_message: message
