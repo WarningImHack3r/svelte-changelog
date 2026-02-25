@@ -354,7 +354,7 @@
 								Support added for {listFormatter.format(addedSupportFor)}
 								<Tooltip.Provider delayDuration={300}>
 									<Tooltip.Root>
-										<Tooltip.Trigger class="opacity-50 hover:opacity-100">
+										<Tooltip.Trigger class="hidden opacity-50 hover:opacity-100 md:flex">
 											<CircleQuestionMark class="size-4" />
 										</Tooltip.Trigger>
 										<Tooltip.Content
