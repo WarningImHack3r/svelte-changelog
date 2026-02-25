@@ -24,7 +24,9 @@
 <Accordion.Root type="single" class="mb-12">
 	{#each entities as entity (entity.number)}
 		<Accordion.Item value={`${entity.number}`}>
-			<Accordion.Trigger class="group hover:no-underline [&>svg:last-child]:shrink-0">
+			<Accordion.Trigger
+				class="group hover:no-underline [&>svg:last-child]:my-auto [&>svg:last-child]:shrink-0"
+			>
 				<div class="mr-2 flex w-full flex-col gap-4 xs:gap-2 md:flex-row md:justify-between">
 					<div class="flex gap-4">
 						<!-- Status -->
