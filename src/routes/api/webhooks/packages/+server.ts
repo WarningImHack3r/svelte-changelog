@@ -1,7 +1,7 @@
 import { resolve } from "$app/paths";
 import { env } from "$env/dynamic/private";
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { derror, dlog } from "$lib/logging";
+import { ddebug, derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { ReplicatorEvent } from "./types";
@@ -64,10 +64,12 @@ export async function POST({ request, fetch }) {
 					}
 				}
 			);
-			if (!res.ok)
+			if (!res.ok) {
 				throw new Error(`HTTP code ${res.status}: ${(await res.text()) || "no further info"}`);
+			}
+			ddebug(`Successfully invalidated cache for ${pkg.name} from webhook`);
 		} catch (err) {
-			derror(`Failed to invalidate cache for ${pkg.name}:`, err);
+			derror(`Failed to invalidate cache for ${pkg.name} from webhook:`, err);
 		}
 	}
 
