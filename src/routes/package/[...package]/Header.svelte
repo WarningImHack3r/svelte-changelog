@@ -173,7 +173,8 @@
 								}),
 								file
 							)}
-							data-sveltekit-preload-data="tap"
+							data-sveltekit-preload-data="off"
+							data-sveltekit-preload-code="off"
 						>
 							{name}
 						</Button>
