@@ -4,7 +4,7 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
-	import { onNavigate } from "$app/navigation";
+	import { beforeNavigate, onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
 	import {
@@ -45,6 +45,15 @@
 	import DesktopNavigation from "./DesktopNavigation.svelte";
 
 	let { data, children } = $props();
+
+	// Prevent server desync in a forced way (more strictly
+	// than by default) and related hooks errors
+	// Snippet from https://svelte.dev/docs/kit/configuration#version
+	beforeNavigate(({ willUnload, to }) => {
+		if (updated.current && !willUnload && to?.url) {
+			location.href = to.url.href;
+		}
+	});
 
 	// View Transitions API
 	// https://svelte.dev/blog/view-transitions
@@ -384,7 +393,7 @@
 	{/if}
 </header>
 
-<main data-sveltekit-reload={updated.current ? "" : "off"} class="container py-8">
+<main class="container py-8">
 	{@render children?.()}
 </main>
 
