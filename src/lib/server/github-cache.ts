@@ -1,7 +1,7 @@
 import { dev } from "$app/environment";
 import {
 	GH_APP_ID,
-	GH_APP_INSTALLATION_TOKEN,
+	GH_APP_INSTALLATION_ID,
 	GH_APP_PRIV_KEY_BASE64,
 	GITHUB_TOKEN,
 	REDIS_URL
@@ -1171,5 +1171,5 @@ export const githubCache = new GitHubCache(
 		: await new App({
 				appId: GH_APP_ID,
 				privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8")
-			}).getInstallationOctokit(+GH_APP_INSTALLATION_TOKEN)
+			}).getInstallationOctokit(+GH_APP_INSTALLATION_ID)
 );
