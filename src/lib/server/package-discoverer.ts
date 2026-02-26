@@ -40,28 +40,24 @@ class PackageDiscoverer {
 	 * Populates the result into packages.
 	 */
 	async discoverAll() {
-		const uniqueRepos = uniq(this.#repos, ({ repoOwner, repoName }) => `${repoOwner}/${repoName}`);
-		const releasesMap = Promise.all(
-			uniqueRepos.map(async repo => ({
-				repo: `${repo.repoOwner}/${repo.repoName}`,
-				releases: await this.#cache.getReleases(repo)
-			}))
-		);
-		const descriptionsMap = Promise.all(
-			uniqueRepos.map(async ({ repoOwner: owner, repoName: name }) => ({
-				repo: `${owner}/${name}`,
-				descriptions: await this.#cache.getDescriptions(owner, name)
-			}))
+		const repoData = new Map(
+			await Promise.all(
+				uniq(this.#repos, ({ repoOwner, repoName }) => `${repoOwner}/${repoName}`).map(
+					async repo => {
+						const [releases, descriptions] = await Promise.all([
+							this.#cache.getReleases(repo),
+							this.#cache.getDescriptions(repo.repoOwner, repo.repoName)
+						]);
+						return [`${repo.repoOwner}/${repo.repoName}`, { releases, descriptions }] as const;
+					}
+				)
+			)
 		);
 
 		this.#packages = await Promise.all(
 			this.#repos.map(async repo => {
-				const releases =
-					(await releasesMap).find(({ repo: r }) => r === `${repo.repoOwner}/${repo.repoName}`)
-						?.releases ?? [];
-				const descriptions =
-					(await descriptionsMap).find(({ repo: r }) => r === `${repo.repoOwner}/${repo.repoName}`)
-						?.descriptions ?? {};
+				const { releases = [], descriptions = {} } =
+					repoData.get(`${repo.repoOwner}/${repo.repoName}`) ?? {};
 				const packages = [
 					...new Set(
 						releases
