@@ -1,3 +1,4 @@
+import { uniq } from "$lib/array";
 import { dlog } from "$lib/logging";
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
@@ -39,10 +40,28 @@ class PackageDiscoverer {
 	 * Populates the result into packages.
 	 */
 	async discoverAll() {
+		const uniqueRepos = uniq(this.#repos, ({ repoOwner, repoName }) => `${repoOwner}/${repoName}`);
+		const releasesMap = Promise.all(
+			uniqueRepos.map(async repo => ({
+				repo: `${repo.repoOwner}/${repo.repoName}`,
+				releases: await this.#cache.getReleases(repo)
+			}))
+		);
+		const descriptionsMap = Promise.all(
+			uniqueRepos.map(async ({ repoOwner: owner, repoName: name }) => ({
+				repo: `${owner}/${name}`,
+				descriptions: await this.#cache.getDescriptions(owner, name)
+			}))
+		);
+
 		this.#packages = await Promise.all(
 			this.#repos.map(async repo => {
-				const releases = await this.#cache.getReleases(repo);
-				const descriptions = await this.#cache.getDescriptions(repo.repoOwner, repo.repoName);
+				const releases =
+					(await releasesMap).find(({ repo: r }) => r === `${repo.repoOwner}/${repo.repoName}`)
+						?.releases ?? [];
+				const descriptions =
+					(await descriptionsMap).find(({ repo: r }) => r === `${repo.repoOwner}/${repo.repoName}`)
+						?.descriptions ?? {};
 				const packages = [
 					...new Set(
 						releases
