@@ -14,7 +14,7 @@ export async function GET() {
 	return Response.json([...new Set(packages)]);
 }
 
-export async function POST({ request, fetch }) {
+export async function POST({ request }) {
 	// auth
 	const auth = request.headers.get("authorization");
 	if (!auth) return new Response(undefined, { status: 401 });
