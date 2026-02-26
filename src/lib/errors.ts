@@ -7,15 +7,13 @@
 export function stringify(error: unknown): string {
 	switch (typeof error) {
 		case "object":
-			return error === null
-				? "<null error>"
-				: "message" in error
-					? "description" in error
-						? `${error.message}: ${error.description}`
-						: `${error.message}`
-					: "error" in error
-						? stringify(error.error)
-						: JSON.stringify(error);
+			if (error === null) return "<null error>";
+			if ("message" in error) {
+				if ("description" in error) return `${error.message}: ${error.description}`;
+				return `${error.message}`;
+			}
+			if ("error" in error) return stringify(error.error);
+			return JSON.stringify(error);
 		case "string":
 			return error;
 	}

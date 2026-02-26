@@ -11,7 +11,7 @@ export function handleError({ error, status, event, message }) {
 		typeof error === "object" &&
 		error !== null &&
 		"status" in error &&
-		error.status !== 500
+		error.status !== status
 	)
 		return;
 

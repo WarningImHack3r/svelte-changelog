@@ -68,6 +68,11 @@ export async function getPackageReleases(
 						dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
 						return false;
 					}
+
+					// filter as soon as possible to avoid errors due to parsing
+					// tags we should potentially not even care about
+					if (!(repo.dataFilter?.(release) ?? true)) return false;
+
 					const [name, version] = repo.metadataFromTag(release.tag_name);
 					if (!name) {
 						dwarn(
@@ -89,10 +94,7 @@ export async function getPackageReleases(
 						);
 						return false;
 					}
-					return (
-						(repo.dataFilter?.(release) ?? true) &&
-						repo.pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0
-					);
+					return repo.pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0;
 				})
 				.sort((a, b) => {
 					const [, firstVersion] = repo.metadataFromTag(a.tag_name);
