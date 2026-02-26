@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import { env } from "$env/dynamic/private";
 import { siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
