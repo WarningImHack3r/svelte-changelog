@@ -1,11 +1,12 @@
 import type { Config } from "@sveltejs/adapter-vercel";
 import { addCacheTag } from "@vercel/functions";
+import { RELEASES_TTL } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
 
 export const config: Config = {
 	isr: {
-		expiration: false
+		expiration: RELEASES_TTL
 	}
 };
 

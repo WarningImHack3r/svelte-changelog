@@ -4,7 +4,7 @@ import { getAllPackagesReleases } from "../all-package-releases";
 
 export const config: Config = {
 	isr: {
-		expiration: 60 * 60 // 1 hour, to almost never feel when a package is missing after being discovered
+		expiration: 60 * 60 // 1 hour, to almost never feel when a package is missing after being discovered on the main page
 	}
 };
 

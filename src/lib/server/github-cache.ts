@@ -181,23 +181,23 @@ const per_page = 100;
  * As we can't be granular for releases, we have to set that
  * for all.
  */
-const RELEASES_TTL = 60 * 30; // 30 min
+export const RELEASES_TTL = 60 * 30; // 30 min
 /**
  * The TTL of the full issue/pr details, in seconds.
  */
-const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
+export const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
 /**
  * The TTL of the cached descriptions, in seconds.
  */
-const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
+export const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
 /**
  * The TTL of organization members, in seconds.
  */
-const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
+export const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
 /**
  * The TTL for non-deprecated packages, in seconds
  */
-const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
+export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
 
 /**
  * A fetch layer to reach the GitHub API
