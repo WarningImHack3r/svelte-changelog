@@ -114,6 +114,7 @@ const repos: Record<Category, RepoEntry> = {
 			},
 			{
 				repoName: "mcp",
+				dataFilter: ({ tag_name }) => !tag_name.includes("-code-writer-"),
 				metadataFromTag: splitByLastAt
 			}
 		]
