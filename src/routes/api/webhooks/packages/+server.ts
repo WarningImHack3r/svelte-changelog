@@ -1,7 +1,6 @@
-import { resolve } from "$app/paths";
-import { env } from "$env/dynamic/private";
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { ddebug, derror, dlog } from "$lib/logging";
+import { invalidateByTag } from "@vercel/functions";
+import { derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { ReplicatorEvent } from "./types";
@@ -50,28 +49,8 @@ export async function POST({ request, fetch }) {
 		derror(`Failed to delete the entry for ${owner}/${repo}`);
 	}
 
-	if (env.PRERENDER_BYPASS_TOKEN) {
-		// invalidate the relevant route
-		try {
-			const res = await fetch(
-				resolve("/package/[...package]", {
-					package: pkg.name
-				}),
-				{
-					method: "HEAD",
-					headers: {
-						"x-prerender-revalidate": env.PRERENDER_BYPASS_TOKEN
-					}
-				}
-			);
-			if (!res.ok) {
-				throw new Error(`HTTP code ${res.status}: ${(await res.text()) || "no further info"}`);
-			}
-			ddebug(`Successfully invalidated cache for ${pkg.name} from webhook`);
-		} catch (err) {
-			derror(`Failed to invalidate cache for ${pkg.name} from webhook:`, err);
-		}
-	}
+	// invalidate all packages
+	await invalidateByTag("all-packages");
 
 	return new Response();
 }
