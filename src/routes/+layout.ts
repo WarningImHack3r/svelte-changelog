@@ -5,7 +5,7 @@ import posthog from "posthog-js";
 import { defineBaseMetaTags } from "svelte-meta-tags";
 import { siteName } from "$lib/properties";
 
-injectSpeedInsights();
+if (!dev) injectSpeedInsights();
 
 let phInit = false;
 
