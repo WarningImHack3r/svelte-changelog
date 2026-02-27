@@ -113,7 +113,7 @@ const repos: Record<Category, RepoEntry> = {
 				}
 			},
 			{
-				repoName: "mcp",
+				repoName: "ai-tools",
 				dataFilter: ({ tag_name }) => !tag_name.includes("-code-writer-"),
 				metadataFromTag: splitByLastAt
 			}
