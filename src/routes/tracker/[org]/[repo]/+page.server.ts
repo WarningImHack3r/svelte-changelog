@@ -1,8 +1,9 @@
 import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
+import type { Config } from "@sveltejs/adapter-vercel";
 import { siteName } from "$lib/properties";
 import { uniqueRepos } from "$lib/repositories";
-import { githubCache } from "$lib/server/github-cache";
+import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";
 
 // source: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 const closingKeywords = [
@@ -16,6 +17,12 @@ const closingKeywords = [
 	"resolves",
 	"resolved"
 ];
+
+export const config: Config = {
+	isr: {
+		expiration: FULL_DETAILS_TTL
+	}
+};
 
 export async function load({ params }) {
 	const knownRepo = uniqueRepos.find(

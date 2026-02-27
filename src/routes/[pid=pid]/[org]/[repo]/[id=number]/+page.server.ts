@@ -1,11 +1,18 @@
 import { error, redirect } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
+import type { Config } from "@sveltejs/adapter-vercel";
 import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
-import { githubCache } from "$lib/server/github-cache";
+import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { BranchCommit, PID } from "$lib/types";
+
+export const config: Config = {
+	isr: {
+		expiration: FULL_DETAILS_TTL
+	}
+};
 
 const versionDigitsRegex = /\d\.\d/;
 

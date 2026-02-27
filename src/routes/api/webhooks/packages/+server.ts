@@ -1,4 +1,5 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
+import { invalidateByTag } from "@vercel/functions";
 import { derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -47,5 +48,9 @@ export async function POST({ request }) {
 	} else {
 		derror(`Failed to delete the entry for ${owner}/${repo}`);
 	}
+
+	// invalidate all packages
+	await invalidateByTag("all-packages");
+
 	return new Response();
 }
