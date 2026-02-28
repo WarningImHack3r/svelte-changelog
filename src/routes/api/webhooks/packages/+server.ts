@@ -43,6 +43,8 @@ async function invalidateSequentially(tag: string, delays: number[], signal?: Ab
 	}
 }
 
+let controller: AbortController | null = null;
+
 export async function POST({ request }) {
 	// auth
 	const auth = request.headers.get("authorization");
@@ -79,8 +81,9 @@ export async function POST({ request }) {
 	}
 
 	// invalidate all packages
-	const controller = new AbortController();
-	request.signal.addEventListener("abort", () => controller.abort());
+	controller?.abort(); // cancel any previous request's invalidation sequence (if they even share memory in the first place)
+	controller = new AbortController();
+	request.signal.addEventListener("abort", () => controller?.abort()); // abort if the client somehow aborts the request
 	waitUntil(
 		invalidateSequentially("all-packages", packagesInvalidationDelaysSec, controller.signal)
 	);
