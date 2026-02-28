@@ -1,5 +1,5 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { invalidateByTag } from "@vercel/functions";
+import { invalidateByTag, waitUntil } from "@vercel/functions";
 import { derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -12,6 +12,35 @@ export async function GET() {
 		.filter(({ registryExcluded }) => !registryExcluded)
 		.map(({ name }) => name);
 	return Response.json([...new Set(packages)]);
+}
+
+/**
+ * A list of durations to invalidate the packages tag after
+ */
+const packagesInvalidationDelaysSec = [10, 15, 30, 120].map(minute => minute * 60);
+
+/**
+ * Invalidate the same tag multiple times with multiple delays in-between.
+ *
+ * @param tag the tag to invalidate
+ * @param delays the delays to sequentially invalidate the tag at, in seconds
+ * @param signal the signal to cancel the execution
+ */
+async function invalidateSequentially(tag: string, delays: number[], signal?: AbortSignal) {
+	for (const delay of delays) {
+		if (signal?.aborted) return;
+
+		await new Promise<void>(resolve => {
+			const timeoutId = setTimeout(resolve, delay * 1_000);
+			signal?.addEventListener("abort", () => {
+				clearTimeout(timeoutId);
+				resolve();
+			});
+		});
+
+		if (signal?.aborted) return;
+		await invalidateByTag(tag);
+	}
 }
 
 export async function POST({ request }) {
@@ -50,7 +79,11 @@ export async function POST({ request }) {
 	}
 
 	// invalidate all packages
-	await invalidateByTag("all-packages");
+	const controller = new AbortController();
+	request.signal.addEventListener("abort", () => controller.abort());
+	waitUntil(
+		invalidateSequentially("all-packages", packagesInvalidationDelaysSec, controller.signal)
+	);
 
 	return new Response();
 }

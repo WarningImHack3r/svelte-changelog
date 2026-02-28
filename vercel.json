@@ -1,4 +1,9 @@
 {
+	"functions": {
+		"src/routes/api/**/*": {
+			"supportsCancellation": true
+		}
+	},
 	"rewrites": [
 		{
 			"source": "/ingest/static/:path(.*)",
