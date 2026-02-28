@@ -81,6 +81,8 @@ export async function POST({ request }) {
 	}
 
 	// invalidate all packages
+	// invalidate all packages
+	await invalidateByTag("all-packages"); // immediate invalidation
 	controller?.abort(); // cancel any previous request's invalidation sequence (if they even share memory in the first place)
 	controller = new AbortController();
 	const currentController = controller;
