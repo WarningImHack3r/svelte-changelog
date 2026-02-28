@@ -1,10 +1,5 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"functions": {
-		"**/*": {
-			"supportsCancellation": true
-		}
-	},
 	"rewrites": [
 		{
 			"source": "/ingest/static/:path(.*)",
