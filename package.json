@@ -59,7 +59,7 @@
 		"mode-watcher": "^1.1.0",
 		"octokit": "^5.0.5",
 		"posthog-js": "^1.352.0",
-		"posthog-node": "^5.24.17",
+		"posthog-node": "^5.26.0",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.0",
 		"prettier-plugin-tailwindcss": "^0.7.2",
