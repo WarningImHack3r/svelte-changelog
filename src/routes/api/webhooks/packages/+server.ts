@@ -30,13 +30,19 @@ async function invalidateSequentially(tag: string, delays: number[], signal?: Ab
 	for (const delay of delays) {
 		if (signal?.aborted) return;
 
+		const cleanup = new AbortController();
 		await new Promise<void>(resolve => {
 			const timeoutId = setTimeout(resolve, delay * 1_000);
-			signal?.addEventListener("abort", () => {
-				clearTimeout(timeoutId);
-				resolve();
-			});
+			signal?.addEventListener(
+				"abort",
+				() => {
+					clearTimeout(timeoutId);
+					resolve();
+				},
+				{ signal: cleanup.signal }
+			);
 		});
+		cleanup.abort();
 
 		if (signal?.aborted) return;
 		await invalidateByTag(tag);
@@ -80,7 +86,6 @@ export async function POST({ request }) {
 		derror(`Failed to delete the entry for ${owner}/${repo}`);
 	}
 
-	// invalidate all packages
 	// invalidate all packages
 	await invalidateByTag("all-packages"); // immediate invalidation
 	controller?.abort(); // cancel any previous request's invalidation sequence (if they even share memory in the first place)
