@@ -22,6 +22,7 @@
 	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
+	import ResetDialog from "./ResetDialog.svelte";
 
 	const loadingSentences = [
 		"Loading",
@@ -272,6 +273,12 @@
 	{#await Promise.resolve()}
 		{@render loading()}
 	{:then}
+		<ResetDialog
+			currentPackage={data.currentPackage.pkg.name}
+			resetDate={data.resetDate}
+			allPackageReleases={data.allReleases}
+		/>
+
 		<div class="flex flex-col">
 			<Header
 				packageInfo={{
