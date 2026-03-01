@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
-import { resolve } from "$app/paths";
 import type { Config } from "@sveltejs/adapter-vercel";
+import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { uniqueRepos } from "$lib/repositories";
 import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";

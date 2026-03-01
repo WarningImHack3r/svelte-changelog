@@ -1,6 +1,6 @@
 <script lang="ts" module>
-	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
 	import { VERSION } from "svelte/compiler";
+	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
 
 	const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
 		dateStyle: "full",
