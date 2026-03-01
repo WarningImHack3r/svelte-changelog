@@ -12,7 +12,7 @@ export async function load({ params, locals }) {
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	// 1.5. Return a set for all the packages
-	if (slugPackage.toLowerCase() === ALL_SLUG) {
+	if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
 		return {
 			currentPackage: {
 				category: {

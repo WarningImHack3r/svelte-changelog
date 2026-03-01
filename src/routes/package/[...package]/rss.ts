@@ -64,7 +64,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		// 2. Get the releases and package info
 		let packageName: string;
 		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"];
-		if (slugPackage.toLowerCase() === ALL_SLUG) {
+		if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
 			// All releases
 			packageName = "All";
 			releases = await getAllPackagesReleases(categorizedPackages, locals.posthog);
@@ -83,7 +83,9 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		const feed = getBaseFeed(
 			url,
 			`${packageName} releases`,
-			packageName.toLowerCase() === ALL_SLUG ? "all" : "single"
+			packageName.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0
+				? "all"
+				: "single"
 		);
 		for (const release of releases) {
 			feed.addItem({
