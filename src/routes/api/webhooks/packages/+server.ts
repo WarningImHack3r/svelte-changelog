@@ -104,7 +104,7 @@ export async function POST({ request }) {
 	dlog(`Starting invalidating sequentially for ${pkg.name}`);
 	waitUntil(
 		invalidateSequentially(
-			`packages-${pkg.name}`,
+			`package-${pkg.name}`,
 			packagesInvalidationDelaysSec,
 			currentController.signal
 		)
