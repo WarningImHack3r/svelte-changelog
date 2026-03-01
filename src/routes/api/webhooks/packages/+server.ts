@@ -1,6 +1,6 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
 import { invalidateByTag, waitUntil } from "@vercel/functions";
-import { derror, dlog } from "$lib/logging";
+import { ddebug, derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { ReplicatorEvent } from "./types";
@@ -27,9 +27,11 @@ const packagesInvalidationDelaysSec = [10, 15, 30, 120].map(minute => minute * 6
  * @param signal the signal to cancel the execution
  */
 async function invalidateSequentially(tag: string, delays: number[], signal?: AbortSignal) {
+	ddebug(`Starting sequential invalidation for tag ${tag}`);
 	for (const delay of delays) {
 		if (signal?.aborted) return;
 
+		ddebug(`Waiting ${delay} seconds before invalidating tag ${tag}`);
 		await new Promise<void>(resolve => {
 			if (signal?.aborted) return resolve();
 			const timeoutId = setTimeout(resolve, delay * 1_000);
@@ -44,8 +46,10 @@ async function invalidateSequentially(tag: string, delays: number[], signal?: Ab
 		});
 
 		if (signal?.aborted) return;
+		ddebug(`Invalidating tag ${tag} after ${delay} seconds elapsed`);
 		await invalidateByTag(tag);
 	}
+	ddebug(`Sequential invalidation done for ${tag}`);
 }
 
 let controller: AbortController | null = null;
@@ -92,12 +96,18 @@ export async function POST({ request }) {
 	const currentController = controller;
 	// abort if the client somehow aborts the request
 	if (request.signal.aborted) {
+		dlog(`Request signal aborted for ${pkg.name}, not starting sequential invalidation`);
 		currentController.abort();
-	} else {
-		request.signal.addEventListener("abort", () => currentController.abort(), { once: true });
+		return new Response();
 	}
+	request.signal.addEventListener("abort", () => currentController.abort(), { once: true });
+	dlog(`Starting invalidating sequentially for ${pkg.name}`);
 	waitUntil(
-		invalidateSequentially("all-packages", packagesInvalidationDelaysSec, currentController.signal)
+		invalidateSequentially(
+			`packages-${pkg.name}`,
+			packagesInvalidationDelaysSec,
+			currentController.signal
+		)
 	);
 
 	return new Response();
