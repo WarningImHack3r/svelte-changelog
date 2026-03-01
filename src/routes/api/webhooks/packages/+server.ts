@@ -1,6 +1,6 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { invalidateByTag } from "@vercel/functions";
-import { derror, dlog } from "$lib/logging";
+import { invalidateByTag, waitUntil } from "@vercel/functions";
+import { ddebug, derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { ReplicatorEvent } from "./types";
@@ -13,6 +13,46 @@ export async function GET() {
 		.map(({ name }) => name);
 	return Response.json([...new Set(packages)]);
 }
+
+/**
+ * A list of durations to invalidate the packages tag after
+ */
+const packagesInvalidationDelaysSec = [10, 15, 30, 120].map(minute => minute * 60);
+
+/**
+ * Invalidate the same tag multiple times with multiple delays in-between.
+ *
+ * @param tag the tag to invalidate
+ * @param delays the delays to sequentially invalidate the tag at, in seconds
+ * @param signal the signal to cancel the execution
+ */
+async function invalidateSequentially(tag: string, delays: number[], signal?: AbortSignal) {
+	ddebug(`Starting sequential invalidation for tag ${tag}`);
+	for (const delay of delays) {
+		if (signal?.aborted) return;
+
+		ddebug(`Waiting ${delay} seconds before invalidating tag ${tag}`);
+		await new Promise<void>(resolve => {
+			if (signal?.aborted) return resolve();
+			const timeoutId = setTimeout(resolve, delay * 1_000);
+			signal?.addEventListener(
+				"abort",
+				() => {
+					clearTimeout(timeoutId);
+					resolve();
+				},
+				{ once: true }
+			);
+		});
+
+		if (signal?.aborted) return;
+		ddebug(`Invalidating tag ${tag} after ${delay} seconds elapsed`);
+		await invalidateByTag(tag);
+	}
+	ddebug(`Sequential invalidation done for ${tag}`);
+}
+
+let controller: AbortController | null = null;
 
 export async function POST({ request }) {
 	// auth
@@ -50,7 +90,25 @@ export async function POST({ request }) {
 	}
 
 	// invalidate all packages
-	await invalidateByTag("all-packages");
+	await invalidateByTag("all-packages"); // immediate invalidation
+	controller?.abort(); // cancel any previous request's invalidation sequence (if they even share memory in the first place)
+	controller = new AbortController();
+	const currentController = controller;
+	// abort if the client somehow aborts the request
+	if (request.signal.aborted) {
+		dlog(`Request signal aborted for ${pkg.name}, not starting sequential invalidation`);
+		currentController.abort();
+		return new Response();
+	}
+	request.signal.addEventListener("abort", () => currentController.abort(), { once: true });
+	dlog(`Starting invalidating sequentially for ${pkg.name}`);
+	waitUntil(
+		invalidateSequentially(
+			`package-${pkg.name}`,
+			packagesInvalidationDelaysSec,
+			currentController.signal
+		)
+	);
 
 	return new Response();
 }
