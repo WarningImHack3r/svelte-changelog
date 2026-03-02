@@ -35,6 +35,7 @@ export default defineConfig(
 	},
 	{
 		rules: {
+			eqeqeq: ["error", "smart"],
 			"svelte/no-unused-props": ["error", { allowUnusedNestedProperties: true }],
 			"@typescript-eslint/no-unused-vars": [
 				"error",
