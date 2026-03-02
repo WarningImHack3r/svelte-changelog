@@ -168,7 +168,16 @@
 				const norm2 = new Date(later);
 				norm1.setHours(0, 0, 0, 0);
 				norm2.setHours(0, 0, 0, 0);
-				return (norm2.getTime() - norm1.getTime()) / 86_400_000;
+				return (norm2.getTime() - norm1.getTime()) / (24 * 60 * 60 * 1_000);
+			},
+			get weeks() {
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
+				const norm1 = new Date(earlier);
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
+				const norm2 = new Date(later);
+				norm1.setHours(0, 0, 0, 0);
+				norm2.setHours(0, 0, 0, 0);
+				return (norm2.getTime() - norm1.getTime()) / (7 * 24 * 60 * 60 * 1_000);
 			},
 			get months() {
 				const months =
@@ -195,7 +204,10 @@
 	 * @returns The number of milliseconds to wait for before refreshing
 	 */
 	function getRefreshPeriod(date: Date) {
-		const { milliseconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+		const { milliseconds, minutes, hours, days, weeks, months, years } = getDiffBetween(
+			date,
+			new Date()
+		);
 
 		function diff(value: number) {
 			return value - (milliseconds % value);
@@ -205,6 +217,8 @@
 			return diff(12 * 30 * 24 * 60 * 60 * 1_000);
 		} else if (months >= 1) {
 			return diff(30 * 24 * 60 * 60 * 1_000);
+		} else if (weeks >= 1) {
+			return diff(7 * 24 * 60 * 60 * 1_000);
 		} else if (days >= 1) {
 			return diff(24 * 60 * 60 * 1_000);
 		} else if (hours >= 1) {
@@ -226,12 +240,17 @@
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		return (date: Date) => {
-			const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+			const { seconds, minutes, hours, days, weeks, months, years } = getDiffBetween(
+				date,
+				new Date()
+			);
 
 			if (years >= 1) {
 				return formatter.format(-Math.round(years), "year");
 			} else if (months >= 1) {
 				return formatter.format(-Math.round(months), "month");
+			} else if (weeks >= 1) {
+				return formatter.format(-Math.round(weeks), "week");
 			} else if (days >= 1) {
 				return formatter.format(-Math.round(days), "day");
 			} else if (hours >= 1) {
