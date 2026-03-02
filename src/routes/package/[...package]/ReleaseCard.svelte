@@ -81,6 +81,11 @@
 			(_match, index) => savedLinks[parseInt(index, 10)] ?? ""
 		);
 	});
+	const commitRegex = /\(\[`[a-z\d]+`\]\(https/g;
+	let isLikelySecurityFix = $derived.by(() => {
+		const commitsCount = [...releaseBody.matchAll(commitRegex)].length;
+		return !!commitsCount && !release.prerelease && (semVersion?.patch ?? 0) > 0;
+	});
 	let isMajorRelease = $derived(
 		!release.prerelease &&
 			semVersion?.minor === 0 &&
@@ -332,13 +337,18 @@
 	value={`${release.id}`}
 	class={[
 		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 *:data-accordion-content:rounded-b-md *:data-accordion-content:bg-accent/30 data-[state=open]:outline-muted-foreground/20",
-		{ "border border-primary": isMajorRelease && index < 3 },
-		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` },
 		{
-			"relative mb-2.5 ring-4 ring-primary before:absolute before:-top-6 before:-left-1 before:-z-10 before:rounded-t-lg before:bg-primary before:px-2 before:pb-1.5 before:font-display before:text-white before:content-['Current_version'] before:text-shadow-xs/50 before:text-shadow-black":
-				dev && versionedPackages[release.cleanName] === release.cleanVersion
-		},
-		{ "mt-8": dev && versionedPackages[release.cleanName] == release.cleanVersion && index > 0 }
+			"border border-primary": isMajorRelease && index < 3,
+			"ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}`,
+			"relative mb-2.5 ring-3 ring-destructive before:absolute before:-top-7.5 before:left-1/2 before:-z-10 before:w-[98%] before:-translate-x-1/2 before:rounded-t-lg before:border-2 before:border-destructive before:bg-destructive/25 before:px-2 before:pb-1.5 before:text-center before:text-nowrap before:text-white before:content-['This_release_likely_contains_security_fixes._Upgrade_as_soon_as_possible!']":
+				isLikelySecurityFix,
+			"relative mb-2.5 ring-4 ring-primary after:absolute after:-top-6 after:-left-1 after:-z-10 after:rounded-t-lg after:bg-primary after:px-2 after:pb-1.5 after:font-display after:text-white after:content-['Current_version'] after:text-shadow-xs/50 after:text-shadow-black":
+				dev && versionedPackages[release.cleanName] === release.cleanVersion,
+			"mt-8": dev && versionedPackages[release.cleanName] === release.cleanVersion && index > 0,
+			"mt-10": isLikelySecurityFix && index > 0,
+			"before:ml-16 before:w-[85%]":
+				dev && isLikelySecurityFix && versionedPackages[release.cleanName] === release.cleanVersion
+		}
 	]}
 >
 	<Accordion.Trigger
