@@ -36,7 +36,7 @@
 							"filter-[grayscale(1)_contrast(100)_brightness(1)] dark:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
 					},
 					npmx: {
-						iconUrl: "https://npmx.dev/logo.svg",
+						iconUrl: "https://npmx.dev/favicon.svg",
 						url: `https://npmx.dev/package/${packageInfo.name}`,
 						imgClasses: "scale-110 dark:invert"
 					}
