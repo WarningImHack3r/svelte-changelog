@@ -5,9 +5,7 @@ import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
-export async function load({ params, locals }) {
-	const { package: slugPackage } = params;
-
+export async function load({ params: { package: slugPackage }, locals }) {
 	// 1. Get all the discovered packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
