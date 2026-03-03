@@ -29,15 +29,22 @@ const packagesInvalidationDelaysSec = [10, 15, 30, 120].map(minute => minute * 6
 async function invalidateSequentially(tag: string, delays: number[], signal?: AbortSignal) {
 	ddebug(`Starting sequential invalidation for tag ${tag}`);
 	for (const delay of delays) {
-		if (signal?.aborted) return;
+		if (signal?.aborted) {
+			ddebug(`Signal aborted at the beginning of the loop for tag ${tag}`);
+			return;
+		}
 
 		ddebug(`Waiting ${delay} seconds before invalidating tag ${tag}`);
 		await new Promise<void>(resolve => {
-			if (signal?.aborted) return resolve();
+			if (signal?.aborted) {
+				ddebug(`Signal aborted at the beginning of the wait for ${tag}`);
+				return resolve();
+			}
 			const timeoutId = setTimeout(resolve, delay * 1_000);
 			signal?.addEventListener(
 				"abort",
 				() => {
+					ddebug(`Received an abort from the passed signal for tag ${tag}`);
 					clearTimeout(timeoutId);
 					resolve();
 				},
@@ -45,7 +52,10 @@ async function invalidateSequentially(tag: string, delays: number[], signal?: Ab
 			);
 		});
 
-		if (signal?.aborted) return;
+		if (signal?.aborted) {
+			ddebug(`Signal aborted after the delay for tag ${tag}`);
+			return;
+		}
 		ddebug(`Invalidating tag ${tag} after ${delay} seconds elapsed`);
 		await invalidateByTag(tag);
 	}
@@ -100,7 +110,14 @@ export async function POST({ request }) {
 		currentController.abort();
 		return new Response();
 	}
-	request.signal.addEventListener("abort", () => currentController.abort(), { once: true });
+	request.signal.addEventListener(
+		"abort",
+		() => {
+			ddebug(`Received an abort signal from the request for ${pkg.name}, propagating it`);
+			currentController.abort();
+		},
+		{ once: true }
+	);
 	dlog(`Starting invalidating sequentially for ${pkg.name}`);
 	waitUntil(
 		invalidateSequentially(
