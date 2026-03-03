@@ -9,7 +9,7 @@
 		GitPullRequestDraft,
 		type Icon,
 		MessageSquare,
-		MessageSquareX
+		MessageSquareCheck
 	} from "@lucide/svelte";
 
 	const COLOR_MAP = {
@@ -49,7 +49,7 @@
 		},
 		discussion: {
 			open: { icon: MessageSquare, label: "Open", color: "green" },
-			closed: { icon: MessageSquareX, label: "Closed", color: "purple" }
+			closed: { icon: MessageSquareCheck, label: "Closed", color: "purple" }
 		}
 	};
 </script>
