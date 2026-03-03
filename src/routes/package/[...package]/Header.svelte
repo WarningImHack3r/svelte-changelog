@@ -67,6 +67,23 @@
 	}
 </script>
 
+<svelte:head>
+	{#each Object.entries(rssEntries) as [name, file] (name)}
+		<link
+			rel="alternate"
+			type="application/{file.replace('.', '+')}"
+			href={appendToPath(
+				page.url.origin,
+				resolve("/package/[...package]", {
+					package: packageInfo.name
+				}),
+				file
+			)}
+			title="RSS feed for {packageInfo.name}"
+		/>
+	{/each}
+</svelte:head>
+
 <div class={classValue}>
 	<div class="group relative">
 		<h1
