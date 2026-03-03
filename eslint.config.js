@@ -10,12 +10,16 @@ import svelteConfig from "./svelte.config.ts";
 export default defineConfig(
 	eslint.configs.recommended,
 	tseslint.configs.strict,
+	tseslint.configs.stylisticTypeChecked,
 	svelte.configs.recommended,
 	prettierConfig,
 	svelte.configs.prettier,
 	e18e.configs.recommended,
 	{
 		languageOptions: {
+			parserOptions: {
+				projectService: true
+			},
 			globals: {
 				...globals.browser,
 				...globals.node
@@ -35,7 +39,9 @@ export default defineConfig(
 	},
 	{
 		rules: {
+			// added rules
 			eqeqeq: ["error", "smart"],
+			// tweaked rules (already included above, but configured here)
 			"svelte/no-unused-props": ["error", { allowUnusedNestedProperties: true }],
 			"@typescript-eslint/no-unused-vars": [
 				"error",
@@ -48,8 +54,14 @@ export default defineConfig(
 					varsIgnorePattern: "^_",
 					ignoreRestSiblings: true
 				}
-			]
+			],
+			"@typescript-eslint/consistent-type-definitions": "off",
+			"@typescript-eslint/prefer-nullish-coalescing": ["error", { ignorePrimitives: true }]
 		}
+	},
+	{
+		files: ["*.config.[jt]s"],
+		extends: [tseslint.configs.disableTypeChecked]
 	},
 	globalIgnores([
 		"build/",

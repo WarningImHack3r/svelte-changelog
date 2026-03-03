@@ -209,7 +209,7 @@
 		"sticky top-0 z-40 w-full transition-shadow duration-500",
 		{
 			"bg-background/95 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60":
-				newsToDisplay || (scrollY.current ?? 0) >= navbarBorderThreshold
+				!!newsToDisplay || (scrollY.current ?? 0) >= navbarBorderThreshold
 		}
 	]}
 >

@@ -212,9 +212,9 @@ export const transformerDiffMarking: ShikiTransformer = {
 	},
 	line(node) {
 		const firstChild = node.children[0];
-		if (!firstChild || firstChild.type !== "element") return;
+		if (firstChild?.type !== "element") return;
 		const firstToken = firstChild.children[0];
-		if (!firstToken || firstToken.type !== "text") return;
+		if (firstToken?.type !== "text") return;
 		if (firstToken.value.startsWith("+")) {
 			this.addClassToHast(node, ["diff", "add"]);
 			if (firstToken.value.length === 1) {

@@ -4,7 +4,7 @@
 type ArrayGroupFn<T, K extends PropertyKey> = (
 	callback: (value: T, index: number, array: T[]) => K,
 	thisArg?: unknown
-) => { [k in K]: T[] };
+) => Record<K, T[]>;
 
 type ArrayGroupToMapFn<T, K> = (
 	callback: (value: T, index: number, array: T[]) => K,

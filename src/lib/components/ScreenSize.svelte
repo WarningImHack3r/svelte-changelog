@@ -14,7 +14,7 @@
 		if (typeof value === "number") return value;
 
 		const num = parseFloat(value);
-		const unit = value.match(insensitiveLetterRegex)?.[0]?.toLowerCase();
+		const unit = insensitiveLetterRegex.exec(value)?.[0]?.toLowerCase();
 
 		if (!num || !unit) return null;
 

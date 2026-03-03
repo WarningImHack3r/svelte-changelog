@@ -235,7 +235,7 @@
 					.map(line => {
 						for (const regex of supportRegexes) {
 							const match = line.match(regex);
-							if (match && match[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
+							if (match?.[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
 								return match[2] ? `${match[1]} ${match[2]}` : match[1];
 							}
 						}
