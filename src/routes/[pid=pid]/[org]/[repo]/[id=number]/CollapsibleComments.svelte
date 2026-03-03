@@ -71,7 +71,7 @@
 		const result: JSONCompatible<DiscussionDetails["comments"]> = [];
 
 		function traverseTree(parentId: DiscussionDetails["comments"][number]["parent_id"]) {
-			const children = childrenMap.get(parentId) || [];
+			const children = childrenMap.get(parentId) ?? [];
 
 			for (const child of children) {
 				result.push(child);
