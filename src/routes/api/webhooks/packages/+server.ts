@@ -17,7 +17,7 @@ export async function GET() {
 /**
  * A list of durations to invalidate the packages tag after
  */
-const packagesInvalidationDelaysSec = [10, 15, 30, 120].map(minute => minute * 60);
+const packagesInvalidationDelaysSec = /* [10, 15, 30, 120] */ [4.5].map(minute => minute * 60);
 
 /**
  * Invalidate the same tag multiple times with multiple delays in-between.
