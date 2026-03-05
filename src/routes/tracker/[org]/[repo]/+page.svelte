@@ -123,7 +123,7 @@
 			class="shrink-0"
 		/>
 		<div class="flex w-full flex-col">
-			<div class="flex justify-between gap-4">
+			<div class="flex flex-col sm:flex-row mb-2 sm:mb-0 sm:items-start sm:justify-between gap-2 sm:gap-4">
 				<span>
     				{#if item.html_url.includes("/pull/") && (item.body?.toLowerCase()?.includes("breaking change") || item.title.startsWith("breaking:"))}
                         <Tooltip.Provider delayDuration={300}>
@@ -143,7 +143,13 @@
 					<MarkdownRenderer markdown={item.title} inline class="text-foreground" />
 					<span class="text-muted-foreground">#{item.number}</span>
 				</span>
-				<span class="text-right text-nowrap">
+				<span class="text-sm italic sm:hidden text-nowrap">
+				    <span>{shortDateFormatter.format(createdAt)}</span>
+				    {#if isUpdated && isNew(lastUpdate)}
+						• <span class="font-semibold">updated {daysAgo(lastUpdate)}</span>
+					{/if}
+				</span>
+				<span class="text-right hidden sm:inline text-nowrap">
 					{#if isUpdated && isNew(lastUpdate)}
 						<span class="italic font-semibold">updated {daysAgo(lastUpdate)}</span> •
 					{/if}
