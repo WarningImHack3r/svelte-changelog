@@ -11,6 +11,21 @@
 		svelte: VERSION,
 		"@sveltejs/kit": KIT_VERSION
 	};
+
+	/**
+	 * Packages where bare commits should not be recognized as security fixes
+	 * because it's most likely only commits pushed straight to master for ease of use,
+	 * or that used to do that.
+	 *
+	 * It's pretty safe too as they are particularly unlikely to ever need security fixes
+	 * someday due to their nature.
+	 */
+	const securityFixIgnoredPackages = new Set([
+		"@sveltejs/mcp",
+		"@sveltejs/opencode",
+		"acorn-typescript",
+		"eslint-config"
+	]);
 </script>
 
 <script lang="ts">
@@ -83,6 +98,7 @@
 	});
 	const commitRegex = /\(\[`[a-z\d]+`\]\(https/g;
 	let isLikelySecurityFix = $derived.by(() => {
+		if (securityFixIgnoredPackages.has(release.cleanName)) return false;
 		const commitsCount = [...releaseBody.matchAll(commitRegex)].length;
 		return !!commitsCount && !release.prerelease && (semVersion?.patch ?? 0) > 0;
 	});
