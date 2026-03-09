@@ -31,8 +31,9 @@
 <script lang="ts">
 	import { untrack } from "svelte";
 	import { dev } from "$app/environment";
+	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ArrowUpRight } from "@lucide/svelte";
+	import { ArrowUpRight, Link } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
@@ -462,25 +463,37 @@
 			<div class="flex items-end-safe justify-between gap-8">
 				<!-- Reactions -->
 				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
-				<!-- Open the release on GitHub in a new tab -->
-				<AnimatedButton variant="outline" size="sm" class="invisible w-16 sm:w-36" />
-				<AnimatedButton
-					href={release.html_url}
-					variant="outline"
-					size="sm"
-					target="_blank"
-					class="group absolute right-0 bottom-0 shrink-0 gap-0 transition-colors duration-500"
-				>
-					<span class="-mr-6 hidden sm:group-hover:block">Open on GitHub</span>
-					<img
-						src="/github.svg"
-						alt="GitHub"
-						class="size-5 transition-opacity duration-300 sm:group-hover:opacity-0 dark:invert"
-					/>
-					<ArrowUpRight
-						class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
-					/>
-				</AnimatedButton>
+				<div class="flex shrink-0 items-center gap-2">
+					<AnimatedButton
+						href={resolve("/package/[...package]", {
+							package: release.cleanName
+						}) + `#${release.cleanVersion}`}
+						variant="ghost"
+						size="icon-sm"
+					>
+						<span class="sr-only">Set url to this release ({release.cleanVersion})</span>
+						<Link class="size-5" />
+					</AnimatedButton>
+					<!-- Open the release on GitHub in a new tab -->
+					<AnimatedButton
+						href={release.html_url}
+						variant="outline"
+						size="sm"
+						target="_blank"
+						rel="external"
+						class="group shrink-0 gap-0 transition-colors duration-500"
+					>
+						<span class="-mr-6 hidden sm:group-hover:block">Open on GitHub</span>
+						<img
+							src="/github.svg"
+							alt="GitHub"
+							class="size-5 transition-opacity duration-300 sm:group-hover:opacity-0 dark:invert"
+						/>
+						<ArrowUpRight
+							class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
+						/>
+					</AnimatedButton>
+				</div>
 			</div>
 		</div>
 	</Accordion.Content>
