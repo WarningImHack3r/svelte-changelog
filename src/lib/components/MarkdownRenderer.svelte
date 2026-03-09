@@ -9,6 +9,7 @@
 	import type { ClassValue } from "svelte/elements";
 	import posthog from "posthog-js";
 	import rehypeRaw from "rehype-raw";
+	import rehypeSanitize from "rehype-sanitize";
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import { siteRepo } from "$lib/properties";
@@ -89,7 +90,12 @@
 			{md}
 			plugins={[
 				gfmPlugin(),
-				{ rehypePlugin: parseRawHtml ? [rehypeRaw, { tagfilter: true }] : undefined },
+				...(parseRawHtml
+					? ([
+							{ rehypePlugin: [rehypeRaw, { tagfilter: true }] },
+							{ rehypePlugin: [rehypeSanitize] }
+						] as Plugin[])
+					: []),
 				...additionalPlugins
 			]}
 			{...snippets}
