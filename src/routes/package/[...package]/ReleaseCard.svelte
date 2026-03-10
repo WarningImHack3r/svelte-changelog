@@ -470,9 +470,10 @@
 						}) + `#${release.cleanVersion}`}
 						variant="ghost"
 						size="icon-sm"
+						class="group"
 					>
 						<span class="sr-only">Set url to this release ({release.cleanVersion})</span>
-						<Link class="size-5" />
+						<Link class="size-5 transition-opacity md:opacity-25 md:group-hover:opacity-100" />
 					</AnimatedButton>
 					<!-- Open the release on GitHub in a new tab -->
 					<AnimatedButton
@@ -481,14 +482,10 @@
 						size="sm"
 						target="_blank"
 						rel="external"
-						class="group shrink-0 gap-0 transition-colors duration-500"
+						class="group"
 					>
-						<span class="-mr-6 hidden sm:group-hover:block">Open on GitHub</span>
-						<img
-							src="/github.svg"
-							alt="GitHub"
-							class="size-5 transition-opacity duration-300 sm:group-hover:opacity-0 dark:invert"
-						/>
+						<span class="sr-only">Open on GitHub</span>
+						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
 						<ArrowUpRight
 							class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
 						/>
