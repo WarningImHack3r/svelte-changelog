@@ -1,5 +1,4 @@
 import { error, redirect } from "@sveltejs/kit";
-import type { Config } from "@sveltejs/adapter-vercel";
 import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
@@ -8,15 +7,13 @@ import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { BranchCommit, PID } from "$lib/types";
 
-export const config: Config = {
-	isr: {
-		expiration: FULL_DETAILS_TTL
-	}
-};
-
 const versionDigitsRegex = /\d\.\d/;
 
-export async function load({ params: { pid: type, org, repo, id }, fetch }) {
+export async function load({ params: { pid: type, org, repo, id }, fetch, setHeaders }) {
+	setHeaders({
+		"Cache-Control": `public, max-age=${2 * 60}, s-maxage=${FULL_DETAILS_TTL}, stale-while-revalidate=${FULL_DETAILS_TTL / 2}`
+	});
+
 	const isKnownRepo = uniqueRepos.some(
 		({ owner, name }) =>
 			org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&

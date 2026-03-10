@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import type { Config } from "@sveltejs/adapter-vercel";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { uniqueRepos } from "$lib/repositories";
@@ -18,13 +17,11 @@ const closingKeywords = [
 	"resolved"
 ];
 
-export const config: Config = {
-	isr: {
-		expiration: FULL_DETAILS_TTL
-	}
-};
+export async function load({ params, setHeaders }) {
+	setHeaders({
+		"Cache-Control": `public, max-age=${2 * 60}, s-maxage=${FULL_DETAILS_TTL}, stale-while-revalidate=${FULL_DETAILS_TTL / 2}`
+	});
 
-export async function load({ params }) {
 	const knownRepo = uniqueRepos.find(
 		({ owner, name }) =>
 			params.org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
