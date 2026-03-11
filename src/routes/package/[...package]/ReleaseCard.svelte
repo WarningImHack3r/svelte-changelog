@@ -445,7 +445,7 @@
 		</div>
 	</Accordion.Trigger>
 	<Accordion.Content class="px-6">
-		<div class="relative mt-4 flex flex-col gap-2">
+		<div class="mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
 				additionalPlugins={[
@@ -460,10 +460,10 @@
 				]}
 				class="prose-sm max-w-full prose-p:my-0"
 			/>
-			<div class="flex items-end-safe justify-between gap-8">
+			<div class="flex items-end-safe gap-8">
 				<!-- Reactions -->
 				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
-				<div class="flex shrink-0 items-center gap-2">
+				<div class="ms-auto flex shrink-0 items-center gap-2">
 					<AnimatedButton
 						href={resolve("/package/[...package]", {
 							package: release.cleanName
