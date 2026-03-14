@@ -35,30 +35,32 @@
 		// designed for large native GitHub .patch files
 		const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`;
 		const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`;
-		return file.patch
-			? pierreParsePatchFiles(`${aFile}\n${bFile}\n${file.patch}`, `diff-${file.filename}`).flatMap(
-					p =>
-						p.files.map(patchFile => {
-							let newType = patchFile.type;
-							switch (file.status) {
-								case "added":
-								case "copied":
-									newType = "new";
-									break;
-								case "removed":
-									newType = "deleted";
-									break;
-								case "renamed":
-									newType = file.changes ? "rename-changed" : "rename-pure";
-									break;
-								case "changed":
-								case "modified":
-								case "unchanged":
-									// stay "changed"
-									break;
-							}
-							return { ...patchFile, type: newType };
-						})
+		return file.patch || file.changes === 0
+			? pierreParsePatchFiles(
+					`${aFile}\n${bFile}\n${file.patch}`,
+					`diff-${file.filename}-${file.sha ?? "unknown"}`
+				).flatMap(p =>
+					p.files.map(patchFile => {
+						let newType = patchFile.type;
+						switch (file.status) {
+							case "added":
+							case "copied":
+								newType = "new";
+								break;
+							case "removed":
+								newType = "deleted";
+								break;
+							case "renamed":
+								newType = file.changes ? "rename-changed" : "rename-pure";
+								break;
+							case "changed":
+							case "modified":
+							case "unchanged":
+								// stay "changed"
+								break;
+						}
+						return { ...patchFile, type: newType };
+					})
 				)
 			: [];
 	}

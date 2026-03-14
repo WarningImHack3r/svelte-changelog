@@ -31,7 +31,7 @@
 	label="Files"
 	secondaryLabel="{files.length} file{files.length > 1 ? 's' : ''}"
 	style="--accordion-bg: light-dark({lightTheme?.bg}, {darkTheme?.bg})"
-	class="[&_*]:data-accordion-content:-mx-4 [&_*]:data-accordion-content:flex [&_*]:data-accordion-content:flex-col [&_*]:data-accordion-content:gap-2 [&_*]:data-accordion-content:overflow-visible [&_*]:data-accordion-content:rounded-b-md [&_*]:data-accordion-content:bg-(--accordion-bg) [&_*]:data-accordion-content:px-4"
+	class="**:data-accordion-content:-mx-4 **:data-accordion-content:flex **:data-accordion-content:flex-col **:data-accordion-content:gap-2 **:data-accordion-content:overflow-visible **:data-accordion-content:rounded-b-md **:data-accordion-content:bg-(--accordion-bg) **:data-accordion-content:px-4"
 >
 	{#each files as file, i (file.filename)}
 		<!-- this should effectively always be a 1-sized array -->
