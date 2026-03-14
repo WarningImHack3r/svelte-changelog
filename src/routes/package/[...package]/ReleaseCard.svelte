@@ -465,9 +465,9 @@
 				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
 				<div class="ms-auto flex shrink-0 items-center gap-2">
 					<AnimatedButton
-						href={resolve("/package/[...package]", {
+						href={resolve(`/package/[...package]#${release.cleanVersion}`, {
 							package: release.cleanName
-						}) + `#${release.cleanVersion}`}
+						})}
 						variant="ghost"
 						size="icon-sm"
 						class="group"

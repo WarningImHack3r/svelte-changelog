@@ -248,9 +248,9 @@
 								This pull request was released in
 								<Button
 									variant="link"
-									href={resolve("/package/[...package]", {
+									href={resolve(`/package/[...package]#${tagVersion}`, {
 										package: tagName
-									}) + `#${tagVersion}`}
+									})}
 									class="h-auto p-0 text-green-500"
 								>
 									{tagName}

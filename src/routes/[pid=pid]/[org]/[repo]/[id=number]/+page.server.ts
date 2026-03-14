@@ -35,7 +35,8 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
 
-	const realType = "commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
+	const realType: typeof type =
+		"commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
 	if (type !== realType) {
 		redirect(307, resolve("/[pid=pid]/[org]/[repo]/[id=number]", { pid: realType, org, repo, id }));
 	}

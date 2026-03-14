@@ -31,10 +31,11 @@ export function load({ params: { org, repo, tag } }) {
 			}
 		});
 	}
+	const versionHash: "" | `#${string}` = version ? `#${version}` : ""; // avoids empty hash, even though this could hide a version parsing issue
 	redirect(
 		307,
-		resolve("/package/[...package]", {
+		resolve(`/package/[...package]${versionHash}`, {
 			package: name
-		}) + (version ? `#${version}` : "") // avoids empty hash, even though it could hide a version parsing issue
+		})
 	);
 }
