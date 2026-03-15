@@ -107,7 +107,7 @@
 				disableErrorHandling: true,
 				...options
 			},
-			getWorker({ ...options, langs: langs as SupportedLanguages[] })
+			getWorker({ ...options, langs: langs as SupportedLanguages[] | undefined })
 		)
 	);
 
