@@ -7,6 +7,8 @@
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ArrowUpRight, ChevronLeft, CircleAlert, Lightbulb, Lock, Tag } from "@lucide/svelte";
+	import { pidFormatter } from "$lib/strings";
+	import type { PID } from "$lib/types";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
@@ -110,6 +112,22 @@
 	});
 
 	/**
+	 * Returns the PID of the linked entity from the input one.
+	 *
+	 * @param pid the input PID
+	 * @returns the PID of its linked entity
+	 */
+	export function getLinkedEntityPID(pid: PID): PID {
+		switch (pid) {
+			case "pull":
+				return "issues";
+			case "issues":
+				return "pull";
+		}
+		return pid;
+	}
+
+	/**
 	 * Returns the previous page to go back to
 	 */
 	function getPreviousPath() {
@@ -138,9 +156,7 @@
 </h2>
 {#if linkedEntities.length}
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
-		{metadata.type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1
-			? "s"
-			: ""}
+		{pidFormatter.toLinkedEntity(metadata.type, linkedEntities.length > 1)}
 	</h3>
 	<LinkedEntitiesList
 		entities={linkedEntities}
@@ -152,11 +168,7 @@
 {/if}
 <div class="flex items-center">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
-		{metadata.type === "pull"
-			? "Pull request"
-			: metadata.type === "issues"
-				? "Issue"
-				: "Discussion"}
+		{pidFormatter.toHumanReadable(metadata.type)}
 	</h3>
 	{#if info.locked}
 		<div
@@ -317,14 +329,14 @@
 				{#each linkedEntities as entity (entity.number)}
 					<AnimatedButton
 						href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
-							pid: metadata.type === "pull" ? "issues" : "pull",
+							pid: getLinkedEntityPID(metadata.type),
 							org: entity.repository.owner,
 							repo: entity.repository.name,
 							id: `${entity.number}`
 						})}
 						variant="secondary"
 					>
-						Open {metadata.type === "pull" ? "issue" : "pull request"}
+						Open {pidFormatter.toHumanReadable(getLinkedEntityPID(metadata.type)).toLowerCase()}
 						{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
 							#{entity.number}
 						{:else}
@@ -335,11 +347,7 @@
 			</div>
 		{/if}
 		<AnimatedButton href={info.html_url} target="_blank" class="group gap-0 dark:text-black">
-			Open {metadata.type === "pull"
-				? "pull request"
-				: metadata.type === "issues"
-					? "issue"
-					: "discussion"} on GitHub
+			Open {pidFormatter.toHumanReadable(metadata.type).toLowerCase()} on GitHub
 			<ArrowUpRight
 				class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 			/>

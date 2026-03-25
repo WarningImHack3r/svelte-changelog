@@ -1,6 +1,6 @@
 import posthog from "posthog-js";
-import { stringify } from "$lib/errors";
 import { dfatal } from "$lib/logging";
+import { stringifyError } from "$lib/strings";
 
 export function handleError({ error, status, event, message }) {
 	if (status === 404) return;
@@ -15,7 +15,7 @@ export function handleError({ error, status, event, message }) {
 	)
 		return;
 
-	const stringified = stringify(error);
+	const stringified = stringifyError(error);
 	dfatal(`[CLIENT][${status}] ${stringified}`);
 	posthog.captureException(error instanceof Error ? error : new Error(stringified), {
 		...event,
