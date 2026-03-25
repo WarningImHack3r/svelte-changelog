@@ -156,7 +156,7 @@ export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
  * The Pull, Issue or Discussion type.
  * Matches the slug in GitHub URLs.
  */
-export type PID = "pull" | "issue" | "discussion";
+export type PID = "pull" | "issues" | "discussions";
 
 /**
  * The JSON API response for `https://github.com/{user}/{repo}/branch_commits/{sha}`

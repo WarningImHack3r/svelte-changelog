@@ -21,10 +21,10 @@
 
 	type CommonStatus = "open" | "closed";
 
-	type GithubStatus = {
+	type GitHubStatus = {
 		pull: CommonStatus | "draft" | "merged";
-		issue: CommonStatus | "solved";
-		discussion: CommonStatus;
+		issues: CommonStatus | "solved";
+		discussions: CommonStatus;
 	};
 
 	type BadgeConfig = {
@@ -34,7 +34,7 @@
 	};
 
 	const BADGE_MAP: {
-		[GithubType in keyof GithubStatus]: Record<GithubStatus[GithubType], BadgeConfig>;
+		[GitHubType in keyof GitHubStatus]: Record<GitHubStatus[GitHubType], BadgeConfig>;
 	} = {
 		pull: {
 			open: { icon: GitPullRequestArrow, label: "Open", color: "green" },
@@ -42,25 +42,25 @@
 			draft: { icon: GitPullRequestDraft, label: "Draft", color: "neutral" },
 			merged: { icon: GitMerge, label: "Merged", color: "purple" }
 		},
-		issue: {
+		issues: {
 			open: { icon: CircleDot, label: "Open", color: "green" },
 			closed: { icon: CircleSlash, label: "Closed", color: "neutral" },
 			solved: { icon: CircleCheck, label: "Solved", color: "purple" }
 		},
-		discussion: {
+		discussions: {
 			open: { icon: MessageSquare, label: "Open", color: "green" },
 			closed: { icon: MessageSquareCheck, label: "Closed", color: "purple" }
 		}
 	};
 </script>
 
-<script lang="ts" generics="GithubType extends keyof GithubStatus">
+<script lang="ts" generics="GitHubType extends keyof GitHubStatus">
 	import type { ClassValue } from "svelte/elements";
 
 	type Props = {
 		mode?: "regular" | "minimal";
-		type: GithubType;
-		status: GithubStatus[GithubType];
+		type: GitHubType;
+		status: GitHubStatus[GitHubType];
 		class?: ClassValue;
 	};
 

@@ -152,7 +152,11 @@
 {/if}
 <div class="flex items-center">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
-		{metadata.type === "pull" ? "Pull request" : metadata.type === "issue" ? "Issue" : "Discussion"}
+		{metadata.type === "pull"
+			? "Pull request"
+			: metadata.type === "issues"
+				? "Issue"
+				: "Discussion"}
 	</h3>
 	{#if info.locked}
 		<div
@@ -216,7 +220,7 @@
 					owner: metadata.org,
 					name: metadata.repo
 				}}
-				renderSlug={metadata.type === "discussion"}
+				renderSlug={metadata.type === "discussions"}
 				reactions={"reactions" in info ? info.reactions : undefined}
 				reactionItemUrl={info.html_url}
 				class="bg-muted/30 p-4"
@@ -333,7 +337,7 @@
 		<AnimatedButton href={info.html_url} target="_blank" class="group gap-0 dark:text-black">
 			Open {metadata.type === "pull"
 				? "pull request"
-				: metadata.type === "issue"
+				: metadata.type === "issues"
 					? "issue"
 					: "discussion"} on GitHub
 			<ArrowUpRight

@@ -762,7 +762,7 @@ export class GitHubCache {
 		const closingIssues = result?.repository?.pullRequest?.closingIssuesReferences?.nodes ?? [];
 		for (const issue of closingIssues) {
 			if (!issue) continue;
-			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issue", issue));
+			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issues", issue));
 		}
 
 		return [...linkedIssues.values()];

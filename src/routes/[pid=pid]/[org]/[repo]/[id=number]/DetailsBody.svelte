@@ -98,7 +98,7 @@
 								<Button
 									variant="link"
 									href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
-										pid: pid ?? "",
+										pid: (pid ?? "issues") as "pull" | "issues" | "discussions",
 										org: org ?? "",
 										repo: repo ?? "",
 										id: id ?? ""

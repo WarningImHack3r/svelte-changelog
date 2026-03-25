@@ -5,7 +5,7 @@ import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
 import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
-import type { BranchCommit, PID } from "$lib/types";
+import type { BranchCommit } from "$lib/types";
 
 const versionDigitsRegex = /\d\.\d/;
 
@@ -53,10 +53,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 			org,
 			repo,
 			id: +id,
-			type: type === "issues" ? "issue" : type === "discussions" ? "discussion" : type
-		} satisfies {
-			type: PID;
-			[key: string]: unknown;
+			type
 		},
 		item,
 		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
