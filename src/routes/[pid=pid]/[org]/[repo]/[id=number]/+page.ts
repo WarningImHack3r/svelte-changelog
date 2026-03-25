@@ -1,10 +1,12 @@
 import { definePageMetaTags } from "svelte-meta-tags";
+import { pidFormatter } from "$lib/strings";
 
 export function load({ data, url }) {
+	const element = pidFormatter.toHumanReadable(data.itemMetadata.type);
 	return {
 		...data,
 		...definePageMetaTags({
-			title: `Detail of ${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id}`,
+			title: `Details of ${element.toLowerCase()} ${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id}`,
 			openGraph: {
 				images: [
 					{
@@ -13,7 +15,7 @@ export function load({ data, url }) {
 							ogUrl.searchParams.set("title", data.item.info.title);
 							ogUrl.searchParams.set(
 								"description",
-								`${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id}`
+								`${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id} • ${element}`
 							);
 							return ogUrl.href;
 						}
