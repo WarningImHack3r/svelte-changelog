@@ -487,7 +487,7 @@
 						<span class="sr-only">Open on GitHub</span>
 						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
 						<ArrowUpRight
-							class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
+							class="ml-1 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
 						/>
 					</AnimatedButton>
 				</div>
