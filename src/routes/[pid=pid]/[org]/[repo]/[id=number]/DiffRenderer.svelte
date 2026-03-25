@@ -112,11 +112,12 @@
 	);
 
 	// Initial rendering and cleanup handling
-	$effect(() =>
-		fileDiff.render({
-			containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
-			...props
-		})
+	$effect(
+		() =>
+			void fileDiff.render({
+				containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
+				...props
+			})
 	);
 
 	// Mobile diff type change
