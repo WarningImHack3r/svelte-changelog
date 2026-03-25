@@ -302,7 +302,7 @@
 				{/if}
 				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
 					{@const markdown =
-						"This package has trouble tagging its releases, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
+						"This package has releases that are not properly tagged, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
 					<TopBanner
 						icon={CircleAlert}
 						title="Note"
