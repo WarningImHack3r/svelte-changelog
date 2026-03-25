@@ -385,7 +385,7 @@
 								>
 									{release.cleanName}@{release.cleanVersion}
 								</span>
-								{#if index === 0}
+								{#if index === 0 && !isOlderThanAWeek}
 									<div
 										class="ml-auto"
 										use:confetti={{
