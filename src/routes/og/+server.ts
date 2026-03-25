@@ -119,7 +119,12 @@ const XML_ENTITIES: Record<string, string> = {
 	"&apos;": "'"
 };
 
-const XML_ENTITY_REGEX = /&(?:amp|lt|gt|quot|apos);/g;
+const XML_ENTITY_REGEX = new RegExp(
+	`&(?:${Object.keys(XML_ENTITIES)
+		.map(entity => entity.slice(1, entity.length - 1))
+		.join("|")});`,
+	"g"
+);
 
 function decodeXML(original: string) {
 	return original.replace(XML_ENTITY_REGEX, match => XML_ENTITIES[match] ?? match);
