@@ -103,8 +103,7 @@
 				class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
 			>
 				{#if comment.user}
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a href={comment.user.html_url} class="group inline-flex items-center">
+					<a href={comment.user.html_url} rel="external" class="group inline-flex items-center">
 						<Avatar.Root class="mr-2 size-5">
 							<Avatar.Image
 								src={comment.user.avatar_url}

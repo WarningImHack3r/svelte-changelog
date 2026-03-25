@@ -113,12 +113,13 @@
 								class="prose-p:text-foreground prose-a:hover:underline prose-a:[[href*='/commit/']]:text-foreground"
 							/>
 							{#if commit.author}
-								<!-- const to be able to disable eslint without getting owned by prettier wrapping stuff -->
-								{@const authorProfile = commit.author.html_url}
 								<div class="ml-0.5 inline-flex items-center gap-1.5 text-muted-foreground">
 									<span>•</span>
-									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-									<a href={authorProfile} class="group inline-flex items-center gap-1.5">
+									<a
+										href={commit.author.html_url}
+										rel="external"
+										class="group inline-flex items-center gap-1.5"
+									>
 										<Avatar.Root class="size-4">
 											<Avatar.Image
 												src={commit.author.avatar_url}

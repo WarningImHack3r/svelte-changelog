@@ -127,8 +127,7 @@
 	/>
 {/if}
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
-	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-	<a href={info.html_url}>
+	<a href={info.html_url} rel="external">
 		<MarkdownRenderer
 			markdown={info.title}
 			inline
@@ -191,8 +190,7 @@
 				class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
 			>
 				{#if info.user}
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a href={info.user.html_url} class="group inline-flex items-center">
+					<a href={info.user.html_url} rel="external" class="group inline-flex items-center">
 						<Avatar.Root class="mr-2 size-5">
 							<Avatar.Image
 								src={info.user.avatar_url}
