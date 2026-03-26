@@ -11,11 +11,7 @@
 		reactionItemUrl?: string;
 		class?: ClassValue;
 	};
-	let {
-		reactions = undefined,
-		reactionItemUrl = undefined,
-		class: className = undefined
-	}: Props = $props();
+	let { reactions, reactionItemUrl, class: className }: Props = $props();
 
 	type ReactionKey = Exclude<keyof NonNullable<GitHubRelease["reactions"]>, "url" | "total_count">;
 	const reactionsEmojis: Record<ReactionKey, string> = {

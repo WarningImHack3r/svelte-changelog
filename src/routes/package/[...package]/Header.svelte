@@ -5,6 +5,7 @@
 	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import type { Package } from "$lib/server/package-discoverer";
+	import { stringifyError } from "$lib/strings";
 	import { ALL_SLUG } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as Collapsible from "$lib/components/ui/collapsible";
@@ -108,7 +109,7 @@
 						)
 						.catch(e =>
 							toast.error("Failed to copy", {
-								description: `Could not copy "${packageInfo.name}" to your clipboard: ${e}"`
+								description: `Could not copy "${packageInfo.name}" to your clipboard: ${stringifyError(e)}"`
 							})
 						)}
 			>

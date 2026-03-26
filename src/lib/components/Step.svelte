@@ -10,7 +10,7 @@
 		children?: Snippet;
 	};
 
-	let { class: className = undefined, icon, children }: Props = $props();
+	let { class: className, icon, children }: Props = $props();
 </script>
 
 <div class={cn("step relative", className)}>

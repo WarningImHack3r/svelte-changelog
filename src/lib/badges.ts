@@ -51,7 +51,7 @@ export function getUnvisitedReleases<T extends GitHubRelease>(pkgName: string, r
  * @param releases the releases to filter
  * @returns whether the package is considered new
  */
-export function isPackageNew<T extends GitHubRelease>(pkgName: string, releases: T[]) {
+export function isPackageNew(pkgName: string, releases: GitHubRelease[]) {
 	if (!browser) return false;
 	if (!releases.length) return true;
 

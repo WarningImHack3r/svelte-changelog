@@ -31,7 +31,7 @@
 		inline = false,
 		parseRawHtml = false,
 		additionalPlugins = [],
-		class: className = undefined,
+		class: className,
 		...snippets
 	}: Props = $props();
 </script>

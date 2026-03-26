@@ -25,6 +25,7 @@ import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
+import { stringifyError } from "$lib/strings";
 import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
 import { CacheHandler } from "./cache-handler";
 import {
@@ -240,7 +241,7 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: unknown[]) {
+	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: (string | number | boolean)[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `owner:${owner}:${type}${strArgs}`;
 	}
@@ -257,7 +258,12 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(owner: string, repo: string, type: RepoKeyType, ...args: unknown[]) {
+	#getRepoKey(
+		owner: string,
+		repo: string,
+		type: RepoKeyType,
+		...args: (string | number | boolean)[]
+	) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `repo:${owner}/${repo}:${type}${strArgs}`;
 	}
@@ -272,7 +278,7 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getPackageKey(packageName: string, ...args: unknown[]) {
+	#getPackageKey(packageName: string, ...args: (string | number | boolean)[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `package:${packageName}${strArgs}`;
 	}
@@ -424,7 +430,7 @@ export class GitHubCache {
 		owner: string,
 		repo: string,
 		id: number,
-		type: ExtractStrict<RepoKeyType, "issue" | "pr" | "discussions"> | undefined = undefined
+		type?: ExtractStrict<RepoKeyType, "issue" | "pr" | "discussions">
 	) {
 		// Known type we assume the existence of
 		switch (type) {
@@ -440,20 +446,20 @@ export class GitHubCache {
 		try {
 			return await this.getPullRequestDetails(owner, repo, id);
 		} catch (err) {
-			derror(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get PR details for ${owner}/${repo}: ${stringifyError(err)}`);
 		}
 
 		try {
 			// doesn't come first because issues will also resolve for prs
 			return await this.getIssueDetails(owner, repo, id);
 		} catch (err) {
-			derror(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get issue details for ${owner}/${repo}: ${stringifyError(err)}`);
 		}
 
 		try {
 			return await this.getDiscussionDetails(owner, repo, id);
 		} catch (err) {
-			derror(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get discussion details for ${owner}/${repo}: ${stringifyError(err)}`);
 		}
 
 		return null;

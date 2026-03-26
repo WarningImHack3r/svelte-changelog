@@ -122,14 +122,14 @@ export function detectLanguage(
 			(successRate === highestRate && regexps.length > highestTotal)
 		) {
 			ddebug(
-				`New candidate found! Previous values: ${languageCandidate} - highest rate ${highestRate}, highest total regexes: ${highestTotal}`
+				`New candidate found! Previous values: ${languageCandidate ?? "none"} - highest rate ${highestRate}, highest total regexes: ${highestTotal}`
 			);
 			languageCandidate = language;
 			highestRate = successRate;
 			highestTotal = regexps.length;
 		}
 	}
-	ddebug(`Done: result is ${languageCandidate}`);
+	ddebug(`Done: result is ${languageCandidate ?? "none"}`);
 	return languageCandidate;
 }
 

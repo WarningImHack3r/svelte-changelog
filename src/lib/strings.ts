@@ -10,15 +10,17 @@ export function stringifyError(error: unknown): string {
 	switch (typeof error) {
 		case "object":
 			if (error === null) return "<null error>";
-			if ("message" in error) {
-				if ("description" in error) return `${error.message}: ${error.description}`;
-				return `${error.message}`;
+			if ("message" in error && typeof error.message === "string") {
+				if ("description" in error && typeof error.description === "string")
+					return `${error.message}: ${error.description}`;
+				return error.message;
 			}
 			if ("error" in error) return stringifyError(error.error);
 			return JSON.stringify(error);
 		case "string":
 			return error;
 	}
+	// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 	return `${error}`;
 }
 

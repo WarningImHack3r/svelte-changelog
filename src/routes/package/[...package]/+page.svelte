@@ -162,7 +162,7 @@
 	$effect(() => {
 		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
 
-		Promise.resolve() // match what's performed on the DOM
+		void Promise.resolve() // match what's performed on the DOM
 			.then(() => new Promise(resolve => setTimeout(resolve, 300))) // wait for the accordions to expand (+ better UX)
 			.then(() => {
 				document

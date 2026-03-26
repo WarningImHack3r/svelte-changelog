@@ -101,13 +101,13 @@ export class CacheHandler {
 	 * @param value the value to store
 	 * @param ttlSeconds the optional TTL to set for expiration
 	 */
-	async set<T extends RedisJSON>(key: string, value: T, ttlSeconds?: number) {
+	async set(key: string, value: RedisJSON, ttlSeconds?: number) {
 		if (this.#isDev) {
 			ddebug(`Setting value for ${key} in memory cache`);
 			// In dev mode, use memory cache only
 			const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 			if (expiresAt) {
-				ddebug(`Defining cache for ${key}, expires at ${new Date(expiresAt)}`);
+				ddebug(`Defining cache for ${key}, expires at ${new Date(expiresAt).toLocaleString()}`);
 			} else ddebug(`No cache set for ${key}`);
 			this.#memoryCache.set(key, { value, expiresAt });
 		} else {

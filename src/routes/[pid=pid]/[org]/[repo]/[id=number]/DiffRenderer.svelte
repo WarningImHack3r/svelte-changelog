@@ -37,7 +37,7 @@
 		const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`;
 		return file.patch || file.changes === 0
 			? pierreParsePatchFiles(
-					`${aFile}\n${bFile}\n${file.patch}`,
+					`${aFile}\n${bFile}\n${file.patch ?? ""}`,
 					`diff-${file.filename}-${file.sha ?? "unknown"}`
 				).flatMap(p =>
 					p.files.map(patchFile => {
@@ -107,7 +107,7 @@
 				disableErrorHandling: true,
 				...options
 			},
-			getWorker({ ...options, langs: langs as SupportedLanguages[] | undefined })
+			getWorker({ ...options, langs })
 		)
 	);
 

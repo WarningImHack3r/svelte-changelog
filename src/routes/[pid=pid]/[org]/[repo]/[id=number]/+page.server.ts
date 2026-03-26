@@ -77,34 +77,37 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 			}
 
 			// Compute or gather all the known packages to avoid rare 404s
-			discoverer.getOrDiscover().then(items => {
-				const knownPackages = new Set(
-					items.flatMap(({ packages }) => packages).map(({ name }) => name)
-				);
+			discoverer
+				.getOrDiscover()
+				.then(items => {
+					const knownPackages = new Set(
+						items.flatMap(({ packages }) => packages).map(({ name }) => name)
+					);
 
-				// Fetch the merge commit's info
-				fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
-					headers: {
-						Accept: "application/json"
-					}
-				})
-					.then(res => res.json() as Promise<BranchCommit>)
-					.then(({ tags }) => {
-						const earliestTag = tags.findLast(tag => {
-							// The info is right here after a little filtering :D
-							const isValid = !tag.includes("nightly") && versionDigitsRegex.test(tag);
-							if (!isValid) return false;
-							const [pkgName] = matchingRepo.metadataFromTag(tag);
-							return knownPackages.has(pkgName);
-						});
-						if (!earliestTag) {
-							resolve(undefined);
-							return;
+					// Fetch the merge commit's info
+					fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
+						headers: {
+							Accept: "application/json"
 						}
-						resolve(matchingRepo.metadataFromTag(earliestTag));
 					})
-					.catch(reject);
-			});
+						.then(res => res.json() as Promise<BranchCommit>)
+						.then(({ tags }) => {
+							const earliestTag = tags.findLast(tag => {
+								// The info is right here after a little filtering :D
+								const isValid = !tag.includes("nightly") && versionDigitsRegex.test(tag);
+								if (!isValid) return false;
+								const [pkgName] = matchingRepo.metadataFromTag(tag);
+								return knownPackages.has(pkgName);
+							});
+							if (!earliestTag) {
+								resolve(undefined);
+								return;
+							}
+							resolve(matchingRepo.metadataFromTag(earliestTag));
+						})
+						.catch(reject);
+				})
+				.catch(reject);
 		})
 	};
 }
