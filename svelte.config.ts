@@ -1,5 +1,5 @@
 import type { Config } from "@sveltejs/kit";
-import adapter from "@sveltejs/adapter-vercel";
+import adapter from "@sveltejs/adapter-node";
 
 const config: Config = {
 	kit: {

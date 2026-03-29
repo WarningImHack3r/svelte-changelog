@@ -37,7 +37,7 @@
 		"@shikijs/langs": "^4.0.2",
 		"@shikijs/rehype": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
-		"@sveltejs/adapter-vercel": "^6.3.3",
+		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.55.0",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.2",
