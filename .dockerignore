@@ -1,0 +1,16 @@
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.gitattributes
+README.md
+LICENSE
+.env.*
+.npmrc
+.prettierignore
+.prettierrc
+.eslint.config.js
+.svelte-kit
+node_modules
+build
+package
