@@ -1,10 +1,10 @@
 FROM node:alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN pnpm i --frozen-lockfile
 COPY . .
-RUN npm run build
-RUN npm prune --production
+RUN pnpm run build
+RUN pnpm prune --prod
 
 FROM node:alpine
 WORKDIR /app
