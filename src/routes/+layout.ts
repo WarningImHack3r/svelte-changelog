@@ -1,11 +1,8 @@
 import { browser, dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
-import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 import posthog from "posthog-js";
 import { defineBaseMetaTags } from "svelte-meta-tags";
 import { siteName } from "$lib/properties";
-
-if (!dev) injectSpeedInsights();
 
 let phInit = false;
 

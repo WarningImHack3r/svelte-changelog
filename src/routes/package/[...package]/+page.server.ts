@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import { addCacheTag } from "@vercel/functions";
 import { siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
@@ -47,7 +46,7 @@ export async function load({ params: { package: slugPackage }, locals }) {
 	if (!packageReleases) error(404, `Unable to retrieve releases for ${slugPackage}`);
 
 	// Cache management
-	await addCacheTag(`package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
+	// await addCacheTag(`package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
 
 	// 3. Return the data
 	const { releasesRepo: currentPackage, releases } = packageReleases;

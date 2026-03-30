@@ -1,13 +1,5 @@
-import type { Config } from "@sveltejs/adapter-vercel";
-import { addCacheTag } from "@vercel/functions";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
-
-export const config: Config = {
-	isr: {
-		expiration: false
-	}
-};
 
 /**
  * The goal of this load function is to serve any `[...package]`
@@ -18,7 +10,7 @@ export const config: Config = {
  */
 export async function load({ locals }) {
 	// Cache management
-	await addCacheTag("all-packages");
+	// await addCacheTag("all-packages");
 
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();

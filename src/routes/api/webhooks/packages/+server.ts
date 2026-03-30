@@ -1,5 +1,4 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { invalidateByTag, waitUntil } from "@vercel/functions";
 import { ddebug, derror, dlog } from "$lib/logging";
 import { githubCache } from "$lib/server/github-cache";
 import { discoverer } from "$lib/server/package-discoverer";
@@ -57,7 +56,7 @@ async function invalidateSequentially(tag: string, delays: number[], signal?: Ab
 			return;
 		}
 		ddebug(`Invalidating tag ${tag} after ${delay} seconds elapsed`);
-		await invalidateByTag(tag);
+		// await invalidateByTag(tag);
 	}
 	ddebug(`Sequential invalidation done for ${tag}`);
 }
@@ -100,7 +99,7 @@ export async function POST({ request }) {
 	}
 
 	// invalidate all packages
-	await invalidateByTag("all-packages"); // immediate invalidation
+	// await invalidateByTag("all-packages"); // immediate invalidation
 	controller?.abort(); // cancel any previous request's invalidation sequence (if they even share memory in the first place)
 	controller = new AbortController();
 	const currentController = controller;
@@ -119,13 +118,13 @@ export async function POST({ request }) {
 		{ once: true }
 	);
 	dlog(`Starting invalidating sequentially for ${pkg.name}`);
-	waitUntil(
-		invalidateSequentially(
-			`package-${pkg.name}`,
-			packagesInvalidationDelaysSec,
-			currentController.signal
-		)
+	// waitUntil(
+	void invalidateSequentially(
+		`package-${pkg.name}`,
+		packagesInvalidationDelaysSec,
+		currentController.signal
 	);
+	// );
 
 	return new Response();
 }
