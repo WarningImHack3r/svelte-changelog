@@ -12,6 +12,10 @@ import { getAllPackagesReleases } from "../all-package-releases";
 export async function load({ setHeaders, locals }) {
 	// Cache management
 	await tagResponse(setHeaders, "all-packages");
+	setHeaders({
+		// one-year cache control, effectively ISR with no expiration
+		"Cache-Control": `public, s-maxage=${365 * 24 * 60 * 60}, stale-while-revalidate`
+	});
 
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();

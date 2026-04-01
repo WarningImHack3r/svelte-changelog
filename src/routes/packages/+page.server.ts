@@ -1,7 +1,12 @@
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
 
-export async function load({ locals }) {
+export async function load({ setHeaders, locals }) {
+	// Cache management
+	setHeaders({
+		"Cache-Control": `public, s-maxage=${60 * 60}, stale-while-revalidate`
+	});
+
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
