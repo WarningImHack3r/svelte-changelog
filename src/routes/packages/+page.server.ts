@@ -1,14 +1,12 @@
-import type { Config } from "@sveltejs/adapter-vercel";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
 
-export const config: Config = {
-	isr: {
-		expiration: 60 * 60 // 1 hour, to almost never feel when a package is missing after being discovered on the main page
-	}
-};
+export async function load({ setHeaders, locals }) {
+	// Cache management
+	setHeaders({
+		"Cache-Control": `public, s-maxage=${60 * 60}, stale-while-revalidate=${365 * 24 * 60 * 60}`
+	});
 
-export async function load({ locals }) {
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 

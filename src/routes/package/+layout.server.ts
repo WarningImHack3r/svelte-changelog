@@ -1,13 +1,6 @@
-import type { Config } from "@sveltejs/adapter-vercel";
-import { addCacheTag } from "@vercel/functions";
+import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
-
-export const config: Config = {
-	isr: {
-		expiration: false
-	}
-};
 
 /**
  * The goal of this load function is to serve any `[...package]`
@@ -16,9 +9,13 @@ export const config: Config = {
  * doesn't have to re-run the data loading every time we switch from
  * a package to another.
  */
-export async function load({ locals }) {
+export async function load({ setHeaders, locals }) {
 	// Cache management
-	await addCacheTag("all-packages");
+	await tagResponse(setHeaders, "all-packages");
+	setHeaders({
+		// one-year cache control, effectively ISR with no expiration
+		"Cache-Control": `public, s-maxage=${365 * 24 * 60 * 60}, stale-while-revalidate=${365 * 24 * 60 * 60}`
+	});
 
 	// 1. Get all the packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
