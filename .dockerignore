@@ -9,7 +9,7 @@ LICENSE
 .npmrc
 .prettierignore
 .prettierrc
-.eslint.config.js
+eslint.config.js
 .svelte-kit
 node_modules
 build
