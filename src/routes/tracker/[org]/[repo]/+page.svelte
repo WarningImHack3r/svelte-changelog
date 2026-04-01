@@ -107,8 +107,8 @@
 			type={"base" in item || "pull_request" in item
 				? "pull"
 				: "category" in item
-					? "discussion"
-					: "issue"}
+					? "discussions"
+					: "issues"}
 			status={item.state === "closed"
 				? "merged" in item
 					? item.merged
