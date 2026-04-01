@@ -4,7 +4,7 @@ import { getAllPackagesReleases } from "../all-package-releases";
 export async function load({ setHeaders, locals }) {
 	// Cache management
 	setHeaders({
-		"Cache-Control": `public, s-maxage=${60 * 60}, stale-while-revalidate`
+		"Cache-Control": `public, s-maxage=${60 * 60}, stale-while-revalidate=${365 * 24 * 60 * 60}`
 	});
 
 	// 1. Get all the packages
