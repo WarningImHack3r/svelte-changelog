@@ -1,10 +1,11 @@
 import { error } from "@sveltejs/kit";
 import { siteName } from "$lib/properties";
+import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getAllPackagesReleases, getPackageReleases } from "../releases";
 
-export async function load({ params: { package: slugPackage }, locals }) {
+export async function load({ params: { package: slugPackage }, setHeaders, locals }) {
 	// 1. Get all the discovered packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
@@ -46,7 +47,7 @@ export async function load({ params: { package: slugPackage }, locals }) {
 	if (!packageReleases) error(404, `Unable to retrieve releases for ${slugPackage}`);
 
 	// Cache management
-	// await addCacheTag(`package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
+	await tagResponse(setHeaders, `package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
 
 	// 3. Return the data
 	const { releasesRepo: currentPackage, releases } = packageReleases;
