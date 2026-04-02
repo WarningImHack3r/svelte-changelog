@@ -54,8 +54,7 @@
 		if (!resetDate) return undefined;
 		const target = resetDate;
 		target.setHours(
-			// not exactly accurate if the user spent a bunch of time looking at the dialog,
-			// but this applies exactly what's written
+			// not exactly accurate if the user spent a bunch of time looking at the dialog, but this applies exactly what's written in it
 			strictReset ? currentDate.getHours() : 0,
 			strictReset ? currentDate.getMinutes() : 0,
 			strictReset ? currentDate.getSeconds() : 0,

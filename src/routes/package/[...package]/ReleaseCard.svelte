@@ -73,8 +73,10 @@
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
 		if (!repo.owner || !repo.name) return release.body;
-		// Add missing links to PRs in the release body
-		// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+		/*
+		 * Add missing links to PRs in the release body
+		 * Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+		 */
 		const placeholder = `__MDLINK_${Math.random().toString(36)}_`;
 		const savedLinks: string[] = [];
 

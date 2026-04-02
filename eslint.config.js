@@ -1,5 +1,6 @@
 import e18e from "@e18e/eslint-plugin";
 import eslint from "@eslint/js";
+import stylistic from "@stylistic/eslint-plugin";
 import prettierConfig from "eslint-config-prettier/flat";
 import svelte from "eslint-plugin-svelte";
 import { defineConfig, globalIgnores } from "eslint/config";
@@ -8,6 +9,7 @@ import tseslint from "typescript-eslint";
 import svelteConfig from "./svelte.config.ts";
 
 export default defineConfig(
+	stylistic.configs.all,
 	eslint.configs.recommended,
 	tseslint.configs.strictTypeChecked,
 	tseslint.configs.stylisticTypeChecked,
@@ -45,8 +47,10 @@ export default defineConfig(
 			"svelte/no-unused-props": ["error", { allowUnusedNestedProperties: true }], // don't flag unused nested Svelte props
 			"@typescript-eslint/no-unused-vars": [
 				"error",
-				// lax no-unused-vars to follow what TS does
-				// copied from: https://typescript-eslint.io/rules/no-unused-vars/#what-benefits-does-this-rule-have-over-typescript
+				/*
+				 * lax no-unused-vars to follow what TS does
+				 * copied from: https://typescript-eslint.io/rules/no-unused-vars/#what-benefits-does-this-rule-have-over-typescript
+				 */
 				{
 					args: "all",
 					argsIgnorePattern: "^_",
@@ -59,8 +63,10 @@ export default defineConfig(
 			],
 			"@typescript-eslint/consistent-type-definitions": "off", // stylistic rule to be consistent between `type` or `interface`, unwanted
 			"@typescript-eslint/prefer-nullish-coalescing": ["error", { ignorePrimitives: true }], // stylistic rule, smarter on primitives
-			// everything below is enabled by type-checked linting, but disabled because it's not smart enough to use Svelte's
-			// zero-effort type-safety nor snippets rendering
+			/*
+			 * everything below is enabled by type-checked linting, but disabled because it's not smart enough to use Svelte's
+			 * zero-effort type-safety nor snippets rendering
+			 */
 			"@typescript-eslint/no-confusing-void-expression": "off",
 			"@typescript-eslint/no-redundant-type-constituents": "off", // would've been nice to have :(
 			"@typescript-eslint/no-unnecessary-condition": "off",

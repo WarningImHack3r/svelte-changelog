@@ -13,9 +13,6 @@
 		return getOrCreateWorkerPoolSingleton({
 			poolOptions: {
 				workerFactory
-				// poolSize defaults to 8. More workers = more parallelism but
-				// also more memory. Too many can actually slow things down.
-				// poolSize: 8,
 			},
 			highlighterOptions: options
 		});
@@ -30,9 +27,11 @@
 	export function parsePatchFiles(
 		file: JSONCompatible<PullRequestDetails["files"]>[number]
 	): FileDiffMetadata[] {
-		// all the additional processing done here is to bring the otherwise native
-		// formatting features (or make them working at all) as they were originally
-		// designed for large native GitHub .patch files
+		/*
+		 * All the additional processing done here is to bring the otherwise native
+		 * formatting features (or make them working at all) as they were originally
+		 * designed for large native GitHub .patch files
+		 */
 		const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`;
 		const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`;
 		return file.patch || file.changes === 0

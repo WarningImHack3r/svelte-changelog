@@ -206,6 +206,7 @@ export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
  */
 export class GitHubCache {
 	readonly #cache: CacheHandler;
+
 	readonly #octokit: Octokit;
 
 	/**
@@ -1131,8 +1132,7 @@ export class GitHubCache {
 			cacheKey: this.#getPackageKey(packageName, "deprecation"),
 			fn: async () => {
 				try {
-					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that
-					// GitHub owns npmjs.org okay??
+					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that GitHub owns npmjs.org okay??
 					const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
 					if (res.status !== 200) return {};
 					return (await res.json()) as { deprecated?: boolean | string };

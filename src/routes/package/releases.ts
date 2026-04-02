@@ -69,8 +69,7 @@ export async function getPackageReleases(
 						return false;
 					}
 
-					// filter as soon as possible to avoid errors due to parsing
-					// tags we should potentially not even care about
+					// filter as soon as possible to avoid errors due to parsing tags we should potentially not even care about
 					if (!(repo.dataFilter?.(release) ?? true)) return false;
 
 					const [name, version] = repo.metadataFromTag(release.tag_name);

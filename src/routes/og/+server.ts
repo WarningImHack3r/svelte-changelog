@@ -14,8 +14,11 @@ const sansFont = read(Pretendard).arrayBuffer();
 const sansFontSemibold = read(PretendardSemibold).arrayBuffer();
 const displayFont = read(DMSerifDisplay).arrayBuffer();
 
-// Sources: https://github.com/huggingface/chat-ui/blob/ebeff50ac0ac4367a8e1a32b46dcc5ac2e8fc43f/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82
-// https://geoffrich.net/posts/svelte-social-image/
+/*
+ * Sources:
+ * - https://github.com/huggingface/chat-ui/blob/ebeff50ac0ac4367a8e1a32b46dcc5ac2e8fc43f/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82
+ * - https://geoffrich.net/posts/svelte-social-image/
+ */
 export async function GET({ url }) {
 	const renderedComponent = render(Thumbnail, {
 		props: {

@@ -46,17 +46,20 @@
 
 	let { data, children } = $props();
 
-	// Prevent server desync in a forced way (more strictly
-	// than by default) and related hooks errors
-	// Snippet from https://svelte.dev/docs/kit/configuration#version
+	/*
+	 * Prevent server desync in a forced way (more strictly than by default) and related hooks errors
+	 * Snippet from https://svelte.dev/docs/kit/configuration#version
+	 */
 	beforeNavigate(({ willUnload, to }) => {
 		if (updated.current && !willUnload && to?.url) {
 			location.href = to.url.href;
 		}
 	});
 
-	// View Transitions API
-	// https://svelte.dev/blog/view-transitions
+	/*
+	 * View Transitions API
+	 * https://svelte.dev/blog/view-transitions
+	 */
 	onNavigate(({ complete }) => {
 		if (!document.startViewTransition) return;
 

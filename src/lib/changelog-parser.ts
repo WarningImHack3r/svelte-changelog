@@ -1,6 +1,8 @@
-// Gently stolen from https://github.com/fl-client/changelog-parser as this “fixed” version
-// is not available on npm.
-// Removed the `filePath` option as I don't need it, bring in the types and fix the linting errors.
+/*
+ * Gently stolen from https://github.com/fl-client/changelog-parser as this “fixed” version
+ * is not available on npm.
+ * Removed the `filePath` option as I don't need it, bring in the types and fix the linting errors.
+ */
 import { EOL } from "node:os";
 
 // patterns
@@ -105,9 +107,11 @@ function handleLine(line: string, data: ProcessingData): ProcessingData {
 	if (data.current) {
 		data.current.body += line + EOL;
 
-		// handle case where current line is a 'subhead':
-		// - 'handleize' subhead.
-		// - add subhead to 'parsed' data if not already present.
+		/*
+		 * handle case where current line is a 'subhead':
+		 * - 'handleize' subhead.
+		 * - add subhead to 'parsed' data if not already present.
+		 */
 		if (line.startsWith("###")) {
 			const key = line.replace("###", "").trim();
 

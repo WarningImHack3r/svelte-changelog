@@ -25,8 +25,11 @@ export type CategorizedPackage = Prettify<
 
 class PackageDiscoverer {
 	readonly #cache: GitHubCache;
+
 	readonly #repos: Repository[] = [];
+
 	readonly #notNpmPackages = new Set(["extensions"]);
+
 	#packages: DiscoveredPackage[] = [];
 
 	constructor(cache: GitHubCache, repos: Repository[]) {

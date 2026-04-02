@@ -34,8 +34,10 @@
 	 * @returns the sorted comments
 	 */
 	function sortComments(comms: NonNullable<Props["comments"]>): NonNullable<Props["comments"]> {
-		// Check if the array contains discussion items (with `parent_id`)
-		// We only need to check the first item since we know all items are of the same type
+		/*
+		 * Check if the array contains discussion items (with `parent_id`)
+		 * We only need to check the first item since we know all items are of the same type
+		 */
 		const hasParentId = comms[0] && "parent_id" in comms[0];
 
 		// If these are simple items, sort by date and return

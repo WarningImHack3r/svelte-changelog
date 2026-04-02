@@ -3,8 +3,11 @@ import { ddebug, derror } from "$lib/logging";
 
 export class CacheHandler {
 	readonly #redis: RedisClientType; // TODO: disconnect after usage?
+
 	readonly #memoryCache: Map<string, { value: unknown; expiresAt: number | null }>;
+
 	readonly #isDev: boolean;
+
 	#connectPromise: Promise<RedisClientType> | null = null;
 
 	/**

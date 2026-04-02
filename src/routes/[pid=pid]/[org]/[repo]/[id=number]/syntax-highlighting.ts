@@ -157,8 +157,10 @@ export function transformerLanguageDetection(
 	return {
 		preprocess(code, options) {
 			if (options.lang === "diff") {
-				// tests:
-				// - /issues/sveltejs/svelte/14280
+				/*
+				 * tests:
+				 * - /issues/sveltejs/svelte/14280
+				 */
 				const cleanedCode = code
 					.split("\n")
 					.map(line => line.replace(leadingPlusMinusRegex, ""))
@@ -174,8 +176,10 @@ export function transformerLanguageDetection(
 				options.lang = detectedLanguage;
 				if (options.meta) options.meta["data-detected"] = true;
 			} else if (isPlainLang(options.lang)) {
-				// tests:
-				// - /issues/sveltejs/svelte/16072
+				/*
+				 * tests:
+				 * - /issues/sveltejs/svelte/16072
+				 */
 				const detectedLanguage = detectLanguage(code, languages);
 				if (detectedLanguage) {
 					options.lang = detectedLanguage;
