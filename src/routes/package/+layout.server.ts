@@ -1,4 +1,3 @@
-import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { getAllPackagesReleases } from "../all-package-releases";
 
