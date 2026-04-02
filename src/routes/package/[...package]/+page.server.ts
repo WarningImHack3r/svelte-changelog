@@ -47,7 +47,7 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 	if (!packageReleases) error(404, `Unable to retrieve releases for ${slugPackage}`);
 
 	// Cache management
-	await tagResponse(setHeaders, `package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
+	await tagResponse(setHeaders, "all-packages", `package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
 
 	// 3. Return the data
 	const { releasesRepo: currentPackage, releases } = packageReleases;
