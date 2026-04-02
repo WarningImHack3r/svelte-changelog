@@ -1,0 +1,17 @@
+// Note: knip is not installed in this project, it has to be run from time to time through `pnpx knip@latest`
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"sveltekit": {
+		"config": ["svelte.config.ts", "vite.config.ts"]
+	},
+	"entry": [
+		"src/lib/components/ui/**",
+		"src/lib/logging.ts",
+		"src/lib/repositories.ts",
+		"src/lib/server/data-mock.ts",
+		"src/lib/server/github-api.ts",
+		"src/lib/server/package-discoverer.ts",
+		"src/**/syntax-highlighting.ts"
+	],
+	"ignoreDependencies": ["@types/eslint-config-prettier", "tslib"]
+}
