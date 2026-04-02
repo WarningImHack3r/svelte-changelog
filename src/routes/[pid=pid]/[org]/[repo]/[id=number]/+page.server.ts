@@ -3,7 +3,7 @@ import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
-import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";
+import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { BranchCommit } from "$lib/types";
 

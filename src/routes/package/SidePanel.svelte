@@ -5,7 +5,7 @@
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "$lib/badges";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { GitHubRelease } from "$lib/server/github-api";
 	import type { CategorizedPackage } from "$lib/server/package-discoverer";
 	import { type PackageSettings, type Prettify, expandStates, releasesTypes } from "$lib/types";
 	import { cn } from "$lib/utils";

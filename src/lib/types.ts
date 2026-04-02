@@ -1,5 +1,5 @@
 import type { Octokit } from "octokit";
-import type { GitHubRelease } from "$lib/server/github-cache";
+import type { GitHubRelease } from "$lib/server/github-api";
 
 // ===== UTILITIES (my lil type-fest)
 

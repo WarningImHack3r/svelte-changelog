@@ -38,7 +38,7 @@
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
 	import semver from "semver";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { GitHubRelease } from "$lib/server/github-api";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as Tooltip from "$lib/components/ui/tooltip";

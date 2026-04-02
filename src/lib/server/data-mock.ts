@@ -1,7 +1,7 @@
 import type { Repository as GQLRepository } from "@octokit/graphql-schema";
 import type { OctokitResponse } from "@octokit/types";
 import type { Octokit } from "octokit";
-import type { Discussion, GitHubRelease, Issue, PullRequest } from "./github-cache";
+import type { Discussion, GitHubRelease, Issue, PullRequest } from "./github-api";
 
 /**
  * A wrapper for returning some data inside an OctokitResponse

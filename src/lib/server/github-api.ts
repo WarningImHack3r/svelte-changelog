@@ -27,7 +27,6 @@ import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import { stringifyError } from "$lib/strings";
 import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
-import { CacheHandler } from "./cache-handler";
 import {
 	commit,
 	createOctokitResponse,
@@ -38,6 +37,7 @@ import {
 	pr,
 	release
 } from "./data-mock";
+import { KVCache } from "./kv";
 
 /**
  * A strict version of Extract.
@@ -204,20 +204,20 @@ export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
  * A fetch layer to reach the GitHub API
  * with an additional caching mechanism.
  */
-export class GitHubCache {
-	readonly #cache: CacheHandler;
+export class GitHubAPI {
+	readonly #cache: KVCache;
 
 	readonly #octokit: Octokit;
 
 	/**
-	 * Creates a new {@link GitHubCache} with the required auth info.
+	 * Creates a new {@link GitHubAPI} with the required auth info.
 	 *
 	 * @param redisUrl the Redis cache TCP URL
 	 * @param githubToken the GitHub token for uncached API requests
 	 * @constructor
 	 */
 	constructor(redisUrl: string, octokit: Octokit) {
-		this.#cache = new CacheHandler(
+		this.#cache = new KVCache(
 			createClient({
 				url: redisUrl,
 				socket: {
@@ -1168,7 +1168,7 @@ export class GitHubCache {
 	}
 }
 
-export const githubCache = new GitHubCache(
+export const githubCache = new GitHubAPI(
 	REDIS_URL,
 	GITHUB_TOKEN
 		? new Octokit({

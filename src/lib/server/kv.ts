@@ -1,7 +1,7 @@
 import type { RedisClientType, RedisJSON } from "redis";
 import { ddebug, derror } from "$lib/logging";
 
-export class CacheHandler {
+export class KVCache {
 	readonly #redis: RedisClientType; // TODO: disconnect after usage?
 
 	readonly #memoryCache: Map<string, { value: unknown; expiresAt: number | null }>;

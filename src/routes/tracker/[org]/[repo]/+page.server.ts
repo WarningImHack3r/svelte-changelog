@@ -2,7 +2,7 @@ import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { uniqueRepos } from "$lib/repositories";
-import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-cache";
+import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
 
 // source: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 const closingKeywords = [

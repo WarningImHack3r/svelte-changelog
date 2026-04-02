@@ -23,7 +23,7 @@
 <script lang="ts">
 	import { pushState } from "$app/navigation";
 	import { page } from "$app/state";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { GitHubRelease } from "$lib/server/github-api";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import * as Dialog from "$lib/components/ui/dialog";

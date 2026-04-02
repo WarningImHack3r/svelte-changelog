@@ -5,7 +5,7 @@
 		type WorkerInitializationRenderOptions,
 		getOrCreateWorkerPoolSingleton
 	} from "@pierre/diffs/worker";
-	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import type { PullRequestDetails } from "$lib/server/github-api";
 	import { workerFactory } from "./workers";
 
 	function getWorker(options: WorkerInitializationRenderOptions) {

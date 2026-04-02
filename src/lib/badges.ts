@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import type { GitHubRelease } from "./server/github-cache";
+import type { GitHubRelease } from "./server/github-api";
 
 /**
  * Extract the data from the record parameter which the key matches the argument.

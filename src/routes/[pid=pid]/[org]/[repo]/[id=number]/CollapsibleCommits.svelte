@@ -5,7 +5,7 @@
 		GitPullRequestClosed,
 		GitPullRequestCreateArrow
 	} from "@lucide/svelte";
-	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import type { PullRequestDetails } from "$lib/server/github-api";
 	import type { JSONCompatible } from "$lib/types";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";

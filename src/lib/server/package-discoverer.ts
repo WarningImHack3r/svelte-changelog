@@ -2,7 +2,7 @@ import { uniq } from "$lib/array";
 import { dlog } from "$lib/logging";
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
-import { GitHubCache, githubCache } from "./github-cache";
+import { GitHubAPI, githubCache } from "./github-api";
 
 export type Package = {
 	name: string;
@@ -24,7 +24,7 @@ export type CategorizedPackage = Prettify<
 >;
 
 class PackageDiscoverer {
-	readonly #cache: GitHubCache;
+	readonly #cache: GitHubAPI;
 
 	readonly #repos: Repository[] = [];
 
@@ -32,7 +32,7 @@ class PackageDiscoverer {
 
 	#packages: DiscoveredPackage[] = [];
 
-	constructor(cache: GitHubCache, repos: Repository[]) {
+	constructor(cache: GitHubAPI, repos: Repository[]) {
 		this.#cache = cache;
 		this.#repos = repos;
 	}

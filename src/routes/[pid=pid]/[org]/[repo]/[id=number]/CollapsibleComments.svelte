@@ -3,7 +3,7 @@
 	import { MessagesSquare } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
-	import type { DiscussionDetails, ItemDetails } from "$lib/server/github-cache";
+	import type { DiscussionDetails, ItemDetails } from "$lib/server/github-api";
 	import type { JSONCompatible } from "$lib/types";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Separator } from "$lib/components/ui/separator";

@@ -2,7 +2,7 @@
 	import type { ResolvedPathname } from "$app/types";
 	import { FileDiff } from "@lucide/svelte";
 	import posthog from "posthog-js";
-	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import type { PullRequestDetails } from "$lib/server/github-api";
 	import type { JSONCompatible } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import { Separator } from "$lib/components/ui/separator";

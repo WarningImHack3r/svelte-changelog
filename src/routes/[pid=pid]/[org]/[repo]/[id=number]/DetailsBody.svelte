@@ -6,7 +6,7 @@
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
 	import { siteName } from "$lib/properties";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { GitHubRelease } from "$lib/server/github-api";
 	import type { ConditionalKeys, JSONCompatible, RemoveIndexSignature } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as HoverCard from "$lib/components/ui/hover-card";
