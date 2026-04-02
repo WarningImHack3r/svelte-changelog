@@ -1,18 +1,21 @@
-import { dev } from "$app/environment";
-import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
-import { PostHog } from "posthog-node";
+// import { dev } from "$app/environment";
+// import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
+// import { PostHog } from "posthog-node";
 import { dfatal } from "$lib/logging";
 import { stringifyError } from "$lib/strings";
 
+/*
 const client = new PostHog(PUBLIC_POSTHOG_KEY, {
 	host: "https://eu.i.posthog.com",
 	disabled: dev
 });
+*/
 
-export async function handleError({ error, status, event, message }) {
+export /* async */ function handleError({ error, status /*, event, message */ }) {
 	if (status === 404) return;
 	const stringified = stringifyError(error);
 	dfatal(`[SERVER][${status}] ${stringified}`);
+	/*
 	try {
 		client.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
 			...event,
@@ -23,9 +26,10 @@ export async function handleError({ error, status, event, message }) {
 	} catch {
 		// Mitigate https://github.com/PostHog/posthog-js/issues/2615
 	}
+  */
 }
 
 export async function handle({ event, resolve }) {
-	event.locals.posthog = client;
+	// event.locals.posthog = client;
 	return await resolve(event);
 }
