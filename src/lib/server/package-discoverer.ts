@@ -115,7 +115,8 @@ class PackageDiscoverer {
 	#gitHubDirectoryFromName(name: string): string {
 		const packageDirectoryMap: Record<string, string> = {
 			extensions: "svelte-vscode",
-			"svelte-migrate": "migrate"
+			"svelte-migrate": "migrate",
+			"typescript-svelte-plugin": "typescript-plugin"
 		};
 		return packageDirectoryMap[name] ?? name;
 	}
