@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
+	import posthog from "posthog-js";
 	import { toast } from "svelte-sonner";
 	import type { Package } from "$lib/server/package-discoverer";
 	import { stringifyError } from "$lib/strings";
@@ -43,6 +45,14 @@
 					}
 				}
 	);
+
+	// Description check
+	$effect(() => {
+		if (packageInfo.description) return;
+		posthog.captureException(new Error("Empty package description"), {
+			package: untrack(() => packageInfo.name)
+		});
+	});
 
 	// RSS
 	const rssEntries: Record<string, string> = {
