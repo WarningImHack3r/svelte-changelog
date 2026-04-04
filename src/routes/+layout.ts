@@ -9,7 +9,7 @@ let phInit = false;
 export function load({ url, data }) {
 	if (!phInit && browser && !dev) {
 		posthog.init(PUBLIC_POSTHOG_KEY, {
-			api_host: "/ph",
+			api_host: "/ingest",
 			ui_host: "https://eu.posthog.com",
 			persistence: "localStorage",
 			person_profiles: "always"

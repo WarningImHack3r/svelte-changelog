@@ -25,19 +25,21 @@ export async function handleError({ error, status, event, message }) {
 	}
 }
 
-const POSTHOG_PATHNAME_PREFIX = /^\/ph/;
+const POSTHOG_PATHNAME_PREFIX = "/ingest";
+const POSTHOG_PATHNAME_PREFIX_REGEX = new RegExp(`^${POSTHOG_PATHNAME_PREFIX}`);
 
 export async function handle({ event, resolve }) {
-	if (event.url.pathname.startsWith("/ph")) {
+	if (event.url.pathname.startsWith(POSTHOG_PATHNAME_PREFIX)) {
 		const useAssetHost =
-			event.url.pathname.startsWith("/ph/static/") || event.url.pathname.startsWith("/ph/array/");
+			event.url.pathname.startsWith(`${POSTHOG_PATHNAME_PREFIX}/static/`) ||
+			event.url.pathname.startsWith(`${POSTHOG_PATHNAME_PREFIX}/array/`);
 		const hostname = useAssetHost ? "eu-assets.i.posthog.com" : "eu.i.posthog.com";
 
 		const url = new URL(event.request.url);
 		url.protocol = "https:";
 		url.hostname = hostname;
 		url.port = "443";
-		url.pathname = event.url.pathname.replace(POSTHOG_PATHNAME_PREFIX, "");
+		url.pathname = event.url.pathname.replace(POSTHOG_PATHNAME_PREFIX_REGEX, "");
 
 		const headers = new Headers(event.request.headers);
 		headers.set("host", hostname);
