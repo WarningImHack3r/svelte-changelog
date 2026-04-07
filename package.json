@@ -54,7 +54,7 @@
 		"eslint-plugin-svelte": "^3.17.0",
 		"feed": "^5.2.0",
 		"globals": "^17.4.0",
-		"marked": "^17.0.5",
+		"marked": "^18.0.0",
 		"mode-watcher": "^1.1.0",
 		"octokit": "^5.0.5",
 		"posthog-js": "^1.364.7",

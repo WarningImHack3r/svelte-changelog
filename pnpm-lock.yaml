@@ -124,8 +124,8 @@ importers:
         specifier: ^17.4.0
         version: 17.4.0
       marked:
-        specifier: ^17.0.5
-        version: 17.0.5
+        specifier: ^18.0.0
+        version: 18.0.0
       mode-watcher:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.55.1)
@@ -2266,8 +2266,8 @@ packages:
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
 
-  marked@17.0.5:
-    resolution: {integrity: sha512-6hLvc0/JEbRjRgzI6wnT2P1XuM1/RrrDEX0kPt0N7jGm1133g6X7DlxFasUIx+72aKAr904GTxhSLDrd5DIlZg==}
+  marked@18.0.0:
+    resolution: {integrity: sha512-2e7Qiv/HJSXj8rDEpgTvGKsP8yYtI9xXHKDnrftrmnrJPaFNM7VRb2YCzWaX4BP1iCJ/XPduzDJZMFoqTCcIMA==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -5167,7 +5167,7 @@ snapshots:
 
   markdown-table@3.0.4: {}
 
-  marked@17.0.5: {}
+  marked@18.0.0: {}
 
   math-intrinsics@1.1.0: {}
 
