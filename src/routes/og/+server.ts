@@ -18,6 +18,7 @@ const displayFont = read(DMSerifDisplay).arrayBuffer();
  * Sources:
  * - https://github.com/huggingface/chat-ui/blob/ebeff50ac0ac4367a8e1a32b46dcc5ac2e8fc43f/src/routes/assistant/%5BassistantId%5D/thumbnail.png/%2Bserver.ts#L44-L82
  * - https://geoffrich.net/posts/svelte-social-image/
+ * - https://github.com/sveltejs/svelte.dev/blob/497b6d5b2c67373a68833a22184cf409004e630d/apps/svelte.dev/src/routes/docs/%5Btopic%5D/%5B...path%5D/card.png/%2Bserver.ts
  */
 export async function GET({ url }) {
 	const renderedComponent = render(Thumbnail, {
@@ -62,17 +63,7 @@ export async function GET({ url }) {
 		.render()
 		.asPng();
 
-	// `png` is not usable directly inside `new Response()` for some reason, TS says
-	let bodyData;
-	if (png instanceof ArrayBuffer) {
-		bodyData = png;
-	} else if (png.buffer instanceof ArrayBuffer) {
-		bodyData = png.buffer;
-	} else {
-		bodyData = new Uint8Array(png);
-	}
-
-	const response = new Response(bodyData, {
+	const response = new Response(new Uint8Array(png), {
 		headers: {
 			"Content-Type": "image/png"
 		}
@@ -87,15 +78,12 @@ type VNode = ReturnType<typeof html>;
  * Decodes the XML-ified parts of string subnodes
  * to revert to the original content
  *
- * @param original the original node
+ * @param node the original node
  * @returns the node with replaced leaves
  */
-function decodeVNode(original: VNode): VNode {
-	const children = original.props.children;
-
-	if (!children) {
-		return original;
-	}
+function decodeVNode(node: VNode): VNode {
+	const children = node.props.children;
+	if (!children) return node;
 
 	const decodedChildren =
 		typeof children === "string"
@@ -104,13 +92,11 @@ function decodeVNode(original: VNode): VNode {
 				? children.map(decodeVNode)
 				: decodeVNode(children);
 
-	if (decodedChildren === children) {
-		return original;
-	}
+	if (decodedChildren === children) return node;
 
 	return {
-		...original,
-		props: { ...original.props, children: decodedChildren }
+		...node,
+		props: { ...node.props, children: decodedChildren }
 	};
 }
 
