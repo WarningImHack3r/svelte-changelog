@@ -79,7 +79,7 @@ export type IssueDetails = ItemDetails & {
 export type PullRequest = Awaited<ReturnType<Pulls["get"]>>["data"];
 export type ListedPullRequest = Awaited<ReturnType<Pulls["list"]>>["data"][number];
 export type PullRequestDetails = ItemDetails & {
-	info: PullRequest;
+	info: PullRequest & Pick<Issue, "reactions">;
 	commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
 	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
@@ -507,6 +507,10 @@ export class GitHubAPI {
 			fn: () =>
 				Promise.all([
 					this.#request(
+						kit => kit.rest.issues.get({ owner, repo, issue_number: id }),
+						createOctokitResponse(issue)
+					),
+					this.#request(
 						kit => kit.rest.pulls.get({ owner, repo, pull_number: id }),
 						createOctokitResponse(pr)
 					),
@@ -525,13 +529,14 @@ export class GitHubAPI {
 					this.#getLinkedIssues(owner, repo, id)
 				]),
 			transformer: ([
+				{ data: issueInfo },
 				{ data: info },
 				{ data: comments },
 				{ data: commits },
 				{ data: files },
 				linkedIssues
 			]) => ({
-				info: this.#toRedisJSON(info),
+				info: this.#toRedisJSON({ ...info, reactions: issueInfo.reactions }),
 				comments: this.#toRedisJSON(comments),
 				commits: this.#toRedisJSON(commits),
 				files: this.#toRedisJSON(files),
