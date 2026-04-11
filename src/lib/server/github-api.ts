@@ -209,6 +209,8 @@ export class GitHubAPI {
 
 	readonly #octokit: Octokit;
 
+	#pendingRequests = new Map<string, Promise<unknown>>();
+
 	/**
 	 * Creates a new {@link GitHubAPI} with the required auth info.
 	 *
@@ -363,21 +365,28 @@ export class GitHubAPI {
 			transformer?: (from: Awaited<NewData>) => Transformed;
 			ttl?: number | ((data: NewData | Transformed) => number | undefined) | undefined;
 		}): Promise<NewData | Transformed> {
-			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
-			if (cachedValue) {
-				ddebug(`Cache hit for ${cacheKey}`);
-				return cachedValue;
-			}
+			const existing = self.#pendingRequests.get(cacheKey);
+			if (existing !== undefined) return existing as Promise<Transformed>;
 
-			ddebug(`Cache miss for ${cacheKey}`);
+			const promise = (async () => {
+				const cachedValue = await self.#cache.get<Transformed>(cacheKey);
+				if (cachedValue) {
+					ddebug(`Cache hit for ${cacheKey}`);
+					return cachedValue;
+				}
 
-			const res = await fn();
-			const newValue = transformer?.(res) ?? (res as NewData & Transformed);
-			const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
+				ddebug(`Cache miss for ${cacheKey}`);
 
-			await self.#cache.set(cacheKey, newValue, ttlResult);
+				const res = await fn();
+				const newValue = transformer?.(res) ?? (res as NewData & Transformed);
+				const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
 
-			return newValue;
+				await self.#cache.set(cacheKey, newValue, ttlResult);
+
+				return newValue;
+			})().finally(() => self.#pendingRequests.delete(cacheKey));
+			self.#pendingRequests.set(cacheKey, promise);
+			return promise;
 		}
 
 		return processFn;
