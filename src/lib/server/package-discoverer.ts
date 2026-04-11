@@ -30,6 +30,13 @@ class PackageDiscoverer {
 
 	readonly #notNpmPackages = new Set(["extensions"]);
 
+	readonly #packageDirectoryMap: Record<string, string> = {
+		extensions: "svelte-vscode",
+		"svelte-migrate": "migrate",
+		"svelte-language-server": "language-server",
+		"typescript-svelte-plugin": "typescript-plugin"
+	};
+
 	#packages: DiscoveredPackage[] = [];
 
 	constructor(cache: GitHubAPI, repos: Repository[]) {
@@ -113,12 +120,7 @@ class PackageDiscoverer {
 	 * @private
 	 */
 	#gitHubDirectoryFromName(name: string): string {
-		const packageDirectoryMap: Record<string, string> = {
-			extensions: "svelte-vscode",
-			"svelte-migrate": "migrate",
-			"typescript-svelte-plugin": "typescript-plugin"
-		};
-		return packageDirectoryMap[name] ?? name;
+		return this.#packageDirectoryMap[name] ?? name;
 	}
 
 	/**
