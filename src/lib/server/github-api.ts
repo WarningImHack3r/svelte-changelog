@@ -1013,10 +1013,11 @@ export class GitHubAPI {
 					);
 
 					try {
-						const { description } = JSON.parse(packageJson as unknown as string) as {
-							description: string;
+						const { description, private: priv } = JSON.parse(packageJson as unknown as string) as {
+							description?: string;
+							private?: boolean;
 						};
-						if (description) descriptions.set(path, description);
+						if (!priv && description) descriptions.set(path, description);
 					} catch {
 						// ignore
 					}
