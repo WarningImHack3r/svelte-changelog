@@ -63,12 +63,17 @@
 						: typeof error === "object" && error !== null
 							? JSON.stringify(error).trim()
 							: `${error}`}
+				{@const hasMessageContent = message && message !== "{}"}
 				<div
 					class="flex flex-col rounded-xl border-[0.5px] border-primary bg-red-500/25 px-5 pt-3 pb-4"
 				>
-					<span>An error occurred while rendering this Markdown content:</span>
-					<pre
-						class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">{message}</pre>
+					<span>
+						An error occurred while rendering this Markdown content{#if hasMessageContent}:{/if}
+					</span>
+					{#if hasMessageContent}
+						<pre
+							class="mt-2 mb-4 rounded-lg bg-neutral-800 px-3 py-2 whitespace-pre-line outline outline-neutral-600">{message}</pre>
+					{/if}
 					<span>
 						It's now rendered with a minimal look to avoid further errors. Please
 						<a href="{siteRepo}/issues" target="_blank" rel="external">report this issue</a> if it's not
