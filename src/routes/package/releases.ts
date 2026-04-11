@@ -165,7 +165,7 @@ export async function getPackageReleases(
  *
  * @param allPackages all the known packages
  * @param posthog the optional PostHog instance
- * @return a list of all the package releases
+ * @returns a list of all the package releases
  */
 export async function getAllPackagesReleases(
 	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,

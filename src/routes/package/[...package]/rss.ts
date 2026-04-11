@@ -12,7 +12,7 @@ const dottedAlphaRegex = /[A-z\d]+\.[A-z\d]+$/;
  * @param url the page URL; must be an RSS feed
  * @param title the feed title
  * @param mode whether it is a feed for a single or all the packages
- * @return a new {@link Feed} object
+ * @returns a new {@link Feed} object
  */
 function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single") {
 	const feed = new Feed({
@@ -40,7 +40,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 /**
  * Convert a raw Markdown into a basic HTML structure
  * @param md the Markdown text
- * @return the HTML conversion
+ * @returns the HTML conversion
  */
 function mdToHtml(md: string | null | undefined) {
 	if (!md) return undefined;
@@ -51,7 +51,7 @@ function mdToHtml(md: string | null | undefined) {
 /**
  * A SvelteKit request handler utility to create an RSS feed for packages
  * @param response the handler converting the final feed object into a response
- * @return the response gotten from the callback parameter
+ * @returns the response gotten from the callback parameter
  */
 export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 	return async ({ params, url, locals }) => {
