@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
+	import GitHub from "@icons-pack/svelte-simple-icons/icons/SiGithub";
 	import { ArrowUpRight } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
@@ -159,7 +160,7 @@
 					target="_blank"
 					rel="external"
 				>
-					<img src="/github.svg" alt="GitHub" class="size-4 dark:invert" />
+					<GitHub title="GitHub" />
 				</AnimatedButton>
 			</div>
 		</div>

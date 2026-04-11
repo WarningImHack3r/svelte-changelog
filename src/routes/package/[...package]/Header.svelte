@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { type Component, untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import Npm from "@icons-pack/svelte-simple-icons/icons/SiNpm";
 	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
 	import posthog from "posthog-js";
 	import { toast } from "svelte-sonner";
@@ -28,20 +29,23 @@
 	let viewTransitionName = $derived(packageInfo.name.replace(/[@/-]/g, ""));
 
 	// Registries
-	let registries = $derived<Record<string, { iconUrl: string; url: string; imgClasses?: string }>>(
+	let registries = $derived<
+		Record<
+			string,
+			({ iconUrl: string } | { icon: Component }) & { url: string; imgClasses?: string }
+		>
+	>(
 		packageInfo.categorySlug === ALL_SLUG || packageInfo.registryExcluded
 			? Object.fromEntries([])
 			: {
 					npmjs: {
-						iconUrl: "/npm.svg",
-						url: `https://npmjs.com/package/${packageInfo.name}`,
-						imgClasses:
-							"filter-[grayscale(1)_contrast(100)_brightness(1)] dark:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
+						icon: Npm,
+						url: `https://npmjs.com/package/${packageInfo.name}`
 					},
 					npmx: {
 						iconUrl: "https://npmx.dev/favicon.svg",
 						url: `https://npmx.dev/package/${packageInfo.name}`,
-						imgClasses: "scale-110 dark:invert"
+						imgClasses: "dark:invert"
 					}
 				}
 	);
@@ -157,9 +161,14 @@
 		<!-- Sub-items -->
 		<div class="inline-flex items-center">
 			<!-- JS registries -->
-			{#each Object.entries(registries) as [name, { iconUrl: src, url: href, imgClasses }], index (name)}
+			{#each Object.entries(registries) as [name, registry], index (name)}
+				{@const { url: href, imgClasses } = registry}
 				<Button variant="ghost" size="icon" class="size-7" {href} target="_blank">
-					<img {src} alt={name} class={["h-4", imgClasses]} />
+					{#if "iconUrl" in registry}
+						<img src={registry.iconUrl} alt={name} class={["h-4", imgClasses]} />
+					{:else}
+						<registry.icon class={registry.imgClasses} />
+					{/if}
 				</Button>
 
 				<!-- Only shows if there are registries available for this package -->

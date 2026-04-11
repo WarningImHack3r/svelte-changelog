@@ -33,6 +33,7 @@
 	import { dev } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import GitHub from "@icons-pack/svelte-simple-icons/icons/SiGithub";
 	import { ArrowUpRight, Link } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import remarkGemoji from "remark-gemoji";
@@ -487,7 +488,7 @@
 						class="group"
 					>
 						<span class="sr-only">Open on GitHub</span>
-						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
+						<GitHub title="GitHub" />
 						<ArrowUpRight
 							class="ml-1 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
 						/>

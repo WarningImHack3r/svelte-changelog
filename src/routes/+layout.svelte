@@ -7,6 +7,7 @@
 	import { beforeNavigate, onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
+	import GitHub from "@icons-pack/svelte-simple-icons/icons/SiGithub";
 	import {
 		ChevronDown,
 		ChevronRight,
@@ -323,7 +324,7 @@
 						</Tooltip.Provider>
 					{/if}
 					<AnimatedButton href={siteRepo} target="_blank" variant="ghost" size="icon">
-						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
+						<GitHub title="GitHub" class="size-5" />
 						<span class="sr-only">Visit the repository</span>
 					</AnimatedButton>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
