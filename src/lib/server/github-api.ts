@@ -301,19 +301,16 @@ export class GitHubAPI {
 	 * 2. calls the promise to get new data if no value is found in cache
 	 * 3. store this new value back in the cache with an optional TTL before returning the value
 	 *
+	 * @param cacheKey the cache key to query the cache with
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<Transformed extends RedisJSON>() {
+	#processCached<Transformed extends RedisJSON>(cacheKey: string) {
 		// justified eslint rule disabling cause this case is quite... unique and I can't do much better
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 
 		async function processFn<NewData>(params: {
-			/**
-			 * The cache key to query the cache with
-			 */
-			cacheKey: string;
 			/**
 			 * The promise to call to get new data if the cache is empty,
 			 * before getting transformed into a cacheable shape
@@ -339,10 +336,6 @@ export class GitHubAPI {
 
 		async function processFn<NewData extends Transformed>(params: {
 			/**
-			 * The cache key to query the cache with
-			 */
-			cacheKey: string;
-			/**
 			 * The promise to call to get new data if the cache is empty,
 			 * directly returned after getting cached
 			 *
@@ -362,12 +355,10 @@ export class GitHubAPI {
 		 * @see {@link https://github.com/microsoft/TypeScript/issues/26242|Partial type inference discussion}
 		 */
 		async function processFn<NewData>({
-			cacheKey,
 			fn,
 			transformer,
 			ttl
 		}: {
-			cacheKey: string;
 			fn: () => Promise<NewData> | NewData;
 			transformer?: (from: Awaited<NewData>) => Transformed;
 			ttl?: number | ((value: NewData | Transformed) => number | undefined) | undefined;
@@ -476,8 +467,9 @@ export class GitHubAPI {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<JSONCompatible<IssueDetails>>()({
-			cacheKey: this.#getRepoKey(owner, repo, "issue", id),
+		return await this.#processCached<JSONCompatible<IssueDetails>>(
+			this.#getRepoKey(owner, repo, "issue", id)
+		)({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -509,8 +501,9 @@ export class GitHubAPI {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<JSONCompatible<PullRequestDetails>>()({
-			cacheKey: this.#getRepoKey(owner, repo, "pr", id),
+		return await this.#processCached<JSONCompatible<PullRequestDetails>>(
+			this.#getRepoKey(owner, repo, "pr", id)
+		)({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -558,8 +551,9 @@ export class GitHubAPI {
 	 * @throws Error if the discussion is not found
 	 */
 	async getDiscussionDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<JSONCompatible<DiscussionDetails>>()({
-			cacheKey: this.#getRepoKey(owner, repo, "discussion", id),
+		return await this.#processCached<JSONCompatible<DiscussionDetails>>(
+			this.#getRepoKey(owner, repo, "discussion", id)
+		)({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -824,8 +818,9 @@ export class GitHubAPI {
 	 * @returns the releases, either cached or fetched
 	 */
 	async getReleases(repository: Repository) {
-		return await this.#processCached<GitHubRelease[]>()({
-			cacheKey: this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
+		return await this.#processCached<GitHubRelease[]>(
+			this.#getRepoKey(repository.repoOwner, repository.repoName, "releases")
+		)({
 			fn: () => this.#fetchReleases(repository),
 			ttl: RELEASES_TTL
 		});
@@ -970,8 +965,9 @@ export class GitHubAPI {
 	 * @returns a map of paths to descriptions.
 	 */
 	async getDescriptions(owner: string, repo: string) {
-		return await this.#processCached<Record<string, string>>()({
-			cacheKey: this.#getRepoKey(owner, repo, "descriptions"),
+		return await this.#processCached<Record<string, string>>(
+			this.#getRepoKey(owner, repo, "descriptions")
+		)({
 			fn: async () => {
 				const { data: allFiles } = await this.#request(
 					kit =>
@@ -1031,8 +1027,7 @@ export class GitHubAPI {
 	 * @returns a list of members, or `undefined` if not existing
 	 */
 	async getOrganizationMembers(owner: string) {
-		return await this.#processCached<Member[]>()({
-			cacheKey: this.#getOwnerKey(owner, "members"),
+		return await this.#processCached<Member[]>(this.#getOwnerKey(owner, "members"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1055,8 +1050,9 @@ export class GitHubAPI {
 	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
-		return await this.#processCached<JSONCompatible<Issue[]>>()({
-			cacheKey: this.#getRepoKey(owner, repo, "issues"),
+		return await this.#processCached<JSONCompatible<Issue[]>>(
+			this.#getRepoKey(owner, repo, "issues")
+		)({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1080,8 +1076,7 @@ export class GitHubAPI {
 	 * @returns a list of pull requests, empty if not existing
 	 */
 	async getAllPRs(owner: string, repo: string) {
-		return await this.#processCached<ListedPullRequest[]>()({
-			cacheKey: this.#getRepoKey(owner, repo, "prs"),
+		return await this.#processCached<ListedPullRequest[]>(this.#getRepoKey(owner, repo, "prs"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1105,8 +1100,7 @@ export class GitHubAPI {
 	 * @returns a list of discussions, empty if not existing
 	 */
 	async getAllDiscussions(owner: string, repo: string) {
-		return await this.#processCached<Discussion[]>()({
-			cacheKey: this.#getRepoKey(owner, repo, "discussions"),
+		return await this.#processCached<Discussion[]>(this.#getRepoKey(owner, repo, "discussions"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1128,8 +1122,9 @@ export class GitHubAPI {
 	 * @returns the deprecation status message if any, `false` otherwise
 	 */
 	async getPackageDeprecation(packageName: string) {
-		return await this.#processCached<{ value: string | false }>()({
-			cacheKey: this.#getPackageKey(packageName, "deprecation"),
+		return await this.#processCached<{ value: string | false }>(
+			this.#getPackageKey(packageName, "deprecation")
+		)({
 			fn: async () => {
 				try {
 					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that GitHub owns npmjs.org okay??
