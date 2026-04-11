@@ -331,7 +331,7 @@ export class GitHubAPI {
 			 *
 			 * Uses the transformed result as parameter if used as a function
 			 */
-			ttl?: number | ((value: Transformed) => number | undefined) | undefined;
+			ttl?: number | ((data: Transformed) => number | undefined) | undefined;
 		}): Promise<Transformed>;
 
 		async function processFn<NewData extends Transformed>(params: {
@@ -347,7 +347,7 @@ export class GitHubAPI {
 			 *
 			 * Uses the fetched data as parameter if used as a function
 			 */
-			ttl?: number | ((value: NewData) => number | undefined) | undefined;
+			ttl?: number | ((data: NewData) => number | undefined) | undefined;
 		}): Promise<NewData>;
 		/**
 		 * Inner currying function to circumvent unsupported partial inference
@@ -361,7 +361,7 @@ export class GitHubAPI {
 		}: {
 			fn: () => Promise<NewData> | NewData;
 			transformer?: (from: Awaited<NewData>) => Transformed;
-			ttl?: number | ((value: NewData | Transformed) => number | undefined) | undefined;
+			ttl?: number | ((data: NewData | Transformed) => number | undefined) | undefined;
 		}): Promise<NewData | Transformed> {
 			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
 			if (cachedValue) {
@@ -373,15 +373,8 @@ export class GitHubAPI {
 
 			const res = await fn();
 			const newValue = transformer?.(res) ?? (res as NewData & Transformed);
+			const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
 
-			let ttlResult: number | undefined = undefined;
-			if (ttl !== undefined) {
-				if (typeof ttl === "function") {
-					ttlResult = ttl(newValue);
-				} else {
-					ttlResult = ttl;
-				}
-			}
 			await self.#cache.set(cacheKey, newValue, ttlResult);
 
 			return newValue;
