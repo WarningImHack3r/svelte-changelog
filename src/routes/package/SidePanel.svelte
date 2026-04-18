@@ -121,9 +121,15 @@
 								return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
 							})}
 							<!-- Categories with multiple sub-items -->
-							<h3 class="text-xl font-bold text-primary" title={category.description}>
+							<a
+								href={resolve("/package/[...package]", {
+									package: category.slug
+								})}
+								class="text-xl font-bold text-primary"
+								title={category.description}
+							>
 								{category.name}
-							</h3>
+							</a>
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each sortedPackages as { pkg } (pkg.name)}

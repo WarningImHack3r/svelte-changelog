@@ -3,7 +3,7 @@ import { siteName } from "$lib/properties";
 import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
-import { getAllPackagesReleases, getPackageReleases } from "../releases";
+import { getAllPackagesReleases, getPackageReleases, getPackagesReleases } from "../releases";
 
 export async function load({ params: { package: slugPackage }, setHeaders, locals }) {
 	// 1. Get all the discovered packages
@@ -26,6 +26,29 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
 			releases: await getAllPackagesReleases(categorizedPackages, locals.posthog)
 		};
+	}
+
+	// 1.625. Return a set for categories
+	for (const { category, packages } of categorizedPackages) {
+		if (packages.length < 2) continue; // categories with 1 package are not visitable
+		if (slugPackage.localeCompare(category.slug, undefined, { sensitivity: "base" }) === 0) {
+			return {
+				currentPackage: {
+					category,
+					repoOwner: "",
+					repoName: "",
+					pkg: {
+						name: category.name,
+						description: `All the releases for the ${category.name} category`
+					}
+				} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
+				releases: await getPackagesReleases(
+					packages.map(({ pkg }) => pkg.name),
+					categorizedPackages,
+					locals.posthog
+				)
+			};
+		}
 	}
 
 	// 1.75. Early check to ensure the package exists

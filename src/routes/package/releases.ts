@@ -161,6 +161,38 @@ export async function getPackageReleases(
 }
 
 /**
+ * Get all the releases for the given list of packages
+ *
+ * @param packageNames the packages to get the releases for
+ * @param allPackages all the known packages
+ * @param posthog the optional PostHog instance
+ * @returns a list of the packages' releases
+ */
+export async function getPackagesReleases(
+	packageNames: string[],
+	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
+	posthog?: PostHog
+) {
+	const packages = allPackages.flatMap(({ packages }) => packages);
+
+	const packageSet = new Set(packages.map(({ pkg }) => pkg.name));
+	if (packageNames.some(pkg => !packageSet.has(pkg))) return [];
+
+	const result = await Promise.all(
+		packageNames.map(pkg => getPackageReleases(pkg, allPackages, posthog))
+	);
+
+	return result
+		.filter(r => r !== undefined)
+		.flatMap(({ releases }) => releases)
+		.toSorted(
+			(a, b) =>
+				new Date(b.published_at ?? b.created_at).getTime() -
+				new Date(a.published_at ?? a.created_at).getTime()
+		);
+}
+
+/**
  * Get all the releases from all the packages.
  *
  * @param allPackages all the known packages
