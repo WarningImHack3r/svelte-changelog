@@ -42,9 +42,6 @@ importers:
       '@icons-pack/svelte-simple-icons':
         specifier: ^7.2.0
         version: 7.2.0(@sveltejs/kit@2.56.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.5.2)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.5.2)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.1)
-      '@internationalized/date':
-        specifier: ^3.12.0
-        version: 3.12.0
       '@lucide/svelte':
         specifier: ^1.7.0
         version: 1.7.0(svelte@5.55.1)
