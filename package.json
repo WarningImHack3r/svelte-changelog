@@ -38,7 +38,7 @@
 		"@shikijs/rehype": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
 		"@stylistic/eslint-plugin": "^5.10.0",
-		"@sveltejs/adapter-node": "^5.5.4",
+		"adapter-node-sea": "https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@3212312",
 		"@sveltejs/kit": "^2.56.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.2",

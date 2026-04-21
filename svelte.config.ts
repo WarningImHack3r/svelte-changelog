@@ -1,5 +1,5 @@
 import type { Config } from "@sveltejs/kit";
-import adapter from "@sveltejs/adapter-node";
+import adapter from "adapter-node-sea";
 
 const config: Config = {
 	kit: {
