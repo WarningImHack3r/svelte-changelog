@@ -3,7 +3,7 @@ import adapter from "adapter-node-sea";
 
 const config: Config = {
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({ minify: true }),
 		// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 		paths: {
 			relative: false
