@@ -100,8 +100,8 @@ importers:
         specifier: ^7.7.1
         version: 7.7.1
       adapter-node-sea:
-        specifier: https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@5e04458
-        version: https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@5e04458(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))
+        specifier: https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@22b6144
+        version: https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@22b6144(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))
       bits-ui:
         specifier: ^2.18.0
         version: 2.18.0(@internationalized/date@3.12.0)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)
@@ -1608,8 +1608,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adapter-node-sea@https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@5e04458:
-    resolution: {integrity: sha512-dteCwWVOku7orPlru/HdOfYgdxrj240yHYsnuzBTuQU06BoSWox7zNp6enKIDSIylH/VSJAAc5RgqSVz7C3zQw==, tarball: https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@5e04458}
+  adapter-node-sea@https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@22b6144:
+    resolution: {integrity: sha512-tS0TPyV1EDIjHWeksFp3D2fLbd4eQVxXHE5MX9scyw3Jf5OTmTHi/0wyerbFPDizU40IeWdLEd4rJTfUn8yLYA==, tarball: https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@22b6144}
     version: 0.0.1
     engines: {node: '>=25.7'}
     peerDependencies:
@@ -4565,7 +4565,7 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  adapter-node-sea@https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@5e04458(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))):
+  adapter-node-sea@https://pkg.pr.new/GauBen/gautier.dev/adapter-node-sea@22b6144(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))):
     dependencies:
       '@polka/url': 1.0.0-next.29
       '@sveltejs/kit': 2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
