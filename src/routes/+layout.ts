@@ -40,8 +40,7 @@ export function load({ url, data }) {
 			},
 			twitter: {
 				creator: "@probably_coding",
-				cardType: "summary",
-				description: "A nice UI to stay up-to-date with Svelte releases"
+				cardType: "summary"
 			},
 			keywords: ["svelte", "changelog", "svelte changelog", "sveltekit"],
 			additionalRobotsProps: {
