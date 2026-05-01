@@ -120,16 +120,26 @@
 								const isBPinned = pinnedROProxy.has(pkgB.name);
 								return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
 							})}
+							{@const isCategoryActive = page.url.pathname.endsWith(`/${category.slug}`)}
 							<!-- Categories with multiple sub-items -->
-							<a
-								href={resolve("/package/[...package]", {
-									package: category.slug
-								})}
-								class="text-xl font-bold text-primary"
+							<svelte:element
+								this={isCategoryActive ? "h3" : "a"}
+								href={isCategoryActive
+									? undefined
+									: resolve("/package/[...package]", {
+											package: category.slug
+										})}
+								class={[
+									"text-xl font-bold text-primary underline-offset-4",
+									{
+										"font-extrabold underline": isCategoryActive,
+										"hover:underline": !isCategoryActive
+									}
+								]}
 								title={category.description}
 							>
 								{category.name}
-							</a>
+							</svelte:element>
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each sortedPackages as { pkg } (pkg.name)}
