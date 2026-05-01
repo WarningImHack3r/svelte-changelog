@@ -24,7 +24,6 @@ import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import { stringifyError } from "$lib/strings";
 import type { Issues, PID, Pulls } from "$lib/types";
-import { CacheHandler, type CacheJson } from "./cache-handler";
 import {
 	commit,
 	createOctokitResponse,
@@ -35,7 +34,7 @@ import {
 	pr,
 	release
 } from "./data-mock";
-import { KVCache } from "./kv";
+import { type CacheJson, KVCache } from "./kv";
 
 /**
  * A strict version of Extract.
@@ -286,6 +285,7 @@ export class GitHubAPI {
 	}
 
 	static #rateLimitRemaining: number | null = null;
+
 	static #rateLimitReset: Date | null = null;
 
 	/**
@@ -294,7 +294,7 @@ export class GitHubAPI {
 	#extractEtag(res: unknown): string | null {
 		if (res && typeof res === "object" && "headers" in res) {
 			const headers = (res as { headers: Record<string, string> }).headers;
-			return headers["etag"] ?? null;
+			return headers.etag ?? null;
 		}
 		return null;
 	}
@@ -320,14 +320,14 @@ export class GitHubAPI {
 				const remaining = headers["x-ratelimit-remaining"];
 				const reset = headers["x-ratelimit-reset"];
 				if (remaining !== undefined) {
-					GitHubCache.#rateLimitRemaining = Number(remaining);
+					GitHubAPI.#rateLimitRemaining = Number(remaining);
 				}
 				if (reset !== undefined) {
-					GitHubCache.#rateLimitReset = new Date(Number(reset) * 1000);
+					GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
 				}
-				if (GitHubCache.#rateLimitRemaining !== null) {
+				if (GitHubAPI.#rateLimitRemaining !== null) {
 					console.info(
-						`[github-api] remaining=${GitHubCache.#rateLimitRemaining}, resets at ${GitHubCache.#rateLimitReset?.toLocaleTimeString()}`
+						`[github-api] remaining=${GitHubAPI.#rateLimitRemaining}, resets at ${GitHubAPI.#rateLimitReset?.toLocaleTimeString() ?? "unknown"}`
 					);
 				}
 			}
@@ -338,8 +338,8 @@ export class GitHubAPI {
 				const resp = (error as { response: { headers: Record<string, string> } }).response;
 				const remaining = resp?.headers?.["x-ratelimit-remaining"];
 				const reset = resp?.headers?.["x-ratelimit-reset"];
-				if (remaining !== undefined) GitHubCache.#rateLimitRemaining = Number(remaining);
-				if (reset !== undefined) GitHubCache.#rateLimitReset = new Date(Number(reset) * 1000);
+				if (remaining !== undefined) GitHubAPI.#rateLimitRemaining = Number(remaining);
+				if (reset !== undefined) GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
 			}
 			throw error;
 		}
@@ -433,7 +433,7 @@ export class GitHubAPI {
 					self.#pendingEtag = stale.etag;
 				}
 
-				let res: NewData;
+				let res: Awaited<NewData>;
 				try {
 					res = await fn();
 				} catch (error: unknown) {
@@ -540,9 +540,7 @@ export class GitHubAPI {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<IssueDetails>(
-			this.#getRepoKey(owner, repo, "issue", id)
-		)({
+		return await this.#processCached<IssueDetails>(this.#getRepoKey(owner, repo, "issue", id))({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -574,9 +572,7 @@ export class GitHubAPI {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<PullRequestDetails>(
-			this.#getRepoKey(owner, repo, "pr", id)
-		)({
+		return await this.#processCached<PullRequestDetails>(this.#getRepoKey(owner, repo, "pr", id))({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -944,7 +940,9 @@ export class GitHubAPI {
 		});
 
 		// 2. Fetch changelog
-		const changelogFileContents = await this.#processCached<string>(`internal:${owner}/${repo}:changelog`)({
+		const changelogFileContents = await this.#processCached<string>(
+			`internal:${owner}/${repo}:changelog`
+		)({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1008,7 +1006,9 @@ export class GitHubAPI {
 					{ name: tag_name, commit: { sha }, zipball_url, tarball_url, node_id },
 					tagIndex
 				) => {
-					const { author, committer } = await this.#processCached<CommitData>(`internal:${owner}/${repo}:commit:${sha}`)({
+					const { author, committer } = await this.#processCached<CommitData>(
+						`internal:${owner}/${repo}:commit:${sha}`
+					)({
 						fn: () =>
 							this.#request(
 								kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
@@ -1084,8 +1084,10 @@ export class GitHubAPI {
 					);
 
 				const descriptions = new Map<string, string>();
-				// Fetch in parallel instead of sequentially to be faster,
-				// but the real saving is the 10-day TTL cache
+				/*
+				 * Fetch in parallel instead of sequentially to be faster,
+				 * but the real saving is the 10-day TTL cache
+				 */
 				await Promise.all(
 					allPackageJson.map(async path => {
 						const { data: packageJson } = await this.#request(
@@ -1102,7 +1104,9 @@ export class GitHubAPI {
 						);
 
 						try {
-							const { description, private: priv } = JSON.parse(packageJson as unknown as string) as {
+							const { description, private: priv } = JSON.parse(
+								packageJson as unknown as string
+							) as {
 								description?: string;
 								private?: boolean;
 							};
@@ -1148,9 +1152,7 @@ export class GitHubAPI {
 	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
-		return await this.#processCached<Issue[]>(
-			this.#getRepoKey(owner, repo, "issues")
-		)({
+		return await this.#processCached<Issue[]>(this.#getRepoKey(owner, repo, "issues"))({
 			fn: () =>
 				this.#request(
 					kit =>
