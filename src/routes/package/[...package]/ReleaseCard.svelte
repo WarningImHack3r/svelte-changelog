@@ -1,6 +1,6 @@
 <script lang="ts" module>
-	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
 	import { VERSION } from "svelte/compiler";
+	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
 
 	const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
 		dateStyle: "full",
@@ -11,18 +11,35 @@
 		svelte: VERSION,
 		"@sveltejs/kit": KIT_VERSION
 	};
+
+	/**
+	 * Packages where bare commits should not be recognized as security fixes
+	 * because it's most likely only commits pushed straight to master for ease of use,
+	 * or that used to do that.
+	 *
+	 * It's pretty safe too as they are particularly unlikely to ever need security fixes
+	 * someday due to their nature.
+	 */
+	const securityFixIgnoredPackages = new Set([
+		"@sveltejs/mcp",
+		"@sveltejs/opencode",
+		"acorn-typescript",
+		"eslint-config"
+	]);
 </script>
 
 <script lang="ts">
 	import { untrack } from "svelte";
 	import { dev } from "$app/environment";
+	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ArrowUpRight } from "@lucide/svelte";
+	import GitHub from "@icons-pack/svelte-simple-icons/icons/SiGithub";
+	import { ArrowUpRight, Link } from "@lucide/svelte";
 	import { confetti } from "@neoconfetti/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
 	import semver from "semver";
-	import type { GitHubRelease } from "$lib/server/github-cache";
+	import type { GitHubRelease } from "$lib/server/github-api";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as Tooltip from "$lib/components/ui/tooltip";
@@ -57,8 +74,10 @@
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
 		if (!repo.owner || !repo.name) return release.body;
-		// Add missing links to PRs in the release body
-		// Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+		/*
+		 * Add missing links to PRs in the release body
+		 * Match all `(#1234)` patterns, including `#issuecomment-` ones and multiple in one parenthesis
+		 */
 		const placeholder = `__MDLINK_${Math.random().toString(36)}_`;
 		const savedLinks: string[] = [];
 
@@ -80,6 +99,12 @@
 			new RegExp(`${placeholder}(\\d+)${placeholder}`, "g"),
 			(_match, index) => savedLinks[parseInt(index, 10)] ?? ""
 		);
+	});
+	const commitRegex = /\(\[`[a-z\d]+`\]\(https/g;
+	let isLikelySecurityFix = $derived.by(() => {
+		if (securityFixIgnoredPackages.has(release.cleanName)) return false;
+		const commitsCount = [...releaseBody.matchAll(commitRegex)].length;
+		return !!commitsCount && !release.prerelease && (semVersion?.patch ?? 0) > 0;
 	});
 	let isMajorRelease = $derived(
 		!release.prerelease &&
@@ -168,7 +193,16 @@
 				const norm2 = new Date(later);
 				norm1.setHours(0, 0, 0, 0);
 				norm2.setHours(0, 0, 0, 0);
-				return (norm2.getTime() - norm1.getTime()) / 86_400_000;
+				return (norm2.getTime() - norm1.getTime()) / (24 * 60 * 60 * 1_000);
+			},
+			get weeks() {
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
+				const norm1 = new Date(earlier);
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
+				const norm2 = new Date(later);
+				norm1.setHours(0, 0, 0, 0);
+				norm2.setHours(0, 0, 0, 0);
+				return (norm2.getTime() - norm1.getTime()) / (7 * 24 * 60 * 60 * 1_000);
 			},
 			get months() {
 				const months =
@@ -195,7 +229,10 @@
 	 * @returns The number of milliseconds to wait for before refreshing
 	 */
 	function getRefreshPeriod(date: Date) {
-		const { milliseconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+		const { milliseconds, minutes, hours, days, weeks, months, years } = getDiffBetween(
+			date,
+			new Date()
+		);
 
 		function diff(value: number) {
 			return value - (milliseconds % value);
@@ -205,6 +242,8 @@
 			return diff(12 * 30 * 24 * 60 * 60 * 1_000);
 		} else if (months >= 1) {
 			return diff(30 * 24 * 60 * 60 * 1_000);
+		} else if (weeks >= 1) {
+			return diff(7 * 24 * 60 * 60 * 1_000);
 		} else if (days >= 1) {
 			return diff(24 * 60 * 60 * 1_000);
 		} else if (hours >= 1) {
@@ -226,12 +265,17 @@
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		return (date: Date) => {
-			const { seconds, minutes, hours, days, months, years } = getDiffBetween(date, new Date());
+			const { seconds, minutes, hours, days, weeks, months, years } = getDiffBetween(
+				date,
+				new Date()
+			);
 
 			if (years >= 1) {
 				return formatter.format(-Math.round(years), "year");
 			} else if (months >= 1) {
 				return formatter.format(-Math.round(months), "month");
+			} else if (weeks >= 1) {
+				return formatter.format(-Math.round(weeks), "week");
 			} else if (days >= 1) {
 				return formatter.format(-Math.round(days), "day");
 			} else if (hours >= 1) {
@@ -313,13 +357,18 @@
 	value={`${release.id}`}
 	class={[
 		"scroll-mt-20 rounded-md border-b-0 bg-background shadow-lg outline outline-transparent transition-colors duration-300 *:data-accordion-content:rounded-b-md *:data-accordion-content:bg-accent/30 data-[state=open]:outline-muted-foreground/20",
-		{ "border border-primary": isMajorRelease && index < 3 },
-		{ "ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}` },
 		{
-			"relative mb-2.5 ring-4 ring-primary before:absolute before:-top-6 before:-left-1 before:-z-10 before:rounded-t-lg before:bg-primary before:px-2 before:pb-1.5 before:font-display before:text-white before:content-['Current_version'] before:text-shadow-xs/50 before:text-shadow-black":
-				dev && versionedPackages[release.cleanName] === release.cleanVersion
-		},
-		{ "mt-8": dev && versionedPackages[release.cleanName] == release.cleanVersion && index > 0 }
+			"border border-primary": isMajorRelease && index < 3,
+			"ring ring-primary": page.url.hash && page.url.hash === `#${release.cleanVersion}`,
+			"relative mb-2.5 ring-3 ring-destructive before:absolute before:-top-14 before:left-1/2 before:-z-10 before:w-[98%] before:-translate-x-1/2 before:rounded-t-lg before:border-2 before:border-destructive before:bg-destructive/25 before:px-2 before:pb-1.5 before:text-center before:content-['This_release_likely_contains_security_fixes._Upgrade_as_soon_as_possible!'] sm:before:-top-7.5":
+				isLikelySecurityFix,
+			"relative mb-2.5 ring-4 ring-primary after:absolute after:-top-6 after:-left-1 after:-z-10 after:rounded-t-lg after:bg-primary after:px-2 after:pb-1.5 after:font-display after:text-white after:content-['Current_version'] after:text-shadow-xs/50 after:text-shadow-black":
+				dev && versionedPackages[release.cleanName] === release.cleanVersion,
+			"mt-8": dev && versionedPackages[release.cleanName] === release.cleanVersion && index > 0,
+			"mt-17 sm:mt-10": isLikelySecurityFix && index > 0,
+			"before:ml-16 before:w-[85%]":
+				dev && isLikelySecurityFix && versionedPackages[release.cleanName] === release.cleanVersion
+		}
 	]}
 >
 	<Accordion.Trigger
@@ -339,7 +388,7 @@
 								>
 									{release.cleanName}@{release.cleanVersion}
 								</span>
-								{#if index === 0}
+								{#if index === 0 && !isOlderThanAWeek}
 									<div
 										class="ml-auto"
 										use:confetti={{
@@ -399,7 +448,7 @@
 		</div>
 	</Accordion.Trigger>
 	<Accordion.Content class="px-6">
-		<div class="relative mt-4 flex flex-col gap-2">
+		<div class="mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
 				additionalPlugins={[
@@ -414,28 +463,37 @@
 				]}
 				class="prose-sm max-w-full prose-p:my-0"
 			/>
-			<div class="flex items-end-safe justify-between gap-8">
+			<div class="flex items-end-safe gap-8">
 				<!-- Reactions -->
 				<Reactions reactions={release.reactions} reactionItemUrl={release.html_url} />
-				<!-- Open the release on GitHub in a new tab -->
-				<AnimatedButton variant="outline" size="sm" class="invisible w-16 sm:w-36" />
-				<AnimatedButton
-					href={release.html_url}
-					variant="outline"
-					size="sm"
-					target="_blank"
-					class="group absolute right-0 bottom-0 shrink-0 gap-0 transition-colors duration-500"
-				>
-					<span class="-mr-6 hidden sm:group-hover:block">Open on GitHub</span>
-					<img
-						src="/github.svg"
-						alt="GitHub"
-						class="size-5 transition-opacity duration-300 sm:group-hover:opacity-0 dark:invert"
-					/>
-					<ArrowUpRight
-						class="ml-2 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
-					/>
-				</AnimatedButton>
+				<div class="ms-auto flex shrink-0 items-center gap-2">
+					<AnimatedButton
+						href={resolve(`/package/[...package]#${release.cleanVersion}`, {
+							package: release.cleanName
+						})}
+						variant="ghost"
+						size="icon-sm"
+						class="group"
+					>
+						<span class="sr-only">Set url to this release ({release.cleanVersion})</span>
+						<Link class="size-5 transition-opacity md:opacity-25 md:group-hover:opacity-100" />
+					</AnimatedButton>
+					<!-- Open the release on GitHub in a new tab -->
+					<AnimatedButton
+						href={release.html_url}
+						variant="outline"
+						size="sm"
+						target="_blank"
+						rel="external"
+						class="group"
+					>
+						<span class="sr-only">Open on GitHub</span>
+						<GitHub title="GitHub" />
+						<ArrowUpRight
+							class="ml-1 size-4 transition-transform duration-300 sm:group-hover:translate-x-1 sm:group-hover:-translate-y-1"
+						/>
+					</AnimatedButton>
+				</div>
 			</div>
 		</div>
 	</Accordion.Content>

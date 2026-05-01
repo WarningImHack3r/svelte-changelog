@@ -3,13 +3,17 @@ import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
-import { githubCache } from "$lib/server/github-cache";
+import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
 import { discoverer } from "$lib/server/package-discoverer";
-import type { BranchCommit, PID } from "$lib/types";
+import type { BranchCommit } from "$lib/types";
 
 const versionDigitsRegex = /\d\.\d/;
 
-export async function load({ params: { pid: type, org, repo, id }, fetch }) {
+export async function load({ params: { pid: type, org, repo, id }, fetch, setHeaders }) {
+	setHeaders({
+		"Cache-Control": `public, max-age=${2 * 60}, s-maxage=${FULL_DETAILS_TTL}, stale-while-revalidate=${FULL_DETAILS_TTL / 2}`
+	});
+
 	const isKnownRepo = uniqueRepos.some(
 		({ owner, name }) =>
 			org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
@@ -18,7 +22,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 	if (!dev && !isKnownRepo) {
 		error(404, {
 			message: "Unknown repository",
-			description: `${siteName} can only display the details of known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
+			description: `${siteName} can only display the details of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Go home",
 				href: resolve("/")
@@ -31,7 +35,8 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
 
-	const realType = "commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
+	const realType: typeof type =
+		"commits" in item ? "pull" : "category" in item.info ? "discussions" : "issues";
 	if (type !== realType) {
 		redirect(307, resolve("/[pid=pid]/[org]/[repo]/[id=number]", { pid: realType, org, repo, id }));
 	}
@@ -48,10 +53,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 			org,
 			repo,
 			id: +id,
-			type: type === "issues" ? "issue" : type === "discussions" ? "discussion" : type
-		} satisfies {
-			type: PID;
-			[key: string]: unknown;
+			type
 		},
 		item,
 		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
@@ -75,34 +77,37 @@ export async function load({ params: { pid: type, org, repo, id }, fetch }) {
 			}
 
 			// Compute or gather all the known packages to avoid rare 404s
-			discoverer.getOrDiscover().then(items => {
-				const knownPackages = new Set(
-					items.flatMap(({ packages }) => packages).map(({ name }) => name)
-				);
+			discoverer
+				.getOrDiscover()
+				.then(items => {
+					const knownPackages = new Set(
+						items.flatMap(({ packages }) => packages).map(({ name }) => name)
+					);
 
-				// Fetch the merge commit's info
-				fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
-					headers: {
-						Accept: "application/json"
-					}
-				})
-					.then(res => res.json() as Promise<BranchCommit>)
-					.then(({ tags }) => {
-						const earliestTag = tags.findLast(tag => {
-							// The info is right here after a little filtering :D
-							const isValid = !tag.includes("nightly") && versionDigitsRegex.test(tag);
-							if (!isValid) return false;
-							const [pkgName] = matchingRepo.metadataFromTag(tag);
-							return knownPackages.has(pkgName);
-						});
-						if (!earliestTag) {
-							resolve(undefined);
-							return;
+					// Fetch the merge commit's info
+					fetch(`https://github.com/${org}/${repo}/branch_commits/${sha}`, {
+						headers: {
+							Accept: "application/json"
 						}
-						resolve(matchingRepo.metadataFromTag(earliestTag));
 					})
-					.catch(reject);
-			});
+						.then(res => res.json() as Promise<BranchCommit>)
+						.then(({ tags }) => {
+							const earliestTag = tags.findLast(tag => {
+								// The info is right here after a little filtering :D
+								const isValid = !tag.includes("nightly") && versionDigitsRegex.test(tag);
+								if (!isValid) return false;
+								const [pkgName] = matchingRepo.metadataFromTag(tag);
+								return knownPackages.has(pkgName);
+							});
+							if (!earliestTag) {
+								resolve(undefined);
+								return;
+							}
+							resolve(matchingRepo.metadataFromTag(earliestTag));
+						})
+						.catch(reject);
+				})
+				.catch(reject);
 		})
 	};
 }

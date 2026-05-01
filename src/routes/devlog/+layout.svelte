@@ -10,5 +10,5 @@
 	<h1 class="text-shadow-xs">
 		{page.route.id?.substring(page.route.id?.lastIndexOf("/") + 1) ?? 0}
 	</h1>
-	{@render children()}
+	{@render children?.()}
 </article>

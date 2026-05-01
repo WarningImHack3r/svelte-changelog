@@ -5,7 +5,8 @@
 		GitPullRequestClosed,
 		GitPullRequestCreateArrow
 	} from "@lucide/svelte";
-	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import type { PullRequestDetails } from "$lib/server/github-api";
+	import type { JSONCompatible } from "$lib/types";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as Tooltip from "$lib/components/ui/tooltip";
@@ -19,7 +20,7 @@
 		prCreationDate: Date;
 		prClosingDate: Date | null;
 		merged?: boolean;
-		commits?: PullRequestDetails["commits"];
+		commits?: JSONCompatible<PullRequestDetails["commits"]>;
 		currentRepo: { owner: string; name: string };
 	};
 
@@ -112,12 +113,13 @@
 								class="prose-p:text-foreground prose-a:hover:underline prose-a:[[href*='/commit/']]:text-foreground"
 							/>
 							{#if commit.author}
-								<!-- const to be able to disable eslint without getting owned by prettier wrapping stuff -->
-								{@const authorProfile = commit.author.html_url}
 								<div class="ml-0.5 inline-flex items-center gap-1.5 text-muted-foreground">
 									<span>•</span>
-									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-									<a href={authorProfile} class="group inline-flex items-center gap-1.5">
+									<a
+										href={commit.author.html_url}
+										rel="external"
+										class="group inline-flex items-center gap-1.5"
+									>
 										<Avatar.Root class="size-4">
 											<Avatar.Image
 												src={commit.author.avatar_url}

@@ -5,7 +5,7 @@
 		type WorkerInitializationRenderOptions,
 		getOrCreateWorkerPoolSingleton
 	} from "@pierre/diffs/worker";
-	import type { PullRequestDetails } from "$lib/server/github-cache";
+	import type { PullRequestDetails } from "$lib/server/github-api";
 	import { workerFactory } from "./workers";
 
 	function getWorker(options: WorkerInitializationRenderOptions) {
@@ -13,9 +13,6 @@
 		return getOrCreateWorkerPoolSingleton({
 			poolOptions: {
 				workerFactory
-				// poolSize defaults to 8. More workers = more parallelism but
-				// also more memory. Too many can actually slow things down.
-				// poolSize: 8,
 			},
 			highlighterOptions: options
 		});
@@ -27,36 +24,42 @@
 	 * @param file the single file from the `/files` GitHub API endpoint
 	 * @returns an array of diffs metadata to provide to this very component
 	 */
-	export function parsePatchFiles(file: PullRequestDetails["files"][number]): FileDiffMetadata[] {
-		// all the additional processing done here is to bring the otherwise native
-		// formatting features (or make them working at all) as they were originally
-		// designed for large native GitHub .patch files
+	export function parsePatchFiles(
+		file: JSONCompatible<PullRequestDetails["files"]>[number]
+	): FileDiffMetadata[] {
+		/*
+		 * All the additional processing done here is to bring the otherwise native
+		 * formatting features (or make them working at all) as they were originally
+		 * designed for large native GitHub .patch files
+		 */
 		const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`;
 		const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`;
-		return file.patch
-			? pierreParsePatchFiles(`${aFile}\n${bFile}\n${file.patch}`, `diff-${file.filename}`).flatMap(
-					p =>
-						p.files.map(patchFile => {
-							let newType = patchFile.type;
-							switch (file.status) {
-								case "added":
-								case "copied":
-									newType = "new";
-									break;
-								case "removed":
-									newType = "deleted";
-									break;
-								case "renamed":
-									newType = file.changes ? "rename-changed" : "rename-pure";
-									break;
-								case "changed":
-								case "modified":
-								case "unchanged":
-									// stay "changed"
-									break;
-							}
-							return { ...patchFile, type: newType };
-						})
+		return file.patch || file.changes === 0
+			? pierreParsePatchFiles(
+					`${aFile}\n${bFile}\n${file.patch ?? ""}`,
+					`diff-${file.filename}-${file.sha ?? "unknown"}`
+				).flatMap(p =>
+					p.files.map(patchFile => {
+						let newType = patchFile.type;
+						switch (file.status) {
+							case "added":
+							case "copied":
+								newType = "new";
+								break;
+							case "removed":
+								newType = "deleted";
+								break;
+							case "renamed":
+								newType = file.changes ? "rename-changed" : "rename-pure";
+								break;
+							case "changed":
+							case "modified":
+							case "unchanged":
+								// stay "changed"
+								break;
+						}
+						return { ...patchFile, type: newType };
+					})
 				)
 			: [];
 	}
@@ -72,6 +75,7 @@
 		type SupportedLanguages
 	} from "@pierre/diffs";
 	import { mode } from "mode-watcher";
+	import type { JSONCompatible } from "$lib/types";
 
 	type Props = Omit<FileDiffRenderProps<T>, "containerWrapper" | "fileContainer"> & {
 		options: FileDiffOptions<T>;
@@ -91,27 +95,24 @@
 				unsafeCSS: /* css */ ` /* unsafe CSS injection cause shadow DOM + not overridable property otherwise */
     			    [data-diffs-header] {
     					position: sticky;
-    					top: 3.5rem; /* won't work with banner and is hardcoded but I can't really do much better */
+    					top: 3.5rem; /* won't work with site's banners and is hardcoded but I can't really do much better */
     					z-index: 30;
-
-                        & [data-header-content] [data-title] {
-                            direction: initial; /* for some reason, the default direction is \`rtl\`, putting the leading dots at the end (\`.github/file.txt\` becomes \`github/file.txt.\`) */
-                        }
     				}
     			`,
 				disableErrorHandling: true,
 				...options
 			},
-			getWorker({ ...options, langs: langs as SupportedLanguages[] })
+			getWorker({ ...options, langs })
 		)
 	);
 
 	// Initial rendering and cleanup handling
-	$effect(() =>
-		fileDiff.render({
-			containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
-			...props
-		})
+	$effect(
+		() =>
+			void fileDiff.render({
+				containerWrapper: document.getElementById(`diff-${id}`) ?? undefined,
+				...props
+			})
 	);
 
 	// Mobile diff type change

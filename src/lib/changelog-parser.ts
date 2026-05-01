@@ -1,13 +1,14 @@
-// Gently stolen from https://github.com/fl-client/changelog-parser as this “fixed” version
-// is not available on npm.
-// Removed the `filePath` option as I don't need it, bring in the types and fix the linting errors.
+/*
+ * Gently stolen from https://github.com/fl-client/changelog-parser as this “fixed” version
+ * is not available on npm.
+ * Removed the `filePath` option as I don't need it, bring in the types and fix the linting errors.
+ */
 import { EOL } from "node:os";
 
 // patterns
 const semver = /\[?v?([\w.-]+\.[\w.-]+[a-zA-Z0-9])]?/;
 const date = /.* \(?(\d\d?\d?\d?[-/.]\d\d?[-/.]\d\d?\d?\d?)\)?.*/;
 const title = /^# ?[^#]/;
-const subhead = /^###/;
 const listItem = /^[*-]/;
 const newline = /\r\n?|\n/gm;
 const version = /^##? ?[^#]/;
@@ -106,15 +107,17 @@ function handleLine(line: string, data: ProcessingData): ProcessingData {
 	if (data.current) {
 		data.current.body += line + EOL;
 
-		// handle case where current line is a 'subhead':
-		// - 'handleize' subhead.
-		// - add subhead to 'parsed' data if not already present.
-		if (subhead.test(line)) {
+		/*
+		 * handle case where current line is a 'subhead':
+		 * - 'handleize' subhead.
+		 * - add subhead to 'parsed' data if not already present.
+		 */
+		if (line.startsWith("###")) {
 			const key = line.replace("###", "").trim();
 
 			if (!data.current.parsed[key]) {
 				data.current.parsed[key] = [];
-				data.current._private ||= { activeSubhead: key };
+				data.current._private ??= { activeSubhead: key };
 			}
 		}
 

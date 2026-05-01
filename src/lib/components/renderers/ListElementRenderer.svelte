@@ -58,7 +58,7 @@
 		<Button
 			href={ghLinkToHref(allLinks[0] ?? "")}
 			variant="link"
-			class="pointer-events-none ml-2 inline-flex! h-auto p-0! transition-[translate,opacity] duration-300 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 md:ml-4 md:-translate-x-2 md:opacity-0 lg:mr-8"
+			class="ml-2 inline-flex! h-auto p-0! transition-[translate,opacity] duration-300 select-none group-hover:translate-x-0 group-hover:opacity-100 md:pointer-events-none md:ml-4 md:-translate-x-2 md:opacity-0 md:group-hover:pointer-events-auto lg:mr-8"
 		>
 			Open details
 			<ArrowRight class="size-4" />

@@ -1,10 +1,12 @@
-// (Adjusted) types of old functions implemented by Safari in 16.4 then removed
-// Source: https://2ality.com/2022/01/array-grouping.html#grouping-arrays
+/*
+ * (Adjusted) types of old functions implemented by Safari in 16.4 then removed
+ * Source: https://2ality.com/2022/01/array-grouping.html#grouping-arrays
+ */
 
 type ArrayGroupFn<T, K extends PropertyKey> = (
 	callback: (value: T, index: number, array: T[]) => K,
 	thisArg?: unknown
-) => { [k in K]: T[] };
+) => Record<K, T[]>;
 
 type ArrayGroupToMapFn<T, K> = (
 	callback: (value: T, index: number, array: T[]) => K,

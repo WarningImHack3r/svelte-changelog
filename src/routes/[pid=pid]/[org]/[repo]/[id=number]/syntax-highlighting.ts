@@ -15,7 +15,7 @@ import { type LanguageRegistration, type ShikiTransformer, isPlainLang } from "s
 import { createHighlighterCoreSync } from "shiki";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Plugin } from "svelte-exmarkdown";
-import { ddebug } from "$lib/debug";
+import { ddebug } from "$lib/logging";
 
 /**
  * Pre-load the languages by returning regular expressions from language
@@ -122,14 +122,14 @@ export function detectLanguage(
 			(successRate === highestRate && regexps.length > highestTotal)
 		) {
 			ddebug(
-				`New candidate found! Previous values: ${languageCandidate} - highest rate ${highestRate}, highest total regexes: ${highestTotal}`
+				`New candidate found! Previous values: ${languageCandidate ?? "none"} - highest rate ${highestRate}, highest total regexes: ${highestTotal}`
 			);
 			languageCandidate = language;
 			highestRate = successRate;
 			highestTotal = regexps.length;
 		}
 	}
-	ddebug(`Done: result is ${languageCandidate}`);
+	ddebug(`Done: result is ${languageCandidate ?? "none"}`);
 	return languageCandidate;
 }
 
@@ -157,8 +157,10 @@ export function transformerLanguageDetection(
 	return {
 		preprocess(code, options) {
 			if (options.lang === "diff") {
-				// tests:
-				// - /issues/sveltejs/svelte/14280
+				/*
+				 * tests:
+				 * - /issues/sveltejs/svelte/14280
+				 */
 				const cleanedCode = code
 					.split("\n")
 					.map(line => line.replace(leadingPlusMinusRegex, ""))
@@ -174,8 +176,10 @@ export function transformerLanguageDetection(
 				options.lang = detectedLanguage;
 				if (options.meta) options.meta["data-detected"] = true;
 			} else if (isPlainLang(options.lang)) {
-				// tests:
-				// - /issues/sveltejs/svelte/16072
+				/*
+				 * tests:
+				 * - /issues/sveltejs/svelte/16072
+				 */
 				const detectedLanguage = detectLanguage(code, languages);
 				if (detectedLanguage) {
 					options.lang = detectedLanguage;
@@ -212,9 +216,9 @@ export const transformerDiffMarking: ShikiTransformer = {
 	},
 	line(node) {
 		const firstChild = node.children[0];
-		if (!firstChild || firstChild.type !== "element") return;
+		if (firstChild?.type !== "element") return;
 		const firstToken = firstChild.children[0];
-		if (!firstToken || firstToken.type !== "text") return;
+		if (firstToken?.type !== "text") return;
 		if (firstToken.value.startsWith("+")) {
 			this.addClassToHast(node, ["diff", "add"]);
 			if (firstToken.value.length === 1) {

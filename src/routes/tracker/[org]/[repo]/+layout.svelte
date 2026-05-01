@@ -44,7 +44,7 @@
 
 <div class="relative flex gap-8">
 	<div class="min-w-0">
-		{@render children()}
+		{@render children?.()}
 	</div>
 
 	<Sheet.Root bind:open>

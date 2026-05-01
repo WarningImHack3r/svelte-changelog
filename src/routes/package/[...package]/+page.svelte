@@ -22,6 +22,7 @@
 	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
+	import ResetDialog from "./ResetDialog.svelte";
 
 	const loadingSentences = [
 		"Loading",
@@ -136,7 +137,15 @@
 						return true;
 					case "smart": {
 						if (page.url.hash && tag_name.includes(page.url.hash.replace("#", ""))) return true;
-						if (displayableReleases.length <= 5) return true;
+						if (displayableReleases.length <= 5) {
+							const lastSeenDate = lastUpdateDate;
+							if (!lastSeenDate) return false;
+							const haveAllBeenSeen = displayableReleases.every(
+								({ created_at, published_at }) =>
+									new Date(published_at ?? created_at) <= lastSeenDate
+							);
+							return haveAllBeenSeen;
+						}
 						// Only expand releases that are less than a week old
 						const creationTimestamp = new Date(published_at ?? created_at).getTime();
 						if (index === 0 && creationTimestamp > aWeekAgo) return true; // always expand the first release if it is recent enough
@@ -153,7 +162,7 @@
 	$effect(() => {
 		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
 
-		Promise.resolve() // match what's performed on the DOM
+		void Promise.resolve() // match what's performed on the DOM
 			.then(() => new Promise(resolve => setTimeout(resolve, 300))) // wait for the accordions to expand (+ better UX)
 			.then(() => {
 				document
@@ -219,14 +228,15 @@
 	 * @returns a list of newly supported packages/versions, empty if none
 	 */
 	function supportAddedFor(releaseBody: string): string[] {
-		return data.currentPackage.category.slug === ALL_SLUG
-			? [] /* even if we could, don't show those lines for All releases as it looks like a mess */
+		return data.currentPackage.category.slug === ALL_SLUG ||
+			data.currentPackage.category.name === data.currentPackage.pkg.name
+			? [] /* even if we technically could, don't show those lines for multi-packages pages as it looks like a mess */
 			: releaseBody
 					.split(newLineRegex)
 					.map(line => {
 						for (const regex of supportRegexes) {
 							const match = line.match(regex);
-							if (match && match[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
+							if (match?.[1] && !supportPackagesBlacklist.has(match[1].toLowerCase())) {
 								return match[2] ? `${match[1]} ${match[2]}` : match[1];
 							}
 						}
@@ -264,6 +274,12 @@
 	{#await Promise.resolve()}
 		{@render loading()}
 	{:then}
+		<ResetDialog
+			currentPackage={data.currentPackage.pkg.name}
+			resetDate={data.resetDate}
+			allPackageReleases={data.allReleases}
+		/>
+
 		<div class="flex flex-col">
 			<Header
 				packageInfo={{
@@ -287,7 +303,7 @@
 				{/if}
 				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
 					{@const markdown =
-						"This package has trouble tagging its releases, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
+						"This package has releases that are not properly tagged, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
 					<TopBanner
 						icon={CircleAlert}
 						title="Note"
@@ -354,7 +370,7 @@
 								Support added for {listFormatter.format(addedSupportFor)}
 								<Tooltip.Provider delayDuration={300}>
 									<Tooltip.Root>
-										<Tooltip.Trigger class="opacity-50 hover:opacity-100">
+										<Tooltip.Trigger class="hidden opacity-50 hover:opacity-100 md:flex">
 											<CircleQuestionMark class="size-4" />
 										</Tooltip.Trigger>
 										<Tooltip.Content

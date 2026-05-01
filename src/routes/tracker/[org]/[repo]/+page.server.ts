@@ -2,7 +2,7 @@ import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { uniqueRepos } from "$lib/repositories";
-import { githubCache } from "$lib/server/github-cache";
+import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
 
 // source: https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword
 const closingKeywords = [
@@ -17,7 +17,11 @@ const closingKeywords = [
 	"resolved"
 ];
 
-export async function load({ params }) {
+export async function load({ params, setHeaders }) {
+	setHeaders({
+		"Cache-Control": `public, max-age=${2 * 60}, s-maxage=${FULL_DETAILS_TTL}, stale-while-revalidate=${FULL_DETAILS_TTL / 2}`
+	});
+
 	const knownRepo = uniqueRepos.find(
 		({ owner, name }) =>
 			params.org.localeCompare(owner, undefined, { sensitivity: "base" }) === 0 &&
@@ -26,7 +30,7 @@ export async function load({ params }) {
 	if (!knownRepo) {
 		error(404, {
 			message: "Unknown repository",
-			description: `${siteName} can only track known repositories. Is this a mistake? Open an issue from the GitHub link in the navigation bar!`,
+			description: `${siteName} can only track repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			link: {
 				text: "Tracker home page",
 				href: resolve("/tracker")

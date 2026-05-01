@@ -3,7 +3,8 @@
 	import { MessagesSquare } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
-	import type { DiscussionDetails, ItemDetails } from "$lib/server/github-cache";
+	import type { DiscussionDetails, ItemDetails } from "$lib/server/github-api";
+	import type { JSONCompatible } from "$lib/types";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Separator } from "$lib/components/ui/separator";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -15,11 +16,15 @@
 
 	type Props = {
 		itemId: number;
-		comments?: ItemDetails["comments"] | DiscussionDetails["comments"];
+		comments:
+			| JSONCompatible<ItemDetails["comments"]>
+			| JSONCompatible<DiscussionDetails["comments"]>
+			| null;
 		currentRepo: { owner: string; name: string };
 	};
 
-	let { itemId, comments = [], currentRepo }: Props = $props();
+	let { itemId, comments, currentRepo }: Props = $props();
+	let comms = $derived(comments ?? []);
 
 	/**
 	 * Sort comments for discussions so that they simply have to be indented
@@ -29,24 +34,26 @@
 	 * @returns the sorted comments
 	 */
 	function sortComments(comms: NonNullable<Props["comments"]>): NonNullable<Props["comments"]> {
-		// Check if the array contains discussion items (with `parent_id`)
-		// We only need to check the first item since we know all items are of the same type
+		/*
+		 * Check if the array contains discussion items (with `parent_id`)
+		 * We only need to check the first item since we know all items are of the same type
+		 */
 		const hasParentId = comms[0] && "parent_id" in comms[0];
 
 		// If these are simple items, sort by date and return
 		if (!hasParentId) {
-			return (comms as ItemDetails["comments"]).sort(
+			return (comms as JSONCompatible<ItemDetails["comments"]>).sort(
 				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
 			);
 		}
 
 		// We know we're dealing with TreeItems at this point
-		const discussionComments = comms as DiscussionDetails["comments"];
+		const discussionComments = comms as JSONCompatible<DiscussionDetails["comments"]>;
 
 		// Create a map to store children by their parent_id for quick lookups
 		const childrenMap = new SvelteMap<
 			DiscussionDetails["comments"][number]["parent_id"],
-			DiscussionDetails["comments"]
+			JSONCompatible<DiscussionDetails["comments"]>
 		>();
 
 		// Populate the map
@@ -63,10 +70,10 @@
 		}
 
 		// Recursively build the result array in the correct order
-		const result: DiscussionDetails["comments"] = [];
+		const result: JSONCompatible<DiscussionDetails["comments"]> = [];
 
 		function traverseTree(parentId: DiscussionDetails["comments"][number]["parent_id"]) {
-			const children = childrenMap.get(parentId) || [];
+			const children = childrenMap.get(parentId) ?? [];
 
 			for (const child of children) {
 				result.push(child);
@@ -84,9 +91,9 @@
 <BottomCollapsible
 	icon={MessagesSquare}
 	label="Comments"
-	secondaryLabel="{comments.length} comment{comments.length > 1 ? 's' : ''}"
+	secondaryLabel="{comms.length} comment{comms.length > 1 ? 's' : ''}"
 >
-	{#each sortComments(comments) as comment, i (comment.id)}
+	{#each sortComments(comms) as comment, i (comment.id)}
 		{@const isAnswer =
 			"parent_id" in comment && comment.parent_id ? comment.parent_id !== itemId : false}
 		{#if !isAnswer && i > 0}
@@ -98,8 +105,7 @@
 				class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
 			>
 				{#if comment.user}
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a href={comment.user.html_url} class="group inline-flex items-center">
+					<a href={comment.user.html_url} rel="external" class="group inline-flex items-center">
 						<Avatar.Root class="mr-2 size-5">
 							<Avatar.Image
 								src={comment.user.avatar_url}

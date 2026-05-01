@@ -1,6 +1,6 @@
 import {
 	GH_APP_ID,
-	GH_APP_INSTALLATION_TOKEN,
+	GH_APP_INSTALLATION_ID,
 	GH_APP_PRIV_KEY_BASE64,
 	GITHUB_TOKEN
 } from "$env/static/private";
@@ -20,8 +20,9 @@ import type {
 import { App, Octokit } from "octokit";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
-import { ddebug, derror } from "$lib/debug";
+import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
+import { stringifyError } from "$lib/strings";
 import type { Issues, PID, Pulls } from "$lib/types";
 import { CacheHandler, type CacheJson } from "./cache-handler";
 import {
@@ -34,6 +35,7 @@ import {
 	pr,
 	release
 } from "./data-mock";
+import { KVCache } from "./kv";
 
 /**
  * A strict version of Extract.
@@ -75,7 +77,7 @@ export type IssueDetails = ItemDetails & {
 export type PullRequest = Awaited<ReturnType<Pulls["get"]>>["data"];
 export type ListedPullRequest = Awaited<ReturnType<Pulls["list"]>>["data"][number];
 export type PullRequestDetails = ItemDetails & {
-	info: PullRequest;
+	info: PullRequest & Pick<Issue, "reactions">;
 	commits: Awaited<ReturnType<Pulls["listCommits"]>>["data"];
 	files: Awaited<ReturnType<Pulls["listFiles"]>>["data"];
 	linkedIssues: LinkedItem[];
@@ -171,46 +173,54 @@ const MOCK_REQUESTS = false;
  */
 const per_page = 100;
 /**
- * The TTL of the cached releases, in seconds.
+ * The TTL of the releases, in seconds.
+ *
+ * Still quite short despite webhooks because we want
+ * live-ish reactions update, especially for fresh releases.
+ * As we can't be granular for releases, we have to set that
+ * for all.
  */
-const RELEASES_TTL = 60 * 15; // 15 min
+export const RELEASES_TTL = 60 * 30; // 30 min
 /**
  * The TTL of the full issue/pr details, in seconds.
  */
-const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
+export const FULL_DETAILS_TTL = 60 * 60 * 2; // 2 hours
 /**
  * The TTL of the cached descriptions, in seconds.
  */
-const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
+export const DESCRIPTIONS_TTL = 60 * 60 * 24 * 10; // 10 days
 /**
  * The TTL of organization members, in seconds.
  */
-const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
+export const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
 /**
  * The TTL for non-deprecated packages, in seconds
  */
-const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
+export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
 /**
  * The TTL for commit data, in seconds. Commits are immutable.
  */
-const COMMIT_TTL = 60 * 60 * 24 * 30; // 30 days
+export const COMMIT_TTL = 60 * 60 * 24 * 30; // 30 days
 
 /**
  * A fetch layer to reach the GitHub API
  * with an additional caching mechanism.
  */
-export class GitHubCache {
-	readonly #cache: CacheHandler;
+export class GitHubAPI {
+	readonly #cache: KVCache;
+
 	readonly #octokit: Octokit;
 
+	#pendingRequests = new Map<string, Promise<unknown>>();
+
 	/**
-	 * Creates a new {@link GitHubCache} with the required auth info.
+	 * Creates a new {@link GitHubAPI} with the required auth info.
 	 *
 	 * @param octokit the Octokit instance to use for API requests
 	 * @constructor
 	 */
 	constructor(octokit: Octokit) {
-		this.#cache = new CacheHandler();
+		this.#cache = new KVCache();
 		this.#octokit = octokit;
 
 		// Hook to inject If-None-Match header for conditional requests
@@ -233,7 +243,7 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: unknown[]) {
+	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: (string | number | boolean)[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `owner:${owner}:${type}${strArgs}`;
 	}
@@ -250,7 +260,12 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(owner: string, repo: string, type: RepoKeyType, ...args: unknown[]) {
+	#getRepoKey(
+		owner: string,
+		repo: string,
+		type: RepoKeyType,
+		...args: (string | number | boolean)[]
+	) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `repo:${owner}/${repo}:${type}${strArgs}`;
 	}
@@ -265,18 +280,11 @@ export class GitHubCache {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getPackageKey(packageName: string, ...args: unknown[]) {
+	#getPackageKey(packageName: string, ...args: (string | number | boolean)[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `package:${packageName}${strArgs}`;
 	}
 
-	/**
-	 * A request middleware to control calls to the GitHub API.
-	 *
-	 * @param original an endpoint to call using an octokit instance
-	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
-	 * @returns either the original data or the fallback one
-	 */
 	static #rateLimitRemaining: number | null = null;
 	static #rateLimitReset: Date | null = null;
 
@@ -294,6 +302,13 @@ export class GitHubCache {
 	// Stored etag to inject into the next request (set before calling fn, cleared after)
 	#pendingEtag: string | null = null;
 
+	/**
+	 * A request middleware to control calls to the GitHub API.
+	 *
+	 * @param original an endpoint to call using an octokit instance
+	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
+	 * @returns either the original data or the fallback one
+	 */
 	async #request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
 		if (MOCK_REQUESTS) return fallback;
 
@@ -336,19 +351,16 @@ export class GitHubCache {
 	 * 2. calls the promise to get new data if no value is found in cache
 	 * 3. store this new value back in the cache with an optional TTL before returning the value
 	 *
+	 * @param cacheKey the cache key to query the cache with
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<Transformed extends CacheJson>() {
+	#processCached<Transformed extends CacheJson>(cacheKey: string) {
 		// justified eslint rule disabling cause this case is quite... unique and I can't do much better
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 
 		async function processFn<NewData>(params: {
-			/**
-			 * The cache key to query the cache with
-			 */
-			cacheKey: string;
 			/**
 			 * The promise to call to get new data if the cache is empty,
 			 * before getting transformed into a cacheable shape
@@ -363,20 +375,16 @@ export class GitHubCache {
 			 * @param from the awaited result of the promise
 			 * @returns the transformed result to use, return & cache
 			 */
-			transformer: (from: Awaited<NewData>) => Transformed | Promise<Transformed>;
+			transformer: (from: Awaited<NewData>) => Transformed;
 			/**
 			 * The optional TTL to use for the newly cached data
 			 *
 			 * Uses the transformed result as parameter if used as a function
 			 */
-			ttl?: number | ((value: Transformed) => number | undefined) | undefined;
+			ttl?: number | ((data: Transformed) => number | undefined) | undefined;
 		}): Promise<Transformed>;
 
 		async function processFn<NewData extends Transformed>(params: {
-			/**
-			 * The cache key to query the cache with
-			 */
-			cacheKey: string;
 			/**
 			 * The promise to call to get new data if the cache is empty,
 			 * directly returned after getting cached
@@ -389,7 +397,7 @@ export class GitHubCache {
 			 *
 			 * Uses the fetched data as parameter if used as a function
 			 */
-			ttl?: number | ((value: NewData) => number | undefined) | undefined;
+			ttl?: number | ((data: NewData) => number | undefined) | undefined;
 		}): Promise<NewData>;
 		/**
 		 * Inner currying function to circumvent unsupported partial inference
@@ -397,82 +405,76 @@ export class GitHubCache {
 		 * @see {@link https://github.com/microsoft/TypeScript/issues/26242|Partial type inference discussion}
 		 */
 		async function processFn<NewData>({
-			cacheKey,
 			fn,
 			transformer,
 			ttl
 		}: {
-			cacheKey: string;
 			fn: () => Promise<NewData> | NewData;
-			transformer?: (from: Awaited<NewData>) => Transformed | Promise<Transformed>;
-			ttl?: number | ((value: NewData | Transformed) => number | undefined) | undefined;
+			transformer?: (from: Awaited<NewData>) => Transformed;
+			ttl?: number | ((data: NewData | Transformed) => number | undefined) | undefined;
 		}): Promise<NewData | Transformed> {
-			const cachedValue = await self.#cache.get<Transformed>(cacheKey);
-			if (cachedValue) {
-				ddebug(`Cache hit for ${cacheKey}`);
-				console.info(`[github-cache-hit] ${cacheKey}`);
-				return cachedValue;
-			}
+			const existing = self.#pendingRequests.get(cacheKey);
+			if (existing !== undefined) return existing as Promise<Transformed>;
 
-			// Cache expired — check if we have stale data + etag for conditional request
-			const stale = await self.#cache.getStale<Transformed>(cacheKey);
+			const promise = (async () => {
+				const cachedValue = await self.#cache.get<Transformed>(cacheKey);
+				if (cachedValue) {
+					ddebug(`Cache hit for ${cacheKey}`);
+					return cachedValue;
+				}
 
-			ddebug(`Cache miss for ${cacheKey}`);
+				// Cache expired — check if we have stale data + etag for conditional request
+				const stale = await self.#cache.getStale<Transformed>(cacheKey);
 
-			// Set pending etag for conditional request (injected via Octokit hook)
-			if (stale?.etag) {
-				self.#pendingEtag = stale.etag;
-			}
+				ddebug(`Cache miss for ${cacheKey}`);
 
-			let res: NewData;
-			try {
-				res = await fn();
-			} catch (error: unknown) {
-				// On 304 Not Modified, reuse stale data (free, no quota used)
-				if (
-					stale &&
-					error &&
-					typeof error === "object" &&
-					"status" in error &&
-					(error as { status: number }).status === 304
-				) {
-					self.#pendingEtag = null;
-					ddebug(`Cache 304 hit for ${cacheKey}`);
-					console.info(`[github-cache-304-hit] ${cacheKey}`);
-					let ttlResult: number | undefined = undefined;
-					if (ttl !== undefined) {
-						ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
+				// Set pending etag for conditional request (injected via Octokit hook)
+				if (stale?.etag) {
+					self.#pendingEtag = stale.etag;
+				}
+
+				let res: NewData;
+				try {
+					res = await fn();
+				} catch (error: unknown) {
+					// On 304 Not Modified, reuse stale data (free, no quota used)
+					if (
+						stale &&
+						error &&
+						typeof error === "object" &&
+						"status" in error &&
+						(error as { status: number }).status === 304
+					) {
+						self.#pendingEtag = null;
+						ddebug(`Cache 304 hit for ${cacheKey}`);
+						console.info(`[github-cache-304-hit] ${cacheKey}`);
+						let ttlResult: number | undefined = undefined;
+						if (ttl !== undefined) {
+							ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
+						}
+						await self.#cache.refreshTtl(cacheKey, ttlResult);
+						return stale.value;
 					}
-					await self.#cache.refreshTtl(cacheKey, ttlResult);
-					return stale.value;
+					self.#pendingEtag = null;
+					throw error;
 				}
+
 				self.#pendingEtag = null;
-				throw error;
-			}
+				const newValue = transformer?.(res) ?? (res as NewData & Transformed);
+				const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
 
-			self.#pendingEtag = null;
-			const newValue = transformer
-				? await transformer(res as Awaited<NewData>)
-				: (res as NewData & Transformed);
-
-			let ttlResult: number | undefined = undefined;
-			if (ttl !== undefined) {
-				if (typeof ttl === "function") {
-					ttlResult = ttl(newValue);
+				// Store with etag if the response has one
+				const etag = self.#extractEtag(res);
+				if (etag) {
+					await self.#cache.setWithEtag(cacheKey, newValue, etag, ttlResult);
 				} else {
-					ttlResult = ttl;
+					await self.#cache.set(cacheKey, newValue, ttlResult);
 				}
-			}
 
-			// Store with etag if the response has one
-			const etag = self.#extractEtag(res);
-			if (etag) {
-				await self.#cache.setWithEtag(cacheKey, newValue, etag, ttlResult);
-			} else {
-				await self.#cache.set(cacheKey, newValue, ttlResult);
-			}
-
-			return newValue;
+				return newValue;
+			})().finally(() => self.#pendingRequests.delete(cacheKey));
+			self.#pendingRequests.set(cacheKey, promise);
+			return promise;
 		}
 
 		return processFn;
@@ -493,7 +495,7 @@ export class GitHubCache {
 		owner: string,
 		repo: string,
 		id: number,
-		type: ExtractStrict<RepoKeyType, "issue" | "pr" | "discussions"> | undefined = undefined
+		type?: ExtractStrict<RepoKeyType, "issue" | "pr" | "discussions">
 	) {
 		// Known type we assume the existence of
 		switch (type) {
@@ -509,20 +511,20 @@ export class GitHubCache {
 		try {
 			return await this.getPullRequestDetails(owner, repo, id);
 		} catch (err) {
-			derror(`Error trying to get PR details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get PR details for ${owner}/${repo}: ${stringifyError(err)}`);
 		}
 
 		try {
 			// doesn't come first because issues will also resolve for prs
 			return await this.getIssueDetails(owner, repo, id);
 		} catch (err) {
-			derror(`Error trying to get issue details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get issue details for ${owner}/${repo}: ${stringifyError(err)}`);
 		}
 
 		try {
 			return await this.getDiscussionDetails(owner, repo, id);
 		} catch (err) {
-			derror(`Error trying to get discussion details for ${owner}/${repo}: ${err}`);
+			derror(`Error trying to get discussion details for ${owner}/${repo}: ${stringifyError(err)}`);
 		}
 
 		return null;
@@ -538,8 +540,9 @@ export class GitHubCache {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<IssueDetails>()({
-			cacheKey: this.#getRepoKey(owner, repo, "issue", id),
+		return await this.#processCached<IssueDetails>(
+			this.#getRepoKey(owner, repo, "issue", id)
+		)({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -571,10 +574,15 @@ export class GitHubCache {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<PullRequestDetails>()({
-			cacheKey: this.#getRepoKey(owner, repo, "pr", id),
+		return await this.#processCached<PullRequestDetails>(
+			this.#getRepoKey(owner, repo, "pr", id)
+		)({
 			fn: () =>
 				Promise.all([
+					this.#request(
+						kit => kit.rest.issues.get({ owner, repo, issue_number: id }),
+						createOctokitResponse(issue)
+					),
 					this.#request(
 						kit => kit.rest.pulls.get({ owner, repo, pull_number: id }),
 						createOctokitResponse(pr)
@@ -594,13 +602,14 @@ export class GitHubCache {
 					this.#getLinkedIssues(owner, repo, id)
 				]),
 			transformer: ([
+				{ data: issueInfo },
 				{ data: info },
 				{ data: comments },
 				{ data: commits },
 				{ data: files },
 				linkedIssues
 			]) => ({
-				info,
+				info: { ...info, reactions: issueInfo.reactions },
 				comments,
 				commits,
 				files,
@@ -620,8 +629,9 @@ export class GitHubCache {
 	 * @throws Error if the discussion is not found
 	 */
 	async getDiscussionDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<DiscussionDetails>()({
-			cacheKey: this.#getRepoKey(owner, repo, "discussion", id),
+		return await this.#processCached<DiscussionDetails>(
+			this.#getRepoKey(owner, repo, "discussion", id)
+		)({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -831,7 +841,7 @@ export class GitHubCache {
 		const closingIssues = result?.repository?.pullRequest?.closingIssuesReferences?.nodes ?? [];
 		for (const issue of closingIssues) {
 			if (!issue) continue;
-			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issue", issue));
+			linkedIssues.set(issue.number, this.#gqlToLinkedItem("issues", issue));
 		}
 
 		return [...linkedIssues.values()];
@@ -886,8 +896,9 @@ export class GitHubCache {
 	 * @returns the releases, either cached or fetched
 	 */
 	async getReleases(repository: Repository) {
-		return await this.#processCached<GitHubRelease[]>()({
-			cacheKey: this.#getRepoKey(repository.repoOwner, repository.repoName, "releases"),
+		return await this.#processCached<GitHubRelease[]>(
+			this.#getRepoKey(repository.repoOwner, repository.repoName, "releases")
+		)({
 			fn: () => this.#fetchReleases(repository),
 			ttl: RELEASES_TTL
 		});
@@ -904,8 +915,7 @@ export class GitHubCache {
 	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
 		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
-			return await this.#processCached<GitHubRelease[]>()({
-				cacheKey: `internal:${owner}/${repo}:listReleases`,
+			return await this.#processCached<GitHubRelease[]>(`internal:${owner}/${repo}:listReleases`)({
 				fn: () =>
 					this.#request(
 						kit => kit.rest.repos.listReleases({ owner, repo, per_page }),
@@ -923,8 +933,7 @@ export class GitHubCache {
 		>["data"][number];
 
 		// 1. Fetch tags
-		const tags = await this.#processCached<TagData[]>()({
-			cacheKey: `internal:${owner}/${repo}:tags`,
+		const tags = await this.#processCached<TagData[]>(`internal:${owner}/${repo}:tags`)({
 			fn: () =>
 				this.#request(
 					kit => kit.rest.repos.listTags({ owner, repo, per_page }),
@@ -935,30 +944,36 @@ export class GitHubCache {
 		});
 
 		// 2. Fetch changelog
-		const changelogFileContents = await this.#processCached<string>()({
-			cacheKey: `internal:${owner}/${repo}:changelog`,
+		const changelogFileContents = await this.#processCached<string>(`internal:${owner}/${repo}:changelog`)({
 			fn: () =>
 				this.#request(
 					kit =>
 						kit.rest.repos.getContent({
-							mediaType: { format: "raw" },
+							mediaType: {
+								format: "raw"
+							},
 							owner,
 							repo,
 							ref: (() => {
 								try {
 									return owner === "sveltejs" &&
-										repo === "prettier-plugin-svelte" &&
+										repo === "prettier-plugin-svelte" && // this repo is quite messy (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
 										tags[0] &&
 										semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
-										? "version-3"
+										? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
 										: undefined;
 								} catch {
+									// handle oopsies for invalid versions returned from `metadataFromTag` (or others)
 									return undefined;
 								}
 							})(),
 							path: "CHANGELOG.md"
 						}),
-					createOctokitResponse([])
+					createOctokitResponse(
+						"" as unknown as Awaited<
+							ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+						>["data"]
+					)
 				),
 			transformer: ({ data }) => data as unknown as string,
 			ttl: RELEASES_TTL
@@ -993,8 +1008,7 @@ export class GitHubCache {
 					{ name: tag_name, commit: { sha }, zipball_url, tarball_url, node_id },
 					tagIndex
 				) => {
-					const { author, committer } = await this.#processCached<CommitData>()({
-						cacheKey: `internal:${owner}/${repo}:commit:${sha}`,
+					const { author, committer } = await this.#processCached<CommitData>(`internal:${owner}/${repo}:commit:${sha}`)({
 						fn: () =>
 							this.#request(
 								kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
@@ -1044,10 +1058,11 @@ export class GitHubCache {
 	 * @returns a map of paths to descriptions.
 	 */
 	async getDescriptions(owner: string, repo: string) {
-		return await this.#processCached<Record<string, string>>()({
-			cacheKey: this.#getRepoKey(owner, repo, "descriptions"),
-			fn: () =>
-				this.#request(
+		return await this.#processCached<Record<string, string>>(
+			this.#getRepoKey(owner, repo, "descriptions")
+		)({
+			fn: async () => {
+				const { data: allFiles } = await this.#request(
 					kit =>
 						kit.rest.git.getTree({
 							owner,
@@ -1056,8 +1071,8 @@ export class GitHubCache {
 							recursive: "true"
 						}),
 					createOctokitResponse(gitTree)
-				),
-			transformer: async ({ data: allFiles }) => {
+				);
+
 				const allPackageJson = allFiles.tree
 					.map(({ path }) => path)
 					.filter(path => path !== undefined)
@@ -1087,10 +1102,11 @@ export class GitHubCache {
 						);
 
 						try {
-							const { description } = JSON.parse(packageJson as unknown as string) as {
-								description: string;
+							const { description, private: priv } = JSON.parse(packageJson as unknown as string) as {
+								description?: string;
+								private?: boolean;
 							};
-							if (description) descriptions.set(path, description);
+							if (!priv && description) descriptions.set(path, description);
 						} catch {
 							// ignore
 						}
@@ -1109,8 +1125,7 @@ export class GitHubCache {
 	 * @returns a list of members, or `undefined` if not existing
 	 */
 	async getOrganizationMembers(owner: string) {
-		return await this.#processCached<Member[]>()({
-			cacheKey: this.#getOwnerKey(owner, "members"),
+		return await this.#processCached<Member[]>(this.#getOwnerKey(owner, "members"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1133,8 +1148,9 @@ export class GitHubCache {
 	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
-		return await this.#processCached<Issue[]>()({
-			cacheKey: this.#getRepoKey(owner, repo, "issues"),
+		return await this.#processCached<Issue[]>(
+			this.#getRepoKey(owner, repo, "issues")
+		)({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1158,8 +1174,7 @@ export class GitHubCache {
 	 * @returns a list of pull requests, empty if not existing
 	 */
 	async getAllPRs(owner: string, repo: string) {
-		return await this.#processCached<ListedPullRequest[]>()({
-			cacheKey: this.#getRepoKey(owner, repo, "prs"),
+		return await this.#processCached<ListedPullRequest[]>(this.#getRepoKey(owner, repo, "prs"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1183,8 +1198,7 @@ export class GitHubCache {
 	 * @returns a list of discussions, empty if not existing
 	 */
 	async getAllDiscussions(owner: string, repo: string) {
-		return await this.#processCached<Discussion[]>()({
-			cacheKey: this.#getRepoKey(owner, repo, "discussions"),
+		return await this.#processCached<Discussion[]>(this.#getRepoKey(owner, repo, "discussions"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1206,12 +1220,12 @@ export class GitHubCache {
 	 * @returns the deprecation status message if any, `false` otherwise
 	 */
 	async getPackageDeprecation(packageName: string) {
-		return await this.#processCached<{ value: string | false }>()({
-			cacheKey: this.#getPackageKey(packageName, "deprecation"),
+		return await this.#processCached<{ value: string | false }>(
+			this.#getPackageKey(packageName, "deprecation")
+		)({
 			fn: async () => {
 				try {
-					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that
-					// GitHub owns npmjs.org okay??
+					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that GitHub owns npmjs.org okay??
 					const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
 					if (res.status !== 200) return {};
 					return (await res.json()) as { deprecated?: boolean | string };
@@ -1247,7 +1261,7 @@ export class GitHubCache {
 	}
 }
 
-export const githubCache = new GitHubCache(
+export const githubCache = new GitHubAPI(
 	GITHUB_TOKEN
 		? new Octokit({
 				auth: GITHUB_TOKEN
@@ -1255,5 +1269,5 @@ export const githubCache = new GitHubCache(
 		: await new App({
 				appId: GH_APP_ID,
 				privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8")
-			}).getInstallationOctokit(+GH_APP_INSTALLATION_TOKEN)
+			}).getInstallationOctokit(+GH_APP_INSTALLATION_ID)
 );

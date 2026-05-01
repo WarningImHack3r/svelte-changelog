@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import type { GitHubRelease } from "./server/github-cache";
+import type { GitHubRelease } from "./server/github-api";
 
 /**
  * Extract the data from the record parameter which the key matches the argument.
@@ -51,7 +51,7 @@ export function getUnvisitedReleases<T extends GitHubRelease>(pkgName: string, r
  * @param releases the releases to filter
  * @returns whether the package is considered new
  */
-export function isPackageNew<T extends GitHubRelease>(pkgName: string, releases: T[]) {
+export function isPackageNew(pkgName: string, releases: GitHubRelease[]) {
 	if (!browser) return false;
 	if (!releases.length) return true;
 

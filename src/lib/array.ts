@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
+// this rule is a bit dumb with the `U` of `uniq`, need to figure out why someday
+
 /**
  * A utility function to only keep unique items in
  * an array, based on the uniqTransform parameter.

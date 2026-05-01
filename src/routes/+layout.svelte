@@ -4,9 +4,10 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { dev } from "$app/environment";
-	import { onNavigate } from "$app/navigation";
+	import { beforeNavigate, onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";
+	import GitHub from "@icons-pack/svelte-simple-icons/icons/SiGithub";
 	import {
 		ChevronDown,
 		ChevronRight,
@@ -46,8 +47,20 @@
 
 	let { data, children } = $props();
 
-	// View Transitions API
-	// https://svelte.dev/blog/view-transitions
+	/*
+	 * Prevent server desync in a forced way (more strictly than by default) and related hooks errors
+	 * Snippet from https://svelte.dev/docs/kit/configuration#version
+	 */
+	beforeNavigate(({ willUnload, to }) => {
+		if (updated.current && !willUnload && to?.url) {
+			location.href = to.url.href;
+		}
+	});
+
+	/*
+	 * View Transitions API
+	 * https://svelte.dev/blog/view-transitions
+	 */
 	onNavigate(({ complete }) => {
 		if (!document.startViewTransition) return;
 
@@ -147,13 +160,13 @@
 
 	// Snow - enabled during Dec 15th through Jan 15th
 	const currentDate = new Date();
-	const beginningDate = $derived(
+	let beginningDate = $derived(
 		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? -1 : 0), 11, 15)
 	);
-	const endingDate = $derived(
+	let endingDate = $derived(
 		new Date(currentDate.getFullYear() + (currentDate.getMonth() === 0 ? 0 : 1), 0, 15)
 	);
-	const isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
+	let isSnowTime = $derived(currentDate >= beginningDate && currentDate <= endingDate);
 	let isSnowEnabled = new PersistedState("snowlover", true);
 	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
 
@@ -197,12 +210,13 @@
 
 <header
 	class={[
-		"sticky top-0 z-40 w-full transition-shadow duration-500",
+		"sticky top-0 z-40 w-full transition-shadow duration-500 motion-safe:[view-transition-name:var(--vt-name)]",
 		{
 			"bg-background/95 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60":
-				newsToDisplay || (scrollY.current ?? 0) >= navbarBorderThreshold
+				!!newsToDisplay || (scrollY.current ?? 0) >= navbarBorderThreshold
 		}
 	]}
+	style:--vt-name="global-site-navbar"
 >
 	<div
 		class={[
@@ -269,7 +283,7 @@
 			</a>
 			{#if page.route.id?.startsWith(resolve("/devlog"))}
 				<div class="mx-4 h-8 w-0.5 rotate-25 rounded-full bg-muted-foreground/40"></div>
-				<span class="text-xl font-semibold">Blog</span>
+				<span class="text-xl font-semibold">Devlog</span>
 			{:else}
 				<!-- Navigation -->
 				<DesktopNavigation
@@ -310,7 +324,7 @@
 						</Tooltip.Provider>
 					{/if}
 					<AnimatedButton href={siteRepo} target="_blank" variant="ghost" size="icon">
-						<img src="/github.svg" alt="GitHub" class="size-5 dark:invert" />
+						<GitHub title="GitHub" class="size-5" />
 						<span class="sr-only">Visit the repository</span>
 					</AnimatedButton>
 					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
@@ -384,7 +398,7 @@
 	{/if}
 </header>
 
-<main data-sveltekit-reload={updated.current ? "" : "off"} class="container py-8">
+<main class="container py-8">
 	{@render children?.()}
 </main>
 
@@ -394,6 +408,7 @@
 			Built by <a
 				href={authorVCSProfile}
 				target="_blank"
+				rel="external"
 				class={cn(
 					buttonVariants({
 						variant: "link"

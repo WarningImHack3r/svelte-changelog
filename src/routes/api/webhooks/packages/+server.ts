@@ -1,6 +1,7 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
-import { derror, dlog } from "$lib/debug";
-import { githubCache } from "$lib/server/github-cache";
+import { ddebug, derror, dlog } from "$lib/logging";
+import { invalidateTag, waitUntil } from "$lib/server/cache";
+import { githubCache } from "$lib/server/github-api";
 import { discoverer } from "$lib/server/package-discoverer";
 import type { ReplicatorEvent } from "./types";
 
@@ -12,6 +13,56 @@ export async function GET() {
 		.map(({ name }) => name);
 	return Response.json([...new Set(packages)]);
 }
+
+/**
+ * A list of durations to invalidate the packages tag after
+ */
+const packagesInvalidationDelaysSec = /* [10, 15, 30, 120] */ [4.5].map(minute => minute * 60);
+
+/**
+ * Invalidate the same tag multiple times with multiple delays in-between.
+ *
+ * @param tag the tag to invalidate
+ * @param delays the delays to sequentially invalidate the tag at, in seconds
+ * @param signal the signal to cancel the execution
+ */
+async function invalidateSequentially(tag: string, delays: number[], signal?: AbortSignal) {
+	ddebug(`Starting sequential invalidation for tag ${tag}`);
+	for (const delay of delays) {
+		if (signal?.aborted) {
+			ddebug(`Signal aborted at the beginning of the loop for tag ${tag}`);
+			return;
+		}
+
+		ddebug(`Waiting ${delay} seconds before invalidating tag ${tag}`);
+		await new Promise<void>(resolve => {
+			if (signal?.aborted) {
+				ddebug(`Signal aborted at the beginning of the wait for ${tag}`);
+				return resolve();
+			}
+			const timeoutId = setTimeout(resolve, delay * 1_000);
+			signal?.addEventListener(
+				"abort",
+				() => {
+					ddebug(`Received an abort from the passed signal for tag ${tag}`);
+					clearTimeout(timeoutId);
+					resolve();
+				},
+				{ once: true }
+			);
+		});
+
+		if (signal?.aborted) {
+			ddebug(`Signal aborted after the delay for tag ${tag}`);
+			return;
+		}
+		ddebug(`Invalidating tag ${tag} after ${delay} seconds elapsed`);
+		await invalidateTag(tag);
+	}
+	ddebug(`Sequential invalidation done for ${tag}`);
+}
+
+let controller: AbortController | null = null;
 
 export async function POST({ request }) {
 	// auth
@@ -47,5 +98,34 @@ export async function POST({ request }) {
 	} else {
 		derror(`Failed to delete the entry for ${owner}/${repo}`);
 	}
+
+	// invalidate all packages
+	await invalidateTag("all-packages"); // immediate invalidation
+	controller?.abort(); // cancel any previous request's invalidation sequence (if they even share memory in the first place)
+	controller = new AbortController();
+	const currentController = controller;
+	// abort if the client somehow aborts the request
+	if (request.signal.aborted) {
+		dlog(`Request signal aborted for ${pkg.name}, not starting sequential invalidation`);
+		currentController.abort();
+		return new Response();
+	}
+	request.signal.addEventListener(
+		"abort",
+		() => {
+			ddebug(`Received an abort signal from the request for ${pkg.name}, propagating it`);
+			currentController.abort();
+		},
+		{ once: true }
+	);
+	dlog(`Starting invalidating sequentially for ${pkg.name}`);
+	waitUntil(
+		invalidateSequentially(
+			`package-${pkg.name}`,
+			packagesInvalidationDelaysSec,
+			currentController.signal
+		)
+	);
+
 	return new Response();
 }

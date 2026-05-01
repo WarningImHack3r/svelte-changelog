@@ -1,7 +1,8 @@
-import { dlog } from "$lib/debug";
+import { uniq } from "$lib/array";
+import { dlog } from "$lib/logging";
 import { type Repository, publicRepos } from "$lib/repositories";
 import type { Prettify } from "$lib/types";
-import { GitHubCache, githubCache } from "./github-cache";
+import { GitHubAPI, githubCache } from "./github-api";
 
 export type Package = {
 	name: string;
@@ -23,12 +24,22 @@ export type CategorizedPackage = Prettify<
 >;
 
 class PackageDiscoverer {
-	readonly #cache: GitHubCache;
+	readonly #cache: GitHubAPI;
+
 	readonly #repos: Repository[] = [];
-	readonly #registryExcludedPackages = new Set(["extensions"]);
+
+	readonly #notNpmPackages = new Set(["extensions"]);
+
+	readonly #packageDirectoryMap: Record<string, string> = {
+		extensions: "svelte-vscode",
+		"svelte-migrate": "migrate",
+		"svelte-language-server": "language-server",
+		"typescript-svelte-plugin": "typescript-plugin"
+	};
+
 	#packages: DiscoveredPackage[] = [];
 
-	constructor(cache: GitHubCache, repos: Repository[]) {
+	constructor(cache: GitHubAPI, repos: Repository[]) {
 		this.#cache = cache;
 		this.#repos = repos;
 	}
@@ -39,10 +50,24 @@ class PackageDiscoverer {
 	 * Populates the result into packages.
 	 */
 	async discoverAll() {
+		const repoData = new Map(
+			await Promise.all(
+				uniq(this.#repos, ({ repoOwner, repoName }) => `${repoOwner}/${repoName}`).map(
+					async repo => {
+						const [releases, descriptions] = await Promise.all([
+							this.#cache.getReleases(repo),
+							this.#cache.getDescriptions(repo.repoOwner, repo.repoName)
+						]);
+						return [`${repo.repoOwner}/${repo.repoName}`, { releases, descriptions }] as const;
+					}
+				)
+			)
+		);
+
 		this.#packages = await Promise.all(
 			this.#repos.map(async repo => {
-				const releases = await this.#cache.getReleases(repo);
-				const descriptions = await this.#cache.getDescriptions(repo.repoOwner, repo.repoName);
+				const { releases = [], descriptions = {} } =
+					repoData.get(`${repo.repoOwner}/${repo.repoName}`) ?? {};
 				const packages = [
 					...new Set(
 						releases
@@ -60,7 +85,7 @@ class PackageDiscoverer {
 				return {
 					...repo,
 					packages: await Promise.all(
-						packages.map(async (pkg): Promise<Package> => {
+						packages.map<Promise<Package>>(async pkg => {
 							const ghName = this.#gitHubDirectoryFromName(pkg);
 							const deprecated = (await this.#cache.getPackageDeprecation(pkg)).value || undefined;
 							return {
@@ -76,7 +101,7 @@ class PackageDiscoverer {
 										descriptions["package.json"] ??
 										""),
 								deprecated,
-								registryExcluded: this.#registryExcludedPackages.has(pkg)
+								registryExcluded: this.#notNpmPackages.has(pkg)
 							};
 						})
 					)
@@ -95,11 +120,7 @@ class PackageDiscoverer {
 	 * @private
 	 */
 	#gitHubDirectoryFromName(name: string): string {
-		const packageDirectoryMap: Record<string, string> = {
-			extensions: "svelte-vscode",
-			"svelte-migrate": "migrate"
-		};
-		return packageDirectoryMap[name] ?? name;
+		return this.#packageDirectoryMap[name] ?? name;
 	}
 
 	/**

@@ -90,7 +90,7 @@
 		{:else}
 			{@render link()}
 		{/if}
-	{:else if new URL(href).pathname === "/"}
+	{:else if new URL(href, "http://localhost.internal").pathname === "/"}
 		<!-- we'll assume nothing else than a link can come from a URL without pathname -->
 		{@render link()}
 	{:else if !dev}

@@ -4,7 +4,7 @@ import { marked } from "marked";
 import { authorFullName, authorVCSProfile, siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
-import { getAllPackagesReleases, getPackageReleases } from "../releases";
+import { getPackageReleases, getPackagesReleases } from "../releases";
 
 const dottedAlphaRegex = /[A-z\d]+\.[A-z\d]+$/;
 /**
@@ -12,7 +12,7 @@ const dottedAlphaRegex = /[A-z\d]+\.[A-z\d]+$/;
  * @param url the page URL; must be an RSS feed
  * @param title the feed title
  * @param mode whether it is a feed for a single or all the packages
- * @return a new {@link Feed} object
+ * @returns a new {@link Feed} object
  */
 function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single") {
 	const feed = new Feed({
@@ -40,7 +40,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 /**
  * Convert a raw Markdown into a basic HTML structure
  * @param md the Markdown text
- * @return the HTML conversion
+ * @returns the HTML conversion
  */
 function mdToHtml(md: string | null | undefined) {
 	if (!md) return undefined;
@@ -51,7 +51,7 @@ function mdToHtml(md: string | null | undefined) {
 /**
  * A SvelteKit request handler utility to create an RSS feed for packages
  * @param response the handler converting the final feed object into a response
- * @return the response gotten from the callback parameter
+ * @returns the response gotten from the callback parameter
  */
 export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 	return async ({ params, url, locals }) => {
@@ -62,28 +62,47 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 		// 2. Get the releases and package info
-		let packageName: string;
-		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"];
-		if (slugPackage.toLowerCase() === ALL_SLUG) {
+		let packageName = "";
+		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"] = [];
+		if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
 			// All releases
 			packageName = "All";
-			releases = await getAllPackagesReleases(categorizedPackages, locals.posthog);
+			releases = await getPackagesReleases(true, categorizedPackages, locals.posthog);
 		} else {
-			// This package releases
-			const packageReleases = await getPackageReleases(
-				slugPackage,
-				categorizedPackages,
-				locals.posthog
-			);
-			if (!packageReleases) error(404);
-			packageName = packageReleases.releasesRepo.pkg.name;
-			releases = packageReleases.releases;
+			let isCategory = false;
+			for (const { category, packages } of categorizedPackages) {
+				if (packages.length < 2) continue; // categories with 1 package are not visitable
+				if (slugPackage.localeCompare(category.slug, undefined, { sensitivity: "base" }) === 0) {
+					// A category
+					packageName = category.name;
+					releases = await getPackagesReleases(
+						packages.map(({ pkg }) => pkg.name),
+						categorizedPackages,
+						locals.posthog
+					);
+					isCategory = true;
+					break;
+				}
+			}
+			if (!isCategory) {
+				// This package releases
+				const packageReleases = await getPackageReleases(
+					slugPackage,
+					categorizedPackages,
+					locals.posthog
+				);
+				if (!packageReleases) error(404);
+				packageName = packageReleases.releasesRepo.pkg.name;
+				releases = packageReleases.releases;
+			}
 		}
 
 		const feed = getBaseFeed(
 			url,
 			`${packageName} releases`,
-			packageName.toLowerCase() === ALL_SLUG ? "all" : "single"
+			packageName.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0
+				? "all"
+				: "single"
 		);
 		for (const release of releases) {
 			feed.addItem({

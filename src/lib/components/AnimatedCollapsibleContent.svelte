@@ -11,7 +11,7 @@ Based on https://bits-ui.com/docs/components/collapsible#best-practices
 	let {
 		ref = $bindable(null),
 		duration = 200,
-		axis = undefined,
+		axis,
 		children,
 		...restProps
 	}: WithoutChildrenOrChild<Collapsible.ContentProps> & {

@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { type Component, untrack } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import Npm from "@icons-pack/svelte-simple-icons/icons/SiNpm";
 	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
+	import posthog from "posthog-js";
 	import { toast } from "svelte-sonner";
 	import type { Package } from "$lib/server/package-discoverer";
-	import { ALL_SLUG } from "$lib/types";
+	import { stringifyError } from "$lib/strings";
 	import { Button } from "$lib/components/ui/button";
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
@@ -23,25 +26,43 @@
 	let { packageInfo, currentRepo, class: classValue }: Props = $props();
 
 	let viewTransitionName = $derived(packageInfo.name.replace(/[@/-]/g, ""));
+	let isCategory = $derived(
+		// ugly logic but pretty efficient fwiw
+		packageInfo.name.includes(" ") || packageInfo.name !== packageInfo.name.toLowerCase()
+	);
+	let rssRoutePackage = $derived(
+		isCategory ? (packageInfo.categorySlug ?? packageInfo.name) : packageInfo.name
+	);
 
 	// Registries
-	let registries = $derived<Record<string, { iconUrl: string; url: string; imgClasses?: string }>>(
-		packageInfo.categorySlug === ALL_SLUG || packageInfo.registryExcluded
+	let registries = $derived<
+		Record<
+			string,
+			({ iconUrl: string } | { icon: Component }) & { url: string; imgClasses?: string }
+		>
+	>(
+		packageInfo.registryExcluded
 			? Object.fromEntries([])
 			: {
 					npmjs: {
-						iconUrl: "/npm.svg",
-						url: `https://npmjs.com/package/${packageInfo.name}`,
-						imgClasses:
-							"filter-[grayscale(1)_contrast(100)_brightness(1)] dark:filter-[grayscale(1)_contrast(100)_brightness(1)_invert(1)]"
+						icon: Npm,
+						url: `https://npmjs.com/package/${packageInfo.name}`
 					},
 					npmx: {
-						iconUrl: "https://npmx.dev/logo.svg",
+						iconUrl: "https://npmx.dev/favicon.svg",
 						url: `https://npmx.dev/package/${packageInfo.name}`,
-						imgClasses: "scale-110 dark:invert"
+						imgClasses: "dark:invert"
 					}
 				}
 	);
+
+	// Description check
+	$effect(() => {
+		if (packageInfo.description) return;
+		posthog.captureException(new Error("Empty package description"), {
+			package: untrack(() => packageInfo.name)
+		});
+	});
 
 	// RSS
 	const rssEntries: Record<string, string> = {
@@ -67,6 +88,23 @@
 	}
 </script>
 
+<svelte:head>
+	{#each Object.entries(rssEntries) as [name, file] (name)}
+		<link
+			rel="alternate"
+			type="application/{file.replace('.', '+')}"
+			href={appendToPath(
+				page.url.origin,
+				resolve("/package/[...package]", {
+					package: rssRoutePackage
+				}),
+				file
+			)}
+			title="RSS feed for {packageInfo.name}"
+		/>
+	{/each}
+</svelte:head>
+
 <div class={classValue}>
 	<div class="group relative">
 		<h1
@@ -76,28 +114,30 @@
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html packageInfo.name.replace(/\//g, "/<wbr />")}
 		</h1>
-		<div
-			class="absolute start-0 top-2.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-5 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8 md:top-4.5 md:group-hover:-translate-x-6"
-		>
-			<button
-				type="button"
-				onclick={() =>
-					navigator.clipboard
-						.writeText(packageInfo.name)
-						.then(() =>
-							toast.success("Package name copied", {
-								description: `"${packageInfo.name}" has been successfully copied to your clipboard!`
-							})
-						)
-						.catch(e =>
-							toast.error("Failed to copy", {
-								description: `Could not copy "${packageInfo.name}" to your clipboard: ${e}"`
-							})
-						)}
+		{#if !isCategory}
+			<div
+				class="absolute inset-s-0 top-2.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-5 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8 md:top-4.5 md:group-hover:-translate-x-6"
 			>
-				<Copy class="size-4 text-muted-foreground hover:text-primary-foreground md:size-5" />
-			</button>
-		</div>
+				<button
+					type="button"
+					onclick={() =>
+						navigator.clipboard
+							.writeText(packageInfo.name)
+							.then(() =>
+								toast.success("Package name copied", {
+									description: `"${packageInfo.name}" has been successfully copied to your clipboard!`
+								})
+							)
+							.catch(e =>
+								toast.error("Failed to copy", {
+									description: `Could not copy "${packageInfo.name}" to your clipboard: ${stringifyError(e)}"`
+								})
+							)}
+				>
+					<Copy class="size-4 text-muted-foreground hover:text-primary-foreground md:size-5" />
+				</button>
+			</div>
+		{/if}
 	</div>
 	<div class="flex flex-col xs:flex-row xs:items-center">
 		<!-- Repo name -->
@@ -129,9 +169,14 @@
 		<!-- Sub-items -->
 		<div class="inline-flex items-center">
 			<!-- JS registries -->
-			{#each Object.entries(registries) as [name, { iconUrl: src, url: href, imgClasses }], index (name)}
+			{#each Object.entries(registries) as [name, registry], index (name)}
+				{@const { url: href, imgClasses } = registry}
 				<Button variant="ghost" size="icon" class="size-7" {href} target="_blank">
-					<img {src} alt={name} class={["h-4", imgClasses]} />
+					{#if "iconUrl" in registry}
+						<img src={registry.iconUrl} alt={name} class={["h-4", imgClasses]} />
+					{:else}
+						<registry.icon class={registry.imgClasses} />
+					{/if}
 				</Button>
 
 				<!-- Only shows if there are registries available for this package -->
@@ -169,11 +214,12 @@
 							href={appendToPath(
 								page.url.origin,
 								resolve("/package/[...package]", {
-									package: packageInfo.name
+									package: rssRoutePackage
 								}),
 								file
 							)}
-							data-sveltekit-preload-data="tap"
+							data-sveltekit-preload-data="off"
+							data-sveltekit-preload-code="off"
 						>
 							{name}
 						</Button>

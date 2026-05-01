@@ -9,9 +9,9 @@ let phInit = false;
 export function load({ url, data }) {
 	if (!phInit && browser && !dev) {
 		posthog.init(PUBLIC_POSTHOG_KEY, {
-			__add_tracing_headers: [url.host],
-			api_host: `${url.origin}/ingest`,
+			api_host: "/ingest",
 			ui_host: "https://eu.posthog.com",
+			persistence: "localStorage",
 			person_profiles: "always"
 		});
 		phInit = true;
@@ -40,8 +40,7 @@ export function load({ url, data }) {
 			},
 			twitter: {
 				creator: "@probably_coding",
-				cardType: "summary",
-				description: "A nice UI to stay up-to-date with Svelte releases"
+				cardType: "summary"
 			},
 			keywords: ["svelte", "changelog", "svelte changelog", "sveltekit"],
 			additionalRobotsProps: {

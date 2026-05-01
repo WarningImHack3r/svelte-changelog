@@ -20,8 +20,9 @@
 	"importOrder": [
 		"^\\.\\./app.css$",
 		"^svelte$",
-		"^@sveltejs/kit.*$",
 		"^svelte/.*$",
+		"^@sveltejs/kit.*$",
+		"^@sveltejs/.*$",
 		"\\$(app|env)/.+$",
 		"<THIRD_PARTY_MODULES>",
 		"\\$lib/(?!components).+$",

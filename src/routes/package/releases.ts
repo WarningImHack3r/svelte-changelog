@@ -1,8 +1,8 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
-import { ddebug, dlog, dwarn } from "$lib/debug";
+import { ddebug, dlog, dwarn } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
-import { type GitHubRelease, githubCache } from "$lib/server/github-cache";
+import { type GitHubRelease, githubCache } from "$lib/server/github-api";
 import type { discoverer } from "$lib/server/package-discoverer";
 import type { Prettify } from "$lib/types";
 
@@ -68,6 +68,10 @@ export async function getPackageReleases(
 						dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
 						return false;
 					}
+
+					// filter as soon as possible to avoid errors due to parsing tags we should potentially not even care about
+					if (!(repo.dataFilter?.(release) ?? true)) return false;
+
 					const [name, version] = repo.metadataFromTag(release.tag_name);
 					if (!name) {
 						dwarn(
@@ -89,10 +93,7 @@ export async function getPackageReleases(
 						);
 						return false;
 					}
-					return (
-						(repo.dataFilter?.(release) ?? true) &&
-						repo.pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0
-					);
+					return repo.pkg.name.localeCompare(name, undefined, { sensitivity: "base" }) === 0;
 				})
 				.sort((a, b) => {
 					const [, firstVersion] = repo.metadataFromTag(a.tag_name);
@@ -128,7 +129,6 @@ export async function getPackageReleases(
 			if (foundVersions.has(cleanVersion)) continue;
 
 			// If not, add its version to the set and itself to the final version
-			// eslint-disable-next-line e18e/prefer-array-to-sorted
 			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
 			ddebug("Current newest version", currentNewestVersion ?? "<none>");
 			foundVersions.add(cleanVersion);
@@ -161,25 +161,33 @@ export async function getPackageReleases(
 }
 
 /**
- * Get all the releases from all the packages.
+ * Get all the releases for the given list of packages
  *
- * @param allPackages all the known packages
+ * @param packageNames the packages to get the releases for, or `true` to get them all
+ * @param allPackages all the known packages with their metadata
  * @param posthog the optional PostHog instance
- * @return a list of all the package releases
+ * @returns a list of the packages' releases
  */
-export async function getAllPackagesReleases(
+export async function getPackagesReleases(
+	packageNames: string[] | boolean,
 	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
 	posthog?: PostHog
 ) {
-	const packages = allPackages.flatMap(({ packages }) => packages);
+	if (packageNames === false) return [];
 
-	const awaitedResult = await Promise.all(
-		packages.map(async ({ pkg }) => getPackageReleases(pkg.name, allPackages, posthog))
+	const packages = new Set(
+		allPackages.flatMap(({ packages }) => packages).map(({ pkg }) => pkg.name)
 	);
 
-	return awaitedResult
+	const wantedPackages = packageNames === true ? new Set<string>() : new Set(packageNames);
+	const fetchedPackages = [...packages].filter(p => packageNames === true || wantedPackages.has(p));
+	const result = await Promise.all(
+		fetchedPackages.map(pkg => getPackageReleases(pkg, allPackages, posthog))
+	);
+
+	return result
 		.filter(r => r !== undefined)
-		.flatMap(r => r.releases)
+		.flatMap(({ releases }) => releases)
 		.toSorted(
 			(a, b) =>
 				new Date(b.published_at ?? b.created_at).getTime() -

@@ -1,5 +1,5 @@
 import type { Octokit } from "octokit";
-import type { GitHubRelease } from "$lib/server/github-cache";
+import type { GitHubRelease } from "$lib/server/github-api";
 
 // ===== UTILITIES (my lil type-fest)
 
@@ -71,6 +71,17 @@ export type RemoveIndexSignature<T> = {
 export type ConditionalKeys<T, Condition> = {
 	[K in keyof T]: K extends Condition ? K : never;
 }[keyof T];
+
+/**
+ * Replaces `undefined` by `null` to be Redis-compatible
+ */
+export type JSONCompatible<T> = T extends undefined
+	? null
+	: T extends (infer U)[]
+		? JSONCompatible<U>[]
+		: T extends object
+			? { [K in keyof T]-?: JSONCompatible<T[K]> }
+			: T;
 
 // ===== GLOBAL TYPES
 
@@ -145,7 +156,7 @@ export type Pulls = InstanceType<typeof Octokit>["rest"]["pulls"];
  * The Pull, Issue or Discussion type.
  * Matches the slug in GitHub URLs.
  */
-export type PID = "pull" | "issue" | "discussion";
+export type PID = "pull" | "issues" | "discussions";
 
 /**
  * The JSON API response for `https://github.com/{user}/{repo}/branch_commits/{sha}`

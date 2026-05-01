@@ -1,27 +1,48 @@
 import { browser, dev } from "$app/environment";
 import { logs } from "@opentelemetry/api-logs";
-import util from "node:util";
 import { siteRepoName } from "./properties";
 
 const DEBUG = false;
 const logger = logs.getLogger(`${siteRepoName}-logs`);
 
+/**
+ * An {@see import} wrapper that efficiently stops Vite
+ * from being annoying about Node import.
+ *
+ * @param moduleName the module to import
+ * @returns the import Promise
+ *
+ * @see {@link https://github.com/sveltejs/svelte/pull/17763}
+ */
+function obfuscatedImport<T = unknown>(moduleName: string): Promise<T> {
+	return import(/* @vite-ignore */ moduleName) as Promise<T>;
+}
+
 export function dlog(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.log(message, ...optionalParams);
-	if (!dev && !browser)
-		logger.emit({ severityText: "info", body: util.format(message, ...optionalParams) });
+	if (!dev && !browser) {
+		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
+			logger.emit({ severityText: "info", body: util.format(message, ...optionalParams) })
+		);
+	}
 }
 
 export function dwarn(message?: unknown, ...optionalParams: unknown[]) {
 	if (dev || DEBUG) console.warn(message, ...optionalParams);
-	if (!dev && !browser)
-		logger.emit({ severityText: "warn", body: util.format(message, ...optionalParams) });
+	if (!dev && !browser) {
+		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
+			logger.emit({ severityText: "warn", body: util.format(message, ...optionalParams) })
+		);
+	}
 }
 
 export function derror(message?: unknown, ...optionalParams: unknown[]) {
 	if (dev || DEBUG) console.error(message, ...optionalParams);
-	if (!dev && !browser)
-		logger.emit({ severityText: "error", body: util.format(message, ...optionalParams) });
+	if (!dev && !browser) {
+		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
+			logger.emit({ severityText: "error", body: util.format(message, ...optionalParams) })
+		);
+	}
 }
 
 /**
@@ -29,14 +50,20 @@ export function derror(message?: unknown, ...optionalParams: unknown[]) {
  */
 export function dfatal(message?: unknown, ...optionalParams: unknown[]) {
 	if (dev || DEBUG) console.error(message, ...optionalParams);
-	if (!dev && !browser)
-		logger.emit({ severityText: "fatal", body: util.format(message, ...optionalParams) });
+	if (!dev && !browser) {
+		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
+			logger.emit({ severityText: "fatal", body: util.format(message, ...optionalParams) })
+		);
+	}
 }
 
 export function ddebug(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.debug(message, ...optionalParams);
-	if (!dev && !browser)
-		logger.emit({ severityText: "debug", body: util.format(message, ...optionalParams) });
+	if (!dev && !browser) {
+		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
+			logger.emit({ severityText: "debug", body: util.format(message, ...optionalParams) })
+		);
+	}
 }
 
 export function dclear() {
@@ -101,6 +128,9 @@ export function dtimeStamp(label?: string) {
 
 export function dtrace(message?: unknown, ...optionalParams: unknown[]) {
 	if (DEBUG) console.trace(message, ...optionalParams);
-	if (!dev && !browser)
-		logger.emit({ severityText: "trace", body: util.format(message, ...optionalParams) });
+	if (!dev && !browser) {
+		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
+			logger.emit({ severityText: "trace", body: util.format(message, ...optionalParams) })
+		);
+	}
 }

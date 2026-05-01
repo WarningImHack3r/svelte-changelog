@@ -21,7 +21,7 @@
 
 <div class="relative flex gap-8">
 	<div class="flex-1">
-		{@render children()}
+		{@render children?.()}
 	</div>
 
 	<Sheet.Root bind:open>

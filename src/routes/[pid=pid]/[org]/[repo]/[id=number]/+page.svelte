@@ -7,6 +7,8 @@
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ArrowUpRight, ChevronLeft, CircleAlert, Lightbulb, Lock, Tag } from "@lucide/svelte";
+	import { pidFormatter } from "$lib/strings";
+	import type { PID } from "$lib/types";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
@@ -110,6 +112,22 @@
 	});
 
 	/**
+	 * Returns the PID of the linked entity from the input one.
+	 *
+	 * @param pid the input PID
+	 * @returns the PID of its linked entity
+	 */
+	export function getLinkedEntityPID(pid: PID): PID {
+		switch (pid) {
+			case "pull":
+				return "issues";
+			case "issues":
+				return "pull";
+		}
+		return pid;
+	}
+
+	/**
 	 * Returns the previous page to go back to
 	 */
 	function getPreviousPath() {
@@ -127,8 +145,7 @@
 	/>
 {/if}
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
-	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-	<a href={info.html_url}>
+	<a href={info.html_url} rel="external">
 		<MarkdownRenderer
 			markdown={info.title}
 			inline
@@ -139,9 +156,7 @@
 </h2>
 {#if linkedEntities.length}
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
-		{metadata.type === "pull" ? "Closing issue" : "Development PR"}{linkedEntities.length > 1
-			? "s"
-			: ""}
+		{pidFormatter.toLinkedEntity(metadata.type, linkedEntities.length > 1)}
 	</h3>
 	<LinkedEntitiesList
 		entities={linkedEntities}
@@ -153,7 +168,7 @@
 {/if}
 <div class="flex items-center">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
-		{metadata.type === "pull" ? "Pull request" : metadata.type === "issue" ? "Issue" : "Discussion"}
+		{pidFormatter.toHumanReadable(metadata.type)}
 	</h3>
 	{#if info.locked}
 		<div
@@ -191,8 +206,7 @@
 				class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
 			>
 				{#if info.user}
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a href={info.user.html_url} class="group inline-flex items-center">
+					<a href={info.user.html_url} rel="external" class="group inline-flex items-center">
 						<Avatar.Root class="mr-2 size-5">
 							<Avatar.Image
 								src={info.user.avatar_url}
@@ -218,7 +232,7 @@
 					owner: metadata.org,
 					name: metadata.repo
 				}}
-				renderSlug={metadata.type === "discussion"}
+				renderSlug={metadata.type === "discussions"}
 				reactions={"reactions" in info ? info.reactions : undefined}
 				reactionItemUrl={info.html_url}
 				class="bg-muted/30 p-4"
@@ -248,9 +262,9 @@
 								This pull request was released in
 								<Button
 									variant="link"
-									href={resolve("/package/[...package]", {
+									href={resolve(`/package/[...package]#${tagVersion}`, {
 										package: tagName
-									}) + `#${tagVersion}`}
+									})}
 									class="h-auto p-0 text-green-500"
 								>
 									{tagName}
@@ -315,14 +329,14 @@
 				{#each linkedEntities as entity (entity.number)}
 					<AnimatedButton
 						href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
-							pid: metadata.type === "pull" ? "issues" : "pull",
+							pid: getLinkedEntityPID(metadata.type),
 							org: entity.repository.owner,
 							repo: entity.repository.name,
 							id: `${entity.number}`
 						})}
 						variant="secondary"
 					>
-						Open {metadata.type === "pull" ? "issue" : "pull request"}
+						Open {pidFormatter.toHumanReadable(getLinkedEntityPID(metadata.type)).toLowerCase()}
 						{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
 							#{entity.number}
 						{:else}
@@ -333,11 +347,7 @@
 			</div>
 		{/if}
 		<AnimatedButton href={info.html_url} target="_blank" class="group gap-0 dark:text-black">
-			Open {metadata.type === "pull"
-				? "pull request"
-				: metadata.type === "issue"
-					? "issue"
-					: "discussion"} on GitHub
+			Open {pidFormatter.toHumanReadable(metadata.type).toLowerCase()} on GitHub
 			<ArrowUpRight
 				class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 			/>

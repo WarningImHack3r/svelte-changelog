@@ -1,16 +1,17 @@
 import { error } from "@sveltejs/kit";
 import { siteName } from "$lib/properties";
+import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
-import { getAllPackagesReleases, getPackageReleases } from "../releases";
+import { getPackageReleases, getPackagesReleases } from "../releases";
 
-export async function load({ params, locals }) {
-	const { package: slugPackage } = params;
+export async function load({ params: { package: slugPackage }, setHeaders, locals }) {
 	// 1. Get all the discovered packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	// 1.5. Return a set for all the packages
-	if (slugPackage.toLowerCase() === ALL_SLUG) {
+	if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
+		await tagResponse(setHeaders, "all-packages");
 		return {
 			currentPackage: {
 				category: {
@@ -21,11 +22,41 @@ export async function load({ params, locals }) {
 				repoName: "",
 				pkg: {
 					name: "All releases",
-					description: `All the releases of the packages listed on ${siteName}`
+					description: `All the releases of the packages listed on ${siteName}`,
+					registryExcluded: true
 				}
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
-			releases: await getAllPackagesReleases(categorizedPackages, locals.posthog)
+			releases: await getPackagesReleases(true, categorizedPackages, locals.posthog)
 		};
+	}
+
+	// 1.625. Return a set for categories
+	for (const { category, packages } of categorizedPackages) {
+		if (packages.length < 2) continue; // categories with 1 package are not visitable
+		if (slugPackage.localeCompare(category.slug, undefined, { sensitivity: "base" }) === 0) {
+			await tagResponse(
+				setHeaders,
+				"all-packages",
+				...packages.map(({ pkg }) => `package-${pkg.name.toLowerCase()}`)
+			);
+			return {
+				currentPackage: {
+					category,
+					repoOwner: "",
+					repoName: "",
+					pkg: {
+						name: category.name,
+						description: `All the releases for the ${category.name} category`,
+						registryExcluded: true
+					}
+				} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
+				releases: await getPackagesReleases(
+					packages.map(({ pkg }) => pkg.name),
+					categorizedPackages,
+					locals.posthog
+				)
+			};
+		}
 	}
 
 	// 1.75. Early check to ensure the package exists
@@ -45,6 +76,9 @@ export async function load({ params, locals }) {
 		locals.posthog
 	);
 	if (!packageReleases) error(404, `Unable to retrieve releases for ${slugPackage}`);
+
+	// Cache management
+	await tagResponse(setHeaders, "all-packages", `package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
 
 	// 3. Return the data
 	const { releasesRepo: currentPackage, releases } = packageReleases;

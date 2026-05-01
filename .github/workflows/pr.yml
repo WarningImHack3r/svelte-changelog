@@ -7,6 +7,7 @@ on:
       - static/**
       - package.json
       - pnpm-lock.yaml
+      - .prettierrc
       - "*.config.*s"
       - tsconfig.json
       - .github/workflows/*
@@ -23,7 +24,7 @@ jobs:
       has-permissions: ${{ steps.check-output.outputs.has-permissions }}
 
     steps:
-      - name: ❓ Has access to secrets?
+      - name: ❓ Check access to secrets
         id: secrets-check
         continue-on-error: true
         uses: actions/checkout@v6
@@ -51,10 +52,9 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref }}
           token: ${{ needs.permissions-check.outputs.has-permissions == 'false' && github.token || secrets.WORKFLOW_PAT }}
-          fetch-depth: ${{ github.event_name == 'push' && 2 || 1 }}
 
       - name: 📥 Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: 🧭 Setup Node
         uses: actions/setup-node@v6
@@ -63,7 +63,7 @@ jobs:
           cache: pnpm
 
       - name: 📥 Install NPM dependencies
-        run: pnpm i --no-frozen-lockfile
+        run: pnpm i
 
       - name: 🔍 Detect file changes
         id: detect-changes-pnpm
@@ -102,13 +102,13 @@ jobs:
           deps_changes=false
 
           for file in ${{ steps.modified-files.outputs.all_changed_files }}; do
-            if [[ $file =~ ^src/ || $file =~ ^static/ ]]; then
+            if [[ $file =~ ^src/ ]] || [[ $file =~ ^static/ ]]; then
               echo "$file changes code"
               code_changes=true
             elif [[ $file = pnpm-lock.yaml ]]; then
               echo "$file changes dependencies"
               deps_changes=true
-            elif [[ $file = *.config.*s || $file = tsconfig.json ]]; then
+            elif [[ $file = *.config.*s ]] || [[ $file = *prettier* ]] || [[ $file = tsconfig.json ]]; then
               echo "$file changes config"
               config_changes=true
             fi

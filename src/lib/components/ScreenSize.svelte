@@ -1,6 +1,8 @@
 <script lang="ts">
-	// From https://gist.github.com/WarningImHack3r/375c559c5ee120408f9df2390ec2747a
-	// Inspired by https://gist.github.com/Sh4yy/0300299ae60af4910bcb341703946330
+	/*
+	 * From https://gist.github.com/WarningImHack3r/375c559c5ee120408f9df2390ec2747a
+	 * Inspired by https://gist.github.com/Sh4yy/0300299ae60af4910bcb341703946330
+	 */
 	import { innerHeight, innerWidth } from "svelte/reactivity/window";
 	import { slide } from "svelte/transition";
 
@@ -14,7 +16,7 @@
 		if (typeof value === "number") return value;
 
 		const num = parseFloat(value);
-		const unit = value.match(insensitiveLetterRegex)?.[0]?.toLowerCase();
+		const unit = insensitiveLetterRegex.exec(value)?.[0]?.toLowerCase();
 
 		if (!num || !unit) return null;
 

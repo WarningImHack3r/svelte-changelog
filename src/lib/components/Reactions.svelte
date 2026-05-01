@@ -1,21 +1,17 @@
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
 	import { toast } from "svelte-sonner";
-	import type { GitHubRelease } from "$lib/server/github-cache";
-	import type { Entries } from "$lib/types";
+	import type { GitHubRelease } from "$lib/server/github-api";
+	import type { Entries, JSONCompatible } from "$lib/types";
 	import { Badge } from "$lib/components/ui/badge";
 	import ReactionToast from "$lib/components/ReactionToast.svelte";
 
 	type Props = {
-		reactions?: GitHubRelease["reactions"] | undefined;
+		reactions?: JSONCompatible<GitHubRelease["reactions"]> | undefined;
 		reactionItemUrl?: string;
 		class?: ClassValue;
 	};
-	let {
-		reactions = undefined,
-		reactionItemUrl = undefined,
-		class: className = undefined
-	}: Props = $props();
+	let { reactions, reactionItemUrl, class: className }: Props = $props();
 
 	type ReactionKey = Exclude<keyof NonNullable<GitHubRelease["reactions"]>, "url" | "total_count">;
 	const reactionsEmojis: Record<ReactionKey, string> = {
