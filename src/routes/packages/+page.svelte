@@ -12,7 +12,7 @@
 	// Pins
 	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
 	/**
-	 * A set proxy to quickly query the pinned items.
+	 * A read-only set proxy to quickly query the pinned items.
 	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
 	 * as it isn't reactive (enough).
 	 */
@@ -26,13 +26,31 @@
 			const isBPinned = pinnedROProxy.has(pkgB.name);
 			return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
 		})}
+		{@const isCategoryClickable = packages.length > 1}
 		<li>
-			<h3 class="flex flex-col font-display sm:flex-row sm:items-baseline sm:gap-2">
+			<svelte:element
+				this={isCategoryClickable ? "a" : "h3"}
+				href={isCategoryClickable
+					? resolve("/package/[...package]", {
+							package: category.slug
+						})
+					: undefined}
+				class="group flex w-fit flex-col font-display sm:flex-row sm:items-baseline sm:gap-2"
+			>
 				<span class="text-3xl text-primary text-shadow-sm">{category.name}</span>
 				{#if category.description}
 					<span>{category.description}</span>
+					{#if isCategoryClickable}
+						<ChevronRight
+							class="-ms-1 size-4 translate-y-1 text-primary transition-transform group-hover:translate-x-1"
+						/>
+					{/if}
+				{:else if isCategoryClickable}
+					<ChevronRight
+						class="-ms-1 size-5 translate-y-0.75 transition-transform group-hover:translate-x-1"
+					/>
 				{/if}
-			</h3>
+			</svelte:element>
 			<ul class="mt-2">
 				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
