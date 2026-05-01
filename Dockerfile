@@ -10,8 +10,7 @@ RUN pnpm run build
 FROM node:slim
 RUN apt-get update && apt-get install -y wget curl # install wget & curl for in-container health checks
 WORKDIR /app
-COPY --from=base /app/node_modules node_modules
-COPY --from=base /app/build build
+COPY --from=base /app/build/node node
 EXPOSE 3000
 ENV NODE_ENV=production
-CMD [ "node", "build" ]
+CMD [ "/app/node" ]
