@@ -161,25 +161,33 @@ export async function getPackageReleases(
 }
 
 /**
- * Get all the releases from all the packages.
+ * Get all the releases for the given list of packages
  *
- * @param allPackages all the known packages
+ * @param packageNames the packages to get the releases for, or `true` to get them all
+ * @param allPackages all the known packages with their metadata
  * @param posthog the optional PostHog instance
- * @returns a list of all the package releases
+ * @returns a list of the packages' releases
  */
-export async function getAllPackagesReleases(
+export async function getPackagesReleases(
+	packageNames: string[] | boolean,
 	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
 	posthog?: PostHog
 ) {
-	const packages = allPackages.flatMap(({ packages }) => packages);
+	if (packageNames === false) return [];
 
-	const awaitedResult = await Promise.all(
-		packages.map(async ({ pkg }) => getPackageReleases(pkg.name, allPackages, posthog))
+	const packages = new Set(
+		allPackages.flatMap(({ packages }) => packages).map(({ pkg }) => pkg.name)
 	);
 
-	return awaitedResult
+	const wantedPackages = packageNames === true ? new Set<string>() : new Set(packageNames);
+	const fetchedPackages = [...packages].filter(p => packageNames === true || wantedPackages.has(p));
+	const result = await Promise.all(
+		fetchedPackages.map(pkg => getPackageReleases(pkg, allPackages, posthog))
+	);
+
+	return result
 		.filter(r => r !== undefined)
-		.flatMap(r => r.releases)
+		.flatMap(({ releases }) => releases)
 		.toSorted(
 			(a, b) =>
 				new Date(b.published_at ?? b.created_at).getTime() -

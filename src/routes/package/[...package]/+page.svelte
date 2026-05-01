@@ -228,8 +228,9 @@
 	 * @returns a list of newly supported packages/versions, empty if none
 	 */
 	function supportAddedFor(releaseBody: string): string[] {
-		return data.currentPackage.category.slug === ALL_SLUG
-			? [] /* even if we could, don't show those lines for All releases as it looks like a mess */
+		return data.currentPackage.category.slug === ALL_SLUG ||
+			data.currentPackage.category.name === data.currentPackage.pkg.name
+			? [] /* even if we technically could, don't show those lines for multi-packages pages as it looks like a mess */
 			: releaseBody
 					.split(newLineRegex)
 					.map(line => {

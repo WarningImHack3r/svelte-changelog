@@ -9,7 +9,6 @@
 	import { toast } from "svelte-sonner";
 	import type { Package } from "$lib/server/package-discoverer";
 	import { stringifyError } from "$lib/strings";
-	import { ALL_SLUG } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
@@ -27,6 +26,13 @@
 	let { packageInfo, currentRepo, class: classValue }: Props = $props();
 
 	let viewTransitionName = $derived(packageInfo.name.replace(/[@/-]/g, ""));
+	let isCategory = $derived(
+		// ugly logic but pretty efficient fwiw
+		packageInfo.name.includes(" ") || packageInfo.name !== packageInfo.name.toLowerCase()
+	);
+	let rssRoutePackage = $derived(
+		isCategory ? (packageInfo.categorySlug ?? packageInfo.name) : packageInfo.name
+	);
 
 	// Registries
 	let registries = $derived<
@@ -35,7 +41,7 @@
 			({ iconUrl: string } | { icon: Component }) & { url: string; imgClasses?: string }
 		>
 	>(
-		packageInfo.categorySlug === ALL_SLUG || packageInfo.registryExcluded
+		packageInfo.registryExcluded
 			? Object.fromEntries([])
 			: {
 					npmjs: {
@@ -90,7 +96,7 @@
 			href={appendToPath(
 				page.url.origin,
 				resolve("/package/[...package]", {
-					package: packageInfo.name
+					package: rssRoutePackage
 				}),
 				file
 			)}
@@ -108,28 +114,30 @@
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html packageInfo.name.replace(/\//g, "/<wbr />")}
 		</h1>
-		<div
-			class="absolute inset-s-0 top-2.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-5 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8 md:top-4.5 md:group-hover:-translate-x-6"
-		>
-			<button
-				type="button"
-				onclick={() =>
-					navigator.clipboard
-						.writeText(packageInfo.name)
-						.then(() =>
-							toast.success("Package name copied", {
-								description: `"${packageInfo.name}" has been successfully copied to your clipboard!`
-							})
-						)
-						.catch(e =>
-							toast.error("Failed to copy", {
-								description: `Could not copy "${packageInfo.name}" to your clipboard: ${stringifyError(e)}"`
-							})
-						)}
+		{#if !isCategory}
+			<div
+				class="absolute inset-s-0 top-2.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-5 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8 md:top-4.5 md:group-hover:-translate-x-6"
 			>
-				<Copy class="size-4 text-muted-foreground hover:text-primary-foreground md:size-5" />
-			</button>
-		</div>
+				<button
+					type="button"
+					onclick={() =>
+						navigator.clipboard
+							.writeText(packageInfo.name)
+							.then(() =>
+								toast.success("Package name copied", {
+									description: `"${packageInfo.name}" has been successfully copied to your clipboard!`
+								})
+							)
+							.catch(e =>
+								toast.error("Failed to copy", {
+									description: `Could not copy "${packageInfo.name}" to your clipboard: ${stringifyError(e)}"`
+								})
+							)}
+				>
+					<Copy class="size-4 text-muted-foreground hover:text-primary-foreground md:size-5" />
+				</button>
+			</div>
+		{/if}
 	</div>
 	<div class="flex flex-col xs:flex-row xs:items-center">
 		<!-- Repo name -->
@@ -206,7 +214,7 @@
 							href={appendToPath(
 								page.url.origin,
 								resolve("/package/[...package]", {
-									package: packageInfo.name
+									package: rssRoutePackage
 								}),
 								file
 							)}
