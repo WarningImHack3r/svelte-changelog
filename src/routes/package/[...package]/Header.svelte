@@ -30,6 +30,9 @@
 		// ugly logic but pretty efficient fwiw
 		packageInfo.name.includes(" ") || packageInfo.name !== packageInfo.name.toLowerCase()
 	);
+	let rssRoutePackage = $derived(
+		isCategory ? (packageInfo.categorySlug ?? packageInfo.name) : packageInfo.name
+	);
 
 	// Registries
 	let registries = $derived<
@@ -93,7 +96,7 @@
 			href={appendToPath(
 				page.url.origin,
 				resolve("/package/[...package]", {
-					package: packageInfo.name
+					package: rssRoutePackage
 				}),
 				file
 			)}
@@ -211,9 +214,7 @@
 							href={appendToPath(
 								page.url.origin,
 								resolve("/package/[...package]", {
-									package: isCategory
-										? (packageInfo.categorySlug ?? packageInfo.name)
-										: packageInfo.name
+									package: rssRoutePackage
 								}),
 								file
 							)}
