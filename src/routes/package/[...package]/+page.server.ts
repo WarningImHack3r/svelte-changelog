@@ -11,6 +11,7 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 
 	// 1.5. Return a set for all the packages
 	if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
+		await tagResponse(setHeaders, "all-packages");
 		return {
 			currentPackage: {
 				category: {
@@ -33,6 +34,11 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 	for (const { category, packages } of categorizedPackages) {
 		if (packages.length < 2) continue; // categories with 1 package are not visitable
 		if (slugPackage.localeCompare(category.slug, undefined, { sensitivity: "base" }) === 0) {
+			await tagResponse(
+				setHeaders,
+				"all-packages",
+				...packages.map(({ pkg }) => `package-${pkg.name.toLowerCase()}`)
+			);
 			return {
 				currentPackage: {
 					category,
