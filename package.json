@@ -94,6 +94,7 @@
 			"@parcel/watcher",
 			"@posthog/cli",
 			"@tailwindcss/oxide",
+			"adapter-node-sea",
 			"core-js",
 			"esbuild",
 			"protobufjs"
