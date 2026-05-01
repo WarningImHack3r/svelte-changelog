@@ -54,6 +54,8 @@ export type Member = Awaited<
 	ReturnType<InstanceType<typeof Octokit>["rest"]["orgs"]["listMembers"]>
 >["data"][number];
 
+type KeyArg = string | number | boolean;
+
 type OwnerKeyType = "members";
 
 type RepoKeyType =
@@ -209,13 +211,13 @@ export class GitHubAPI {
 
 	readonly #octokit: Octokit;
 
-	#pendingRequests = new Map<string, Promise<unknown>>();
+	readonly #pendingRequests = new Map<string, Promise<unknown>>();
 
 	/**
 	 * Creates a new {@link GitHubAPI} with the required auth info.
 	 *
 	 * @param redisUrl the Redis cache TCP URL
-	 * @param githubToken the GitHub token for uncached API requests
+	 * @param octokit the Octokit instance to use for API requests
 	 * @constructor
 	 */
 	constructor(redisUrl: string, octokit: Octokit) {
@@ -244,7 +246,7 @@ export class GitHubAPI {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: (string | number | boolean)[]) {
+	#getOwnerKey(owner: string, type: OwnerKeyType, ...args: KeyArg[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `owner:${owner}:${type}${strArgs}`;
 	}
@@ -261,12 +263,7 @@ export class GitHubAPI {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getRepoKey(
-		owner: string,
-		repo: string,
-		type: RepoKeyType,
-		...args: (string | number | boolean)[]
-	) {
+	#getRepoKey(owner: string, repo: string, type: RepoKeyType, ...args: KeyArg[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `repo:${owner}/${repo}:${type}${strArgs}`;
 	}
@@ -281,7 +278,7 @@ export class GitHubAPI {
 	 * @returns the pure computed key
 	 * @private
 	 */
-	#getPackageKey(packageName: string, ...args: (string | number | boolean)[]) {
+	#getPackageKey(packageName: string, ...args: KeyArg[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `package:${packageName}${strArgs}`;
 	}
@@ -331,9 +328,9 @@ export class GitHubAPI {
 			/**
 			 * The optional TTL to use for the newly cached data
 			 *
-			 * Uses the transformed result as parameter if used as a function
+			 * Uses the transformed result as a parameter if used as a function
 			 */
-			ttl?: number | ((data: Transformed) => number | undefined) | undefined;
+			ttl?: number | ((data: Transformed) => number | undefined);
 		}): Promise<Transformed>;
 
 		async function processFn<NewData extends Transformed>(params: {
@@ -347,9 +344,9 @@ export class GitHubAPI {
 			/**
 			 * The optional TTL to use for the newly cached data
 			 *
-			 * Uses the fetched data as parameter if used as a function
+			 * Uses the fetched data as a parameter if used as a function
 			 */
-			ttl?: number | ((data: NewData) => number | undefined) | undefined;
+			ttl?: number | ((data: NewData) => number | undefined);
 		}): Promise<NewData>;
 		/**
 		 * Inner currying function to circumvent unsupported partial inference
@@ -363,7 +360,7 @@ export class GitHubAPI {
 		}: {
 			fn: () => Promise<NewData> | NewData;
 			transformer?: (from: Awaited<NewData>) => Transformed;
-			ttl?: number | ((data: NewData | Transformed) => number | undefined) | undefined;
+			ttl?: number | ((data: NewData | Transformed) => number | undefined);
 		}): Promise<NewData | Transformed> {
 			const existing = self.#pendingRequests.get(cacheKey);
 			if (existing !== undefined) return existing as Promise<Transformed>;
@@ -779,6 +776,7 @@ export class GitHubAPI {
 	/**
 	 * Transforms a raw GraphQL return type to a LinkedItem
 	 *
+	 * @param itemType the type of the item to transform
 	 * @param gql the raw GraphQL item
 	 * @returns the mapped LinkedItem
 	 */
@@ -881,13 +879,13 @@ export class GitHubAPI {
 					ref: (() => {
 						try {
 							return owner === "sveltejs" &&
-								repo === "prettier-plugin-svelte" && // this repo is a bit of a mess (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
+								repo === "prettier-plugin-svelte" && // this repo has tagging troubles (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
 								tags[0] &&
 								semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
 								? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
 								: undefined;
 						} catch {
-							// handle oopsies for invalid versions returned from `metadataFromTag` (or others)
+							// handle oopses for invalid versions returned from `metadataFromTag` (or others)
 							return undefined;
 						}
 					})(),
@@ -914,7 +912,9 @@ export class GitHubAPI {
 		 */
 		function simpleHash(input: string) {
 			return Math.abs(
-				input.split("").reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) & 0xffffffff, 0)
+				input
+					.split("")
+					.reduce((hash, char) => (hash * 31 + (char.codePointAt(0) ?? 0)) & 0xffffffff, 0)
 			);
 		}
 
@@ -1009,7 +1009,11 @@ export class GitHubAPI {
 								repo,
 								path
 							}),
-						createOctokitResponse([])
+						createOctokitResponse(
+							{} as Awaited<
+								ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+							>["data"]
+						)
 					);
 
 					try {

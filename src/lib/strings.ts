@@ -33,6 +33,7 @@ export const pidFormatter = {
 	 * Capitalized so it can be lowercased as needed.
 	 *
 	 * @param pid the PID
+	 * @param plural whether the PID is plural
 	 * @returns the formatted string
 	 */
 	toHumanReadable: (pid, plural = false) =>
@@ -48,6 +49,7 @@ export const pidFormatter = {
 	 * Capitalized so it can be lowercased as needed.
 	 *
 	 * @param pid the PID
+	 * @param plural whether the PID is plural
 	 * @returns the formatted string
 	 */
 	toLinkedEntity: (pid, plural = false) =>

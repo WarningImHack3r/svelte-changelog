@@ -4,7 +4,8 @@ import type { GitHubRelease } from "./server/github-api";
 /**
  * Extract the data from the record parameter which the key matches the argument.
  *
- * @param pkgName the package name to extract releases fo
+ * @param record the record to extract releases from
+ * @param pkgName the package name to extract releases for
  * @returns the {@link Promise} of releases
  */
 export function getBadgeDataFromRecord<T>(

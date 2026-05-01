@@ -6,6 +6,7 @@
 		getOrCreateWorkerPoolSingleton
 	} from "@pierre/diffs/worker";
 	import type { PullRequestDetails } from "$lib/server/github-api";
+	import type { JSONCompatible } from "$lib/types";
 	import { workerFactory } from "./workers";
 
 	function getWorker(options: WorkerInitializationRenderOptions) {
@@ -75,7 +76,6 @@
 		type SupportedLanguages
 	} from "@pierre/diffs";
 	import { mode } from "mode-watcher";
-	import type { JSONCompatible } from "$lib/types";
 
 	type Props = Omit<FileDiffRenderProps<T>, "containerWrapper" | "fileContainer"> & {
 		options: FileDiffOptions<T>;

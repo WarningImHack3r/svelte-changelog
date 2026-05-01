@@ -22,7 +22,7 @@ export async function getPackageReleases(
 ) {
 	dlog("Starting loading releases...");
 
-	// Step 1: First identify all matching packages and create fetch tasks
+	// Step 1: First, identify all matching packages and create fetch tasks
 	const matchingPackageTasks: {
 		category: Repository["category"];
 		repo: (typeof allPackages)[number]["packages"][number];

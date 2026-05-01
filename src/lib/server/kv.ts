@@ -31,7 +31,7 @@ export class KVCache {
 	async #connectClient(): Promise<RedisClientType> {
 		if (this.#redis?.isReady) return this.#redis;
 
-		if (this.#connectPromise) return this.#connectPromise;
+		if (this.#connectPromise !== null) return this.#connectPromise;
 
 		this.#connectPromise = this.#redis.connect().then(() => {
 			this.#connectPromise = null;

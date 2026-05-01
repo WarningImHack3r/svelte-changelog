@@ -13,7 +13,7 @@
 	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
 	/**
 	 * A read-only set proxy to quickly query the pinned items.
-	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
+	 * Storing a SvelteSet in the PersistedState doesn't work
 	 * as it isn't reactive (enough).
 	 */
 	let pinnedROProxy = $derived(new Set(pinnedPackages.current));

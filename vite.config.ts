@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
 			POSTHOG_ENV_ID && POSTHOG_SOURCEMAP_API_KEY
 				? posthog({
 						personalApiKey: POSTHOG_SOURCEMAP_API_KEY,
-						envId: POSTHOG_ENV_ID,
+						projectId: POSTHOG_ENV_ID,
 						host: "https://eu.i.posthog.com"
 					})
 				: undefined

@@ -29,7 +29,7 @@ export const settingsUtils = {
 };
 
 class PackagesSettings {
-	#settingsMap = new Map<string, PersistedState<PackageSettings>>();
+	readonly #settingsMap = new Map<string, PersistedState<PackageSettings>>();
 
 	get(packageName: string) {
 		const key = `${packageName.toLowerCase().replaceAll(" ", "-")}-settings`;

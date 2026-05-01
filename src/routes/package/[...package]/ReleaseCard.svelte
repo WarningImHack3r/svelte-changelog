@@ -115,12 +115,10 @@
 	let isOlderThanAWeek = $derived(releaseDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 7);
 
 	$effect(() => {
-		const unsubscribe = setDynamicInterval(
+		return setDynamicInterval(
 			() => (releaseDate = new Date(releaseDate)),
 			() => getRefreshPeriod(untrack(() => releaseDate))
 		);
-
-		return unsubscribe;
 	});
 
 	/**
@@ -166,8 +164,8 @@
 
 	/**
 	 * A small utility function to get the diff between two dates
-	 * @param first The initial date
-	 * @param second The date to compare the first one to
+	 * @param d1 The initial date
+	 * @param d2 The date to compare the first one to
 	 * @returns A diff object with every unit from second to year
 	 */
 	function getDiffBetween(d1: Date, d2: Date) {
