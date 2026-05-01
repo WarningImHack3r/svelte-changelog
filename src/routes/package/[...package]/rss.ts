@@ -62,22 +62,39 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 		// 2. Get the releases and package info
-		let packageName: string;
-		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"];
+		let packageName = "";
+		let releases: NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releases"] = [];
 		if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
 			// All releases
 			packageName = "All";
 			releases = await getPackagesReleases(true, categorizedPackages, locals.posthog);
 		} else {
-			// This package releases
-			const packageReleases = await getPackageReleases(
-				slugPackage,
-				categorizedPackages,
-				locals.posthog
-			);
-			if (!packageReleases) error(404);
-			packageName = packageReleases.releasesRepo.pkg.name;
-			releases = packageReleases.releases;
+			let isCategory = false;
+			for (const { category, packages } of categorizedPackages) {
+				if (packages.length < 2) continue; // categories with 1 package are not visitable
+				if (slugPackage.localeCompare(category.slug, undefined, { sensitivity: "base" }) === 0) {
+					// A category
+					packageName = category.name;
+					releases = await getPackagesReleases(
+						packages.map(({ pkg }) => pkg.name),
+						categorizedPackages,
+						locals.posthog
+					);
+					isCategory = true;
+					break;
+				}
+			}
+			if (!isCategory) {
+				// This package releases
+				const packageReleases = await getPackageReleases(
+					slugPackage,
+					categorizedPackages,
+					locals.posthog
+				);
+				if (!packageReleases) error(404);
+				packageName = packageReleases.releasesRepo.pkg.name;
+				releases = packageReleases.releases;
+			}
 		}
 
 		const feed = getBaseFeed(

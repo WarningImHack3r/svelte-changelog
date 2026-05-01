@@ -16,7 +16,9 @@
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 
 	type Props = {
-		packageInfo: Package;
+		packageInfo: Package & {
+			categorySlug?: string;
+		};
 		currentRepo: { owner: string; name: string };
 		class?: ClassValue;
 	};
@@ -24,9 +26,9 @@
 	let { packageInfo, currentRepo, class: classValue }: Props = $props();
 
 	let viewTransitionName = $derived(packageInfo.name.replace(/[@/-]/g, ""));
-	let isCopyable = $derived(
+	let isCategory = $derived(
 		// ugly logic but pretty efficient fwiw
-		!packageInfo.name.includes(" ") && packageInfo.name === packageInfo.name.toLowerCase()
+		packageInfo.name.includes(" ") || packageInfo.name !== packageInfo.name.toLowerCase()
 	);
 
 	// Registries
@@ -109,7 +111,7 @@
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html packageInfo.name.replace(/\//g, "/<wbr />")}
 		</h1>
-		{#if isCopyable}
+		{#if !isCategory}
 			<div
 				class="absolute inset-s-0 top-2.5 hidden w-6 scale-75 opacity-0 transition-[translate,opacity,scale] group-hover:-translate-x-5 group-hover:scale-100 group-hover:opacity-100 xs:block 2xl:w-8 2xl:group-hover:-translate-x-8 md:top-4.5 md:group-hover:-translate-x-6"
 			>
@@ -209,7 +211,9 @@
 							href={appendToPath(
 								page.url.origin,
 								resolve("/package/[...package]", {
-									package: packageInfo.name
+									package: isCategory
+										? (packageInfo.categorySlug ?? packageInfo.name)
+										: packageInfo.name
 								}),
 								file
 							)}

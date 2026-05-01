@@ -282,7 +282,10 @@
 
 		<div class="flex flex-col">
 			<Header
-				packageInfo={data.currentPackage.pkg}
+				packageInfo={{
+					...data.currentPackage.pkg,
+					categorySlug: data.currentPackage.category.slug
+				}}
 				currentRepo={{
 					owner: data.currentPackage.repoOwner,
 					name: data.currentPackage.repoName
