@@ -110,7 +110,7 @@ const XML_ENTITIES: Record<string, string> = {
 
 const XML_ENTITY_REGEX = new RegExp(
 	`&(?:${Object.keys(XML_ENTITIES)
-		.map(entity => entity.slice(1, entity.length - 1))
+		.map(entity => entity.slice(1, -1))
 		.join("|")});`,
 	"g"
 );

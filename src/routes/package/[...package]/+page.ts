@@ -9,14 +9,14 @@ const unitToSeconds: Record<string, number> = {
 	h: 60 * 60
 };
 function parseQueryParamDuration(param: string): Date | undefined {
-	durationRegex.lastIndex = 0; // "reset" the regex consumption as global regexp are stateful!!
+	durationRegex.lastIndex = 0; // "reset" the regex consumption as global regex are stateful!!
 	if (!param || !durationRegex.test(param)) return undefined;
 	durationRegex.lastIndex = 0;
 
 	const resetValues: typeof unitToSeconds = {};
 	for (const [, num, unit] of param.matchAll(durationRegex) ?? []) {
 		if (!num || !+num || !unit) continue;
-		resetValues[unit] = +num; // ensure last get used with dups
+		resetValues[unit] = +num; // ensure the last gets used with duplicates
 	}
 
 	let targetDate = Date.now();

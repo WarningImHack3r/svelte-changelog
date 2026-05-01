@@ -18,7 +18,7 @@ import type { Plugin } from "svelte-exmarkdown";
 import { ddebug } from "$lib/logging";
 
 /**
- * Pre-load the languages by returning regular expressions from language
+ * Preload the languages by returning regular expressions from language
  * registrations.
  *
  * @param languages a set of languages and their associated registrations.
@@ -63,7 +63,7 @@ export function loadLanguages(
  * Detects the programming or markup language based on the given code snippet.
  *
  * @param code the code snippet to analyze and detect the language from.
- * @param languages the pre-loaded languages and their associated regexps.
+ * @param languages the preloaded languages and their associated regexps.
  * @returns The detected language as a string, or undefined if no language
  * could be determined.
  */

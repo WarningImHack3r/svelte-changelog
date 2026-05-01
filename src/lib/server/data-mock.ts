@@ -7,7 +7,7 @@ import type { Discussion, GitHubRelease, Issue, PullRequest } from "./github-api
  * A wrapper for returning some data inside an OctokitResponse
  *
  * @param data the data to return
- * @returns the formatted response for a given data
+ * @returns the formatted response for the given data
  */
 export function createOctokitResponse<T>(data: T): OctokitResponse<T, 200> {
 	return {

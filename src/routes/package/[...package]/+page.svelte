@@ -140,11 +140,10 @@
 						if (displayableReleases.length <= 5) {
 							const lastSeenDate = lastUpdateDate;
 							if (!lastSeenDate) return false;
-							const haveAllBeenSeen = displayableReleases.every(
+							return displayableReleases.every(
 								({ created_at, published_at }) =>
 									new Date(published_at ?? created_at) <= lastSeenDate
 							);
-							return haveAllBeenSeen;
 						}
 						// Only expand releases that are less than a week old
 						const creationTimestamp = new Date(published_at ?? created_at).getTime();
@@ -205,8 +204,8 @@
 		/Add(?:ed)? (?:experimental )?support for ([\w-]+)/
 	];
 	/**
-	 * A blacklist to help avoiding false positives; dirty but can't think of a better
-	 * solution that would support all the edge cases..
+	 * A blacklist to help avoid false positives; dirty but can't think of a better
+	 * solution that would support all the edge cases...
 	 */
 	const supportPackagesBlacklist = new Set([
 		"loading",

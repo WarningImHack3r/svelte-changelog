@@ -36,7 +36,7 @@
 	const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 	/**
 	 * Linkify the commit message by wrapping all its non-link text inside
-	 * markdown links if it already contains a link
+	 * Markdown links if it already contains a link
 	 *
 	 * @param message the commit message
 	 * @param wrapperUrl the wrapper link to wrap the rest of the message with

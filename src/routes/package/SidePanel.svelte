@@ -62,8 +62,8 @@
 	// Pins
 	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
 	/**
-	 * A set proxy to quickly query the pinned items.
-	 * Storing a customly serialized SvelteSet in the PersistedState doesn't work
+	 * A read-only set proxy to quickly query the pinned items.
+	 * Storing a SvelteSet in the PersistedState doesn't work
 	 * as it isn't reactive (enough).
 	 */
 	let pinnedROProxy = $derived(new Set(pinnedPackages.current));
@@ -298,7 +298,7 @@
 				bind:value={
 					() => settings.releasesType,
 					newType => {
-						// don't take in account deselections, naturally always leaving something selected
+						// don't take into account unselections, naturally always leaving something selected
 						if (newType) settings.releasesType = newType;
 					}
 				}
@@ -325,7 +325,7 @@
 				bind:value={
 					() => settings.expandState,
 					newType => {
-						// don't take in account deselections, naturally always leaving something selected
+						// don't take into account unselections, naturally always leaving something selected
 						if (newType) settings.expandState = newType;
 					}
 				}

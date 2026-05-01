@@ -63,7 +63,7 @@ export default function parseChangelog(text: string): Promise<Changelog> {
 			pushCurrent(data);
 		}
 
-		// clean up description
+		// cleanup description
 		data.log.description = clean(data.log.description);
 
 		resolve(data.log);

@@ -76,7 +76,7 @@
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
-	type Mode = Parameters<typeof setMode>[0]; // the Mode type isn't exported by mode-watcher
+	type Mode = Parameters<typeof setMode>[0]; // mode-watcher doesn't export the Mode type
 	type Theme = {
 		label: string;
 		icon: typeof Icon;
