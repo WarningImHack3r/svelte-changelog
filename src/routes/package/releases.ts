@@ -163,55 +163,31 @@ export async function getPackageReleases(
 /**
  * Get all the releases for the given list of packages
  *
- * @param packageNames the packages to get the releases for
- * @param allPackages all the known packages
+ * @param packageNames the packages to get the releases for, or `true` to get them all
+ * @param allPackages all the known packages with their metadata
  * @param posthog the optional PostHog instance
  * @returns a list of the packages' releases
  */
 export async function getPackagesReleases(
-	packageNames: string[],
+	packageNames: string[] | boolean,
 	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
 	posthog?: PostHog
 ) {
-	const packages = allPackages.flatMap(({ packages }) => packages);
+	if (packageNames === false) return [];
 
-	const packageSet = new Set(packages.map(({ pkg }) => pkg.name));
-	if (packageNames.some(pkg => !packageSet.has(pkg))) return [];
+	const packages = new Set(
+		allPackages.flatMap(({ packages }) => packages).map(({ pkg }) => pkg.name)
+	);
 
+	const wantedPackages = packageNames === true ? new Set<string>() : new Set(packageNames);
+	const fetchedPackages = [...packages].filter(p => packageNames === true || wantedPackages.has(p));
 	const result = await Promise.all(
-		packageNames.map(pkg => getPackageReleases(pkg, allPackages, posthog))
+		fetchedPackages.map(pkg => getPackageReleases(pkg, allPackages, posthog))
 	);
 
 	return result
 		.filter(r => r !== undefined)
 		.flatMap(({ releases }) => releases)
-		.toSorted(
-			(a, b) =>
-				new Date(b.published_at ?? b.created_at).getTime() -
-				new Date(a.published_at ?? a.created_at).getTime()
-		);
-}
-
-/**
- * Get all the releases from all the packages.
- *
- * @param allPackages all the known packages
- * @param posthog the optional PostHog instance
- * @returns a list of all the package releases
- */
-export async function getAllPackagesReleases(
-	allPackages: Awaited<ReturnType<typeof discoverer.getOrDiscoverCategorized>>,
-	posthog?: PostHog
-) {
-	const packages = allPackages.flatMap(({ packages }) => packages);
-
-	const awaitedResult = await Promise.all(
-		packages.map(async ({ pkg }) => getPackageReleases(pkg.name, allPackages, posthog))
-	);
-
-	return awaitedResult
-		.filter(r => r !== undefined)
-		.flatMap(r => r.releases)
 		.toSorted(
 			(a, b) =>
 				new Date(b.published_at ?? b.created_at).getTime() -

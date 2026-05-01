@@ -3,7 +3,7 @@ import { siteName } from "$lib/properties";
 import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
-import { getAllPackagesReleases, getPackageReleases, getPackagesReleases } from "../releases";
+import { getPackageReleases, getPackagesReleases } from "../releases";
 
 export async function load({ params: { package: slugPackage }, setHeaders, locals }) {
 	// 1. Get all the discovered packages
@@ -24,7 +24,7 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 					description: `All the releases of the packages listed on ${siteName}`
 				}
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
-			releases: await getAllPackagesReleases(categorizedPackages, locals.posthog)
+			releases: await getPackagesReleases(true, categorizedPackages, locals.posthog)
 		};
 	}
 

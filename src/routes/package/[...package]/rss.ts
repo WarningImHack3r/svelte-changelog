@@ -4,7 +4,7 @@ import { marked } from "marked";
 import { authorFullName, authorVCSProfile, siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
-import { getAllPackagesReleases, getPackageReleases } from "../releases";
+import { getPackageReleases, getPackagesReleases } from "../releases";
 
 const dottedAlphaRegex = /[A-z\d]+\.[A-z\d]+$/;
 /**
@@ -67,7 +67,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 		if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
 			// All releases
 			packageName = "All";
-			releases = await getAllPackagesReleases(categorizedPackages, locals.posthog);
+			releases = await getPackagesReleases(true, categorizedPackages, locals.posthog);
 		} else {
 			// This package releases
 			const packageReleases = await getPackageReleases(
