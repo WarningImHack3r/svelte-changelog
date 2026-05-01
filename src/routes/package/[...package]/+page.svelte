@@ -230,7 +230,7 @@
 	function supportAddedFor(releaseBody: string): string[] {
 		return data.currentPackage.category.slug === ALL_SLUG ||
 			data.currentPackage.category.name === data.currentPackage.pkg.name
-			? [] /* even if we could, don't show those lines for All releases as it looks like a mess */
+			? [] /* even if we technically could, don't show those lines for multi-packages pages as it looks like a mess */
 			: releaseBody
 					.split(newLineRegex)
 					.map(line => {
@@ -282,10 +282,7 @@
 
 		<div class="flex flex-col">
 			<Header
-				packageInfo={{
-					...data.currentPackage.pkg,
-					categorySlug: data.currentPackage.category.slug
-				}}
+				packageInfo={data.currentPackage.pkg}
 				currentRepo={{
 					owner: data.currentPackage.repoOwner,
 					name: data.currentPackage.repoName

@@ -9,7 +9,6 @@
 	import { toast } from "svelte-sonner";
 	import type { Package } from "$lib/server/package-discoverer";
 	import { stringifyError } from "$lib/strings";
-	import { ALL_SLUG } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import { Separator } from "$lib/components/ui/separator";
@@ -17,9 +16,7 @@
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
 
 	type Props = {
-		packageInfo: Package & {
-			categorySlug?: string;
-		};
+		packageInfo: Package;
 		currentRepo: { owner: string; name: string };
 		class?: ClassValue;
 	};
@@ -35,7 +32,7 @@
 			({ iconUrl: string } | { icon: Component }) & { url: string; imgClasses?: string }
 		>
 	>(
-		packageInfo.categorySlug === ALL_SLUG || packageInfo.registryExcluded
+		packageInfo.registryExcluded
 			? Object.fromEntries([])
 			: {
 					npmjs: {

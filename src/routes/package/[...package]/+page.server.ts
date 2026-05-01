@@ -21,7 +21,8 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 				repoName: "",
 				pkg: {
 					name: "All releases",
-					description: `All the releases of the packages listed on ${siteName}`
+					description: `All the releases of the packages listed on ${siteName}`,
+					registryExcluded: true
 				}
 			} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
 			releases: await getPackagesReleases(true, categorizedPackages, locals.posthog)
@@ -39,7 +40,8 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 					repoName: "",
 					pkg: {
 						name: category.name,
-						description: `All the releases for the ${category.name} category`
+						description: `All the releases for the ${category.name} category`,
+						registryExcluded: true
 					}
 				} satisfies NonNullable<Awaited<ReturnType<typeof getPackageReleases>>>["releasesRepo"],
 				releases: await getPackagesReleases(
