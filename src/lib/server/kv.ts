@@ -20,7 +20,7 @@ export class KVCache {
 			return null;
 		}
 
-		if (entry.expiresAt && entry.expiresAt < Date.now()) {
+		if (entry.expiresAt && entry.expiresAt < new Date()) {
 			ddebug("Value expired");
 			return null;
 		}
@@ -36,15 +36,15 @@ export class KVCache {
 	 * @param value the value to store
 	 * @param ttlSeconds the optional TTL to set for expiration
 	 */
-	async set<T extends CacheJson>(key: string, value: T, ttlSeconds?: number) {
+	async set(key: string, value: CacheJson, ttlSeconds?: number) {
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await repo(CacheEntry).upsert({ where: { key }, set: { value: value as {}, expiresAt } });
+		await repo(CacheEntry).upsert({ where: { key }, set: { value: value as object, expiresAt } });
 	}
 
-	async getStale<T extends CacheJson>(key: string): Promise<{ value: T; etag: string } | null> {
+	async getStale(key: string) {
 		const entry = await repo(CacheEntry).findFirst({ key });
 		if (entry?.etag) {
-			return { value: entry.value as T, etag: entry.etag };
+			return { value: entry.value as CacheJson, etag: entry.etag };
 		}
 		return null;
 	}
@@ -56,9 +56,12 @@ export class KVCache {
 		await repo(CacheEntry).save(entry);
 	}
 
-	async setWithEtag<T extends CacheJson>(key: string, value: T, etag: string, ttlSeconds?: number) {
+	async setWithEtag(key: string, value: CacheJson, etag: string, ttlSeconds?: number) {
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await repo(CacheEntry).upsert({ where: { key }, set: { value: value as {}, expiresAt, etag } });
+		await repo(CacheEntry).upsert({
+			where: { key },
+			set: { value: value as object, expiresAt, etag }
+		});
 	}
 
 	/**
