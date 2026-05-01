@@ -6,7 +6,6 @@
 		GitPullRequestCreateArrow
 	} from "@lucide/svelte";
 	import type { PullRequestDetails } from "$lib/server/github-api";
-	import type { JSONCompatible } from "$lib/types";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as Tooltip from "$lib/components/ui/tooltip";
@@ -20,7 +19,7 @@
 		prCreationDate: Date;
 		prClosingDate: Date | null;
 		merged?: boolean;
-		commits?: JSONCompatible<PullRequestDetails["commits"]>;
+		commits?: PullRequestDetails["commits"];
 		currentRepo: { owner: string; name: string };
 	};
 

@@ -24,9 +24,7 @@
 	 * @param file the single file from the `/files` GitHub API endpoint
 	 * @returns an array of diffs metadata to provide to this very component
 	 */
-	export function parsePatchFiles(
-		file: JSONCompatible<PullRequestDetails["files"]>[number]
-	): FileDiffMetadata[] {
+	export function parsePatchFiles(file: PullRequestDetails["files"][number]): FileDiffMetadata[] {
 		/*
 		 * All the additional processing done here is to bring the otherwise native
 		 * formatting features (or make them working at all) as they were originally
@@ -75,7 +73,6 @@
 		type SupportedLanguages
 	} from "@pierre/diffs";
 	import { mode } from "mode-watcher";
-	import type { JSONCompatible } from "$lib/types";
 
 	type Props = Omit<FileDiffRenderProps<T>, "containerWrapper" | "fileContainer"> & {
 		options: FileDiffOptions<T>;
