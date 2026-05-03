@@ -14,6 +14,15 @@ importers:
       '@fontsource/pretendard':
         specifier: ^5.2.5
         version: 5.2.5
+      '@icons-pack/svelte-simple-icons':
+        specifier: ^7.2.0
+        version: 7.2.0(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
+      '@lucide/svelte':
+        specifier: ^1.14.0
+        version: 1.14.0(svelte@5.55.5)
+      '@neoconfetti/svelte':
+        specifier: ^2.2.2
+        version: 2.2.2(svelte@5.55.5)
       '@opentelemetry/api-logs':
         specifier: ^0.216.0
         version: 0.216.0
@@ -29,12 +38,27 @@ importers:
       '@opentelemetry/sdk-node':
         specifier: ^0.216.0
         version: 0.216.0(@opentelemetry/api@1.9.1)
+      '@pierre/diffs':
+        specifier: ^1.1.20
+        version: 1.1.20(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@posthog/rollup-plugin':
         specifier: ^1.4.2
         version: 1.4.2(rollup@4.60.1)
+      '@prgm/sveltekit-progress-bar':
+        specifier: ^3.0.2
+        version: 3.0.2(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
+      '@shikijs/langs':
+        specifier: ^4.0.2
+        version: 4.0.2
+      '@shikijs/rehype':
+        specifier: ^4.0.2
+        version: 4.0.2
+      '@shikijs/themes':
+        specifier: ^4.0.2
+        version: 4.0.2
       '@sveltejs/kit':
         specifier: ^2.59.0
         version: 2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
@@ -47,100 +71,15 @@ importers:
       adapter-node-sea:
         specifier: github:gauben/gautier.dev#22b614499d259cbcc8b5e36e1d2722dfdfd9aedc&path:adapter
         version: https://codeload.github.com/gauben/gautier.dev/tar.gz/22b614499d259cbcc8b5e36e1d2722dfdfd9aedc#path:adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))
-      svelte:
-        specifier: ^5.55.5
-        version: 5.55.5
-      tailwindcss:
-        specifier: ^4.2.4
-        version: 4.2.4
-      tw-animate-css:
-        specifier: ^1.4.0
-        version: 1.4.0
-      vite:
-        specifier: ^8.0.10
-        version: 8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)
-      vite-plugin-devtools-json:
-        specifier: ^1.0.0
-        version: 1.0.0(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
-      vite-plugin-lucide-preprocess:
-        specifier: ^1.4.10
-        version: 1.4.10(rolldown@1.0.0-rc.17)(rollup@4.60.1)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
-    devDependencies:
-      '@e18e/eslint-plugin':
-        specifier: ^0.4.1
-        version: 0.4.1(eslint@10.3.0(jiti@2.6.1))
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
-      '@icons-pack/svelte-simple-icons':
-        specifier: ^7.2.0
-        version: 7.2.0(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
-      '@lucide/svelte':
-        specifier: ^1.14.0
-        version: 1.14.0(svelte@5.55.5)
-      '@neoconfetti/svelte':
-        specifier: ^2.2.2
-        version: 2.2.2(svelte@5.55.5)
-      '@octokit/graphql-schema':
-        specifier: ^15.26.1
-        version: 15.26.1
-      '@octokit/types':
-        specifier: ^16.0.0
-        version: 16.0.0
-      '@pierre/diffs':
-        specifier: ^1.1.20
-        version: 1.1.20(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@prgm/sveltekit-progress-bar':
-        specifier: ^3.0.2
-        version: 3.0.2(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
-      '@shikijs/langs':
-        specifier: ^4.0.2
-        version: 4.0.2
-      '@shikijs/rehype':
-        specifier: ^4.0.2
-        version: 4.0.2
-      '@shikijs/themes':
-        specifier: ^4.0.2
-        version: 4.0.2
-      '@stylistic/eslint-plugin':
-        specifier: ^5.10.0
-        version: 5.10.0(eslint@10.3.0(jiti@2.6.1))
-      '@total-typescript/ts-reset':
-        specifier: ^0.6.1
-        version: 0.6.1
-      '@trivago/prettier-plugin-sort-imports':
-        specifier: ^6.0.2
-        version: 6.0.2(prettier-plugin-svelte@3.5.1(prettier@3.8.3)(svelte@5.55.5))(prettier@3.8.3)(svelte@5.55.5)
-      '@types/eslint-config-prettier':
-        specifier: ^6.11.3
-        version: 6.11.3
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@types/semver':
-        specifier: ^7.7.1
-        version: 7.7.1
       bits-ui:
         specifier: ^2.18.0
         version: 2.18.0(@internationalized/date@3.12.0)(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-svelte:
-        specifier: ^3.17.1
-        version: 3.17.1(eslint@10.3.0(jiti@2.6.1))(svelte@5.55.5)
       feed:
         specifier: ^5.2.1
         version: 5.2.1
-      globals:
-        specifier: ^17.5.0
-        version: 17.5.0
       marked:
         specifier: ^18.0.3
         version: 18.0.3
@@ -156,15 +95,6 @@ importers:
       posthog-node:
         specifier: ^5.32.1
         version: 5.32.1
-      prettier:
-        specifier: ^3.8.3
-        version: 3.8.3
-      prettier-plugin-svelte:
-        specifier: ^3.5.1
-        version: 3.5.1(prettier@3.8.3)(svelte@5.55.5)
-      prettier-plugin-tailwindcss:
-        specifier: ^0.8.0
-        version: 0.8.0(@trivago/prettier-plugin-sort-imports@6.0.2(prettier-plugin-svelte@3.5.1(prettier@3.8.3)(svelte@5.55.5))(prettier@3.8.3)(svelte@5.55.5))(prettier-plugin-svelte@3.5.1(prettier@3.8.3)(svelte@5.55.5))(prettier@3.8.3)
       redis:
         specifier: ^5.12.1
         version: 5.12.1(@opentelemetry/api@1.9.1)
@@ -198,9 +128,9 @@ importers:
       shiki:
         specifier: ^4.0.2
         version: 4.0.2
-      svelte-check:
-        specifier: ^4.4.7
-        version: 4.4.7(picomatch@4.0.4)(svelte@5.55.5)(typescript@6.0.3)
+      svelte:
+        specifier: ^5.55.5
+        version: 5.55.5
       svelte-exmarkdown:
         specifier: ^5.0.2
         version: 5.0.2(svelte@5.55.5)
@@ -216,6 +146,76 @@ importers:
       tailwind-variants:
         specifier: ^3.2.2
         version: 3.2.2(tailwind-merge@3.5.0)(tailwindcss@4.2.4)
+      tailwindcss:
+        specifier: ^4.2.4
+        version: 4.2.4
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
+      vite:
+        specifier: ^8.0.10
+        version: 8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)
+      vite-plugin-devtools-json:
+        specifier: ^1.0.0
+        version: 1.0.0(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
+      vite-plugin-lucide-preprocess:
+        specifier: ^1.4.10
+        version: 1.4.10(rolldown@1.0.0-rc.17)(rollup@4.60.1)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
+    devDependencies:
+      '@e18e/eslint-plugin':
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@10.3.0(jiti@2.6.1))
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
+      '@octokit/graphql-schema':
+        specifier: ^15.26.1
+        version: 15.26.1
+      '@octokit/types':
+        specifier: ^16.0.0
+        version: 16.0.0
+      '@stylistic/eslint-plugin':
+        specifier: ^5.10.0
+        version: 5.10.0(eslint@10.3.0(jiti@2.6.1))
+      '@total-typescript/ts-reset':
+        specifier: ^0.6.1
+        version: 0.6.1
+      '@trivago/prettier-plugin-sort-imports':
+        specifier: ^6.0.2
+        version: 6.0.2(prettier-plugin-svelte@3.5.1(prettier@3.8.3)(svelte@5.55.5))(prettier@3.8.3)(svelte@5.55.5)
+      '@types/eslint-config-prettier':
+        specifier: ^6.11.3
+        version: 6.11.3
+      '@types/node':
+        specifier: ^25.6.0
+        version: 25.6.0
+      '@types/semver':
+        specifier: ^7.7.1
+        version: 7.7.1
+      eslint:
+        specifier: ^10.3.0
+        version: 10.3.0(jiti@2.6.1)
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
+      eslint-plugin-svelte:
+        specifier: ^3.17.1
+        version: 3.17.1(eslint@10.3.0(jiti@2.6.1))(svelte@5.55.5)
+      globals:
+        specifier: ^17.5.0
+        version: 17.5.0
+      prettier:
+        specifier: ^3.8.3
+        version: 3.8.3
+      prettier-plugin-svelte:
+        specifier: ^3.5.1
+        version: 3.5.1(prettier@3.8.3)(svelte@5.55.5)
+      prettier-plugin-tailwindcss:
+        specifier: ^0.8.0
+        version: 0.8.0(@trivago/prettier-plugin-sort-imports@6.0.2(prettier-plugin-svelte@3.5.1(prettier@3.8.3)(svelte@5.55.5))(prettier@3.8.3)(svelte@5.55.5))(prettier-plugin-svelte@3.5.1(prettier@3.8.3)(svelte@5.55.5))(prettier@3.8.3)
+      svelte-check:
+        specifier: ^4.4.7
+        version: 4.4.7(picomatch@4.0.4)(svelte@5.55.5)(typescript@6.0.3)
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
