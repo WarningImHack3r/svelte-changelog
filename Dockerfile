@@ -6,8 +6,9 @@ COPY . /app
 WORKDIR /app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
 
-FROM node:slim
+FROM debian:stable-slim
 RUN apt-get update && apt-get install -y wget curl # install wget & curl for in-container health checks
 WORKDIR /app
 COPY --from=base /app/build/node node
