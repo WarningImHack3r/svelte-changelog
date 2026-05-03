@@ -1,12 +1,11 @@
-FROM node:slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN npm i -f -g corepack@latest && corepack enable
-COPY . /app
+FROM node:latest AS base
 WORKDIR /app
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN corepack enable pnpm && corepack install -g pnpm
+COPY pnpm-lock.yaml .
+RUN pnpm fetch -P
+ADD . .
+RUN pnpm i --offline -P
 RUN pnpm run build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
 
 FROM debian:stable-slim
 RUN apt-get update && apt-get install -y wget curl # install wget & curl for in-container health checks
