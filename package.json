@@ -19,7 +19,8 @@
 		"@opentelemetry/resources": "^2.7.1",
 		"@opentelemetry/sdk-logs": "^0.216.0",
 		"@opentelemetry/sdk-node": "^0.216.0",
-		"@resvg/resvg-js": "^2.6.2"
+		"@resvg/resvg-js": "^2.6.2",
+		"@sveltejs/kit": "^2.59.0"
 	},
 	"devDependencies": {
 		"@e18e/eslint-plugin": "^0.4.1",
@@ -38,7 +39,6 @@
 		"@shikijs/rehype": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
 		"@stylistic/eslint-plugin": "^5.10.0",
-		"@sveltejs/kit": "^2.59.0",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.4",
 		"@total-typescript/ts-reset": "^0.6.1",
