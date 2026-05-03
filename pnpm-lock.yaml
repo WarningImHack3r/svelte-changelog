@@ -29,6 +29,9 @@ importers:
       '@sveltejs/kit':
         specifier: ^2.59.0
         version: 2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
+      adapter-node-sea:
+        specifier: github:gauben/gautier.dev#22b614499d259cbcc8b5e36e1d2722dfdfd9aedc&path:adapter
+        version: https://codeload.github.com/gauben/gautier.dev/tar.gz/22b614499d259cbcc8b5e36e1d2722dfdfd9aedc#path:adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))
     devDependencies:
       '@e18e/eslint-plugin':
         specifier: ^0.4.1
@@ -99,9 +102,6 @@ importers:
       '@types/semver':
         specifier: ^7.7.1
         version: 7.7.1
-      adapter-node-sea:
-        specifier: github:gauben/gautier.dev#22b614499d259cbcc8b5e36e1d2722dfdfd9aedc&path:adapter
-        version: https://codeload.github.com/gauben/gautier.dev/tar.gz/22b614499d259cbcc8b5e36e1d2722dfdfd9aedc#path:adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))
       bits-ui:
         specifier: ^2.18.0
         version: 2.18.0(@internationalized/date@3.12.0)(@sveltejs/kit@2.59.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
