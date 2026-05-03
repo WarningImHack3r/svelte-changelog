@@ -1,6 +1,6 @@
 FROM node:latest AS base
 WORKDIR /app
-RUN corepack enable pnpm && corepack install -g pnpm
+RUN npm i -g corepack@latest && corepack enable pnpm
 COPY pnpm-lock.yaml .
 RUN pnpm fetch -P
 ADD . .
