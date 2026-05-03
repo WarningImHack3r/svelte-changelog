@@ -1,9 +1,9 @@
-FROM node:latest AS base
+FROM node:slim AS base
 WORKDIR /app
-RUN npm i -g corepack@latest && corepack enable pnpm
+RUN npm i -g pnpm # install pnpm as it's not in the node image by default
 COPY pnpm-lock.yaml .
 RUN pnpm fetch -P
-ADD . .
+COPY . .
 RUN pnpm i --offline -P
 RUN pnpm run build
 
