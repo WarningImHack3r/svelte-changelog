@@ -10,8 +10,7 @@ RUN pnpm run build
 
 FROM debian:stable-slim
 WORKDIR /app
-# install wget & curl for in-container health checks
-RUN apt-get update && apt-get install -y wget curl libatomic1
+RUN apt-get update && apt-get install -y libatomic1
 COPY --from=base /app/build/node node
 EXPOSE 3000
 ENV NODE_ENV=production
