@@ -16,8 +16,6 @@ COPY --from=base \
   /lib/aarch64-linux-gnu/libm.so.6      /lib/aarch64-linux-gnu/libstdc++.so.6  \
   /lib/aarch64-linux-gnu/libgcc_s.so.1  /lib/aarch64-linux-gnu/libpthread.so.0 \
   /lib/aarch64-linux-gnu/libc.so.6      /lib/aarch64-linux-gnu/
-RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
-    && rm -rf /var/lib/apt/lists/*
 COPY --from=base /app/build/node node
 EXPOSE 3000
 ENV NODE_ENV=production
