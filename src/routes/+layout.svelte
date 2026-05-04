@@ -111,8 +111,7 @@
 		const element = activeElement.current;
 		// avoid impacting interactive elements
 		if (
-			!element ||
-			element.matches(
+			element?.matches(
 				"input:not([type=hidden],[type=submit],[type=button],[type=reset],[type=image]), textarea, select, [contenteditable]"
 			)
 		)
