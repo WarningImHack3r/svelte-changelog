@@ -24,8 +24,15 @@
 		X
 	} from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
-	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import { PersistedState } from "runed";
+	import {
+		mode,
+		ModeWatcher,
+		resetMode,
+		setMode,
+		systemPrefersMode,
+		toggleMode
+	} from "mode-watcher";
+	import { activeElement, PersistedState, PressedKeys } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { uniq } from "$lib/array";
 	import { news } from "$lib/news/news.json";
@@ -95,8 +102,27 @@
 			icon: Monitor
 		}
 	};
-	let theme = $state<keyof typeof themes>("system");
+	let theme = $derived<keyof typeof themes>(
+		mode.current === systemPrefersMode.current ? "system" : (mode.current ?? "system")
+	);
 	let themeSwitcherOpen = $state(false);
+	// change theme on pressing "d"
+	new PressedKeys().onKeys("d", () => {
+		const element = activeElement.current;
+		// avoid impacting interactive elements
+		if (
+			!element ||
+			element.matches(
+				"input:not([type=hidden],[type=submit],[type=button],[type=reset],[type=image]), textarea, select, [contenteditable]"
+			)
+		)
+			return;
+
+		// instead of doing system -> light -> dark -> light -> dark, reset to system if it matches the target mode
+		const systemMode = systemPrefersMode.current;
+		if (systemMode && mode.current && systemMode !== mode.current) resetMode();
+		else toggleMode();
+	});
 
 	// News
 	let newsToDisplay = $state<(typeof news)[number]>();
