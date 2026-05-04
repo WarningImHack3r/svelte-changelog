@@ -1,15 +1,17 @@
 FROM node:slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN npm i -f -g corepack@latest && corepack enable
-COPY . /app
 WORKDIR /app
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+# install pnpm as it's not in the node image by default
+RUN npm i -g pnpm
+COPY pnpm-lock.yaml .
+RUN pnpm fetch -P
+COPY . .
+RUN pnpm i --offline -P
 RUN pnpm run build
 
-FROM node:slim
-RUN apt-get update && apt-get install -y wget curl # install wget & curl for in-container health checks
+FROM debian:stable-slim
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=base /app/build/node node
 EXPOSE 3000
 ENV NODE_ENV=production
