@@ -10,7 +10,7 @@ RUN pnpm run build
 
 FROM debian:stable-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
+RUN apt-get update && apt-get install -y libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=base /app/build/node node
 EXPOSE 3000
