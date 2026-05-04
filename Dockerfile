@@ -7,7 +7,7 @@ COPY . .
 RUN pnpm i --offline -P
 RUN pnpm run build
 
-FROM debian:stable-slim
+FROM node:slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y wget curl # install wget & curl for in-container health checks
 COPY --from=base /lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1
