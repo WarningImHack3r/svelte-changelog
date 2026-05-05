@@ -25,24 +25,24 @@
 		"@opentelemetry/sdk-logs": "^0.216.0",
 		"@opentelemetry/sdk-node": "^0.216.0",
 		"@pierre/diffs": "^1.1.20",
-		"@posthog/rollup-plugin": "^1.4.2",
+		"@posthog/rollup-plugin": "^1.4.3",
 		"@prgm/sveltekit-progress-bar": "^3.0.2",
 		"@resvg/resvg-js": "^2.6.2",
 		"@shikijs/langs": "^4.0.2",
 		"@shikijs/rehype": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
-		"@sveltejs/kit": "^2.59.0",
+		"@sveltejs/kit": "^2.59.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.4",
 		"adapter-node-sea": "github:gauben/gautier.dev#22b614499d259cbcc8b5e36e1d2722dfdfd9aedc&path:adapter",
-		"bits-ui": "^2.18.0",
+		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
 		"feed": "^5.2.1",
 		"marked": "^18.0.3",
 		"mode-watcher": "^1.1.0",
 		"octokit": "^5.0.5",
-		"posthog-js": "^1.372.6",
-		"posthog-node": "^5.32.1",
+		"posthog-js": "^1.372.8",
+		"posthog-node": "^5.33.2",
 		"redis": "^5.12.1",
 		"rehype-raw": "^7.0.0",
 		"rehype-sanitize": "^6.0.0",
@@ -80,14 +80,14 @@
 		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.1",
-		"globals": "^17.5.0",
+		"globals": "^17.6.0",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
-		"svelte-check": "^4.4.7",
+		"svelte-check": "^4.4.8",
 		"tslib": "^2.8.1",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.59.1"
+		"typescript-eslint": "^8.59.2"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
@@ -101,5 +101,5 @@
 		]
 	},
 	"type": "module",
-	"packageManager": "pnpm@10.33.2"
+	"packageManager": "pnpm@10.33.3"
 }
