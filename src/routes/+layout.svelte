@@ -24,8 +24,15 @@
 		X
 	} from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
-	import { ModeWatcher, resetMode, setMode } from "mode-watcher";
-	import { PersistedState } from "runed";
+	import {
+		ModeWatcher,
+		resetMode as mwResetMode,
+		setMode as mwSetMode,
+		systemPrefersMode,
+		toggleMode as mwToggleMode,
+		userPrefersMode
+	} from "mode-watcher";
+	import { activeElement, PersistedState, PressedKeys } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
 	import { uniq } from "$lib/array";
 	import { news } from "$lib/news/news.json";
@@ -71,12 +78,33 @@
 			})
 		);
 	});
+	function withViewTransition(callback: () => void, ...types: string[]) {
+		if (!document.startViewTransition) {
+			callback();
+			return;
+		}
+		try {
+			document.startViewTransition({ update: callback, types });
+		} catch {
+			// Level 1 browsers don't support the options-object form
+			document.startViewTransition(callback);
+		}
+	}
+	function setMode(mode: Mode) {
+		withViewTransition(() => mwSetMode(mode), "theme");
+	}
+	function resetMode() {
+		withViewTransition(mwResetMode, "theme");
+	}
+	function toggleMode() {
+		withViewTransition(mwToggleMode, "theme");
+	}
 
 	// SEO
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
-	type Mode = Parameters<typeof setMode>[0]; // mode-watcher doesn't export the Mode type
+	type Mode = Parameters<typeof mwSetMode>[0]; // mode-watcher doesn't export the Mode type
 	type Theme = {
 		label: string;
 		icon: typeof Icon;
@@ -95,8 +123,25 @@
 			icon: Monitor
 		}
 	};
-	let theme = $state<keyof typeof themes>("system");
+	let theme = $derived<keyof typeof themes>(userPrefersMode.current ?? "system");
 	let themeSwitcherOpen = $state(false);
+	// change theme on pressing "d"
+	new PressedKeys().onKeys("d", () => {
+		const element = activeElement.current;
+		// avoid impacting interactive elements
+		if (
+			element?.matches(
+				"input:not([type=hidden],[type=submit],[type=button],[type=reset],[type=image]), textarea, select, [contenteditable]"
+			)
+		)
+			return;
+
+		// instead of doing system -> light -> dark -> light -> dark, reset to system if it matches the target mode
+		const userMode = userPrefersMode.current ?? "system";
+		const systemMode = systemPrefersMode.current;
+		if (userMode !== "system" && systemMode && systemMode !== userMode) resetMode();
+		else toggleMode();
+	});
 
 	// News
 	let newsToDisplay = $state<(typeof news)[number]>();
@@ -171,12 +216,6 @@
 	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
 
 	$effect(() => {
-		// Theme
-		theme =
-			"mode-watcher-mode" in localStorage
-				? localStorage["mode-watcher-mode"].replaceAll('"', "")
-				: "system";
-
 		// Legacy news key
 		const oldLsNewsKey = "closedNews";
 		const oldLsNewsValue = localStorage.getItem(oldLsNewsKey);
@@ -421,3 +460,13 @@
 		</p>
 	</div>
 </footer>
+
+<style>
+	:global {
+		html:active-view-transition-type(theme) {
+			&::view-transition-group(root) {
+				animation-duration: 500ms;
+			}
+		}
+	}
+</style>
