@@ -6,7 +6,6 @@
 		getOrCreateWorkerPoolSingleton
 	} from "@pierre/diffs/worker";
 	import type { PullRequestDetails } from "$lib/server/github-api";
-	import type { JSONCompatible } from "$lib/types";
 	import { workerFactory } from "./workers";
 
 	function getWorker(options: WorkerInitializationRenderOptions) {
@@ -25,9 +24,7 @@
 	 * @param file the single file from the `/files` GitHub API endpoint
 	 * @returns an array of diffs metadata to provide to this very component
 	 */
-	export function parsePatchFiles(
-		file: JSONCompatible<PullRequestDetails["files"]>[number]
-	): FileDiffMetadata[] {
+	export function parsePatchFiles(file: PullRequestDetails["files"][number]): FileDiffMetadata[] {
 		/*
 		 * All the additional processing done here is to bring the otherwise native
 		 * formatting features (or make them working at all) as they were originally

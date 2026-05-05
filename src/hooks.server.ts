@@ -1,7 +1,10 @@
+import type { Handle } from "@sveltejs/kit";
+import { sequence } from "@sveltejs/kit/hooks";
 import { dev } from "$app/environment";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { PostHog } from "posthog-node";
 import { dfatal } from "$lib/logging";
+import { api } from "$lib/server/remultApi";
 import { stringifyError } from "$lib/strings";
 
 const client = new PostHog(PUBLIC_POSTHOG_KEY, {
@@ -28,7 +31,7 @@ export async function handleError({ error, status, event, message }) {
 const POSTHOG_PATHNAME_PREFIX = "/ingest";
 const POSTHOG_PATHNAME_PREFIX_REGEX = new RegExp(`^${POSTHOG_PATHNAME_PREFIX}`);
 
-export async function handle({ event, resolve }) {
+const appHandle: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname.startsWith(POSTHOG_PATHNAME_PREFIX)) {
 		const useAssetHost =
 			event.url.pathname.startsWith(`${POSTHOG_PATHNAME_PREFIX}/static/`) ||
@@ -62,4 +65,6 @@ export async function handle({ event, resolve }) {
 
 	event.locals.posthog = client;
 	return await resolve(event);
-}
+};
+
+export const handle = sequence(api, appHandle);

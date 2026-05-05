@@ -1,10 +1,8 @@
-import { dev } from "$app/environment";
 import {
 	GH_APP_ID,
 	GH_APP_INSTALLATION_ID,
 	GH_APP_PRIV_KEY_BASE64,
-	GITHUB_TOKEN,
-	REDIS_URL
+	GITHUB_TOKEN
 } from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
@@ -20,13 +18,12 @@ import type {
 	ReferencedSubject
 } from "@octokit/graphql-schema";
 import { App, Octokit } from "octokit";
-import { type RedisJSON, createClient } from "redis";
 import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import { stringifyError } from "$lib/strings";
-import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
+import type { Issues, PID, Pulls } from "$lib/types";
 import {
 	commit,
 	createOctokitResponse,
@@ -37,7 +34,7 @@ import {
 	pr,
 	release
 } from "./data-mock";
-import { KVCache } from "./kv";
+import { type CacheJson, KVCache } from "./kv";
 
 /**
  * A strict version of Extract.
@@ -201,6 +198,10 @@ export const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
  * The TTL for non-deprecated packages, in seconds
  */
 export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
+/**
+ * The TTL for commit data, in seconds. Commits are immutable.
+ */
+export const COMMIT_TTL = 60 * 60 * 24 * 30; // 30 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -216,27 +217,24 @@ export class GitHubAPI {
 	/**
 	 * Creates a new {@link GitHubAPI} with the required auth info.
 	 *
-	 * @param redisUrl the Redis cache TCP URL
 	 * @param octokit the Octokit instance to use for API requests
 	 * @constructor
 	 */
-	constructor(redisUrl: string, octokit: Octokit) {
-		this.#cache = new KVCache(
-			createClient({
-				url: redisUrl,
-				socket: {
-					tls: true,
-					rejectUnauthorized: false // allows self-hosted
-				}
-			}),
-			dev
-		);
-
+	constructor(octokit: Octokit) {
+		this.#cache = new KVCache();
 		this.#octokit = octokit;
+
+		// Hook to inject If-None-Match header for conditional requests
+		this.#octokit.hook.wrap("request", (request, options) => {
+			if (this.#pendingEtag) {
+				options.headers = { ...options.headers, "if-none-match": this.#pendingEtag };
+			}
+			return request(options);
+		});
 	}
 
 	/**
-	 * Generates a Redis key from the passed info.
+	 * Generates a cache key from the passed info.
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param type the kind of cache to use
@@ -252,7 +250,7 @@ export class GitHubAPI {
 	}
 
 	/**
-	 * Generates a Redis key from the passed info.
+	 * Generates a cache key from the passed info.
 	 *
 	 * @param owner the GitHub repository owner
 	 * @param repo the GitHub repository name
@@ -269,7 +267,7 @@ export class GitHubAPI {
 	}
 
 	/**
-	 * Generates a Redis key from the passed info.
+	 * Generates a cache key from the passed info.
 	 *
 	 * @param packageName the package name
 	 * @param args the optional additional values to append
@@ -283,6 +281,24 @@ export class GitHubAPI {
 		return `package:${packageName}${strArgs}`;
 	}
 
+	static #rateLimitRemaining: number | null = null;
+
+	static #rateLimitReset: Date | null = null;
+
+	/**
+	 * Extract the ETag header from an Octokit response, if present.
+	 */
+	#extractEtag(res: unknown): string | null {
+		if (res && typeof res === "object" && "headers" in res) {
+			const headers = (res as { headers: Record<string, string> }).headers;
+			return headers.etag ?? null;
+		}
+		return null;
+	}
+
+	// Stored etag to inject into the next request (set before calling fn, cleared after)
+	#pendingEtag: string | null = null;
+
 	/**
 	 * A request middleware to control calls to the GitHub API.
 	 *
@@ -290,8 +306,40 @@ export class GitHubAPI {
 	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
 	 * @returns either the original data or the fallback one
 	 */
-	#request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
-		return MOCK_REQUESTS ? Promise.resolve(fallback) : original(this.#octokit);
+	async #request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
+		if (MOCK_REQUESTS) return fallback;
+
+		try {
+			const result = await original(this.#octokit);
+			// Extract rate limit headers from Octokit responses
+			if (result && typeof result === "object" && "headers" in result) {
+				const headers = (result as { headers: Record<string, string> }).headers;
+				const remaining = headers["x-ratelimit-remaining"];
+				const reset = headers["x-ratelimit-reset"];
+				if (remaining !== undefined) {
+					GitHubAPI.#rateLimitRemaining = Number(remaining);
+				}
+				if (reset !== undefined) {
+					GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
+				}
+				if (GitHubAPI.#rateLimitRemaining !== null) {
+					console.info(
+						`[github-api] remaining=${GitHubAPI.#rateLimitRemaining}, resets at ${GitHubAPI.#rateLimitReset?.toLocaleTimeString() ?? "unknown"}`
+					);
+				}
+			}
+			return result;
+		} catch (error: unknown) {
+			// Log rate limit info from error responses too
+			if (error && typeof error === "object" && "response" in error) {
+				const resp = (error as { response: { headers: Record<string, string> } }).response;
+				const remaining = resp?.headers?.["x-ratelimit-remaining"];
+				const reset = resp?.headers?.["x-ratelimit-reset"];
+				if (remaining !== undefined) GitHubAPI.#rateLimitRemaining = Number(remaining);
+				if (reset !== undefined) GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
+			}
+			throw error;
+		}
 	}
 
 	/**
@@ -304,7 +352,7 @@ export class GitHubAPI {
 	 * @returns a currying promise than handles everything needed for requests
 	 * @private
 	 */
-	#processCached<Transformed extends RedisJSON>(cacheKey: string) {
+	#processCached<Transformed extends CacheJson>(cacheKey: string) {
 		// justified eslint rule disabling cause this case is quite... unique and I can't do much better
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
@@ -372,13 +420,53 @@ export class GitHubAPI {
 					return cachedValue;
 				}
 
+				// Cache expired — check if we have stale data + etag for conditional request
+				const stale = await self.#cache.getStale<Transformed>(cacheKey);
+
 				ddebug(`Cache miss for ${cacheKey}`);
 
-				const res = await fn();
+				// Set pending etag for conditional request (injected via Octokit hook)
+				if (stale?.etag) {
+					self.#pendingEtag = stale.etag;
+				}
+
+				let res: Awaited<NewData>;
+				try {
+					res = await fn();
+				} catch (error: unknown) {
+					// On 304 Not Modified, reuse stale data (free, no quota used)
+					if (
+						stale &&
+						error &&
+						typeof error === "object" &&
+						"status" in error &&
+						(error as { status: number }).status === 304
+					) {
+						self.#pendingEtag = null;
+						ddebug(`Cache 304 hit for ${cacheKey}`);
+						console.info(`[github-cache-304-hit] ${cacheKey}`);
+						let ttlResult: number | undefined = undefined;
+						if (ttl !== undefined) {
+							ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
+						}
+						await self.#cache.refreshTtl(cacheKey, ttlResult);
+						return stale.value;
+					}
+					self.#pendingEtag = null;
+					throw error;
+				}
+
+				self.#pendingEtag = null;
 				const newValue = transformer?.(res) ?? (res as NewData & Transformed);
 				const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
 
-				await self.#cache.set(cacheKey, newValue, ttlResult);
+				// Store with etag if the response has one
+				const etag = self.#extractEtag(res);
+				if (etag) {
+					await self.#cache.setWithEtag(cacheKey, newValue, etag, ttlResult);
+				} else {
+					await self.#cache.set(cacheKey, newValue, ttlResult);
+				}
 
 				return newValue;
 			})().finally(() => self.#pendingRequests.delete(cacheKey));
@@ -387,23 +475,6 @@ export class GitHubAPI {
 		}
 
 		return processFn;
-	}
-
-	/**
-	 * Converts the input type into a Redis-compatible type
-	 *
-	 * @param value the value to convert
-	 * @returns the converted value
-	 */
-	#toRedisJSON<T>(value: T): JSONCompatible<T> {
-		if (value === undefined) return null as JSONCompatible<T>;
-		if (Array.isArray(value)) return value.map(v => this.#toRedisJSON(v)) as JSONCompatible<T>;
-		if (value !== null && typeof value === "object") {
-			return Object.fromEntries(
-				Object.entries(value).map(([k, v]) => [k, this.#toRedisJSON(v)])
-			) as JSONCompatible<T>;
-		}
-		return value as JSONCompatible<T>;
 	}
 
 	/**
@@ -466,9 +537,7 @@ export class GitHubAPI {
 	 * @throws Error if the issue is not found
 	 */
 	async getIssueDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<JSONCompatible<IssueDetails>>(
-			this.#getRepoKey(owner, repo, "issue", id)
-		)({
+		return await this.#processCached<IssueDetails>(this.#getRepoKey(owner, repo, "issue", id))({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -482,9 +551,9 @@ export class GitHubAPI {
 					this.#getLinkedPullRequests(owner, repo, id)
 				]),
 			transformer: ([{ data: info }, { data: comments }, linkedPrs]) => ({
-				info: this.#toRedisJSON(info),
-				comments: this.#toRedisJSON(comments),
-				linkedPrs: this.#toRedisJSON(linkedPrs)
+				info,
+				comments,
+				linkedPrs
 			}),
 			ttl: FULL_DETAILS_TTL
 		});
@@ -500,9 +569,7 @@ export class GitHubAPI {
 	 * @throws Error if the PR is not found
 	 */
 	async getPullRequestDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<JSONCompatible<PullRequestDetails>>(
-			this.#getRepoKey(owner, repo, "pr", id)
-		)({
+		return await this.#processCached<PullRequestDetails>(this.#getRepoKey(owner, repo, "pr", id))({
 			fn: () =>
 				Promise.all([
 					this.#request(
@@ -535,11 +602,11 @@ export class GitHubAPI {
 				{ data: files },
 				linkedIssues
 			]) => ({
-				info: this.#toRedisJSON({ ...info, reactions: issueInfo.reactions }),
-				comments: this.#toRedisJSON(comments),
-				commits: this.#toRedisJSON(commits),
-				files: this.#toRedisJSON(files),
-				linkedIssues: this.#toRedisJSON(linkedIssues)
+				info: { ...info, reactions: issueInfo.reactions },
+				comments,
+				commits,
+				files,
+				linkedIssues
 			}),
 			ttl: FULL_DETAILS_TTL
 		});
@@ -555,7 +622,7 @@ export class GitHubAPI {
 	 * @throws Error if the discussion is not found
 	 */
 	async getDiscussionDetails(owner: string, repo: string, id: number) {
-		return await this.#processCached<JSONCompatible<DiscussionDetails>>(
+		return await this.#processCached<DiscussionDetails>(
 			this.#getRepoKey(owner, repo, "discussion", id)
 		)({
 			fn: () =>
@@ -585,7 +652,7 @@ export class GitHubAPI {
 				]),
 			transformer: ([{ data: discussion }, comments]) => ({
 				info: discussion,
-				comments: this.#toRedisJSON(comments)
+				comments
 			}),
 			ttl: FULL_DETAILS_TTL
 		});
@@ -842,63 +909,72 @@ export class GitHubAPI {
 	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
 		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
-			const { data: releases } = await this.#request(
-				kit =>
-					kit.rest.repos.listReleases({
-						owner,
-						repo,
-						per_page
-					}),
-				createOctokitResponse([])
-			);
-			return releases;
+			return await this.#processCached<GitHubRelease[]>(`internal:${owner}/${repo}:listReleases`)({
+				fn: () =>
+					this.#request(
+						kit => kit.rest.repos.listReleases({ owner, repo, per_page }),
+						createOctokitResponse([])
+					),
+				transformer: ({ data }) => data,
+				ttl: RELEASES_TTL
+			});
 		}
 
 		// Changelog mode: we'll need to get the tags and re-build releases from them
 
+		type TagData = Awaited<
+			ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listTags"]>
+		>["data"][number];
+
 		// 1. Fetch tags
-		const { data: tags } = await this.#request(
-			kit =>
-				kit.rest.repos.listTags({
-					owner,
-					repo,
-					per_page
-				}),
-			createOctokitResponse([])
-		);
+		const tags = await this.#processCached<TagData[]>(`internal:${owner}/${repo}:tags`)({
+			fn: () =>
+				this.#request(
+					kit => kit.rest.repos.listTags({ owner, repo, per_page }),
+					createOctokitResponse([])
+				),
+			transformer: ({ data }) => data,
+			ttl: RELEASES_TTL
+		});
 
 		// 2. Fetch changelog
-		const { data: changelogResult } = await this.#request(
-			kit =>
-				kit.rest.repos.getContent({
-					mediaType: {
-						format: "raw"
-					},
-					owner,
-					repo,
-					ref: (() => {
-						try {
-							return owner === "sveltejs" &&
-								repo === "prettier-plugin-svelte" && // this repo has tagging troubles (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
-								tags[0] &&
-								semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
-								? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
-								: undefined;
-						} catch {
-							// handle oopses for invalid versions returned from `metadataFromTag` (or others)
-							return undefined;
-						}
-					})(),
-					path: "CHANGELOG.md"
-				}),
-			createOctokitResponse(
-				"" as unknown as Awaited<
-					ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
-				>["data"]
-			)
-		);
+		const changelogFileContents = await this.#processCached<string>(
+			`internal:${owner}/${repo}:changelog`
+		)({
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.rest.repos.getContent({
+							mediaType: {
+								format: "raw"
+							},
+							owner,
+							repo,
+							ref: (() => {
+								try {
+									return owner === "sveltejs" &&
+										repo === "prettier-plugin-svelte" && // this repo has tagging troubles (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
+										tags[0] &&
+										semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
+										? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
+										: undefined;
+								} catch {
+									// handle oopses for invalid versions returned from `metadataFromTag` (or others)
+									return undefined;
+								}
+							})(),
+							path: "CHANGELOG.md"
+						}),
+					createOctokitResponse(
+						"" as unknown as Awaited<
+							ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+						>["data"]
+					)
+				),
+			transformer: ({ data }) => data as unknown as string,
+			ttl: RELEASES_TTL
+		});
 
-		const changelogFileContents = changelogResult as unknown as string;
 		// Actually parse the changelog file
 		const { versions } = await parseChangelog(
 			changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
@@ -918,6 +994,11 @@ export class GitHubAPI {
 			);
 		}
 
+		type CommitData = {
+			author: { name: string; email: string; date: string };
+			committer: { name: string; email: string; date: string };
+		};
+
 		// 3. Return the recreated releases
 		return await Promise.all(
 			tags.map(
@@ -925,12 +1006,17 @@ export class GitHubAPI {
 					{ name: tag_name, commit: { sha }, zipball_url, tarball_url, node_id },
 					tagIndex
 				) => {
-					const {
-						data: { author, committer }
-					} = await this.#request(
-						kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
-						createOctokitResponse(commit)
-					);
+					const { author, committer } = await this.#processCached<CommitData>(
+						`internal:${owner}/${repo}:commit:${sha}`
+					)({
+						fn: () =>
+							this.#request(
+								kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
+								createOctokitResponse(commit)
+							),
+						transformer: ({ data: { author, committer } }) => ({ author, committer }),
+						ttl: COMMIT_TTL
+					});
 					const [, cleanVersion] = repository.metadataFromTag(tag_name);
 					const changelogVersion = versions.find(
 						({ version }) => !!version?.includes(cleanVersion)
@@ -998,34 +1084,42 @@ export class GitHubAPI {
 					);
 
 				const descriptions = new Map<string, string>();
-				for (const path of allPackageJson) {
-					const { data: packageJson } = await this.#request(
-						kit =>
-							kit.rest.repos.getContent({
-								mediaType: {
-									format: "raw"
-								},
-								owner,
-								repo,
-								path
-							}),
-						createOctokitResponse(
-							{} as Awaited<
-								ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
-							>["data"]
-						)
-					);
+				/*
+				 * Fetch in parallel instead of sequentially to be faster,
+				 * but the real saving is the 10-day TTL cache
+				 */
+				await Promise.all(
+					allPackageJson.map(async path => {
+						const { data: packageJson } = await this.#request(
+							kit =>
+								kit.rest.repos.getContent({
+									mediaType: {
+										format: "raw"
+									},
+									owner,
+									repo,
+									path
+								}),
+							createOctokitResponse(
+								{} as Awaited<
+									ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+								>["data"]
+							)
+						);
 
-					try {
-						const { description, private: priv } = JSON.parse(packageJson as unknown as string) as {
-							description?: string;
-							private?: boolean;
-						};
-						if (!priv && description) descriptions.set(path, description);
-					} catch {
-						// ignore
-					}
-				}
+						try {
+							const { description, private: priv } = JSON.parse(
+								packageJson as unknown as string
+							) as {
+								description?: string;
+								private?: boolean;
+							};
+							if (!priv && description) descriptions.set(path, description);
+						} catch {
+							// ignore
+						}
+					})
+				);
 				return Object.fromEntries(descriptions);
 			},
 			ttl: DESCRIPTIONS_TTL
@@ -1062,9 +1156,7 @@ export class GitHubAPI {
 	 * @returns a list of issues, empty if not existing
 	 */
 	async getAllIssues(owner: string, repo: string) {
-		return await this.#processCached<JSONCompatible<Issue[]>>(
-			this.#getRepoKey(owner, repo, "issues")
-		)({
+		return await this.#processCached<Issue[]>(this.#getRepoKey(owner, repo, "issues"))({
 			fn: () =>
 				this.#request(
 					kit =>
@@ -1075,7 +1167,7 @@ export class GitHubAPI {
 						}),
 					createOctokitResponse([])
 				),
-			transformer: ({ data: issues }) => this.#toRedisJSON(issues),
+			transformer: ({ data: issues }) => issues,
 			ttl: FULL_DETAILS_TTL
 		});
 	}
@@ -1176,7 +1268,6 @@ export class GitHubAPI {
 }
 
 export const githubCache = new GitHubAPI(
-	REDIS_URL,
 	GITHUB_TOKEN
 		? new Octokit({
 				auth: GITHUB_TOKEN

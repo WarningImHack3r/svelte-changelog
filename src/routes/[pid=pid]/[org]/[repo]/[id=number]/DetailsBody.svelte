@@ -7,7 +7,7 @@
 	import remarkGitHub from "remark-github";
 	import { siteName } from "$lib/properties";
 	import type { GitHubRelease } from "$lib/server/github-api";
-	import type { ConditionalKeys, JSONCompatible, RemoveIndexSignature } from "$lib/types";
+	import type { ConditionalKeys, RemoveIndexSignature } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
 	import * as HoverCard from "$lib/components/ui/hover-card";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -19,7 +19,7 @@
 		body?: string | null | undefined;
 		currentRepo: { owner: string; name: string };
 		renderSlug?: boolean;
-		reactions?: JSONCompatible<GitHubRelease["reactions"]> | undefined;
+		reactions?: GitHubRelease["reactions"] | undefined;
 		reactionItemUrl?: string;
 		class?: ClassValue;
 	};
