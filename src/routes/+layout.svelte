@@ -25,7 +25,6 @@
 	} from "@lucide/svelte";
 	import { ProgressBar } from "@prgm/sveltekit-progress-bar";
 	import {
-		mode,
 		ModeWatcher,
 		resetMode as mwResetMode,
 		setMode as mwSetMode,
