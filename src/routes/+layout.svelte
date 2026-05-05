@@ -30,7 +30,8 @@
 		resetMode as mwResetMode,
 		setMode as mwSetMode,
 		systemPrefersMode,
-		toggleMode as mwToggleMode
+		toggleMode as mwToggleMode,
+		userPrefersMode
 	} from "mode-watcher";
 	import { activeElement, PersistedState, PressedKeys } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
@@ -123,9 +124,7 @@
 			icon: Monitor
 		}
 	};
-	let theme = $derived<keyof typeof themes>(
-		mode.current === systemPrefersMode.current ? "system" : (mode.current ?? "system")
-	);
+	let theme = $derived<keyof typeof themes>(userPrefersMode.current ?? "system");
 	let themeSwitcherOpen = $state(false);
 	// change theme on pressing "d"
 	new PressedKeys().onKeys("d", () => {
@@ -139,8 +138,9 @@
 			return;
 
 		// instead of doing system -> light -> dark -> light -> dark, reset to system if it matches the target mode
+		const userMode = userPrefersMode.current ?? "system";
 		const systemMode = systemPrefersMode.current;
-		if (systemMode && mode.current && systemMode !== mode.current) resetMode();
+		if (userMode !== "system" && systemMode && systemMode !== userMode) resetMode();
 		else toggleMode();
 	});
 
@@ -217,12 +217,6 @@
 	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
 
 	$effect(() => {
-		// Theme
-		theme =
-			"mode-watcher-mode" in localStorage
-				? localStorage["mode-watcher-mode"].replaceAll('"', "")
-				: "system";
-
 		// Legacy news key
 		const oldLsNewsKey = "closedNews";
 		const oldLsNewsValue = localStorage.getItem(oldLsNewsKey);
