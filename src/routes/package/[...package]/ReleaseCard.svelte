@@ -407,7 +407,7 @@
 					</Tooltip.Provider>
 				{:else}
 					<span class="w-min text-left font-display text-lg group-hover:underline sm:w-auto">
-						{release.cleanName}@{release.cleanVersion}
+						{release.cleanName}<span class="text-muted-foreground">@</span>{release.cleanVersion}
 					</span>
 				{/if}
 				<div class="flex items-center gap-2 xs:hidden">
