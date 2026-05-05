@@ -27,10 +27,10 @@
 	import {
 		mode,
 		ModeWatcher,
-		resetMode,
-		setMode,
+		resetMode as mwResetMode,
+		setMode as mwSetMode,
 		systemPrefersMode,
-		toggleMode
+		toggleMode as mwToggleMode
 	} from "mode-watcher";
 	import { activeElement, PersistedState, PressedKeys } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
@@ -78,12 +78,28 @@
 			})
 		);
 	});
+	function withViewTransition(callback: () => void, ...types: string[]) {
+		if (!document.startViewTransition) {
+			callback();
+			return;
+		}
+		document.startViewTransition({ update: callback, types });
+	}
+	function setMode(mode: Mode) {
+		withViewTransition(() => mwSetMode(mode), "theme");
+	}
+	function resetMode() {
+		withViewTransition(mwResetMode, "theme");
+	}
+	function toggleMode() {
+		withViewTransition(mwToggleMode, "theme");
+	}
 
 	// SEO
 	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 
 	// Theme selector
-	type Mode = Parameters<typeof setMode>[0]; // mode-watcher doesn't export the Mode type
+	type Mode = Parameters<typeof mwSetMode>[0]; // mode-watcher doesn't export the Mode type
 	type Theme = {
 		label: string;
 		icon: typeof Icon;
@@ -446,3 +462,13 @@
 		</p>
 	</div>
 </footer>
+
+<style>
+	:global {
+		html:active-view-transition-type(theme) {
+			&::view-transition-group(root) {
+				animation-duration: 500ms;
+			}
+		}
+	}
+</style>
