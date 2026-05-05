@@ -83,7 +83,12 @@
 			callback();
 			return;
 		}
-		document.startViewTransition({ update: callback, types });
+		try {
+			document.startViewTransition({ update: callback, types });
+		} catch {
+			// Level 1 browsers don't support the options-object form
+			document.startViewTransition(callback);
+		}
 	}
 	function setMode(mode: Mode) {
 		withViewTransition(() => mwSetMode(mode), "theme");
