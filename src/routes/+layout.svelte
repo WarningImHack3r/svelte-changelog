@@ -51,6 +51,7 @@
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import Snowflakes from "$lib/components/Snowflakes.svelte";
 	import DesktopNavigation from "./DesktopNavigation.svelte";
+	import { waitFor } from "$lib/reactivity.svelte";
 
 	let { data, children } = $props();
 
@@ -125,6 +126,7 @@
 	};
 	let theme = $derived<keyof typeof themes>(userPrefersMode.current ?? "system");
 	let themeSwitcherOpen = $state(false);
+	let themeSwitcherFullyClosed = $state(false);
 	// change theme on pressing "d"
 	new PressedKeys().onKeys("d", () => {
 		const element = activeElement.current;
@@ -366,17 +368,18 @@
 						<GitHub title="GitHub" class="size-5" />
 						<span class="sr-only">Visit the repository</span>
 					</AnimatedButton>
-					<DropdownMenu.Root bind:open={themeSwitcherOpen}>
+					<DropdownMenu.Root
+						bind:open={themeSwitcherOpen}
+						// onOpenChangeComplete is not triggered on dropdown open, I need this other callback too
+						onOpenChange={() => (themeSwitcherFullyClosed = false)}
+						onOpenChangeComplete={changed => (themeSwitcherFullyClosed = changed === false)}
+					>
 						<DropdownMenu.Trigger>
 							{#snippet child({ props })}
 								<AnimatedButton {...props} variant="ghost" size="icon" class="w-14 gap-1">
 									<div class="flex items-center">
-										<Sun
-											class="size-5! scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
-										/>
-										<Moon
-											class="absolute size-5! scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
-										/>
+										<Sun class="size-5! transition-transform dark:scale-0" />
+										<Moon class="absolute size-5! scale-0 transition-transform dark:scale-100" />
 									</div>
 									<ChevronDown
 										class="size-4 opacity-50 transition-transform {themeSwitcherOpen
@@ -396,7 +399,11 @@
 										class="cursor-pointer data-disabled:opacity-75"
 										value={mode}
 										disabled={theme === mode}
-										onclick={() => (mode === "system" ? resetMode() : setMode(mode))}
+										onclick={() =>
+											waitFor(() => themeSwitcherFullyClosed, true).then(() => {
+												if (mode === "system") resetMode();
+												else setMode(mode);
+											})}
 									>
 										<availableTheme.icon class="mr-2 size-4" />
 										<span>{availableTheme.label}</span>
