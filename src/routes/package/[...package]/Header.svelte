@@ -41,7 +41,7 @@
 			({ iconUrl: string } | { icon: Component }) & { url: string; imgClasses?: string }
 		>
 	>(
-		packageInfo.registryExcluded
+		!packageInfo.isNpmPackage
 			? Object.fromEntries([])
 			: {
 					npmjs: {

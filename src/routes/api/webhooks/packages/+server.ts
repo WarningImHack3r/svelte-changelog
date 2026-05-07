@@ -9,7 +9,7 @@ export async function GET() {
 	const discovered = await discoverer.getOrDiscover();
 	const packages = discovered
 		.flatMap(({ packages }) => packages)
-		.filter(({ registryExcluded }) => !registryExcluded)
+		.filter(({ isNpmPackage }) => isNpmPackage)
 		.map(({ name }) => name);
 	return Response.json([...new Set(packages)]);
 }

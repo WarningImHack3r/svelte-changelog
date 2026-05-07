@@ -8,7 +8,7 @@ export type Package = {
 	name: string;
 	description: string;
 	deprecated?: string;
-	registryExcluded?: boolean;
+	isNpmPackage?: boolean;
 };
 
 export type DiscoveredPackage = Prettify<
@@ -27,8 +27,6 @@ class PackageDiscoverer {
 	readonly #cache: GitHubAPI;
 
 	readonly #repos: Repository[] = [];
-
-	readonly #notNpmPackages = new Set(["extensions"]);
 
 	readonly #packageDirectoryMap: Record<string, string> = {
 		extensions: "svelte-vscode",
@@ -87,7 +85,9 @@ class PackageDiscoverer {
 					packages: await Promise.all(
 						packages.map<Promise<Package>>(async pkg => {
 							const ghName = this.#gitHubDirectoryFromName(pkg);
-							const deprecated = (await this.#cache.getPackageDeprecation(pkg)).value || undefined;
+							const deprecationStatus = (await this.#cache.getPackageDeprecation(pkg)).value;
+							const deprecated =
+								typeof deprecationStatus === "string" ? deprecationStatus : undefined;
 							return {
 								name: pkg,
 								description: deprecated
@@ -101,7 +101,7 @@ class PackageDiscoverer {
 										descriptions["package.json"] ??
 										""),
 								deprecated,
-								registryExcluded: this.#notNpmPackages.has(pkg)
+								isNpmPackage: deprecationStatus !== null
 							};
 						})
 					)

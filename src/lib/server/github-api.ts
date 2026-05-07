@@ -1131,30 +1131,36 @@ export class GitHubAPI {
 	 * Get the deprecation state of a package from its name.
 	 *
 	 * @param packageName the name of the package to search
-	 * @returns the deprecation status message if any, `false` otherwise
+	 * @returns the deprecation status message if any, `false` if
+	 * not deprecated, or `null` if something bad happened
+	 * during the check
 	 */
 	async getPackageDeprecation(packageName: string) {
-		return await this.#processCached<{ value: string | false }>(
+		return await this.#processCached<{ value: string | false | null }>(
 			this.#getPackageKey(packageName, "deprecation")
 		)({
 			fn: async () => {
 				try {
-					// npmjs.org in a GitHub cache, I know, but hey, let's put that under the fact that GitHub owns npmjs.org okay??
+					// npmjs.org in a GitHub API class, I know, but let's put that under the fact that GitHub owns npmjs lol
 					const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
-					if (res.status !== 200) return {};
+					if (res.status !== 200) return { deprecated: null };
 					return (await res.json()) as { deprecated?: boolean | string };
 				} catch (error) {
 					derror(`Error fetching npmjs.org for package ${packageName}:`, error);
-					return {};
+					return { deprecated: null };
 				}
 			},
 			transformer: ({ deprecated }) => {
-				if (deprecated === undefined) return { value: false };
+				if (deprecated === null) /* invalid package or response */ return { value: null };
+				if (deprecated === undefined)
+					/* no deprecation field, not deprecated */ return { value: false };
 				if (typeof deprecated === "boolean")
+					// either deprecated (transformed to string then) or not (`false`)
 					return { value: deprecated && "This package is deprecated" };
+				// deprecation string with a never-to-be-hit emptiness fallback
 				return { value: deprecated || "This package is deprecated" };
 			},
-			ttl: item => (item.value === false ? DEPRECATIONS_TTL : undefined)
+			ttl: item => (typeof item.value === "string" ? undefined : DEPRECATIONS_TTL) // forever deprecated, or to retry later
 		});
 	}
 
