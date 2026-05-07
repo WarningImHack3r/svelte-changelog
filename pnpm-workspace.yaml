@@ -1,0 +1,9 @@
+engineStrict: true
+allowBuilds:
+  "@parcel/watcher": true
+  "@posthog/cli": true
+  "@tailwindcss/oxide": true
+  adapter-node-sea: true
+  core-js: true
+  esbuild: true
+  protobufjs: true
