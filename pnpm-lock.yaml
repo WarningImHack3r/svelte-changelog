@@ -69,8 +69,8 @@ importers:
         specifier: ^4.2.4
         version: 4.2.4(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3))
       adapter-node-sea:
-        specifier: github:gauben/gautier.dev#main&path:adapter
-        version: https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7#path:adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))
+        specifier: github:gauben/gautier.dev#path:/adapter
+        version: https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7#path:/adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))
       bits-ui:
         specifier: ^2.18.1
         version: 2.18.1(@internationalized/date@3.12.0)(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)
@@ -1612,8 +1612,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7#path:adapter:
-    resolution: {gitHosted: true, integrity: sha512-O/12lEuLUuAIMhMfCDhWAdqHybWN5jXbt9mCXigqjaPHHp2u3HCVxlCLQGjVrp1I3O+aDYckZEMCtdA1DocQTg==, tarball: https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7}
+  adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7#path:/adapter:
+    resolution: {gitHosted: true, path: /adapter, tarball: https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7}
     version: 0.0.1
     engines: {node: '>=25.7'}
     peerDependencies:
@@ -4570,7 +4570,7 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7#path:adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3))):
+  adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/f8346f115519525f3515f2670dcd6c7fe33a1ca7#path:/adapter(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3))):
     dependencies:
       '@polka/url': 1.0.0-next.29
       '@sveltejs/kit': 2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.5)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.1)(jiti@2.6.1)(yaml@2.8.3))

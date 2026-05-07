@@ -34,7 +34,7 @@
 		"@sveltejs/kit": "^2.59.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.4",
-		"adapter-node-sea": "github:gauben/gautier.dev#main&path:adapter",
+		"adapter-node-sea": "github:gauben/gautier.dev#path:/adapter",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
 		"feed": "^5.2.1",
