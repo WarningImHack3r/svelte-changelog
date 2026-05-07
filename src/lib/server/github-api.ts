@@ -390,6 +390,38 @@ export class GitHubAPI {
 	}
 
 	/**
+	 * Update an entry in the cache layer
+	 *
+	 * @param cacheKey the cache key to query the cache with
+	 * @param transform the transform function to apply to the cache value, if found
+	 */
+	async #updateCacheEntry<T extends RedisJSON>(
+		cacheKey: string,
+		transform: (value: T | undefined) => T | undefined
+	) {
+		const updateKey = `update/${cacheKey}`;
+		const existing = this.#pendingRequests.get(updateKey);
+		if (existing !== undefined) return existing as Promise<void>;
+
+		const promise = (async () => {
+			let newValue: T | undefined;
+			const cachedValue = await this.#cache.get<T>(cacheKey);
+			if (cachedValue) {
+				ddebug(`Cache hit for ${updateKey}`);
+				newValue = transform(cachedValue);
+			} else {
+				ddebug(`Cache miss for ${updateKey}`);
+				newValue = transform(undefined);
+			}
+			if (newValue === undefined) return;
+
+			await this.#cache.set(cacheKey, newValue);
+		})().finally(() => this.#pendingRequests.delete(updateKey));
+		this.#pendingRequests.set(updateKey, promise);
+		return promise;
+	}
+
+	/**
 	 * Converts the input type into a Redis-compatible type
 	 *
 	 * @param value the value to convert
@@ -1162,6 +1194,51 @@ export class GitHubAPI {
 			},
 			ttl: item => (typeof item.value === "string" ? undefined : DEPRECATIONS_TTL) // forever deprecated, or to retry later
 		});
+	}
+
+	/**
+	 * Fetch a package description from npmjs, or GitHub as a fallback.
+	 *
+	 * @param packageName the name of the package to fetch
+	 * @param owner the owner of the GitHub repository the package belongs to
+	 * @param repo the name of the GitHub repository the package belongs to
+	 * @returns the description if found, or `undefined`
+	 */
+	async getPackageDescription(
+		packageName: string,
+		owner: string,
+		repo: string
+	): Promise<string | undefined> {
+		try {
+			let description: string | undefined;
+			const res = await fetch(`https://registry.npmjs.org/${packageName}`);
+			if (res.status === 200) {
+				({ description } = (await res.json()) as { description?: string });
+			}
+			if (!description) {
+				// TODO: unauthed, to refine later
+				const { data: repoMetadata } = await new Octokit().rest.repos.get({
+					owner,
+					repo
+				});
+				description = repoMetadata.description ?? undefined;
+			}
+
+			if (description) {
+				void this.#updateCacheEntry<Record<string, string>>(
+					this.#getRepoKey(owner, repo, "descriptions"),
+					descriptions => {
+						const key = `packages/${packageName}/package.json`; // will look weird as it's technically a lie, but good enough
+						if (descriptions === undefined) return { [key]: description };
+						return { ...descriptions, [key]: description };
+					}
+				);
+			}
+			return description;
+		} catch (error) {
+			derror(`Error fetching remote for package ${packageName}:`, error);
+			return undefined;
+		}
 	}
 
 	/**

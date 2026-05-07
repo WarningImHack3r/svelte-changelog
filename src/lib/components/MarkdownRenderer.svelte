@@ -1,3 +1,10 @@
+<script lang="ts" module>
+	import { Transparent } from "svelte-exmarkdown";
+
+	// eslint-disable-next-line no-import-assign
+	export { Transparent };
+</script>
+
 <script lang="ts">
 	/**
 	 * Markdown block using Marked.js under the hood, with custom renderers
@@ -20,6 +27,7 @@
 
 	type Props = {
 		markdown: string;
+		element?: keyof HTMLElementTagNameMap;
 		inline?: boolean;
 		parseRawHtml?: boolean;
 		additionalPlugins?: Plugin[];
@@ -28,6 +36,7 @@
 
 	let {
 		markdown: md,
+		element,
 		inline = false,
 		parseRawHtml = false,
 		additionalPlugins = [],
@@ -37,7 +46,7 @@
 </script>
 
 <svelte:element
-	this={inline ? "span" : "div"}
+	this={element ?? (inline ? "span" : "div")}
 	class={cn(
 		"prose dark:prose-invert prose-a:wrap-anywhere prose-a:text-primary prose-a:no-underline prose-a:underline-offset-4 prose-a:hover:underline prose-code:wrap-anywhere prose-li:my-1",
 		"prose-pre:text-wrap",

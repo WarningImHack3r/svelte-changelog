@@ -24,7 +24,7 @@ export type CategorizedPackage = Prettify<
 >;
 
 class PackageDiscoverer {
-	readonly #cache: GitHubAPI;
+	readonly #api: GitHubAPI;
 
 	readonly #repos: Repository[] = [];
 
@@ -37,8 +37,8 @@ class PackageDiscoverer {
 
 	#packages: DiscoveredPackage[] = [];
 
-	constructor(cache: GitHubAPI, repos: Repository[]) {
-		this.#cache = cache;
+	constructor(api: GitHubAPI, repos: Repository[]) {
+		this.#api = api;
 		this.#repos = repos;
 	}
 
@@ -53,8 +53,8 @@ class PackageDiscoverer {
 				uniq(this.#repos, ({ repoOwner, repoName }) => `${repoOwner}/${repoName}`).map(
 					async repo => {
 						const [releases, descriptions] = await Promise.all([
-							this.#cache.getReleases(repo),
-							this.#cache.getDescriptions(repo.repoOwner, repo.repoName)
+							this.#api.getReleases(repo),
+							this.#api.getDescriptions(repo.repoOwner, repo.repoName)
 						]);
 						return [`${repo.repoOwner}/${repo.repoName}`, { releases, descriptions }] as const;
 					}
@@ -85,7 +85,7 @@ class PackageDiscoverer {
 					packages: await Promise.all(
 						packages.map<Promise<Package>>(async pkg => {
 							const ghName = this.#gitHubDirectoryFromName(pkg);
-							const deprecationStatus = (await this.#cache.getPackageDeprecation(pkg)).value;
+							const deprecationStatus = (await this.#api.getPackageDeprecation(pkg)).value;
 							const deprecated =
 								typeof deprecationStatus === "string" ? deprecationStatus : undefined;
 							return {
@@ -99,6 +99,7 @@ class PackageDiscoverer {
 											`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
 										] ??
 										descriptions["package.json"] ??
+										(await this.#api.getPackageDescription(pkg, repo.repoOwner, repo.repoName)) ??
 										""),
 								deprecated,
 								isNpmPackage: deprecationStatus !== null

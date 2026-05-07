@@ -14,6 +14,7 @@
 	import { Separator } from "$lib/components/ui/separator";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
+	import MarkdownRenderer, { Transparent } from "$lib/components/MarkdownRenderer.svelte";
 
 	type Props = {
 		packageInfo: Package & {
@@ -229,11 +230,20 @@
 		</div>
 	</div>
 	{#if packageInfo.description}
-		<h3
-			class="mt-4 italic motion-safe:[view-transition-name:var(--vt-name)]"
-			style:--vt-name="desc-{viewTransitionName}"
-		>
-			{packageInfo.description}
-		</h3>
+		<div class="contents" style:--vt-name="desc-{viewTransitionName}">
+			<MarkdownRenderer
+				element="h3"
+				markdown={packageInfo.description}
+				inline
+				class="mt-4 max-w-full px-0 italic motion-safe:[view-transition-name:var(--vt-name)]"
+				additionalPlugins={[{ renderer: { p: Transparent } }]}
+			>
+				{#snippet a({ children, ...rest })}
+					<a {...rest} target="_blank">
+						{@render children?.()}
+					</a>
+				{/snippet}
+			</MarkdownRenderer>
+		</div>
 	{/if}
 </div>
