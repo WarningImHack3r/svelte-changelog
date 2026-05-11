@@ -4,6 +4,9 @@
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
 	"postUpdateOptions": ["pnpmDedupe"],
+	"constraints": {
+		"node": ">=26"
+	},
 	"packageRules": [
 		{
 			"matchManagers": ["github-actions", "npm"],
