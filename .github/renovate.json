@@ -5,7 +5,7 @@
 	"rangeStrategy": "bump",
 	"postUpdateOptions": ["pnpmDedupe"],
 	"constraints": {
-		"node": ">=26"
+		"node": ">=26.1.0"
 	},
 	"packageRules": [
 		{
