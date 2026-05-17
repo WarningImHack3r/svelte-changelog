@@ -42,9 +42,8 @@
 			({ iconUrl: string } | { icon: Component }) & { url: string; imgClasses?: string }
 		>
 	>(
-		!packageInfo.isNpmPackage
-			? Object.fromEntries([])
-			: {
+		packageInfo.isNpmPackage
+			? {
 					npmjs: {
 						icon: Npm,
 						url: `https://npmjs.com/package/${packageInfo.name}`
@@ -55,6 +54,7 @@
 						imgClasses: "dark:invert"
 					}
 				}
+			: {}
 	);
 
 	// Description check
@@ -235,7 +235,8 @@
 				element="h3"
 				markdown={packageInfo.description}
 				inline
-				class="mt-4 max-w-full px-0 italic motion-safe:[view-transition-name:var(--vt-name)]"
+				// "relative" + < 10 z-index to go below the security fix notice
+				class="relative -z-15 mt-4 max-w-full px-0 italic motion-safe:[view-transition-name:var(--vt-name)]"
 				additionalPlugins={[{ renderer: { p: Transparent } }]}
 			>
 				{#snippet a({ children, ...rest })}
