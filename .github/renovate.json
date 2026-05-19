@@ -8,6 +8,7 @@
 		"node": ">=26"
 	},
 	"ignoreDeps": ["node"],
+	"minimumReleaseAge": "1 day",
 	"packageRules": [
 		{
 			"matchManagers": ["github-actions", "npm"],
