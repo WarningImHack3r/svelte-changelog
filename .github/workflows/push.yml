@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: 📂 Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: 📥 Install pnpm
         uses: pnpm/action-setup@v6
@@ -45,12 +47,14 @@ jobs:
 
       - name: 📤 Export results
         id: changed-files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.modified-files.outputs.all_changed_files }}
         run: |
           code_changes=false
           config_changes=false
           deps_changes=false
 
-          for file in ${{ steps.modified-files.outputs.all_changed_files }}; do
+          for file in $ALL_CHANGED_FILES; do
             if [[ $file =~ ^src/ ]] || [[ $file =~ ^static/ ]]; then
               echo "$file changes code"
               code_changes=true
