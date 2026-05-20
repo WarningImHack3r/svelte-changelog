@@ -23,6 +23,7 @@ const displayFont = read(DMSerifDisplay).arrayBuffer();
 export async function GET({ url }) {
 	const renderedComponent = render(Thumbnail, {
 		props: {
+			eyebrow: url.searchParams.get("eyebrow") ?? undefined,
 			title: url.searchParams.get("title") ?? "",
 			description: url.searchParams.get("description") ?? undefined
 		}

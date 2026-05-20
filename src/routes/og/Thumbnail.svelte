@@ -2,11 +2,12 @@
 	import { siteName } from "$lib/properties";
 
 	type Props = {
+		eyebrow?: string;
 		title: string;
 		description?: string;
 	};
 
-	let { title, description }: Props = $props();
+	let { eyebrow, title, description }: Props = $props();
 	const [first = "huh?", second] = siteName.split(" ", 2);
 </script>
 
@@ -35,6 +36,9 @@
 			</span>
 		</div>
 		<div class="my-auto flex flex-col justify-center">
+			{#if eyebrow}
+				<p class="-mb-4 text-5xl text-gray-700" style:font-family="DisplayFont">{eyebrow}</p>
+			{/if}
 			<p class="text-7xl" style:font-family="DisplayFont">{title}</p>
 			{#if description}
 				<p class="text-4xl text-gray-600" style:font-family="SansFont">{description}</p>

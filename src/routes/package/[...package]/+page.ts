@@ -38,8 +38,10 @@ export function load({ data, url }) {
 				images: [
 					{
 						get url() {
+							const [first, second] = data.currentPackage.pkg.name.split("/");
 							const ogUrl = new URL("og", url.origin);
-							ogUrl.searchParams.set("title", data.currentPackage.pkg.name);
+							if (first && second) ogUrl.searchParams.set("eyebrow", first);
+							ogUrl.searchParams.set("title", second ?? data.currentPackage.pkg.name);
 							ogUrl.searchParams.set(
 								"description",
 								`${data.currentPackage.repoOwner}/${data.currentPackage.repoName}`
