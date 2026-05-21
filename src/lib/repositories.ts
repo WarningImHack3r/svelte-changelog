@@ -110,6 +110,7 @@ const repos: Record<Category, RepoEntry> = {
 				changesMode: "changelog",
 				repoName: "prettier-plugin-svelte",
 				metadataFromTag(tag) {
+					if (containsAtRegex.test(tag)) return splitByLastAt(tag);
 					return [this.repoName, tag.replace(vPrefixRegex, "")];
 				}
 			},

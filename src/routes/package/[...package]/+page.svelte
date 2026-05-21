@@ -300,16 +300,6 @@
 						class="border-amber-500 bg-amber-400/10 prose-a:text-amber-500!"
 					/>
 				{/if}
-				{#if data.currentPackage.pkg.name === "prettier-plugin-svelte"}
-					{@const markdown =
-						"This package has releases that are not properly tagged, and some updates can be missing here. Visit [this issue](https://github.com/sveltejs/prettier-plugin-svelte/issues/497) for more information."}
-					<TopBanner
-						icon={CircleAlert}
-						title="Note"
-						{markdown}
-						class="border-sky-500 bg-sky-400/20 prose-a:text-sky-500"
-					/>
-				{/if}
 				{#if settingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
 					{@const markdown = `The following filters are active:\n${settingsUtils.modificationString(
 						packageSettings.current

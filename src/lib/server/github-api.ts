@@ -21,7 +21,6 @@ import type {
 } from "@octokit/graphql-schema";
 import { App, Octokit } from "octokit";
 import { type RedisJSON, createClient } from "redis";
-import semver from "semver";
 import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
@@ -908,19 +907,6 @@ export class GitHubAPI {
 					},
 					owner,
 					repo,
-					ref: (() => {
-						try {
-							return owner === "sveltejs" &&
-								repo === "prettier-plugin-svelte" && // this repo has tagging troubles (https://github.com/sveltejs/prettier-plugin-svelte/issues/497)
-								tags[0] &&
-								semver.major(repository.metadataFromTag(tags[0].name)[1]) === 3
-								? "version-3" // a temporary fix to get the changelog from the right branch while v4 isn't out yet
-								: undefined;
-						} catch {
-							// handle oopses for invalid versions returned from `metadataFromTag` (or others)
-							return undefined;
-						}
-					})(),
 					path: "CHANGELOG.md"
 				}),
 			createOctokitResponse(
@@ -978,7 +964,7 @@ export class GitHubAPI {
 						target_commitish: "main",
 						name: `${repo}@${cleanVersion}`,
 						body: changelogVersion?.body || "_No changelog provided._",
-						prerelease: tag_name.includes("-"),
+						prerelease: cleanVersion.includes("-"),
 						created_at: committer.date,
 						author: {
 							...release.author,
