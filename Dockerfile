@@ -5,11 +5,12 @@ RUN npm i -g pnpm
 COPY pnpm-lock.yaml .
 RUN pnpm fetch -P
 COPY . .
-RUN pnpm i --offline -P
+RUN pnpm i --prefer-offline -P # "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
 RUN pnpm run build
 
 FROM debian:stable-slim
 WORKDIR /app
+# minimal requirement to avoid requiring a node image and make the SEA work
 RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=base /app/build/node node
