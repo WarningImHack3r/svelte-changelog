@@ -23,7 +23,7 @@
 	const securityFixIgnoredPackages = new Set([
 		"@sveltejs/mcp",
 		"@sveltejs/opencode",
-		"acorn-typescript",
+		"@sveltejs/acorn-typescript",
 		"eslint-config"
 	]);
 </script>

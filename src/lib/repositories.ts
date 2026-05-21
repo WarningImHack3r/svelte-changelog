@@ -74,7 +74,8 @@ const repos: Record<Category, RepoEntry> = {
 			{
 				repoName: "acorn-typescript",
 				metadataFromTag(tag) {
-					return [this.repoName, tag.replace(vPrefixRegex, "")];
+					if (containsAtRegex.test(tag)) return splitByLastAt(tag);
+					return [`@sveltejs/${this.repoName}`, tag.replace(vPrefixRegex, "")];
 				}
 			},
 			{
