@@ -56,7 +56,7 @@
 >
 	<svelte:boundary
 		onerror={e =>
-			posthog.captureException(e, {
+			posthog.captureException(e instanceof Error ? e : new Error("Rendering error"), {
 				caughtInBoundary: true,
 				boundaryLocation: "MarkdownRenderer",
 				md

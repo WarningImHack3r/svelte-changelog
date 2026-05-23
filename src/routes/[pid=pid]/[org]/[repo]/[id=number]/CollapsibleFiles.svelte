@@ -42,7 +42,7 @@
 			{/if}
 			<svelte:boundary
 				onerror={e =>
-					posthog.captureException(e, {
+					posthog.captureException(e instanceof Error ? e : new Error("Diff rendering error"), {
 						fileName: patch.name,
 						pr: route
 					})}
