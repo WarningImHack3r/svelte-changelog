@@ -3,6 +3,7 @@ node_modules
 /.svelte-kit
 /package
 /src/lib/components/ui
+/src/lib/server/db
 /src/lib/utils.ts
 .env
 .env.*

@@ -6,7 +6,6 @@
 	import remarkGitHub from "remark-github";
 	import { siteName } from "$lib/properties";
 	import type { LinkedItem } from "$lib/server/github-api";
-	import type { JSONCompatible } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import * as Avatar from "$lib/components/ui/avatar";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
@@ -17,7 +16,7 @@
 	import { shikiPlugin } from "./syntax-highlighting";
 
 	type Props = {
-		entities: JSONCompatible<LinkedItem>[];
+		entities: LinkedItem[];
 		currentRepo: { owner: string; name: string };
 	};
 
