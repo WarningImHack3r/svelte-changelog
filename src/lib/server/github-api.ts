@@ -232,6 +232,14 @@ export class GitHubAPI {
 		);
 
 		this.#octokit = octokit;
+
+		// Hook to inject If-None-Match header for conditional requests
+		this.#octokit.hook.wrap("request", (request, options) => {
+			if (this.#pendingEtag) {
+				options.headers = { ...options.headers, "if-none-match": this.#pendingEtag };
+			}
+			return request(options);
+		});
 	}
 
 	/**
@@ -282,6 +290,24 @@ export class GitHubAPI {
 		return `package:${packageName}${strArgs}`;
 	}
 
+	static #rateLimitRemaining: number | null = null;
+
+	static #rateLimitReset: Date | null = null;
+
+	/**
+	 * Extract the ETag header from an Octokit response, if present.
+	 */
+	#extractEtag(res: unknown): string | null {
+		if (res && typeof res === "object" && "headers" in res) {
+			const headers = (res as { headers: Record<string, string> }).headers;
+			return headers.etag ?? null;
+		}
+		return null;
+	}
+
+	// Stored etag to inject into the next request (set before calling fn, cleared after)
+	#pendingEtag: string | null = null;
+
 	/**
 	 * A request middleware to control calls to the GitHub API.
 	 *
@@ -289,8 +315,40 @@ export class GitHubAPI {
 	 * @param fallback mock data to return when {@see MOCK_REQUESTS} is enabled
 	 * @returns either the original data or the fallback one
 	 */
-	#request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
-		return MOCK_REQUESTS ? Promise.resolve(fallback) : original(this.#octokit);
+	async #request<T>(original: (octokit: Octokit) => Promise<T>, fallback: NoInfer<T>): Promise<T> {
+		if (MOCK_REQUESTS) return fallback;
+
+		try {
+			const result = await original(this.#octokit);
+			// Extract rate limit headers from Octokit responses
+			if (result && typeof result === "object" && "headers" in result) {
+				const headers = (result as { headers: Record<string, string> }).headers;
+				const remaining = headers["x-ratelimit-remaining"];
+				const reset = headers["x-ratelimit-reset"];
+				if (remaining !== undefined) {
+					GitHubAPI.#rateLimitRemaining = Number(remaining);
+				}
+				if (reset !== undefined) {
+					GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
+				}
+				if (GitHubAPI.#rateLimitRemaining !== null) {
+					console.info(
+						`[github-api] remaining=${GitHubAPI.#rateLimitRemaining}, resets at ${GitHubAPI.#rateLimitReset?.toLocaleTimeString() ?? "unknown"}`
+					);
+				}
+			}
+			return result;
+		} catch (error: unknown) {
+			// Log rate limit info from error responses too
+			if (error && typeof error === "object" && "response" in error) {
+				const resp = (error as { response: { headers: Record<string, string> } }).response;
+				const remaining = resp?.headers?.["x-ratelimit-remaining"];
+				const reset = resp?.headers?.["x-ratelimit-reset"];
+				if (remaining !== undefined) GitHubAPI.#rateLimitRemaining = Number(remaining);
+				if (reset !== undefined) GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
+			}
+			throw error;
+		}
 	}
 
 	/**
@@ -371,13 +429,54 @@ export class GitHubAPI {
 					return cachedValue;
 				}
 
+				// Cache expired — check if we have stale data + etag for conditional request
+				const stale = await self.#cache.getStale(cacheKey);
+
 				ddebug(`Cache miss for ${cacheKey}`);
 
-				const res = await fn();
+				// Set pending etag for conditional request (injected via Octokit hook)
+				if (stale?.etag) {
+					self.#pendingEtag = stale.etag;
+				}
+
+				let res: Awaited<NewData>;
+				try {
+					res = await fn();
+				} catch (error: unknown) {
+					// On 304 Not Modified, reuse stale data (free, no quota used)
+					if (
+						stale &&
+						error &&
+						typeof error === "object" &&
+						"status" in error &&
+						typeof error.status === "number" &&
+						error.status === 304
+					) {
+						self.#pendingEtag = null;
+						ddebug(`Cache 304 hit for ${cacheKey}`);
+						console.info(`[github-cache-304-hit] ${cacheKey}`);
+						let ttlResult: number | undefined = undefined;
+						if (ttl !== undefined) {
+							ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
+						}
+						await self.#cache.refreshTtl(cacheKey, ttlResult);
+						return stale.value;
+					}
+					self.#pendingEtag = null;
+					throw error;
+				}
+
+				self.#pendingEtag = null;
 				const newValue = transformer?.(res) ?? (res as NewData & Transformed);
 				const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
 
-				await self.#cache.set(cacheKey, newValue, ttlResult);
+				// Store with etag if the response has one
+				const etag = self.#extractEtag(res);
+				if (etag) {
+					await self.#cache.setWithEtag(cacheKey, newValue, etag, ttlResult);
+				} else {
+					await self.#cache.set(cacheKey, newValue, ttlResult);
+				}
 
 				return newValue;
 			})().finally(() => self.#pendingRequests.delete(cacheKey));
