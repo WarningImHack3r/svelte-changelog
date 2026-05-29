@@ -97,6 +97,13 @@ export class KVCache {
 		}
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+	async getStale<T extends RedisJSON>(key: string): Promise<{ value: T; etag: string } | null> {
+		const value = await this.get<T>(key);
+		if (!value) return null;
+		return { value, etag: "" };
+	}
+
 	/**
 	 * Set a value in the cache
 	 *
@@ -128,6 +135,12 @@ export class KVCache {
 			}
 		}
 	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+	async setWithEtag(key: string, value: RedisJSON, etag: string, ttlSeconds?: number) {}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+	async refreshTtl(key: string, ttlSeconds?: number) {}
 
 	/**
 	 * Deletes an entry in the cache

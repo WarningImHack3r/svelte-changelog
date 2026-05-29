@@ -22,7 +22,7 @@ import type {
 import { App, Octokit } from "octokit";
 import { type RedisJSON, createClient } from "redis";
 import parseChangelog from "$lib/changelog-parser";
-import { ddebug, derror } from "$lib/logging";
+import { ddebug, derror, dlog } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import { stringifyError } from "$lib/strings";
 import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
@@ -297,12 +297,12 @@ export class GitHubAPI {
 	/**
 	 * Extract the ETag header from an Octokit response, if present.
 	 */
-	#extractEtag(res: unknown): string | null {
+	#extractEtag(res: unknown): string | undefined {
 		if (res && typeof res === "object" && "headers" in res) {
 			const headers = (res as { headers: Record<string, string> }).headers;
-			return headers.etag ?? null;
+			return headers.etag;
 		}
-		return null;
+		return undefined;
 	}
 
 	// Stored etag to inject into the next request (set before calling fn, cleared after)
@@ -332,7 +332,7 @@ export class GitHubAPI {
 					GitHubAPI.#rateLimitReset = new Date(Number(reset) * 1000);
 				}
 				if (GitHubAPI.#rateLimitRemaining !== null) {
-					console.info(
+					dlog(
 						`[github-api] remaining=${GitHubAPI.#rateLimitRemaining}, resets at ${GitHubAPI.#rateLimitReset?.toLocaleTimeString() ?? "unknown"}`
 					);
 				}
@@ -430,7 +430,7 @@ export class GitHubAPI {
 				}
 
 				// Cache expired — check if we have stale data + etag for conditional request
-				const stale = await self.#cache.getStale(cacheKey);
+				const stale = await self.#cache.getStale<Transformed>(cacheKey);
 
 				ddebug(`Cache miss for ${cacheKey}`);
 
@@ -454,7 +454,6 @@ export class GitHubAPI {
 					) {
 						self.#pendingEtag = null;
 						ddebug(`Cache 304 hit for ${cacheKey}`);
-						console.info(`[github-cache-304-hit] ${cacheKey}`);
 						let ttlResult: number | undefined = undefined;
 						if (ttl !== undefined) {
 							ttlResult = typeof ttl === "function" ? ttl(stale.value) : ttl;
