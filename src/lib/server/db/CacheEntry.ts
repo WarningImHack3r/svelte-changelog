@@ -2,7 +2,6 @@ import { Entity, Fields } from "remult";
 import { dev } from "$app/environment";
 
 @Entity<CacheEntry>("cache-entries", {
-	// allowApiRead: dev,
 	allowApiCrud: dev,
 	id: "key"
 })
@@ -11,7 +10,7 @@ export class CacheEntry {
 	key = "";
 
 	@Fields.json()
-	value = {};
+	value = {} as unknown;
 
 	@Fields.string()
 	etag = "";

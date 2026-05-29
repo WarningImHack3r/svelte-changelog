@@ -22,6 +22,7 @@ export class KVCache {
 
 		if (entry.expiresAt && entry.expiresAt < new Date()) {
 			ddebug("Value expired");
+			await repo(CacheEntry).delete(entry);
 			return null;
 		}
 
@@ -38,15 +39,16 @@ export class KVCache {
 	 */
 	async set(key: string, value: CacheJson, ttlSeconds?: number) {
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await repo(CacheEntry).upsert({ where: { key }, set: { value: value as object, expiresAt } });
+		await repo(CacheEntry).upsert({ where: { key }, set: { value, expiresAt } });
 	}
 
-	async getStale(key: string) {
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+	async getStale<T extends CacheJson>(key: string) {
 		const entry = await repo(CacheEntry).findFirst({ key });
 		if (entry?.etag) {
-			return { value: entry.value as CacheJson, etag: entry.etag };
+			return { value: entry.value as T, etag: entry.etag };
 		}
-		return null;
+		return undefined;
 	}
 
 	async refreshTtl(key: string, ttlSeconds?: number) {
@@ -58,10 +60,7 @@ export class KVCache {
 
 	async setWithEtag(key: string, value: CacheJson, etag: string, ttlSeconds?: number) {
 		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await repo(CacheEntry).upsert({
-			where: { key },
-			set: { value: value as object, expiresAt, etag }
-		});
+		await repo(CacheEntry).upsert({ where: { key }, set: { value, expiresAt, etag } });
 	}
 
 	/**
