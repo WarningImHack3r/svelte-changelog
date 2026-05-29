@@ -1,5 +1,5 @@
-import { Entity, Fields } from "remult";
 import { dev } from "$app/environment";
+import { Entity, Fields } from "remult";
 
 @Entity<CacheEntry>("cache-entries", {
 	allowApiCrud: dev,

@@ -30,5 +30,6 @@
 		"\\$lib/components/.+$",
 		"^\\.*/.+$"
 	],
+	"importOrderParserPlugins": ["typescript", "decorators"],
 	"importOrderSortSpecifiers": true
 }
