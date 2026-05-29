@@ -12,9 +12,6 @@ export default defineConfig(({ mode }) => {
 	const POSTHOG_SOURCEMAP_API_KEY = env.POSTHOG_SOURCEMAP_API_KEY;
 
 	return {
-		ssr: {
-			external: ["better-sqlite3"]
-		},
 		plugins: [
 			devtoolsJson(),
 			lucidePreprocess(),

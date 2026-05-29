@@ -4,7 +4,7 @@ import { dev } from "$app/environment";
 import { env } from "$env/dynamic/public";
 import { PostHog } from "posthog-node";
 import { dfatal } from "$lib/logging";
-import { api } from "$lib/server/remultApi";
+import { api } from "$lib/server/remult-api";
 import { stringifyError } from "$lib/strings";
 
 const client = env.PUBLIC_POSTHOG_KEY
