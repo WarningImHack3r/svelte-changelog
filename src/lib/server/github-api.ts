@@ -363,7 +363,7 @@ export class GitHubAPI {
 				const newValue = transformer?.(res) ?? (res as NewData & Transformed);
 				const ttlResult = typeof ttl === "function" ? ttl(newValue) : ttl;
 
-				await self.#cache.set(cacheKey, newValue, ttlResult);
+				await self.#cache.set(cacheKey, newValue, undefined, ttlResult);
 
 				return newValue;
 			})().finally(() => self.#pendingRequests.delete(cacheKey));

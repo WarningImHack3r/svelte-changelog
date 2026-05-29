@@ -30,18 +30,6 @@ export class KVCache {
 		return entry.value as T;
 	}
 
-	/**
-	 * Set a value in the cache
-	 *
-	 * @param key the key to store the value for
-	 * @param value the value to store
-	 * @param ttlSeconds the optional TTL to set for expiration
-	 */
-	async set(key: string, value: CacheJson, ttlSeconds?: number) {
-		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await repo(CacheEntry).upsert({ where: { key }, set: { value, expiresAt } });
-	}
-
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	async getStale<T extends CacheJson>(key: string) {
 		const entry = await repo(CacheEntry).findFirst({ key });
@@ -51,16 +39,33 @@ export class KVCache {
 		return undefined;
 	}
 
+	/**
+	 * Set a value in the cache
+	 *
+	 * @param key the key to store the value for
+	 * @param value the value to store
+	 * @param etag the etag value to optionally set
+	 * @param ttlSeconds the optional TTL to set for expiration
+	 */
+	async set(key: string, value: CacheJson, etag?: string, ttlSeconds?: number) {
+		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
+		await repo(CacheEntry).upsert({
+			where: { key },
+			set: etag ? { value, expiresAt, etag } : { value, expiresAt }
+		});
+	}
+
+	/**
+	 * Update, add or unset the TTL value for the given key
+	 *
+	 * @param key the key to refresh
+	 * @param ttlSeconds the optional TTL to set for expiration
+	 */
 	async refreshTtl(key: string, ttlSeconds?: number) {
 		const entry = await repo(CacheEntry).findFirst({ key });
 		if (!entry) return;
 		entry.expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
 		await repo(CacheEntry).save(entry);
-	}
-
-	async setWithEtag(key: string, value: CacheJson, etag: string, ttlSeconds?: number) {
-		const expiresAt = ttlSeconds ? new Date(Date.now() + ttlSeconds * 1000) : null;
-		await repo(CacheEntry).upsert({ where: { key }, set: { value, expiresAt, etag } });
 	}
 
 	/**
