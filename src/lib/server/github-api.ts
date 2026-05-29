@@ -200,6 +200,10 @@ export const MEMBERS_TTL = 60 * 60 * 24 * 2; // 2 days
  * The TTL for non-deprecated packages, in seconds
  */
 export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
+/**
+ * The TTL for commit data, in seconds.
+ */
+export const COMMIT_TTL = 60 * 60 * 24 * 30; // 30 days
 
 /**
  * A fetch layer to reach the GitHub API
@@ -280,6 +284,23 @@ export class GitHubAPI {
 	#getPackageKey(packageName: string, ...args: KeyArg[]) {
 		const strArgs = args.map(a => `:${a}`).join("");
 		return `package:${packageName}${strArgs}`;
+	}
+
+	/**
+	 * Generates a Redis key for non-public-facing cached data.
+	 *
+	 * @param owner the GitHub repository owner
+	 * @param repo the GitHub repository name
+	 * @param restFunction the REST function from Octokit to cache for
+	 * @param args the optional additional values to append
+	 * at the end of the key, usually the `restFunction` args;
+	 * every element will be interpolated in a string
+	 * @returns the pure computed key
+	 * @private
+	 */
+	#getInternalKey(owner: string, repo: string, restFunction: string, ...args: KeyArg[]) {
+		const strArgs = args.map(a => `:${a}`).join("");
+		return `internal:${owner}/${repo}:${restFunction}${strArgs}`;
 	}
 
 	/**
@@ -873,50 +894,61 @@ export class GitHubAPI {
 	async #fetchReleases(repository: Repository): Promise<GitHubRelease[]> {
 		const { repoOwner: owner, repoName: repo, changesMode, changelogContentsReplacer } = repository;
 		if (changesMode === "releases" || !changesMode) {
-			const { data: releases } = await this.#request(
-				kit =>
-					kit.rest.repos.listReleases({
-						owner,
-						repo,
-						per_page
-					}),
-				createOctokitResponse([])
-			);
-			return releases;
+			return await this.#processCached<GitHubRelease[]>(
+				this.#getInternalKey(owner, repo, "listReleases")
+			)({
+				fn: () =>
+					this.#request(
+						kit => kit.rest.repos.listReleases({ owner, repo, per_page }),
+						createOctokitResponse([])
+					),
+				transformer: ({ data }) => data,
+				ttl: RELEASES_TTL
+			});
 		}
 
 		// Changelog mode: we'll need to get the tags and re-build releases from them
 
+		type TagData = Awaited<
+			ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["listTags"]>
+		>["data"][number];
+
 		// 1. Fetch tags
-		const { data: tags } = await this.#request(
-			kit =>
-				kit.rest.repos.listTags({
-					owner,
-					repo,
-					per_page
-				}),
-			createOctokitResponse([])
-		);
+		const tags = await this.#processCached<TagData[]>(this.#getInternalKey(owner, repo, "tags"))({
+			fn: () =>
+				this.#request(
+					kit => kit.rest.repos.listTags({ owner, repo, per_page }),
+					createOctokitResponse([])
+				),
+			transformer: ({ data }) => data,
+			ttl: RELEASES_TTL
+		});
 
 		// 2. Fetch changelog
-		const { data: changelogResult } = await this.#request(
-			kit =>
-				kit.rest.repos.getContent({
-					mediaType: {
-						format: "raw"
-					},
-					owner,
-					repo,
-					path: "CHANGELOG.md"
-				}),
-			createOctokitResponse(
-				"" as unknown as Awaited<
-					ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
-				>["data"]
-			)
-		);
+		const changelogFileContents = await this.#processCached<string>(
+			this.#getInternalKey(owner, repo, "changelog")
+		)({
+			fn: () =>
+				this.#request(
+					kit =>
+						kit.rest.repos.getContent({
+							mediaType: {
+								format: "raw"
+							},
+							owner,
+							repo,
+							path: "CHANGELOG.md"
+						}),
+					createOctokitResponse(
+						"" as unknown as Awaited<
+							ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+						>["data"]
+					)
+				),
+			transformer: ({ data }) => data as unknown as string,
+			ttl: RELEASES_TTL
+		});
 
-		const changelogFileContents = changelogResult as unknown as string;
 		// Actually parse the changelog file
 		const { versions } = await parseChangelog(
 			changelogContentsReplacer?.(changelogFileContents) ?? changelogFileContents
@@ -936,6 +968,11 @@ export class GitHubAPI {
 			);
 		}
 
+		type CommitData = {
+			author: { name: string; email: string; date: string };
+			committer: { name: string; email: string; date: string };
+		};
+
 		// 3. Return the recreated releases
 		return await Promise.all(
 			tags.map(
@@ -943,12 +980,17 @@ export class GitHubAPI {
 					{ name: tag_name, commit: { sha }, zipball_url, tarball_url, node_id },
 					tagIndex
 				) => {
-					const {
-						data: { author, committer }
-					} = await this.#request(
-						kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
-						createOctokitResponse(commit)
-					);
+					const { author, committer } = await this.#processCached<CommitData>(
+						this.#getInternalKey(owner, repo, "commit", sha)
+					)({
+						fn: () =>
+							this.#request(
+								kit => kit.rest.git.getCommit({ owner, repo, commit_sha: sha }),
+								createOctokitResponse(commit)
+							),
+						transformer: ({ data: { author, committer } }) => ({ author, committer }),
+						ttl: COMMIT_TTL
+					});
 					const [, cleanVersion] = repository.metadataFromTag(tag_name);
 					const changelogVersion = versions.find(
 						({ version }) => !!version?.includes(cleanVersion)
