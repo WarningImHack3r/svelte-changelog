@@ -1058,34 +1058,42 @@ export class GitHubAPI {
 					);
 
 				const descriptions = new Map<string, string>();
-				for (const path of allPackageJson) {
-					const { data: packageJson } = await this.#request(
-						kit =>
-							kit.rest.repos.getContent({
-								mediaType: {
-									format: "raw"
-								},
-								owner,
-								repo,
-								path
-							}),
-						createOctokitResponse(
-							{} as Awaited<
-								ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
-							>["data"]
-						)
-					);
+				/*
+				 * Fetch in parallel instead of sequentially to be faster,
+				 * but the real saving is the 10-day TTL cache
+				 */
+				await Promise.all(
+					allPackageJson.map(async path => {
+						const { data: packageJson } = await this.#request(
+							kit =>
+								kit.rest.repos.getContent({
+									mediaType: {
+										format: "raw"
+									},
+									owner,
+									repo,
+									path
+								}),
+							createOctokitResponse(
+								{} as Awaited<
+									ReturnType<InstanceType<typeof Octokit>["rest"]["repos"]["getContent"]>
+								>["data"]
+							)
+						);
 
-					try {
-						const { description, private: priv } = JSON.parse(packageJson as unknown as string) as {
-							description?: string;
-							private?: boolean;
-						};
-						if (!priv && description) descriptions.set(path, description);
-					} catch {
-						// ignore
-					}
-				}
+						try {
+							const { description, private: priv } = JSON.parse(
+								packageJson as unknown as string
+							) as {
+								description?: string;
+								private?: boolean;
+							};
+							if (!priv && description) descriptions.set(path, description);
+						} catch {
+							// ignore
+						}
+					})
+				);
 				return Object.fromEntries(descriptions);
 			},
 			ttl: DESCRIPTIONS_TTL
