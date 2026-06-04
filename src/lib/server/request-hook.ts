@@ -150,7 +150,7 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 						warn("Desync between cached data and cached hashes");
 						// Fix desync and exceptionally return uncached fresh data
 						await Promise.all([
-							kv.delete(`headers:kv:${requestPathname}`),
+							kv.delete(`headers:etag:${requestPathname}`),
 							kv.delete(`headers:last-modified:${requestPathname}`)
 						]);
 						return await request(options);
