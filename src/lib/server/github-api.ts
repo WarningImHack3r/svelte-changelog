@@ -20,7 +20,7 @@ import type {
 	ReferencedSubject
 } from "@octokit/graphql-schema";
 import { App, Octokit } from "octokit";
-import { type RedisJSON, createClient } from "redis";
+import { type RedisClientType, type RedisJSON, createClient } from "redis";
 import parseChangelog from "$lib/changelog-parser";
 import { ddebug, derror } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
@@ -37,6 +37,7 @@ import {
 	release
 } from "./data-mock";
 import { KVCache } from "./kv";
+import { createOctokit } from "./request-hook";
 
 /**
  * A strict version of Extract.
@@ -206,7 +207,7 @@ export const DEPRECATIONS_TTL = 60 * 60 * 24 * 2; // 2 days
  * with an additional caching mechanism.
  */
 export class GitHubAPI {
-	readonly #cache: KVCache;
+	readonly #cache: KVCache<RedisJSON>;
 
 	readonly #octokit: Octokit;
 
@@ -215,22 +216,18 @@ export class GitHubAPI {
 	/**
 	 * Creates a new {@link GitHubAPI} with the required auth info.
 	 *
-	 * @param redisUrl the Redis cache TCP URL
 	 * @param octokit the Octokit instance to use for API requests
+	 * @param redis the Redis instance to use for request caching
 	 * @constructor
 	 */
-	constructor(redisUrl: string, octokit: Octokit) {
-		this.#cache = new KVCache(
-			createClient({
-				url: redisUrl,
-				socket: {
-					tls: true,
-					rejectUnauthorized: false // allows self-hosted
-				}
-			}),
-			dev
-		);
-
+	constructor(octokit: Octokit, redis: RedisClientType) {
+		this.#cache = new KVCache<RedisJSON>(redis, {
+			local: dev,
+			redisAccessors: {
+				getter: (client, key) => client.json.get(key),
+				setter: (client, key, value) => client.json.set(key, "$", value)
+			}
+		});
 		this.#octokit = octokit;
 	}
 
@@ -1252,14 +1249,22 @@ export class GitHubAPI {
 	}
 }
 
+const redisClient = createClient({
+	url: REDIS_URL,
+	socket: {
+		tls: true,
+		rejectUnauthorized: false // allows self-hosted
+	}
+});
 export const githubCache = new GitHubAPI(
-	REDIS_URL,
 	GITHUB_TOKEN
-		? new Octokit({
-				auth: GITHUB_TOKEN
+		? createOctokit({
+				auth: GITHUB_TOKEN,
+				redisClient
 			})
 		: await new App({
 				appId: GH_APP_ID,
 				privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8")
-			}).getInstallationOctokit(+GH_APP_INSTALLATION_ID)
+			}).getInstallationOctokit(+GH_APP_INSTALLATION_ID),
+	redisClient
 );

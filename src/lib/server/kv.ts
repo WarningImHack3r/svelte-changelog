@@ -1,12 +1,53 @@
-import type { RedisClientType, RedisJSON } from "redis";
+import type { RedisArgument, RedisClientType } from "redis";
 import { ddebug, derror } from "$lib/logging";
 
-export class KVCache {
+export type Options<T> = {
+	/**
+	 * Whether to use a local cache instead of the Redis connection.
+	 * @default false
+	 */
+	local?: boolean;
+	/**
+	 * The getter and setter to use with the Redis client.
+	 */
+	redisAccessors?: {
+		/**
+		 * The get function to call on the Redis client with the given key
+		 *
+		 * @param client the current Redis client
+		 * @param key the key to use to get from the client
+		 * @returns the value returned from calling the chosen getter
+		 * @default (client, key) => client.get(key)
+		 */
+		getter: (client: RedisClientType, key: RedisArgument) => Promise<T | null>;
+		/**
+		 * The set function to call on the Redis client with the given key and value
+		 *
+		 * @param client the current Redis client
+		 * @param key the key to use to set on the client
+		 * @param value the value to set
+		 * @returns the value returned from the default set function
+		 * @default (client, key, value) => client.set(key, value)
+		 */
+		setter: (
+			client: RedisClientType,
+			key: RedisArgument,
+			value: T
+		) => ReturnType<RedisClientType["set"]>;
+	};
+};
+
+export class KVCache<T> {
+	/** Must NOT be used as-is; only through `#connectClient` */
 	readonly #redis: RedisClientType; // TODO: disconnect after usage?
+
+	#getter: NonNullable<Options<unknown>["redisAccessors"]>["getter"]; // TS yells on the fallback value with using `T`, it works fine with `unknown` so let's go for it I guess
+
+	#setter: NonNullable<Options<T>["redisAccessors"]>["setter"];
 
 	readonly #memoryCache: Map<string, { value: unknown; expiresAt: number | null }>;
 
-	readonly #isDev: boolean;
+	readonly #local: boolean;
 
 	#connectPromise: Promise<RedisClientType> | null = null;
 
@@ -14,12 +55,16 @@ export class KVCache {
 	 * Initialize the cache handler
 	 *
 	 * @param redis the Redis instance
-	 * @param isDev whether we're in dev or prod
+	 * @param options the options to use
 	 */
-	constructor(redis: RedisClientType, isDev: boolean) {
+	constructor(redis: RedisClientType, options?: Options<T>) {
 		this.#redis = redis.on("error", derror);
+		this.#getter = options?.redisAccessors?.getter ?? ((client, key) => client.get(key));
+		this.#setter =
+			options?.redisAccessors?.setter ??
+			((client, key, value) => client.set(key, value as RedisArgument));
 		this.#memoryCache = new Map();
-		this.#isDev = isDev;
+		this.#local = options?.local ?? false;
 	}
 
 	/**
@@ -47,10 +92,10 @@ export class KVCache {
 	 * @param key the key to get the result for
 	 * @returns the cached value, or `null` if not present
 	 */
-	async get<T extends RedisJSON>(key: string): Promise<T | null> {
-		if (this.#isDev) {
+	async get<R extends T>(key: string): Promise<R | null> {
+		if (this.#local) {
 			ddebug(`Retrieving ${key} from in-memory cache`);
-			// In dev mode, use memory cache only
+			// In local mode, use memory cache only
 			const entry = this.#memoryCache.get(key);
 
 			if (!entry) {
@@ -66,7 +111,7 @@ export class KVCache {
 			}
 
 			ddebug("Returning found value from in-memory cache");
-			return entry.value as T;
+			return entry.value as R;
 		}
 
 		// Production mode
@@ -77,20 +122,20 @@ export class KVCache {
 				this.#memoryCache.delete(key);
 				return null;
 			}
-			return entry.value as T;
+			return entry.value as R;
 		}
 
 		// No cache entry, try Redis
 		try {
-			await this.#connectClient();
-			const value = await this.#redis.json.get(key);
+			const client = await this.#connectClient();
+			const value = await this.#getter(client, key);
 			if (value !== null) {
 				// Get TTL only when populating the cache for the first time
-				const ttl = await this.#redis.ttl(key);
+				const ttl = await client.ttl(key);
 				const expiresAt = ttl > 0 ? Date.now() + ttl * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
 			}
-			return value as T;
+			return value as R;
 		} catch (error) {
 			derror("Redis get error:", error instanceof Error ? error.message : error);
 			return null;
@@ -104,10 +149,10 @@ export class KVCache {
 	 * @param value the value to store
 	 * @param ttlSeconds the optional TTL to set for expiration
 	 */
-	async set(key: string, value: RedisJSON, ttlSeconds?: number) {
-		if (this.#isDev) {
+	async set(key: string, value: T, ttlSeconds?: number) {
+		if (this.#local) {
 			ddebug(`Setting value for ${key} in memory cache`);
-			// In dev mode, use memory cache only
+			// In local mode, use memory cache only
 			const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 			if (expiresAt) {
 				ddebug(`Defining cache for ${key}, expires at ${new Date(expiresAt).toLocaleString()}`);
@@ -116,10 +161,9 @@ export class KVCache {
 		} else {
 			// In production, use both Redis and memory cache
 			try {
-				await this.#connectClient();
-				if (!this.#redis.isReady) await this.#redis.connect();
-				await this.#redis.json.set(key, "$", value);
-				if (ttlSeconds) await this.#redis.expire(key, ttlSeconds);
+				const client = await this.#connectClient();
+				await this.#setter(client, key, value);
+				if (ttlSeconds) await client.expire(key, ttlSeconds);
 				// Mirror in the memory cache
 				const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 				this.#memoryCache.set(key, { value, expiresAt });
@@ -136,13 +180,14 @@ export class KVCache {
 	 * @returns whether the element was actually removed
 	 */
 	async delete(key: string) {
-		// In dev mode, we only have the in-memory cache, so we wipe it
-		if (this.#isDev) {
+		// In local mode, we only have the in-memory cache, so we wipe it
+		if (this.#local) {
 			return this.#memoryCache.delete(key);
 		}
 		// In production, we clean Redis and then the memory cache if Redis didn't unexpectedly fail
 		try {
-			const deletedCount = await this.#redis.del(key);
+			const client = await this.#connectClient();
+			const deletedCount = await client.del(key);
 			this.#memoryCache.delete(key);
 			return deletedCount > 0;
 		} catch (error) {
