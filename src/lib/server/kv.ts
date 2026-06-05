@@ -58,7 +58,7 @@ export class KVCache<T> {
 	 * @param options the options to use
 	 */
 	constructor(redis: RedisClientType, options?: Options<T>) {
-		this.#redis = redis.on("error", derror);
+		this.#redis = redis.listenerCount("error") === 0 ? redis.on("error", derror) : redis;
 		this.#getter = options?.redisAccessors?.getter ?? ((client, key) => client.get(key));
 		this.#setter =
 			options?.redisAccessors?.setter ??
@@ -155,8 +155,8 @@ export class KVCache<T> {
 			// In local mode, use memory cache only
 			const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 			if (expiresAt) {
-				ddebug(`Defining cache for ${key}, expires at ${new Date(expiresAt).toLocaleString()}`);
-			} else ddebug(`No cache set for ${key}`);
+				ddebug(`Setting cache for ${key}, expires at ${new Date(expiresAt).toLocaleString()}`);
+			} else ddebug(`Setting cache for ${key} with no expiration`);
 			this.#memoryCache.set(key, { value, expiresAt });
 		} else {
 			// In production, use both Redis and memory cache
