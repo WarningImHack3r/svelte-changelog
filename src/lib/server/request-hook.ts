@@ -3,7 +3,7 @@ import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 import Bottleneck from "bottleneck";
 import { Octokit, RequestError } from "octokit";
-import { type RedisClientType, type RedisJSON, createClient } from "redis";
+import { type RedisClientType, type RedisJSON } from "redis";
 import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "$lib/logging";
 import { siteRepoName } from "$lib/properties";
 import { createOctokitResponse } from "./data-mock";
@@ -11,7 +11,7 @@ import { KVCache } from "./kv";
 
 type OctokitOptions = NonNullable<ConstructorParameters<typeof Octokit>[0]>;
 
-const SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7;
+const SEVEN_DAYS_SECONDS = 60 * 60 * 24 * 7;
 
 /**
  * Create a custom Octokit class from the given options
@@ -82,9 +82,8 @@ function getOctokit(options: OctokitOptions & { redisClient: RedisClientType }) 
  * @returns the Octokit client with additional hooks
  */
 function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
-	const kvClient = redisClient ?? createClient(); // it pains me to import this and do that, but I don't have any better idea for now
-	const kv = new KVCache<string>(kvClient, { local: dev });
-	const kvJSON = new KVCache<RedisJSON>(kvClient, {
+	const kv = new KVCache<string>(redisClient, { local: dev });
+	const kvJSON = new KVCache<RedisJSON>(redisClient, {
 		local: dev,
 		redisAccessors: {
 			getter: (client, key) => client.json.get(key),
@@ -130,7 +129,7 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 						return response;
 					}
 
-					await kv.set(`headers:etag:${requestPathname}`, response.headers.etag, SEVEN_DAYS);
+					await kv.set(`headers:etag:${requestPathname}`, response.headers.etag, SEVEN_DAYS_SECONDS);
 				} else {
 					await kv.delete(`headers:etag:${requestPathname}`);
 					if (response.headers["last-modified"]) {
@@ -138,7 +137,7 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 						await kv.set(
 							`headers:last-modified:${requestPathname}`,
 							response.headers["last-modified"],
-							SEVEN_DAYS
+							SEVEN_DAYS_SECONDS
 						);
 					} else {
 						await kv.delete(`headers:last-modified:${requestPathname}`);
@@ -150,7 +149,7 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 				}
 
 				// can be cached
-				await kvJSON.set(`stale-data:${requestPathname}`, response.data, SEVEN_DAYS);
+				await kvJSON.set(`stale-data:${requestPathname}`, response.data, SEVEN_DAYS_SECONDS);
 				return response;
 			}
 
@@ -161,7 +160,7 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 				if (error.status === 304) {
 					// "Not Modified", also necessarily HEAD or GET response
 					info(`Received Not Modified for ${requestPathname}, returning cached data`);
-					await redisClient?.expire(`stale-data:${requestPathname}`, SEVEN_DAYS); // exceptional manual TTL renewal
+					await redisClient?.expire(`stale-data:${requestPathname}`, SEVEN_DAYS_SECONDS); // exceptional manual TTL renewal
 					const cachedData = await kvJSON.get(`stale-data:${requestPathname}`);
 					if (!cachedData) {
 						// Desync between cached hashes and cached data, shouldn't happen
