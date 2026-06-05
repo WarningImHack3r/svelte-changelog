@@ -37,7 +37,7 @@ import {
 	release
 } from "./data-mock";
 import { KVCache } from "./kv";
-import { createOctokit } from "./request-hook";
+import { createApp, createOctokit } from "./request-hook";
 
 /**
  * A strict version of Extract.
@@ -1262,9 +1262,14 @@ export const githubCache = new GitHubAPI(
 				auth: GITHUB_TOKEN,
 				redisClient
 			})
-		: await new App({
-				appId: GH_APP_ID,
-				privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8")
-			}).getInstallationOctokit(+GH_APP_INSTALLATION_ID),
+		: await createApp(
+				async OctoClass =>
+					await new App({
+						appId: GH_APP_ID,
+						privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8"),
+						Octokit: OctoClass
+					}).getInstallationOctokit(+GH_APP_INSTALLATION_ID),
+				{ redisClient }
+			),
 	redisClient
 );

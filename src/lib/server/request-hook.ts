@@ -14,18 +14,17 @@ type OctokitOptions = NonNullable<ConstructorParameters<typeof Octokit>[0]>;
 const HEADER_QUOTES_REGEX = /"/g;
 
 /**
- * Create an Octokit client with an extensive configuration for requests handling.
- * It handles retries, rate limits, errors, logging, queueing, and any other good pratice.
+ * Create a custom Octokit class from the given options
  *
- * @param options the additional options to create an Octokit instance with
- * @returns a new, strongly configured Octokit instance
+ * @param options the options to create the instance with
+ * @returns a custom Octokit class ready to instantiate
  */
-export function createOctokit(options?: OctokitOptions & { redisClient?: RedisClientType }) {
+function getOctokit(options?: OctokitOptions & { redisClient?: RedisClientType }) {
 	const { redisClient: client, ...octokitOptions } = options ?? { redisClient: undefined };
 	const connection = client ? new Bottleneck.RedisConnection({ client }) : undefined; // TODO(someday): `await connection.disconnect()` on termination
 	connection?.on("error", error);
 
-	const octokit = new (Octokit.plugin(retry, throttling))({
+	return Octokit.plugin(retry, throttling).defaults({
 		log: { debug, info, warn, error },
 		throttle: {
 			/**
@@ -74,8 +73,17 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 		},
 		...octokitOptions
 	});
+}
 
-	const kvClient = client ?? createClient(); // it pains me to import this and do that, but I don't have any better idea for now
+/**
+ * Appends hooks to the given Octokit client for optimizations.
+ *
+ * @param octokit the Octokit client to hook
+ * @param redisClient the optional Redis client to use for remote caching
+ * @returns the Octokit client with additional hooks
+ */
+function hookOctokit(octokit: Octokit, redisClient?: RedisClientType) {
+	const kvClient = redisClient ?? createClient(); // it pains me to import this and do that, but I don't have any better idea for now
 	const kv = new KVCache<string>(kvClient, { local: dev });
 	const kvJSON = new KVCache<RedisJSON>(kvClient, {
 		local: dev,
@@ -84,6 +92,7 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 			setter: (client, key, value) => client.json.set(key, "$", value)
 		}
 	});
+
 	octokit.hook.wrap("request", async (request, options) => {
 		// Conditional requests & requests error handling
 		const requestPathname = new URL(options.url).pathname;
@@ -133,7 +142,7 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 				}
 
 				// can be cached
-				await kvJSON.set(``, response.data);
+				await kvJSON.set(`data:${requestPathname}`, response.data);
 				return response;
 			}
 
@@ -144,7 +153,7 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 				if (error.status === 304) {
 					// "Not Modified", also necessarily HEAD or GET response
 					info(`Received Not Modified for ${requestPathname}, returning cached data`);
-					const cachedData = await kvJSON.get(``);
+					const cachedData = await kvJSON.get(`data:${requestPathname}`);
 					if (!cachedData) {
 						// Desync between cached hashes and cached data, shouldn't happen
 						warn("Desync between cached data and cached hashes");
@@ -167,4 +176,33 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 	});
 
 	return octokit;
+}
+
+/**
+ * Create an Octokit client with an extensive configuration for requests handling.
+ * It handles retries, rate limits, errors, logging, queueing, and any other good pratice.
+ *
+ * @param options the additional options to create an Octokit instance with
+ * @returns a new, strongly configured Octokit instance
+ */
+export function createOctokit(options?: OctokitOptions & { redisClient?: RedisClientType }) {
+	const octokit = new (getOctokit(options))();
+	return hookOctokit(octokit, options?.redisClient);
+}
+
+/**
+ * Instanciate a GitHub App with an extensive configuration for requests handling.
+ * It handles retries, rate limites, errors, logging, queueing, and any other good pratice.
+ *
+ * @param instanciator the instanciator giving the Octokit class and expecting back
+ * a usable instance of it
+ * @param options the additional options to create the app with
+ * @returns a new, strongly configured Octokit instance
+ */
+export async function createApp(
+	instanciator: (Octo: typeof Octokit) => Octokit | Promise<Octokit>,
+	options?: { redisClient?: RedisClientType }
+): Promise<Octokit> {
+	const octokit = await instanciator(getOctokit({ redisClient: options?.redisClient }));
+	return hookOctokit(octokit, options?.redisClient);
 }
