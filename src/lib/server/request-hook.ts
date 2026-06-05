@@ -129,7 +129,11 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 						return response;
 					}
 
-					await kv.set(`headers:etag:${requestPathname}`, response.headers.etag, SEVEN_DAYS_SECONDS);
+					await kv.set(
+						`headers:etag:${requestPathname}`,
+						response.headers.etag,
+						SEVEN_DAYS_SECONDS
+					);
 				} else {
 					await kv.delete(`headers:etag:${requestPathname}`);
 					if (response.headers["last-modified"]) {
