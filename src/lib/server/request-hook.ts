@@ -11,7 +11,7 @@ import { KVCache } from "./kv";
 
 type OctokitOptions = NonNullable<ConstructorParameters<typeof Octokit>[0]>;
 
-const headerQuotesRegex = /"/g;
+const HEADER_QUOTES_REGEX = /"/g;
 
 /**
  * Create an Octokit client with an extensive configuration for requests handling.
@@ -105,7 +105,7 @@ export function createOctokit(options?: OctokitOptions & { redisClient?: RedisCl
 
 				if (response.headers.etag) {
 					// ETag
-					const etagHash = response.headers.etag.replace(headerQuotesRegex, "");
+					const etagHash = response.headers.etag.replace(HEADER_QUOTES_REGEX, "");
 					const isEtagWeak = etagHash.toUpperCase().startsWith("W/");
 					if (isEtagWeak && response.headers["accept-ranges"] === "bytes") {
 						// can't be cached
