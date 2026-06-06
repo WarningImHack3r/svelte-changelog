@@ -1,7 +1,7 @@
 import { dev } from "$app/env";
 import { POSTHOG_KEY } from "$app/env/public";
 import { PostHog } from "posthog-node";
-import { dfatal, dtrace } from "$lib/logging";
+import { dfatal } from "$lib/logging";
 import { stringifyError } from "$lib/strings";
 
 const client = POSTHOG_KEY
@@ -11,11 +11,10 @@ const client = POSTHOG_KEY
 		})
 	: undefined;
 
-export async function handleError({ error, status, event, message }) {
+export async function handleErrors({ error, status, event, message }) {
 	if (status === 404) return;
 	const stringified = stringifyError(error);
 	dfatal(`[SERVER][${status}] ${stringified}`);
-	dtrace("stuff");
 	try {
 		client?.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
 			...event,
