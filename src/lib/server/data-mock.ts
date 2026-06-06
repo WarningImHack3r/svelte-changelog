@@ -9,12 +9,13 @@ import type { Discussion, GitHubRelease, Issue, PullRequest } from "./github-api
  * @param data the data to return
  * @returns the formatted response for the given data
  */
-export function createOctokitResponse<T>(data: T): OctokitResponse<T, 200> {
+export function createOctokitResponse<T>(data: T, url = ""): OctokitResponse<T, 200> {
 	return {
 		data,
 		status: 200,
 		headers: {},
-		url: ""
+		url,
+		retryCount: 0
 	};
 }
 

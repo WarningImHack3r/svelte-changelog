@@ -19,6 +19,8 @@
 		"@icons-pack/svelte-simple-icons": "^7.2.0",
 		"@lucide/svelte": "^1.16.0",
 		"@neoconfetti/svelte": "^2.2.2",
+		"@octokit/plugin-retry": "^8.1.0",
+		"@octokit/plugin-throttling": "^11.0.3",
 		"@opentelemetry/api-logs": "^0.218.0",
 		"@opentelemetry/exporter-logs-otlp-http": "^0.218.0",
 		"@opentelemetry/resources": "^2.7.1",
