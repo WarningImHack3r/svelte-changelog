@@ -13,6 +13,12 @@ type OctokitOptions = NonNullable<ConstructorParameters<typeof Octokit>[0]>;
 
 const SEVEN_DAYS_SECONDS = 60 * 60 * 24 * 7;
 
+const kvKeys: Record<"etag" | "last-modified" | "data", (pathname: string) => string> = {
+	etag: pathname => `headers:etag:${pathname}`,
+	"last-modified": pathname => `headers:last-modified:${pathname}`,
+	data: pathname => `stale-data:${pathname}`
+};
+
 /**
  * Create a custom Octokit class from the given options
  *
@@ -20,7 +26,10 @@ const SEVEN_DAYS_SECONDS = 60 * 60 * 24 * 7;
  * @returns a custom Octokit class ready to instanciate
  */
 function getOctokit(options: OctokitOptions & { redisClient: RedisClientType }) {
-	const connection = new Bottleneck.RedisConnection({ client: options.redisClient }); // TODO(someday): `await connection.disconnect()` on termination
+	const connection = new Bottleneck.RedisConnection({
+		client: options.redisClient,
+		Redis: import("redis")
+	}); // TODO(someday): `await connection.disconnect()` on termination
 	if (options.redisClient.listenerCount("error") === 0) connection.on("error", error);
 
 	return Octokit.plugin(retry, throttling).defaults({
@@ -93,26 +102,21 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 
 	octokit.hook.wrap("request", async (request, options) => {
 		// Conditional requests & requests error handling
-		const requestPathname = (() => {
-			try {
-				return new URL(options.url).pathname;
-			} catch {
-				return options.url;
-			}
-		})();
+		const requestUrl = new URL(options.url, "https://api.github.com");
+		const cacheKey = `${options.method}:${requestUrl.origin}${requestUrl.pathname}${requestUrl.search}`;
 		try {
 			if (options.method === "HEAD" || options.method === "GET") {
 				// conditional requests management
 
-				const existingEtag = await kv.get(`headers:etag:${requestPathname}`);
+				const existingEtag = await kv.get(kvKeys.etag(cacheKey));
 				if (existingEtag) {
 					options.headers = { ...options.headers, "if-none-match": existingEtag };
 				} else {
-					const existingLastModified = await kv.get(`headers:last-modified:${requestPathname}`);
+					const existingLastModified = await kv.get(kvKeys["last-modified"](cacheKey));
 					if (existingLastModified) {
 						options.headers = { ...options.headers, "if-modified-since": existingLastModified };
 					} else {
-						await kvJSON.delete(`stale-data:${requestPathname}`);
+						await kvJSON.delete(kvKeys.data(cacheKey));
 					}
 				}
 
@@ -124,36 +128,34 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 					if (isEtagWeak && response.headers["accept-ranges"] === "bytes") {
 						// can't be cached
 						warn(
-							`[Middleware] Request ${requestPathname} can't be cached: weak etag with wrong header combination`
+							`[Middleware] Request ${cacheKey} can't be cached: weak etag with wrong header combination`
 						);
 						return response;
 					}
 
-					await kv.set(
-						`headers:etag:${requestPathname}`,
-						response.headers.etag,
-						SEVEN_DAYS_SECONDS
-					);
+					await kv.set(kvKeys.etag(cacheKey), response.headers.etag, SEVEN_DAYS_SECONDS);
 				} else {
-					await kv.delete(`headers:etag:${requestPathname}`);
+					await kv.delete(kvKeys.etag(cacheKey));
 					if (response.headers["last-modified"]) {
 						// Last-Modified
 						await kv.set(
-							`headers:last-modified:${requestPathname}`,
+							kvKeys["last-modified"](cacheKey),
 							response.headers["last-modified"],
 							SEVEN_DAYS_SECONDS
 						);
 					} else {
-						await kv.delete(`headers:last-modified:${requestPathname}`);
+						await kv.delete(kvKeys["last-modified"](cacheKey));
 						// can't be cached
-						warn(`[Middleware] Request ${requestPathname} can't be cached: no valid header`);
-						await kvJSON.delete(`stale-data:${requestPathname}`);
+						warn(`[Middleware] Request ${cacheKey} can't be cached: no valid header`);
+						await kvJSON.delete(kvKeys.data(cacheKey));
 						return response;
 					}
 				}
 
 				// can be cached
-				await kvJSON.set(`stale-data:${requestPathname}`, response.data, SEVEN_DAYS_SECONDS);
+				if (options.method === "GET") {
+					await kvJSON.set(kvKeys.data(cacheKey), response.data, SEVEN_DAYS_SECONDS);
+				}
 				return response;
 			}
 
@@ -163,18 +165,23 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 			if (error instanceof RequestError) {
 				if (error.status === 304) {
 					// "Not Modified", also necessarily HEAD or GET response
-					info(`Received Not Modified for ${requestPathname}, returning cached data`);
-					await redisClient?.expire(`stale-data:${requestPathname}`, SEVEN_DAYS_SECONDS); // exceptional manual TTL renewal
-					const cachedData = await kvJSON.get(`stale-data:${requestPathname}`);
+					info(`Received Not Modified for ${cacheKey}, returning cached data`);
+					await redisClient?.expire(kvKeys.data(cacheKey), SEVEN_DAYS_SECONDS); // exceptional manual TTL renewal
+					const cachedData = await kvJSON.get(kvKeys.data(cacheKey));
 					if (!cachedData) {
 						// Desync between cached hashes and cached data, shouldn't happen
 						warn("Desync between cached data and cached hashes");
 						// Fix desync and exceptionally return uncached fresh data
 						await Promise.all([
-							kv.delete(`headers:etag:${requestPathname}`),
-							kv.delete(`headers:last-modified:${requestPathname}`)
+							kv.delete(kvKeys.etag(cacheKey)),
+							kv.delete(kvKeys["last-modified"](cacheKey))
 						]);
-						return await request(options);
+						const {
+							"if-none-match": _ifNoneMatch,
+							"if-modified-since": _ifModifiedSince,
+							...headers
+						} = options.headers;
+						return await request({ ...options, headers });
 					}
 					return createOctokitResponse(cachedData, options.url);
 				}
