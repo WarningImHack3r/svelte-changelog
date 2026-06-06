@@ -1,6 +1,7 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import posthog from "@posthog/rollup-plugin";
 import tailwindcss from "@tailwindcss/vite";
+import adapter from "adapter-node-sea";
 import { defineConfig, loadEnv } from "vite";
 import devtoolsJson from "vite-plugin-devtools-json";
 import lucidePreprocess from "vite-plugin-lucide-preprocess";
@@ -15,7 +16,18 @@ export default defineConfig(({ mode }) => {
 		plugins: [
 			devtoolsJson(),
 			lucidePreprocess(),
-			sveltekit(),
+			sveltekit({
+				adapter: adapter({ minify: true }),
+				// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
+				paths: {
+					relative: false
+				},
+				experimental: {
+					instrumentation: {
+						server: true
+					}
+				}
+			}),
 			tailwindcss(),
 			POSTHOG_ENV_ID && POSTHOG_SOURCEMAP_API_KEY
 				? posthog({

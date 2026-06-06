@@ -1,3 +1,4 @@
+import { loadConfig } from "@sveltejs/load-config";
 import e18e from "@e18e/eslint-plugin";
 import eslint from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
@@ -6,7 +7,9 @@ import svelte from "eslint-plugin-svelte";
 import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import svelteConfig from "./svelte.config.ts";
+
+// TODO: remove that once there is a built-in solution somewhere within Svelte ESLint packages
+const { config: svelteConfig } = await loadConfig(".", { traverse: false });
 
 export default defineConfig(
 	stylistic.configs.all,
