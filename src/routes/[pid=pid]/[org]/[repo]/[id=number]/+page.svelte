@@ -166,7 +166,7 @@
 		}}
 	/>
 {/if}
-<div class="flex items-center">
+<div class="flex items-baseline">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{pidFormatter.toHumanReadable(metadata.type)}
 	</h3>
