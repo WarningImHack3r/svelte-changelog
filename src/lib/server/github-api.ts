@@ -1008,6 +1008,7 @@ export class GitHubAPI {
 					.filter(
 						path =>
 							!path.includes("/test/") &&
+							!path.includes("/tests/") &&
 							!path.includes("/e2e-tests/") &&
 							(path === "package.json" || path.endsWith("/package.json"))
 					);
