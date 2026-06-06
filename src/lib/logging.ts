@@ -3,7 +3,7 @@ import { browser, dev } from "$app/env";
 import { logs } from "@opentelemetry/api-logs";
 import { siteRepoName } from "./properties";
 
-const DEBUG = false;
+const DEBUG = true;
 const logger = logs.getLogger(`${siteRepoName}-logs`);
 
 /**

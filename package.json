@@ -33,7 +33,6 @@
 		"@shikijs/langs": "^4.2.0",
 		"@shikijs/rehype": "^4.2.0",
 		"@shikijs/themes": "^4.2.0",
-		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.64.0",
 		"@tailwindcss/typography": "^0.5.20",
 		"@tailwindcss/vite": "^4.3.0",
