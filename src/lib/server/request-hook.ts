@@ -120,62 +120,61 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 		const requestUrl = new URL(options.url, "https://api.github.com");
 		const cacheKey = `${options.method}:${interpretPathname(requestUrl.pathname, options)}${requestUrl.search}`;
 		try {
-			if (options.method === "HEAD" || options.method === "GET") {
-				// conditional requests management
-
-				const existingEtag = await kv.get(kvKeys.etag(cacheKey));
-				if (existingEtag) {
-					options.headers = { ...options.headers, "if-none-match": existingEtag };
-				} else {
-					const existingLastModified = await kv.get(kvKeys["last-modified"](cacheKey));
-					if (existingLastModified) {
-						options.headers = { ...options.headers, "if-modified-since": existingLastModified };
-					} else {
-						await kvJSON.delete(kvKeys.data(cacheKey));
-					}
-				}
-
-				const response = await request(options);
-
-				if (response.headers.etag) {
-					// ETag
-					const isEtagWeak = response.headers.etag.startsWith("W/"); // W/"abc123"
-					if (isEtagWeak && response.headers["accept-ranges"] === "bytes") {
-						// can't be cached
-						warn(
-							`[Middleware] Request ${cacheKey} can't be cached: weak etag with wrong header combination`
-						);
-						return response;
-					}
-
-					await kv.set(kvKeys.etag(cacheKey), response.headers.etag, SEVEN_DAYS_SECONDS);
-				} else {
-					await kv.delete(kvKeys.etag(cacheKey));
-					if (response.headers["last-modified"]) {
-						// Last-Modified
-						await kv.set(
-							kvKeys["last-modified"](cacheKey),
-							response.headers["last-modified"],
-							SEVEN_DAYS_SECONDS
-						);
-					} else {
-						await kv.delete(kvKeys["last-modified"](cacheKey));
-						// can't be cached
-						warn(`[Middleware] Request ${cacheKey} can't be cached: no valid header`);
-						await kvJSON.delete(kvKeys.data(cacheKey));
-						return response;
-					}
-				}
-
-				// can be cached
-				if (options.method === "GET") {
-					await kvJSON.set(kvKeys.data(cacheKey), response.data, SEVEN_DAYS_SECONDS);
-				}
-				return response;
+			if (options.method !== "HEAD" && options.method !== "GET") {
+				// no conditional requests management for unsafe methods
+				return await request(options);
 			}
 
-			// no conditional requests management for unsafe methods (or no Redis)
-			return await request(options);
+			// conditional requests management
+			const existingEtag = await kv.get(kvKeys.etag(cacheKey));
+			if (existingEtag) {
+				options.headers = { ...options.headers, "if-none-match": existingEtag };
+			} else {
+				const existingLastModified = await kv.get(kvKeys["last-modified"](cacheKey));
+				if (existingLastModified) {
+					options.headers = { ...options.headers, "if-modified-since": existingLastModified };
+				} else {
+					await kvJSON.delete(kvKeys.data(cacheKey));
+				}
+			}
+
+			const response = await request(options);
+
+			if (response.headers.etag) {
+				// ETag
+				const isEtagWeak = response.headers.etag.startsWith("W/"); // W/"abc123"
+				if (isEtagWeak && response.headers["accept-ranges"] === "bytes") {
+					// can't be cached
+					warn(
+						`[Middleware] Request ${cacheKey} can't be cached: weak etag with wrong header combination`
+					);
+					return response;
+				}
+
+				await kv.set(kvKeys.etag(cacheKey), response.headers.etag, SEVEN_DAYS_SECONDS);
+			} else {
+				await kv.delete(kvKeys.etag(cacheKey));
+				if (response.headers["last-modified"]) {
+					// Last-Modified
+					await kv.set(
+						kvKeys["last-modified"](cacheKey),
+						response.headers["last-modified"],
+						SEVEN_DAYS_SECONDS
+					);
+				} else {
+					await kv.delete(kvKeys["last-modified"](cacheKey));
+					// can't be cached
+					warn(`[Middleware] Request ${cacheKey} can't be cached: no valid header`);
+					await kvJSON.delete(kvKeys.data(cacheKey));
+					return response;
+				}
+			}
+
+			// can be cached
+			if (options.method === "GET") {
+				await kvJSON.set(kvKeys.data(cacheKey), response.data, SEVEN_DAYS_SECONDS);
+			}
+			return response;
 		} catch (error) {
 			if (error instanceof RequestError) {
 				if (error.status === 304) {
