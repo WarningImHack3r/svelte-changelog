@@ -1,11 +1,9 @@
 import { dev } from "$app/environment";
 import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
-import Bottleneck from "bottleneck";
 import { Octokit, RequestError } from "octokit";
 import { type RedisClientType, type RedisJSON } from "redis";
 import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "$lib/logging";
-import { siteRepoName } from "$lib/properties";
 import { createOctokitResponse } from "./data-mock";
 import { KVCache } from "./kv";
 
@@ -50,35 +48,7 @@ function interpretPathname(pathname: string, parameters: Record<string, unknown>
  * @param options the options to create the instance with
  * @returns a custom Octokit class ready to instanciate
  */
-function getOctokit(options: OctokitOptions & { redisClient: RedisClientType }) {
-	const connection = new Bottleneck.RedisConnection({
-		client: options.redisClient,
-		/*
-		 * By default, Bottleneck:
-		 * - uses an obfuscated `require("redis")` call (yes, 2026 and still CJS) as a fallback value for its `Redis` property
-		 * - only uses this `Redis` property to create a client if `client` is not provided (which it is here)
-		 * - configures its newly created client with its other `clientOptions` property
-		 *
-		 * However, raw (obfuscated) `require` fails on decently modern Node version. We can argue it's on them for loading the whole
-		 * Redis library to create a fallback that's never gonna be used (we provide the actual `client` already) and they should
-		 * fix that by lazily loading Redis _if needed_ (thus not triggering the bug), but that's for another day. In the meantime:
-		 * - the idiomatic solution is to populate the `Redis` property with `await import("redis")` instead, but it requires `getOctokit`
-		 *   to become async, and there's NO WAY I do that for such a stupid cause
-		 * - the obvious solution is to use `createRequire` from `node:module` and manually redeclare the `require("redis")`
-		 *
-		 * However, I know it's dead code anyway and I don't want to either make this async nor get an overhead from the `require` stuff.
-		 * So we'll play a risky game and take advantage of the fact that this CoffeScript (yes...) package is weakly typed to give it what
-		 * it wants: an object it can invoke `createClient` on with whatever parameters it chooses.
-		 * It's valid JS and it's the lightest solution. It *might* break with a lib upgrade, but it's unlikely and it's a game I want to play.
-		 */
-		Redis: {
-			createClient: (..._args: unknown[]) => {
-				// NOOP
-			}
-		}
-	}); // TODO(someday): `await connection.disconnect()` on termination
-	if (options.redisClient.listenerCount("error") === 0) connection.on("error", error);
-
+function getOctokit(options: OctokitOptions) {
 	return Octokit.plugin(retry, throttling).defaults({
 		log: { debug, info, warn, error },
 		throttle: {
@@ -119,9 +89,7 @@ function getOctokit(options: OctokitOptions & { redisClient: RedisClientType }) 
 				/* official docs implementation */
 				// does not retry, only logs a warning
 				octokit.log.warn(`Secondary quota detected for request ${options.method} ${options.url}`);
-			},
-			connection,
-			id: siteRepoName
+			}
 		},
 		retry: {
 			doNotRetry: [429]
@@ -252,8 +220,9 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
  * @returns a new, strongly configured Octokit instance
  */
 export function createOctokit(options: OctokitOptions & { redisClient: RedisClientType }) {
-	const octokit = new (getOctokit(options))();
-	return hookOctokit(octokit, options.redisClient);
+	const { redisClient, ...opts } = options;
+	const octokit = new (getOctokit(opts))();
+	return hookOctokit(octokit, redisClient);
 }
 
 /**
@@ -269,6 +238,7 @@ export async function createApp(
 	instanciator: (Octo: typeof Octokit) => Octokit | Promise<Octokit>,
 	options: { redisClient: RedisClientType }
 ): Promise<Octokit> {
-	const octokit = await instanciator(getOctokit({ redisClient: options.redisClient }));
-	return hookOctokit(octokit, options.redisClient);
+	const { redisClient } = options;
+	const octokit = await instanciator(getOctokit({ redisClient }));
+	return hookOctokit(octokit, redisClient);
 }

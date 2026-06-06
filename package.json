@@ -38,7 +38,6 @@
 		"@tailwindcss/vite": "^4.3.0",
 		"adapter-node-sea": "github:gauben/gautier.dev#path:adapter",
 		"bits-ui": "^2.18.1",
-		"bottleneck": "^2.19.5",
 		"clsx": "^2.1.1",
 		"feed": "^5.2.1",
 		"marked": "^18.0.4",
