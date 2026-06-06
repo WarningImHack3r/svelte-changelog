@@ -43,6 +43,13 @@ export default defineConfig(
 		rules: {
 			// Added rules
 			eqeqeq: ["error", "smart"],
+			"no-restricted-syntax": [
+				"error",
+				{
+					selector: "MemberExpression[object.name='console']",
+					message: "Use the custom log functions from '$lib/logging' instead of console."
+				}
+			],
 			// Tweaked rules (already included above, but configured here)
 			"svelte/no-unused-props": ["error", { allowUnusedNestedProperties: true }], // don't flag unused nested Svelte props
 			"@typescript-eslint/no-unused-vars": [
