@@ -1565,7 +1565,7 @@ packages:
     hasBin: true
 
   adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/b92bd62c48d1ea27d93921b19449017556ec8ef7#path:adapter:
-    resolution: {gitHosted: true, integrity: sha512-xYUV3iSxXvbDAGbqv2i/X4zUPIzPW03G265y6KjnLBUE3W7vXiWP74ux6LxXFyaUjOn6a2JTu3Ww/L26dMWfcQ==, tarball: https://codeload.github.com/gauben/gautier.dev/tar.gz/b92bd62c48d1ea27d93921b19449017556ec8ef7}
+    resolution: {gitHosted: true, path: adapter, integrity: sha512-xYUV3iSxXvbDAGbqv2i/X4zUPIzPW03G265y6KjnLBUE3W7vXiWP74ux6LxXFyaUjOn6a2JTu3Ww/L26dMWfcQ==, tarball: https://codeload.github.com/gauben/gautier.dev/tar.gz/b92bd62c48d1ea27d93921b19449017556ec8ef7}
     version: 0.0.1
     engines: {node: '>=25.7'}
     peerDependencies:
