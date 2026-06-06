@@ -20,6 +20,31 @@ const kvKeys: Record<"etag" | "last-modified" | "data", (pathname: string) => st
 };
 
 /**
+ * Interpret a pathname by interpolating its brackets values with values
+ * from the given parameters record
+ *
+ * @param pathname the templated pathname to interpolate values in
+ * @param parameters the parameters to pick from to inject them in the pathname
+ * @returns the interpreted pathname
+ *
+ * @example
+ * ```
+ * "/thing/{a}/{b}/c" + { a: "yes" } = "/thing/yes/{b}/c"
+ * ```
+ */
+function interpretPathname(pathname: string, parameters: Record<string, unknown>) {
+	return pathname
+		.split("/")
+		.map(p => {
+			const path = decodeURI(p);
+			if (!path || (!path.startsWith("{") && !path.endsWith("}"))) return path;
+			const name = path.slice(1, -1); // remove brackets
+			return parameters[name]?.toString() ?? path;
+		})
+		.join("/");
+}
+
+/**
  * Create a custom Octokit class from the given options
  *
  * @param options the options to create the instance with
@@ -125,7 +150,7 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 	octokit.hook.wrap("request", async (request, options) => {
 		// Conditional requests & requests error handling
 		const requestUrl = new URL(options.url, "https://api.github.com");
-		const cacheKey = `${options.method}:${requestUrl.origin}${requestUrl.pathname}${requestUrl.search}`;
+		const cacheKey = `${options.method}:${interpretPathname(requestUrl.pathname, options)}${requestUrl.search}`;
 		try {
 			if (options.method === "HEAD" || options.method === "GET") {
 				// conditional requests management
