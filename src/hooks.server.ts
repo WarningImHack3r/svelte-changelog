@@ -1,6 +1,8 @@
 import { dev } from "$app/env";
 import { POSTHOG_KEY } from "$app/env/public";
 import { PostHog } from "posthog-node";
+import { dfatal, dtrace } from "$lib/logging";
+import { stringifyError } from "$lib/strings";
 
 const client = POSTHOG_KEY
 	? new PostHog(POSTHOG_KEY, {
@@ -8,6 +10,23 @@ const client = POSTHOG_KEY
 			disabled: dev
 		})
 	: undefined;
+
+export async function handleError({ error, status, event, message }) {
+	if (status === 404) return;
+	const stringified = stringifyError(error);
+	dfatal(`[SERVER][${status}] ${stringified}`);
+	dtrace("stuff");
+	try {
+		client?.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
+			...event,
+			status_code: status,
+			error_message: message
+		});
+		await client?.shutdown();
+	} catch {
+		// Mitigate https://github.com/PostHog/posthog-js/issues/2615
+	}
+}
 
 const POSTHOG_PATHNAME_PREFIX = "/ingest";
 const POSTHOG_PATHNAME_PREFIX_REGEX = new RegExp(`^${POSTHOG_PATHNAME_PREFIX}`);

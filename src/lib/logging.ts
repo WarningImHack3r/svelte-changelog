@@ -20,7 +20,7 @@ function obfuscatedImport<T = unknown>(moduleName: string): Promise<T> {
 }
 
 export function dlog(message?: unknown, ...optionalParams: unknown[]) {
-	if (DEBUG) console.log(message, ...optionalParams);
+	if (DEBUG && false) console.log(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "info", body: util.format(message, ...optionalParams) })
