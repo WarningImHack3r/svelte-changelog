@@ -2,6 +2,7 @@ import { dev } from "$app/environment";
 import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 import Bottleneck from "bottleneck";
+import { createRequire } from "node:module";
 import { Octokit, RequestError } from "octokit";
 import { type RedisClientType, type RedisJSON } from "redis";
 import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "$lib/logging";
@@ -19,6 +20,8 @@ const kvKeys: Record<"etag" | "last-modified" | "data", (pathname: string) => st
 	data: pathname => `stale-data:${pathname}`
 };
 
+const require = createRequire(import.meta.url);
+
 /**
  * Create a custom Octokit class from the given options
  *
@@ -28,7 +31,7 @@ const kvKeys: Record<"etag" | "last-modified" | "data", (pathname: string) => st
 function getOctokit(options: OctokitOptions & { redisClient: RedisClientType }) {
 	const connection = new Bottleneck.RedisConnection({
 		client: options.redisClient,
-		Redis: import("redis")
+		Redis: require("redis")
 	}); // TODO(someday): `await connection.disconnect()` on termination
 	if (options.redisClient.listenerCount("error") === 0) connection.on("error", error);
 
