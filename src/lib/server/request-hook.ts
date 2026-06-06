@@ -48,7 +48,7 @@ function interpretPathname(pathname: string, parameters: Record<string, unknown>
  * @param options the options to create the instance with
  * @returns a custom Octokit class ready to instanciate
  */
-function getOctokit(options: OctokitOptions) {
+function getOctokit(options?: OctokitOptions) {
 	return Octokit.plugin(retry, throttling).defaults({
 		log: { debug, info, warn, error },
 		throttle: {
@@ -238,7 +238,6 @@ export async function createApp(
 	instanciator: (Octo: typeof Octokit) => Octokit | Promise<Octokit>,
 	options: { redisClient: RedisClientType }
 ): Promise<Octokit> {
-	const { redisClient } = options;
-	const octokit = await instanciator(getOctokit({ redisClient }));
-	return hookOctokit(octokit, redisClient);
+	const octokit = await instanciator(getOctokit());
+	return hookOctokit(octokit, options.redisClient);
 }
