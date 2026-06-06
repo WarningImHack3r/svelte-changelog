@@ -15,7 +15,7 @@ export function load({ data, url }) {
 							ogUrl.searchParams.set("title", data.item.info.title);
 							ogUrl.searchParams.set(
 								"description",
-								`${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id} • ${element}`
+								`${element} ${data.itemMetadata.org}/${data.itemMetadata.repo}#${data.itemMetadata.id}`
 							);
 							return ogUrl.href;
 						}
