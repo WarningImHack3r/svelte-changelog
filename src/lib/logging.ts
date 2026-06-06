@@ -59,7 +59,7 @@ export function dfatal(message?: unknown, ...optionalParams: unknown[]) {
 }
 
 export function ddebug(message?: unknown, ...optionalParams: unknown[]) {
-	if (DEBUG) console.debug(message, ...optionalParams);
+	if (DEBUG && false) console.debug(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "debug", body: util.format(message, ...optionalParams) })
