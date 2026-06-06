@@ -78,10 +78,16 @@ export class KVCache<T> {
 
 		if (this.#connectPromise !== null) return this.#connectPromise;
 
-		this.#connectPromise = this.#redis.connect().then(() => {
-			this.#connectPromise = null;
-			return this.#redis;
-		});
+		this.#connectPromise = this.#redis
+			.connect()
+			.then(() => {
+				this.#connectPromise = null;
+				return this.#redis;
+			})
+			.catch(error => {
+				this.#connectPromise = null;
+				throw error;
+			});
 
 		return this.#connectPromise;
 	}

@@ -46,7 +46,7 @@ function interpretPathname(pathname: string, parameters: Record<string, unknown>
  * Create a custom Octokit class from the given options
  *
  * @param options the options to create the instance with
- * @returns a custom Octokit class ready to instanciate
+ * @returns a custom Octokit class ready to instantiate
  */
 function getOctokit(options?: OctokitOptions) {
 	return Octokit.plugin(retry, throttling).defaults({
@@ -225,7 +225,7 @@ export function createOctokit(options: OctokitOptions & { redisClient: RedisClie
 }
 
 /**
- * Instanciate a GitHub App with an extensive configuration for requests handling.
+ * Instantiate a GitHub App with an extensive configuration for requests handling.
  * It handles retries, rate limits, errors, logging, queueing, and any other good practice.
  *
  * @param instanciator the instanciator giving the Octokit class and expecting back
