@@ -181,7 +181,6 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 				if (error.status === 304) {
 					// "Not Modified", also necessarily HEAD or GET response
 					info(`Received Not Modified for ${cacheKey}, returning cached data`);
-					await redisClient?.expire(kvKeys.data(cacheKey), SEVEN_DAYS_SECONDS); // exceptional manual TTL renewal
 					const cachedData = await kvJSON.get(kvKeys.data(cacheKey));
 					if (!cachedData) {
 						// Desync between cached hashes and cached data, shouldn't happen
@@ -198,6 +197,7 @@ function hookOctokit(octokit: Octokit, redisClient: RedisClientType) {
 						} = options.headers;
 						return await request({ ...options, headers });
 					}
+					await kvJSON.set(kvKeys.data(cacheKey), cachedData, SEVEN_DAYS_SECONDS); // re-set to update TTL back to original
 					return createOctokitResponse(cachedData, options.url);
 				}
 
