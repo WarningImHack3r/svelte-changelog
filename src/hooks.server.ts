@@ -1,11 +1,11 @@
-import { dev } from "$app/environment";
-import { env } from "$env/dynamic/public";
+import { dev } from "$app/env";
+import { POSTHOG_KEY } from "$app/env/public";
 import { PostHog } from "posthog-node";
 import { dfatal } from "$lib/logging";
 import { stringifyError } from "$lib/strings";
 
-const client = env.PUBLIC_POSTHOG_KEY
-	? new PostHog(env.PUBLIC_POSTHOG_KEY, {
+const client = POSTHOG_KEY
+	? new PostHog(POSTHOG_KEY, {
 			host: "https://eu.i.posthog.com",
 			disabled: dev
 		})

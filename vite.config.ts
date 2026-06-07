@@ -9,9 +9,6 @@ import lucidePreprocess from "vite-plugin-lucide-preprocess";
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), "");
 
-	const POSTHOG_ENV_ID = env.POSTHOG_ENV_ID;
-	const POSTHOG_SOURCEMAP_API_KEY = env.POSTHOG_SOURCEMAP_API_KEY;
-
 	return {
 		plugins: [
 			devtoolsJson(),
@@ -25,14 +22,15 @@ export default defineConfig(({ mode }) => {
 				experimental: {
 					instrumentation: {
 						server: true
-					}
+					},
+					explicitEnvironmentVariables: true
 				}
 			}),
 			tailwindcss(),
-			POSTHOG_ENV_ID && POSTHOG_SOURCEMAP_API_KEY
+			env.POSTHOG_ENV_ID && env.POSTHOG_SOURCEMAP_API_KEY
 				? posthog({
-						personalApiKey: POSTHOG_SOURCEMAP_API_KEY,
-						projectId: POSTHOG_ENV_ID,
+						personalApiKey: env.POSTHOG_SOURCEMAP_API_KEY,
+						projectId: env.POSTHOG_ENV_ID,
 						host: "https://eu.i.posthog.com"
 					})
 				: undefined

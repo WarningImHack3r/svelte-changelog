@@ -1,4 +1,4 @@
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 import css from "@shikijs/langs/css";
 import diff from "@shikijs/langs/diff";
 import html from "@shikijs/langs/html";
