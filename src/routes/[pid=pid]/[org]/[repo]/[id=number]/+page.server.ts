@@ -5,6 +5,7 @@ import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";
 import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
 import { discoverer } from "$lib/server/package-discoverer";
+import { pidFormatter } from "$lib/strings";
 import type { BranchCommit } from "$lib/types";
 
 const versionDigitsRegex = /\d\.\d/;
@@ -32,7 +33,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 
 	const item = await githubCache.getItemDetails(org, repo, +id);
 	if (!item) {
-		error(404, `${type} #${id} doesn't exist in repo ${org}/${repo}`);
+		error(404, `${pidFormatter.toHumanReadable(type)} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
 
 	const realType: typeof type =
