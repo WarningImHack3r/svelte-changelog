@@ -32,7 +32,7 @@
 		"@shikijs/rehype": "^4.2.0",
 		"@shikijs/themes": "^4.2.0",
 		"@sveltejs/adapter-node": "^5.5.4",
-		"@sveltejs/kit": "^2.64.0",
+		"@sveltejs/kit": "3.0.0-next.1",
 		"@tailwindcss/typography": "^0.5.20",
 		"@tailwindcss/vite": "^4.3.0",
 		"adapter-node-sea": "github:gauben/gautier.dev#b92bd62c48d1ea27d93921b19449017556ec8ef7&path:adapter",
