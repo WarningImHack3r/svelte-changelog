@@ -11,7 +11,7 @@ const client = POSTHOG_KEY
 		})
 	: undefined;
 
-export async function handleErrors({ error, status, event, message }) {
+export async function handleError({ error, status, event, message }) {
 	if (status === 404) return;
 	const stringified = stringifyError(error);
 	dfatal(`[SERVER][${status}] ${stringified}`);

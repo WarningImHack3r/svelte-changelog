@@ -3,7 +3,7 @@ import { browser, dev } from "$app/env";
 import { logs } from "@opentelemetry/api-logs";
 import { siteRepoName } from "./properties";
 
-const DEBUG = true;
+const DEBUG = false;
 const logger = logs.getLogger(`${siteRepoName}-logs`);
 
 /**
@@ -20,7 +20,7 @@ function obfuscatedImport<T = unknown>(moduleName: string): Promise<T> {
 }
 
 export function dlog(message?: unknown, ...optionalParams: unknown[]) {
-	if (DEBUG && false) console.log(message, ...optionalParams);
+	if (DEBUG) console.log(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "info", body: util.format(message, ...optionalParams) })
@@ -59,7 +59,7 @@ export function dfatal(message?: unknown, ...optionalParams: unknown[]) {
 }
 
 export function ddebug(message?: unknown, ...optionalParams: unknown[]) {
-	if (DEBUG && false) console.debug(message, ...optionalParams);
+	if (DEBUG) console.debug(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "debug", body: util.format(message, ...optionalParams) })

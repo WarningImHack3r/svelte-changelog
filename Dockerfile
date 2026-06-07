@@ -8,12 +8,12 @@ COPY . .
 RUN pnpm i --prefer-offline -P # "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
 RUN pnpm run build
 
-FROM node:slim
+FROM debian:stable-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends wget curl \
+# minimal requirement to avoid requiring a node image and make the SEA work
+RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=base /app/node_modules node_modules
-COPY --from=base /app/build build
+COPY --from=base /app/build/node node
 EXPOSE 3000
 ENV NODE_ENV=production
-CMD [ "node", "build" ]
+CMD [ "/app/node" ]
