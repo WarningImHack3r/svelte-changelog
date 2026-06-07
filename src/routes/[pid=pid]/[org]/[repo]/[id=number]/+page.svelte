@@ -2,7 +2,7 @@
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
-	import { browser } from "$app/environment";
+	import { browser } from "$app/env";
 	import { replaceState } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";

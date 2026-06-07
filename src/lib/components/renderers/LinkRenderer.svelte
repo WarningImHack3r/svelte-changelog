@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import type { HTMLAnchorAttributes } from "svelte/elements";
-	import { dev } from "$app/environment";
+	import { dev } from "$app/env";
 
 	type Props = {
 		attributes: HTMLAnchorAttributes;
