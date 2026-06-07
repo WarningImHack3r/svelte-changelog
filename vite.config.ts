@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
 				}
 			}),
 			tailwindcss(),
-			env.POSTHOG_ENV_ID && env.POSTHOG_SOURCEMAP_API_KEY
+			env.POSTHOG_ENV_ID && env.POSTHOG_SOURCEMAP_API_KEY && env.ENVIRONMENT === "production"
 				? posthog({
 						personalApiKey: env.POSTHOG_SOURCEMAP_API_KEY,
 						projectId: env.POSTHOG_ENV_ID,
