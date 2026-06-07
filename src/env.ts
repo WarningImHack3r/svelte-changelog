@@ -87,7 +87,7 @@ export const variables = defineEnvVars({
 		description:
 			"Whether to allow self-signed certificates from the Redis server; only applicable if the Redis URL uses TLS (rediss://)",
 		schema: v.pipe(
-			v.optional(v.string()),
+			v.optional(v.picklist(["true", "false"]), "false"),
 			v.transform(str => str === "true")
 		)
 	},
