@@ -7,3 +7,5 @@ allowBuilds:
   core-js: true
   esbuild: true
   protobufjs: true
+minimumReleaseAgeExclude:
+  - "@sveltejs/kit@2.63.1"
