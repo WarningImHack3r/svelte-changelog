@@ -7,6 +7,16 @@ import type { PID } from "$lib/types";
  * @returns the human-readable error text
  */
 export function stringifyError(error: unknown): string {
+	if (error instanceof Error) {
+		let content = error.message;
+		if (error.cause)
+			content += stringifyError(error.cause)
+				.split("\n")
+				.map(line => `\t${line}`)
+				.join("\n");
+		if (error.stack) content += error.stack;
+		return content;
+	}
 	switch (typeof error) {
 		case "object":
 			if (error === null) return "<null error>";

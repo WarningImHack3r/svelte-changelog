@@ -29,7 +29,7 @@ export function dlog(message?: unknown, ...optionalParams: unknown[]) {
 }
 
 export function dwarn(message?: unknown, ...optionalParams: unknown[]) {
-	if (dev || DEBUG) console.warn(message, ...optionalParams);
+	console.warn(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "warn", body: util.format(message, ...optionalParams) })
@@ -38,7 +38,7 @@ export function dwarn(message?: unknown, ...optionalParams: unknown[]) {
 }
 
 export function derror(message?: unknown, ...optionalParams: unknown[]) {
-	if (dev || DEBUG) console.error(message, ...optionalParams);
+	console.error(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "error", body: util.format(message, ...optionalParams) })
@@ -50,7 +50,7 @@ export function derror(message?: unknown, ...optionalParams: unknown[]) {
  * A custom function to emit fatal OTLP logs, but still log with `console.error`.
  */
 export function dfatal(message?: unknown, ...optionalParams: unknown[]) {
-	if (dev || DEBUG) console.error(message, ...optionalParams);
+	console.error(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "fatal", body: util.format(message, ...optionalParams) })
@@ -128,7 +128,7 @@ export function dtimeStamp(label?: string) {
 }
 
 export function dtrace(message?: unknown, ...optionalParams: unknown[]) {
-	if (DEBUG) console.trace(message, ...optionalParams);
+	console.trace(message, ...optionalParams);
 	if (!dev && !browser) {
 		void obfuscatedImport<typeof import("node:util")>("node:util").then(util =>
 			logger.emit({ severityText: "trace", body: util.format(message, ...optionalParams) })
