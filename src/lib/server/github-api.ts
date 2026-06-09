@@ -1266,14 +1266,19 @@ export const githubCache = new GitHubAPI(
 				auth: GITHUB_TOKEN,
 				redisClient
 			})
-		: await createApp(
-				async OctoClass =>
-					await new App({
-						appId: GH_APP_ID,
-						privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8"),
-						Octokit: OctoClass
-					}).getInstallationOctokit(GH_APP_INSTALLATION_ID),
-				{ redisClient }
-			),
+		: GH_APP_ID && GH_APP_PRIV_KEY_BASE64 && GH_APP_INSTALLATION_ID
+			? await createApp(
+					async OctoClass =>
+						await new App({
+							appId: GH_APP_ID,
+							privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8"),
+							Octokit: OctoClass
+						}).getInstallationOctokit(GH_APP_INSTALLATION_ID),
+					{ redisClient }
+				)
+			: (() => {
+					// TODO: relax that requirement later
+					throw new Error("No authentication medium provided, can't start");
+				})(),
 	redisClient
 );
