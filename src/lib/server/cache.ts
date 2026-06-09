@@ -1,4 +1,4 @@
-import { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID } from "$app/env/private";
+import { env } from "$env/dynamic/private";
 import { derror, dwarn } from "$lib/logging";
 
 /**
@@ -42,17 +42,17 @@ export async function tagResponse(
  * @param tag the tag to invalidate
  */
 export async function invalidateTag(tag: string) {
-	if (!CLOUDFLARE_ZONE_ID || !CLOUDFLARE_API_TOKEN) {
+	if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_API_TOKEN) {
 		dwarn(`[invalidateTag] Skipping purge for tag "${tag}": Cloudflare credentials not configured`);
 		return;
 	}
 
 	const response = await fetch(
-		`https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache`,
+		`https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/purge_cache`,
 		{
 			method: "POST",
 			headers: {
-				Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
+				Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({ tags: [tag] })

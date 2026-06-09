@@ -1,12 +1,11 @@
-import { dev } from "$app/env";
+import { dev } from "$app/environment";
 import {
 	GH_APP_ID,
 	GH_APP_INSTALLATION_ID,
 	GH_APP_PRIV_KEY_BASE64,
 	GITHUB_TOKEN,
-	REDIS_ALLOW_SELF_SIGNED,
 	REDIS_URL
-} from "$app/env/private";
+} from "$env/static/private";
 import type {
 	CommentAuthorAssociation,
 	Issue as GQLIssue,
@@ -1253,12 +1252,10 @@ export class GitHubAPI {
 
 const redisClient = createClient({
 	url: REDIS_URL,
-	socket: REDIS_URL?.startsWith("rediss:")
-		? {
-				tls: true,
-				rejectUnauthorized: !REDIS_ALLOW_SELF_SIGNED
-			}
-		: undefined
+	socket: {
+		tls: true,
+		rejectUnauthorized: false // allows self-hosted
+	}
 });
 export const githubCache = new GitHubAPI(
 	GITHUB_TOKEN
@@ -1272,7 +1269,7 @@ export const githubCache = new GitHubAPI(
 						appId: GH_APP_ID,
 						privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8"),
 						Octokit: OctoClass
-					}).getInstallationOctokit(GH_APP_INSTALLATION_ID),
+					}).getInstallationOctokit(+GH_APP_INSTALLATION_ID),
 				{ redisClient }
 			),
 	redisClient

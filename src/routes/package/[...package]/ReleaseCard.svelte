@@ -30,7 +30,7 @@
 
 <script lang="ts">
 	import { untrack } from "svelte";
-	import { dev } from "$app/env";
+	import { dev } from "$app/environment";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import GitHub from "@icons-pack/svelte-simple-icons/icons/SiGithub";

@@ -1,5 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
-import { dev } from "$app/env";
+import { dev } from "$app/environment";
 import { resolve } from "$app/paths";
 import { siteName } from "$lib/properties";
 import { publicRepos, uniqueRepos } from "$lib/repositories";

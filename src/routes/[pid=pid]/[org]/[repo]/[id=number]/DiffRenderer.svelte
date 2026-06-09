@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { browser } from "$app/env";
+	import { browser } from "$app/environment";
 	import { type FileDiffMetadata, parsePatchFiles as pierreParsePatchFiles } from "@pierre/diffs";
 	import {
 		type WorkerInitializationRenderOptions,

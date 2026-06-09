@@ -3,7 +3,7 @@
 	import type { ComponentProps } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
-	import { dev } from "$app/env";
+	import { dev } from "$app/environment";
 	import { beforeNavigate, onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page, updated } from "$app/state";

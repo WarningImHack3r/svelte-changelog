@@ -1,4 +1,4 @@
-import { WEBHOOKS_REPLICATOR_TOKEN } from "$app/env/private";
+import { WEBHOOKS_REPLICATOR_TOKEN } from "$env/static/private";
 import { ddebug, derror, dlog } from "$lib/logging";
 import { invalidateTag, waitUntil } from "$lib/server/cache";
 import { githubCache } from "$lib/server/github-api";

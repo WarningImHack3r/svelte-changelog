@@ -1,5 +1,5 @@
-import { browser, dev } from "$app/env";
-import { POSTHOG_KEY } from "$app/env/public";
+import { browser, dev } from "$app/environment";
+import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import posthog from "posthog-js";
 import { defineBaseMetaTags } from "svelte-meta-tags";
 import { siteName } from "$lib/properties";
@@ -7,8 +7,8 @@ import { siteName } from "$lib/properties";
 let phInit = false;
 
 export function load({ url, data }) {
-	if (!phInit && browser && !dev && POSTHOG_KEY) {
-		posthog.init(POSTHOG_KEY, {
+	if (!phInit && browser && !dev) {
+		posthog.init(PUBLIC_POSTHOG_KEY, {
 			api_host: "/ingest",
 			ui_host: "https://eu.posthog.com",
 			persistence: "localStorage",

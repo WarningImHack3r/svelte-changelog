@@ -1,5 +1,5 @@
 import { render } from "svelte/server";
-import { dev } from "$app/env";
+import { dev } from "$app/environment";
 import { read } from "$app/server";
 import DMSerifDisplay from "@fontsource/dm-serif-display/files/dm-serif-display-latin-400-normal.woff";
 import Pretendard from "@fontsource/pretendard/files/pretendard-latin-400-normal.woff";

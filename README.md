@@ -37,7 +37,7 @@ For more info, visit the [v2 release post](https://svelte-changelog.dev/devlog/v
 cp .env.example .env
 
 # 2. Edit .env and add your GitHub token:
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+#    GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # 3. Install dependencies and run
 pnpm i && pnpm dev
@@ -47,8 +47,10 @@ That's it: your GitHub token will do most of the job, and you can run the websit
 
 #### Environment Variables
 
-For development purposes, `GITHUB_TOKEN` is the only mandatory variable. Some other variables are required to start the app, but can receive dummy values.
-If you want to learn more about all the environment variables, read the [`.env.example`](.env.example) file or head over to the [`src/env.ts`](src/env.ts) file, which lists and documents all of them.
+- `GITHUB_TOKEN`: a [classic GitHub token](https://github.com/settings/tokens) with the `public_repo` scope (that's it), required for API requests.
+- `REDIS_URL` (optional): the TCP URL for the Redis instance. You can leave it empty; an in-memory cache is used during development.
+- `PUBLIC_POSTHOG_KEY` (optional): the token for the analytics service I use, [PostHog](https://posthog.com). You can leave it empty; analytics are disabled in dev environments.
+- `WEBHOOKS_REPLICATOR_TOKEN` (optional): the token for webhook reception, not useful in a dev environment but has to be present still.
 
 ## Missing a repository?
 

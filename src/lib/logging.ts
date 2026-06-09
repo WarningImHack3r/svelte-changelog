@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import { browser, dev } from "$app/env";
+import { browser, dev } from "$app/environment";
 import { logs } from "@opentelemetry/api-logs";
 import { siteRepoName } from "./properties";
 
