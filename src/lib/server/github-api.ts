@@ -1251,14 +1251,6 @@ export class GitHubAPI {
 	}
 }
 
-// eslint-disable-next-line no-restricted-syntax
-console.error(`Alright:
-- REDIS_URL: ${REDIS_URL ?? "<none>"}
-- REDIS_ALLOW_SELF_SIGNED: ${REDIS_ALLOW_SELF_SIGNED}
-- GITHUB_TOKEN: ${GITHUB_TOKEN}
-- GH_APP_ID: ${GH_APP_ID}
-- GH_APP_PRIV_KEY_BASE64: ${GH_APP_PRIV_KEY_BASE64}
-- GH_APP_INSTALLATION_ID: ${GH_APP_INSTALLATION_ID}`);
 const redisClient = createClient({
 	url: REDIS_URL,
 	socket: REDIS_URL?.startsWith("rediss:")
