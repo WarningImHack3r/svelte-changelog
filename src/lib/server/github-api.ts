@@ -1269,7 +1269,7 @@ export const githubCache = new GitHubAPI(
 		: await createApp(
 				async OctoClass =>
 					await new App({
-						appId: `${GH_APP_ID}`,
+						appId: GH_APP_ID,
 						privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8"),
 						Octokit: OctoClass
 					}).getInstallationOctokit(GH_APP_INSTALLATION_ID),
