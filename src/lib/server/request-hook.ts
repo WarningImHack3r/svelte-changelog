@@ -1,6 +1,4 @@
 import { dev } from "$app/env";
-import { retry } from "@octokit/plugin-retry";
-import { throttling } from "@octokit/plugin-throttling";
 import { Octokit, RequestError } from "octokit";
 import { type RedisClientType, type RedisJSON } from "redis";
 import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "$lib/logging";
@@ -49,51 +47,9 @@ function interpretPathname(pathname: string, parameters: Record<string, unknown>
  * @returns a custom Octokit class ready to instantiate
  */
 function getOctokit(options?: OctokitOptions) {
-	return Octokit.plugin(retry, throttling).defaults({
+	// throttling (rate-limits) and retries are embedded within Octokit: https://github.com/octokit/octokit.js/blob/main/src/octokit.ts
+	return Octokit.defaults({
 		log: { debug, info, warn, error },
-		throttle: {
-			/**
-			 * A callback that gets called when hitting the API rate limit.
-			 * The primary rate limit can be summed up as "usage limit in a short period of time".
-			 *
-			 * @param retryAfter the number of seconds to retry after
-			 * @param options the request's metadata
-			 * @param octokit the current Octokit instance
-			 * @param retryCount the leftover retries available
-			 * @returns `true` to retry the request after `retryAfter` seconds, nothing otherwise
-			 *
-			 * @see {@link https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-primary-rate-limits}
-			 */
-			onRateLimit: (retryAfter, options, octokit, retryCount) => {
-				/* official docs implementation */
-				octokit.log.warn(`Request quota exhausted for request ${options.method} ${options.url}`);
-
-				if (retryCount < 1) {
-					// only retries once
-					octokit.log.info(`Retrying after ${retryAfter} seconds!`);
-					return true;
-				}
-			},
-			/**
-			 * A callback that gets called when hitting the secondary API rate limit.
-			 * The secondary rate limit can be summed up as "the one for 'too many requests'".
-			 *
-			 * @param _retryAfter the number of seconds to retry after
-			 * @param options the request's metadata
-			 * @param octokit the current Octokit instance
-			 * @param _retryCount the leftover retries available
-			 *
-			 * @see {@link https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits}
-			 */
-			onSecondaryRateLimit: (_retryAfter, options, octokit, _retryCount) => {
-				/* official docs implementation */
-				// does not retry, only logs a warning
-				octokit.log.warn(`Secondary quota detected for request ${options.method} ${options.url}`);
-			}
-		},
-		retry: {
-			doNotRetry: [429]
-		},
 		...options
 	});
 }
@@ -236,7 +192,7 @@ export function createOctokit(options: OctokitOptions & { redisClient: RedisClie
 export async function createApp(
 	instanciator: (Octo: typeof Octokit) => Octokit | Promise<Octokit>,
 	options: { redisClient: RedisClientType }
-): Promise<Octokit> {
+) {
 	const octokit = await instanciator(getOctokit());
 	return hookOctokit(octokit, options.redisClient);
 }

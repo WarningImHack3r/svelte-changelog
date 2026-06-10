@@ -28,7 +28,7 @@ export const variables = defineEnvVars({
 	/*
 	 * GitHub API
 	 * Use either GITHUB_TOKEN, or the other 3 together.
-	 * Not using any of those 3 will prevent the app from starting.
+	 * Not using any of those 4 will prevent the app from starting.
 	 */
 	GH_APP_ID: {
 		static: true,
