@@ -34,7 +34,6 @@
 	} from "mode-watcher";
 	import { activeElement, PersistedState, PressedKeys } from "runed";
 	import { MetaTags, deepMerge } from "svelte-meta-tags";
-	import { uniq } from "$lib/array";
 	import { news } from "$lib/news/news.json";
 	import { authorVCSProfile, authorVCSUsername, siteName, siteRepo } from "$lib/properties";
 	import type { Entries } from "$lib/types";
@@ -168,33 +167,12 @@
 		{
 			name: "Packages",
 			icon: Package,
-			dropdownItems: uniq(
-				data.displayablePackages.flatMap(({ packages }) => packages.map(({ pkg }) => pkg.name)),
-				name => name
-			)
-				.toSorted((a, b) => a.localeCompare(b))
-				.map(pkgName => ({
-					title: pkgName,
-					href: resolve("/package/[...package]", { package: pkgName })
-				}))
-				.slice(0, 3 * 3 - 1),
-			moreHref: resolve("/packages")
+			href: resolve("/packages")
 		},
 		{
 			name: "Tracker",
 			icon: Radar,
-			dropdownItems: uniq(
-				data.displayablePackages.flatMap(({ packages }) =>
-					packages.map(({ repoOwner, repoName }) => ({ owner: repoOwner, name: repoName }))
-				),
-				({ owner, name }) => `${owner}/${name}`
-			)
-				.map(({ owner, name }) => ({
-					title: `${owner}/${name}`,
-					href: resolve("/tracker/[org]/[repo]", { org: owner, repo: name })
-				}))
-				.slice(0, 3 * 5 - 1),
-			moreHref: resolve("/tracker")
+			href: resolve("/tracker")
 		},
 		{ name: "Devlog", icon: Newspaper, href: resolve("/devlog") }
 	]);
@@ -284,7 +262,7 @@
 					</Sheet.Header>
 					<ul class="flex flex-col gap-1 px-2">
 						{#each navbarItems as item (item.name)}
-							{@const link = "href" in item ? item.href : (item.moreHref ?? "/")}
+							{@const link = item.href}
 							{@const disabled = page.url.pathname.startsWith(link === "/" ? "/package/" : link)}
 							<li
 								class="inline-flex items-center gap-3 rounded-md px-2 has-disabled:bg-accent has-disabled:opacity-50"
