@@ -60,7 +60,7 @@
 		otherReleases={data.allReleases}
 		class={[
 			"mt-35 hidden h-fit w-100 shrink-0 lg:flex",
-			page.data.currentPackage.pkg.description?.length && "mt-45"
+			page.data.currentPackage.pkg.description?.length && "mt-44"
 		]}
 		bind:settings={packageSettings.current}
 	/>
