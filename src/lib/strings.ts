@@ -8,7 +8,7 @@ import type { PID } from "$lib/types";
  */
 export function stringifyError(error: unknown): string {
 	if (error instanceof Error) {
-		let content = error.message;
+		let content = error.stack ?? error.message;
 		if (error.cause)
 			content +=
 				"\n" +
@@ -16,7 +16,6 @@ export function stringifyError(error: unknown): string {
 					.split("\n")
 					.map(line => `\t${line}`)
 					.join("\n");
-		if (error.stack) content += "\n" + error.stack;
 		return content;
 	}
 	switch (typeof error) {
