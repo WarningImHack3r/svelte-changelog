@@ -143,9 +143,13 @@
 	<div class="flex flex-col xs:flex-row xs:items-center">
 		<!-- Repo name -->
 		{#if currentRepo.owner && currentRepo.name}
+			{const subPath = $derived(
+				// TODO: use default branch instead of HEAD
+				packageInfo.repoSubPath ? `/tree/HEAD/${packageInfo.repoSubPath}` : ""
+			)}
 			<h2 class="group text-xl text-muted-foreground text-shadow-sm/5">
 				<a
-					href="https://github.com/{currentRepo.owner}/{currentRepo.name}"
+					href="https://github.com/{currentRepo.owner}/{currentRepo.name}{subPath}"
 					target="_blank"
 					class="underline-offset-2 group-hover:underline after:ml-0.5 after:inline-block after:font-sans after:text-sm after:content-['↗']"
 				>
