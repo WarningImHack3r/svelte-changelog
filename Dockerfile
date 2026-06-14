@@ -1,17 +1,11 @@
 FROM node:slim AS base
 WORKDIR /app
-# install pnpm as it's not in the node image by default
-RUN npm i -g pnpm
+RUN corepack enable
 COPY pnpm-*.yaml .
 RUN pnpm fetch -P
 COPY . .
-
-FROM base as prod-deps
 # "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
-RUN pnpm i --prefer-offline -P
-
-FROM base as build
-RUN pnpm i --prefer-offline && pnpm run build
+RUN pnpm i --prefer-offline && pnpm run build && pnpm i --prefer-offline -P
 
 FROM node:slim
 WORKDIR /app
