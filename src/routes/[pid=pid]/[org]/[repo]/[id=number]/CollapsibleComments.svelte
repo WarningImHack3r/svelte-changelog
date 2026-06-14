@@ -94,8 +94,9 @@
 	secondaryLabel="{comms.length} comment{comms.length > 1 ? 's' : ''}"
 >
 	{#each sortComments(comms) as comment, i (comment.id)}
-		{@const isAnswer =
-			"parent_id" in comment && comment.parent_id ? comment.parent_id !== itemId : false}
+		{let isAnswer = $derived(
+			"parent_id" in comment && comment.parent_id ? comment.parent_id !== itemId : false
+		)}
 		{#if !isAnswer && i > 0}
 			<Separator class="my-2 h-1" />
 		{/if}

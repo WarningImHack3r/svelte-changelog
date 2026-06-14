@@ -99,9 +99,9 @@
 			</div>
 		</Step>
 		{#each commits as commit (commit.sha)}
-			{@const [commitMessage, ...commitDescriptions] = commit.commit.message.split("\n")}
-			{@const commitDescription = commitDescriptions.join("\n").trim()}
-			{@const formattedCommitMessage = formatCommitMessage(commitMessage, commit.html_url)}
+			{let [commitMessage, ...commitDescriptions] = $derived(commit.commit.message.split("\n"))}
+			{let commitDescription = $derived(commitDescriptions.join("\n").trim())}
+			{let formattedCommitMessage = $derived(formatCommitMessage(commitMessage, commit.html_url))}
 			<Step icon={GitCommitVertical}>
 				<div class="flex flex-col-reverse items-start justify-between sm:flex-row sm:gap-16">
 					<!-- Left part: commit message, description & author -->

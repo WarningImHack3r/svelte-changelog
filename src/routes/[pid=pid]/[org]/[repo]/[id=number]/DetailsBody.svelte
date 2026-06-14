@@ -38,7 +38,7 @@
 	heading: ConditionalKeys<RemoveIndexSignature<SvelteHTMLElements>, `h${number}`>,
 	{ children, id, class: className, ...props }: HTMLAttributes<HTMLHeadingElement>
 )}
-	{@const shouldRender = id && renderSlug}
+	{let shouldRender = $derived(!!id && renderSlug)}
 	<svelte:element
 		this={heading}
 		id={shouldRender ? id : undefined}
@@ -85,23 +85,23 @@
 			{@render headingRenderer("h6", props)}
 		{/snippet}
 		{#snippet a(props)}
-			{@const { href, children, ...rest } = props}
+			{const { href, children, ...rest } = props}
 			<LinkRenderer attributes={props}>
 				{#snippet linkChildren(original)}
-					{@const match = (href ?? "").match(
+					{const match = href?.match(
 						/^https:\/\/github.com\/(\S+)\/(\S+)\/(\S+)\/(\d+)(#[a-z]+-\d+)?$/
 					)}
 					{#if href && match}
-						{@const [, org, repo, pid, id] = [...match]}
+						{const [, org = "", repo = "", pid = "issues", id = ""] = [...match]}
 						<HoverCard.Root openDelay={300}>
 							<HoverCard.Content class="flex w-fit items-center justify-center px-6">
 								<Button
 									variant="link"
 									href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
-										pid: (pid ?? "issues") as "pull" | "issues" | "discussions",
-										org: org ?? "",
-										repo: repo ?? "",
-										id: id ?? ""
+										pid: pid as "pull" | "issues" | "discussions",
+										org,
+										repo,
+										id
 									})}
 									class="group h-auto p-0! text-base"
 								>

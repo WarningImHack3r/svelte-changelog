@@ -18,7 +18,7 @@
 		class="absolute -mt-0.5 -ml-12.5 inline-flex size-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-px font-mono text-base font-normal"
 	>
 		{#if icon}
-			{@const Component = icon}
+			{let Component = $derived(icon)}
 			<Component class="size-4" />
 		{:else}
 			<span class="[counter-increment:step] before:content-[counter(step)]"></span>

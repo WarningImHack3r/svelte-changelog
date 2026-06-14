@@ -1005,7 +1005,6 @@ export class GitHubAPI {
 
 				const allPackageJson = allFiles.tree
 					.map(({ path }) => path)
-					.filter(path => path !== undefined)
 					.filter(
 						path =>
 							!path.includes("/test/") &&
@@ -1221,7 +1220,7 @@ export class GitHubAPI {
 				void this.#updateCacheEntry<Record<string, string>>(
 					this.#getRepoKey(owner, repo, "descriptions"),
 					descriptions => {
-						const key = `packages/${packageName}/package.json`; // will look weird as it's technically a lie, but good enough
+						const key = `remote-${packageName}`;
 						if (descriptions === undefined) return { [key]: description };
 						return { ...descriptions, [key]: description };
 					}
