@@ -3,5 +3,3 @@ allowBuilds:
   "@posthog/cli": true
   core-js: true
   protobufjs: true
-minimumReleaseAgeExclude:
-  - svelte-shaker@0.9.0
