@@ -3,9 +3,10 @@ WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN npm i -g corepack && corepack enable
-COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY pnpm-*.yaml .
 RUN pnpm fetch
 COPY . .
+RUN ls -l && cat pnpm-workspace.yaml
 # "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
 RUN pnpm i --prefer-offline && pnpm run build && pnpm i --prefer-offline -P
 
