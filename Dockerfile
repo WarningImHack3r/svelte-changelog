@@ -1,5 +1,7 @@
 FROM node:slim AS base
 WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN npx corepack enable pnpm
 COPY pnpm-*.yaml .
 RUN pnpm fetch -P
