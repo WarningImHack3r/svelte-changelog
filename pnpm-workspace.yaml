@@ -4,4 +4,4 @@ allowBuilds:
   core-js: true
   protobufjs: true
 minimumReleaseAgeExclude:
-  - svelte-shaker@0.8.0
+  - svelte-shaker@0.9.0

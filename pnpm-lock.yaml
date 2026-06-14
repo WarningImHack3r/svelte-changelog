@@ -129,8 +129,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)
       svelte-shaker:
-        specifier: ^0.8.0
-        version: 0.8.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
+        specifier: ^0.9.0
+        version: 0.9.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       svelte-sonner:
         specifier: ^1.1.1
         version: 1.1.1(svelte@5.56.3(@typescript-eslint/types@8.61.0))
@@ -2834,8 +2834,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  svelte-shaker@0.8.0:
-    resolution: {integrity: sha512-lKN90LUqQzzdNPNstXB14IfRfXgys3nIaY22aZUHLzTBEewAWNsb2NQKfhhqJ3aNgJ+lmHDkET0djwQs7iFsEQ==}
+  svelte-shaker@0.9.0:
+    resolution: {integrity: sha512-FcuE5fkBlY962v2KqqL+yyd9TgDTfrlrsG9G9JDsvq7TlNnzvx2S6xP5h0UZ24uSWeiic+oWCWwXik1QijI0Kg==}
     engines: {node: '>=22'}
     peerDependencies:
       '@rsvelte/vite-plugin-svelte-native': '>=0.2.4'
@@ -5885,7 +5885,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  svelte-shaker@0.8.0(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
+  svelte-shaker@0.9.0(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
     dependencies:
       magic-string: 0.30.21
       svelte: 5.56.3(@typescript-eslint/types@8.61.0)
