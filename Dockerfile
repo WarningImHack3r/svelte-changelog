@@ -6,7 +6,7 @@ RUN npm i -g corepack && corepack enable
 COPY pnpm-*.yaml .
 RUN pnpm fetch
 COPY . .
-RUN ls -l && cat pnpm-workspace.yaml
+RUN ls -l && cat pnpm-workspace.yaml && pnpm ignored-builds
 # "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
 RUN pnpm i --prefer-offline && pnpm run build && pnpm i --prefer-offline -P
 
