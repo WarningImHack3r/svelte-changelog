@@ -1,3 +1,4 @@
+import { dirname } from "node:path";
 import { uniq } from "$lib/array";
 import { dlog } from "$lib/logging";
 import { type Repository, publicRepos } from "$lib/repositories";
@@ -6,8 +7,9 @@ import { GitHubAPI, githubCache } from "./github-api";
 
 export type Package = {
 	name: string;
-	description: string;
+	description?: string;
 	deprecated?: string;
+	repoSubPath?: string;
 	isNpmPackage?: boolean;
 };
 
@@ -23,6 +25,8 @@ export type CategorizedPackage = Prettify<
 	}
 >;
 
+const DOT_REGEX = /^\.$/;
+
 class PackageDiscoverer {
 	readonly #api: GitHubAPI;
 
@@ -32,7 +36,8 @@ class PackageDiscoverer {
 		extensions: "svelte-vscode",
 		"svelte-migrate": "migrate",
 		"svelte-language-server": "language-server",
-		"typescript-svelte-plugin": "typescript-plugin"
+		"typescript-svelte-plugin": "typescript-plugin",
+		"@sveltejs/mcp": "mcp-stdio"
 	};
 
 	#packages: DiscoveredPackage[] = [];
@@ -84,23 +89,22 @@ class PackageDiscoverer {
 					...repo,
 					packages: await Promise.all(
 						packages.map<Promise<Package>>(async pkg => {
-							const ghName = this.#gitHubDirectoryFromName(pkg);
 							const deprecationStatus = (await this.#api.getPackageDeprecation(pkg)).value;
 							const deprecated =
 								typeof deprecationStatus === "string" ? deprecationStatus : undefined;
 							return {
 								name: pkg,
-								description: deprecated
-									? "" // descriptions of deprecated packages are often wrong as their code might be deleted,
-									: // thus falling back to a higher hierarchy description, often a mismatch
-										(descriptions[`packages/${pkg}/package.json`] ?? // try first at the expected place in case my info is outdated
-										descriptions[`packages/${ghName}/package.json`] ??
-										descriptions[
-											`packages/${ghName.substring(ghName.lastIndexOf("/") + 1)}/package.json`
-										] ??
-										descriptions["package.json"] ??
-										(await this.#api.getPackageDescription(pkg, repo.repoOwner, repo.repoName)) ??
-										""),
+								...(await this.#getRepoData(descriptions, pkg, [repo.repoOwner, repo.repoName])),
+								...(deprecated
+									? {
+											/*
+											 * Descriptions of deprecated packages are often wrong as their code might have been deleted:
+											 * the regular search would thus fall back to another description, which is often a mismatch.
+											 * Avoiding this by explicitely unsetting the description for deprecated packages.
+											 */
+											description: undefined
+										}
+									: undefined),
 								deprecated,
 								isNpmPackage: deprecationStatus !== null
 							};
@@ -112,16 +116,43 @@ class PackageDiscoverer {
 	}
 
 	/**
-	 * Returns the directory on GitHub from the name
-	 * of the package.
-	 * Useful to retrieve the correct `package.json` file.
+	 * Get additional package information from its repository data
 	 *
-	 * @param name the package name
-	 * @returns the directory name in GitHub for that package
-	 * @private
+	 * @param descriptions the fetched descriptions to pick from
+	 * @param packageName the package name to look for
+	 * @param repo the owner and name of the repository to fetch as a fallback
+	 * @returns the info
 	 */
-	#gitHubDirectoryFromName(name: string): string {
-		return this.#packageDirectoryMap[name] ?? name;
+	async #getRepoData(
+		descriptions: Record<string, string>,
+		packageName: string,
+		[owner, repo]: [string, string]
+	): Promise<Pick<Package, "description" | "repoSubPath">> {
+		const ghDirectory = this.#packageDirectoryMap[packageName] ?? packageName;
+		const orderedPaths = [
+			...new Set([
+				`remote-${packageName}`, // special initial GitHub/npm cached call
+				// Monorepos
+				`packages/${packageName}/package.json`, // try first at the expected place in case my info is outdated
+				`packages/${ghDirectory}/package.json`, // for packages with special and known locations
+				`packages/${ghDirectory.substring(ghDirectory.lastIndexOf("/") + 1)}/package.json`, // for scoped packages which don't have a special directory (thus... package names basically?), remove the scope part
+				// Not monorepos?
+				"package.json" // if nothing matched yet, probably not a monorepo? Or decent fallback
+			])
+		];
+		for (const path of orderedPaths) {
+			const description = descriptions[path];
+			if (description)
+				return {
+					description,
+					repoSubPath: path.startsWith("remote-")
+						? undefined
+						: dirname(path).replace(DOT_REGEX, "") /* no dir = "." */ || undefined
+				};
+		}
+		return {
+			description: (await this.#api.getPackageDescription(packageName, owner, repo)) ?? undefined
+		};
 	}
 
 	/**

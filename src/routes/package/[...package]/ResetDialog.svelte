@@ -139,7 +139,7 @@
 					<strong>{(hasHourReset ? dateTimeFormatter : dateFormatter).format(resetDate)}</strong>?
 				</span>
 				{#if hasNotFullySeens}
-					{@const haz = notFullySeenPackages.length > 1 ? "have" : "has"}
+					{let haz = $derived(notFullySeenPackages.length > 1 ? "have" : "has")}
 					<span class="block text-yellow-500">
 						{listFormatter.format(notFullySeenPackages)}
 						{haz} <strong>releases you didn't see yet</strong> and that

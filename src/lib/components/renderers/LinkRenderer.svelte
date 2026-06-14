@@ -70,10 +70,10 @@
 
 <!-- Main logic -->
 {#if href}
-	{@const hasExtension = /\.[a-zA-Z\d]+$/.test(href)}
+	{let hasExtension = $derived(/\.[a-zA-Z\d]+$/.test(href))}
 	{#if hasExtension}
-		{@const filename = href.split("/").pop()}
-		{@const extension = filename?.split(".").pop() ?? ""}
+		{let filename = $derived(href.split("/").pop())}
+		{let extension = $derived(filename?.split(".").pop() ?? "")}
 		{#if videoExtensions.includes(extension)}
 			{@render video()}
 		{:else if imageExtensions.includes(extension)}
@@ -96,7 +96,7 @@
 	{:else if !dev}
 		<!-- fetching the URL's content type (only in prod because CORS) -->
 		{#await fetch(href, { method: "HEAD" }) then response}
-			{@const contentType = response.headers.get("Content-Type")}
+			{const contentType = response.headers.get("Content-Type")}
 			{#if contentType?.startsWith("video/")}
 				{@render video()}
 			{:else if contentType?.startsWith("image/")}

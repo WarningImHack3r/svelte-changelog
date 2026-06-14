@@ -95,9 +95,9 @@
 
 <!-- prettier-ignore -->
 {#snippet listItem(item: Item, link: string)}
-	{@const lastUpdate = new Date(item.updated_at)}
-	{@const createdAt = new Date(item.created_at)}
-	{@const isUpdated = !areSameDay(lastUpdate, createdAt)}
+	{const lastUpdate = new Date(item.updated_at)}
+	{const createdAt = new Date(item.created_at)}
+	{const isUpdated = !areSameDay(lastUpdate, createdAt)}
 
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 	<a href={link} class="flex items-center gap-6 rounded-md px-4 py-3 transition-colors hover:bg-muted">

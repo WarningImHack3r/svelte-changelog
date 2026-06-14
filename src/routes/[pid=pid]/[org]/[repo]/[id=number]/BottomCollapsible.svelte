@@ -39,7 +39,7 @@
 			class="group items-center gap-0 hover:no-underline [&>svg:last-child]:mb-1 [&>svg:last-child]:shrink-0 [&[data-state=open]>svg]:rotate-0 [&[data-state=open]>svg:last-child]:rotate-180"
 		>
 			{#if icon}
-				{@const SvelteComponent = icon}
+				{let SvelteComponent = $derived(icon)}
 				<SvelteComponent class="mr-3 size-5 shrink-0" />
 			{/if}
 			<div class="flex w-full flex-col items-start justify-between xs:flex-row xs:items-center">

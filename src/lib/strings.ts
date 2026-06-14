@@ -4,12 +4,13 @@ import type { PID } from "$lib/types";
  * Converts a given error to a readable version
  *
  * @param error the error to stringify
+ * @param [stack=true] whether to show the stack trace, if available
  * @returns the human-readable error text
  */
-export function stringifyError(error: unknown): string {
+export function stringifyError(error: unknown, stack = true): string {
 	if (error instanceof Error) {
-		let content = error.stack ?? error.message;
-		if (error.cause)
+		let content = stack && error.stack ? error.stack : error.message;
+		if (error.cause && !stack)
 			content +=
 				"\n" +
 				stringifyError(error.cause)
