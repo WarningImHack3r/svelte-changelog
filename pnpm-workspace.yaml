@@ -7,3 +7,5 @@ allowBuilds:
   core-js: true
   esbuild: true
   protobufjs: true
+minimumReleaseAgeExclude:
+  - svelte-shaker@0.8.0

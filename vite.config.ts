@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
 		plugins: [
 			devtoolsJson(),
 			lucidePreprocess(),
-			shaker(),
+			shaker({ verbose: true }),
 			sveltekit({
 				adapter: adapter(),
 				// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
