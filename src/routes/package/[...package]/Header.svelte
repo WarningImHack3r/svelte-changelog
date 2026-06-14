@@ -175,7 +175,7 @@
 		<div class="inline-flex items-center">
 			<!-- JS registries -->
 			{#each Object.entries(registries) as [name, registry], index (name)}
-				{@const { url: href, imgClasses } = registry}
+				{let { url: href, imgClasses } = $derived(registry)}
 				<Button variant="ghost" size="icon" class="size-7" {href} target="_blank">
 					{#if "iconUrl" in registry}
 						<img src={registry.iconUrl} alt={name} class={["h-4", imgClasses]} />

@@ -301,9 +301,11 @@
 					/>
 				{/if}
 				{#if settingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
-					{@const markdown = `The following filters are active:\n${settingsUtils.modificationString(
-						packageSettings.current
-					)}`}
+					{let markdown = $derived(
+						`The following filters are active:\n${settingsUtils.modificationString(
+							packageSettings.current
+						)}`
+					)}
 					<TopBanner
 						icon={Info}
 						title="Settings changed"
@@ -322,26 +324,28 @@
 					</TopBanner>
 				{/if}
 				{#each displayableReleases as release, index (release.id)}
-					{@const latestRelease = latestReleases[release.cleanName]}
-					{@const earliestForMajors = earliestsForMajors[release.cleanName]}
-					{@const semVersion = semver.coerce(release.cleanVersion)}
-					{@const semLatest = semver.coerce(latestRelease?.cleanVersion)}
-					{@const isMajorRelease =
+					{let latestRelease = $derived(latestReleases[release.cleanName])}
+					{let earliestForMajors = $derived(earliestsForMajors[release.cleanName])}
+					{let semVersion = $derived(semver.coerce(release.cleanVersion))}
+					{let semLatest = $derived(semver.coerce(latestRelease?.cleanVersion))}
+					{let isMajorRelease = $derived(
 						!release.prerelease &&
-						semVersion?.minor === 0 &&
-						semVersion?.patch === 0 &&
-						!semVersion?.prerelease.length}
-					{@const earliestOfNextMajor = semVersion
-						? earliestForMajors?.[semVersion.major + 1]
-						: undefined}
-					{@const isMaintenance =
+							semVersion?.minor === 0 &&
+							semVersion?.patch === 0 &&
+							!semVersion?.prerelease.length
+					)}
+					{let earliestOfNextMajor = $derived(
+						semVersion ? earliestForMajors?.[semVersion.major + 1] : undefined
+					)}
+					{let isMaintenance = $derived(
 						semVersion && semLatest && earliestOfNextMajor
 							? !isMajorRelease &&
-								semVersion.major < semLatest.major &&
-								new Date(release.published_at ?? release.created_at) >
-									new Date(earliestOfNextMajor.published_at ?? earliestOfNextMajor.created_at)
-							: false}
-					{@const addedSupportFor = supportAddedFor(release.body ?? "")}
+									semVersion.major < semLatest.major &&
+									new Date(release.published_at ?? release.created_at) >
+										new Date(earliestOfNextMajor.published_at ?? earliestOfNextMajor.created_at)
+							: false
+					)}
+					{let addedSupportFor = $derived(supportAddedFor(release.body ?? ""))}
 					<ReleaseCard
 						{index}
 						repo={{ owner: data.currentPackage.repoOwner, name: data.currentPackage.repoName }}

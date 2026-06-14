@@ -20,6 +20,7 @@
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
 	import { siteRepo } from "$lib/properties";
+	import { stringifyError } from "$lib/strings";
 	import { cn } from "$lib/utils";
 	import AnimatedButton from "./AnimatedButton.svelte";
 
@@ -66,13 +67,8 @@
 			{#if inline}
 				<Markdown md="[Rendering error] {md}" {...snippets} />
 			{:else}
-				{@const message =
-					error instanceof Error
-						? `${error.name}: ${error.message}`.trim()
-						: typeof error === "object" && error !== null
-							? JSON.stringify(error).trim()
-							: `${error}`}
-				{@const hasMessageContent = message && message !== "{}"}
+				{let message = $derived(stringifyError(error, false))}
+				{let hasMessageContent = $derived(!!message && message !== "{}")}
 				<div
 					class="flex flex-col rounded-xl border-[0.5px] border-primary bg-red-500/25 px-5 pt-3 pb-4"
 				>

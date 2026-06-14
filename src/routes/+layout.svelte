@@ -158,11 +158,9 @@
 
 	// Navbar
 	const navbarBorderThreshold = 25;
-	let navbarItems = $derived<
-		(NonNullable<ComponentProps<typeof DesktopNavigation>["items"]>[number] & {
-			icon: typeof Icon;
-		})[]
-	>([
+	const navbarItems: (NonNullable<ComponentProps<typeof DesktopNavigation>["items"]>[number] & {
+		icon: typeof Icon;
+	})[] = [
 		{ name: "Home", icon: House, href: resolve("/") },
 		{
 			name: "Packages",
@@ -175,7 +173,8 @@
 			href: resolve("/tracker")
 		},
 		{ name: "Devlog", icon: Newspaper, href: resolve("/devlog") }
-	]);
+	];
+	let isPageDevlog = $derived(page.route.id?.startsWith(resolve("/devlog")) ?? false);
 	onNavigate(({ from, to, type }) => {
 		if (from?.route.id === to?.route.id || type === "form") return;
 		open = false;
@@ -262,8 +261,8 @@
 					</Sheet.Header>
 					<ul class="flex flex-col gap-1 px-2">
 						{#each navbarItems as item (item.name)}
-							{@const link = item.href}
-							{@const disabled = page.url.pathname.startsWith(link === "/" ? "/package/" : link)}
+							{const link = item.href}
+							{const disabled = page.url.pathname.startsWith(link === "/" ? "/package/" : link)}
 							<li
 								class="inline-flex items-center gap-3 rounded-md px-2 has-disabled:bg-accent has-disabled:opacity-50"
 							>
@@ -288,8 +287,8 @@
 					alt="Svelte"
 					class="size-8"
 				/>
-				{#if !page.route.id?.startsWith(resolve("/devlog"))}
-					{@const [first = "huh?", second] = siteName.split(" ", 2)}
+				{#if !isPageDevlog}
+					{const [first = "huh?", second] = siteName.split(" ", 2)}
 					<span class="hidden gap-1 text-xl font-semibold text-shadow-xs/10 xs:inline-flex">
 						<span style:text-box="trim-both ex alphabetic" class="font-display">{first}</span>
 						{#if second}
@@ -300,7 +299,7 @@
 					</span>
 				{/if}
 			</a>
-			{#if page.route.id?.startsWith(resolve("/devlog"))}
+			{#if isPageDevlog}
 				<div class="mx-4 h-8 w-0.5 rotate-25 rounded-full bg-muted-foreground/40"></div>
 				<span class="text-xl font-semibold">Devlog</span>
 			{:else}

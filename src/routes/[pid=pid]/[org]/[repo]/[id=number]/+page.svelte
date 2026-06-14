@@ -254,7 +254,7 @@
 			</div>
 			{#await data.mergedTagName then mergedTag}
 				{#if mergedTag}
-					{@const [tagName, tagVersion] = mergedTag}
+					{let [tagName, tagVersion] = $derived(mergedTag)}
 					<div class="bg-background">
 						<Alert.Root class="rounded-md border-green-500 bg-green-400/10">
 							<Tag class="size-4" />
