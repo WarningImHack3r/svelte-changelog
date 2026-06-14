@@ -9,8 +9,8 @@ RUN pnpm i --prefer-offline && pnpm run build && pnpm i --prefer-offline -P
 
 FROM node:slim
 WORKDIR /app
-COPY --from=prod-deps /app/node_modules node_modules
-COPY --from=build /app/build build
+COPY --from=base /app/node_modules node_modules
+COPY --from=base /app/build build
 EXPOSE 3000
 ENV NODE_ENV=production
 CMD [ "node", "build" ]
