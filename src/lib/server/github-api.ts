@@ -1005,7 +1005,6 @@ export class GitHubAPI {
 
 				const allPackageJson = allFiles.tree
 					.map(({ path }) => path)
-					.filter(path => path !== undefined)
 					.filter(
 						path =>
 							!path.includes("/test/") &&
@@ -1221,7 +1220,7 @@ export class GitHubAPI {
 				void this.#updateCacheEntry<Record<string, string>>(
 					this.#getRepoKey(owner, repo, "descriptions"),
 					descriptions => {
-						const key = `packages/${packageName}/package.json`; // will look weird as it's technically a lie, but good enough
+						const key = `remote-${packageName}`;
 						if (descriptions === undefined) return { [key]: description };
 						return { ...descriptions, [key]: description };
 					}
@@ -1260,6 +1259,7 @@ const redisClient = createClient({
 			}
 		: undefined
 });
+const missingAuthError = new Error("No authentication medium provided, can't start");
 export const githubCache = new GitHubAPI(
 	GITHUB_TOKEN
 		? createOctokit({
@@ -1268,17 +1268,20 @@ export const githubCache = new GitHubAPI(
 			})
 		: GH_APP_ID && GH_APP_PRIV_KEY_BASE64 && GH_APP_INSTALLATION_ID
 			? await createApp(
-					async OctoClass =>
-						await new App({
+					async OctoClass => {
+						if (!GH_APP_ID || !GH_APP_PRIV_KEY_BASE64 || !GH_APP_INSTALLATION_ID)
+							throw missingAuthError;
+						return await new App({
 							appId: GH_APP_ID,
 							privateKey: Buffer.from(GH_APP_PRIV_KEY_BASE64, "base64").toString("utf8"),
 							Octokit: OctoClass
-						}).getInstallationOctokit(GH_APP_INSTALLATION_ID),
+						}).getInstallationOctokit(GH_APP_INSTALLATION_ID); // not needed without GraphQL requests
+					},
 					{ redisClient }
 				)
 			: (() => {
 					// TODO: relax that requirement later
-					throw new Error("No authentication medium provided, can't start");
+					throw missingAuthError;
 				})(),
 	redisClient
 );

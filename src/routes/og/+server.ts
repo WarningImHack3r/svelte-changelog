@@ -21,7 +21,7 @@ const displayFont = read(DMSerifDisplay).arrayBuffer();
  * - https://github.com/sveltejs/svelte.dev/blob/497b6d5b2c67373a68833a22184cf409004e630d/apps/svelte.dev/src/routes/docs/%5Btopic%5D/%5B...path%5D/card.png/%2Bserver.ts
  */
 export async function GET({ url }) {
-	const renderedComponent = render(Thumbnail, {
+	const { head, body } = render(Thumbnail, {
 		props: {
 			eyebrow: url.searchParams.get("eyebrow") ?? undefined,
 			title: url.searchParams.get("title") ?? "",
@@ -29,7 +29,7 @@ export async function GET({ url }) {
 		}
 	});
 
-	const reactLike = html(`<style>${renderedComponent.head}</style>${renderedComponent.body}`);
+	const reactLike = html(`<head>${head}</head>${body}`);
 
 	const svg = await satori(decodeVNode(reactLike), {
 		width: OG_WIDTH,

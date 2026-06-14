@@ -21,12 +21,14 @@
 
 <ul class="space-y-8">
 	{#each data.displayablePackages as { category, packages } (category)}
-		{@const sortedPackages = packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
-			const isAPinned = pinnedROProxy.has(pkgA.name);
-			const isBPinned = pinnedROProxy.has(pkgB.name);
-			return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
-		})}
-		{@const isCategoryClickable = packages.length > 1}
+		{let sortedPackages = $derived(
+			packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
+				const isAPinned = pinnedROProxy.has(pkgA.name);
+				const isBPinned = pinnedROProxy.has(pkgB.name);
+				return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
+			})
+		)}
+		{let isCategoryClickable = $derived(packages.length > 1)}
 		<li>
 			<svelte:element
 				this={isCategoryClickable ? "a" : "h3"}
@@ -53,8 +55,8 @@
 			</svelte:element>
 			<ul class="mt-2">
 				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
-					{@const viewTransitionName = pkg.name.replace(/[@/-]/g, "")}
-					{@const linkedBadgeData = getBadgeDataFromRecord(data.allReleases, pkg.name)}
+					{let viewTransitionName = $derived(pkg.name.replace(/[@/-]/g, ""))}
+					{let linkedBadgeData = $derived(getBadgeDataFromRecord(data.allReleases, pkg.name))}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}
@@ -139,7 +141,9 @@
 							<span class="mr-1 ml-auto flex shrink-0 items-center gap-1">
 								{#await linkedBadgeData then d}
 									{#if !isPackageNew(pkg.name, d?.releases ?? [])}
-										{@const newCount = getUnvisitedReleases(pkg.name, d?.releases ?? []).length}
+										{let newCount = $derived(
+											getUnvisitedReleases(pkg.name, d?.releases ?? []).length
+										)}
 										{#if newCount > 0}
 											<Badge class="shrink-0">{newCount} new</Badge>
 										{/if}

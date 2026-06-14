@@ -115,12 +115,14 @@
 					{/if}
 					<li class="space-y-2">
 						{#if packages.length > 1}
-							{@const sortedPackages = packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
-								const isAPinned = pinnedROProxy.has(pkgA.name);
-								const isBPinned = pinnedROProxy.has(pkgB.name);
-								return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
-							})}
-							{@const isCategoryActive = page.url.pathname.endsWith(`/${category.slug}`)}
+							{let sortedPackages = $derived(
+								packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
+									const isAPinned = pinnedROProxy.has(pkgA.name);
+									const isBPinned = pinnedROProxy.has(pkgB.name);
+									return isAPinned === isBPinned ? 0 : isAPinned ? -1 : 1;
+								})
+							)}
+							{let isCategoryActive = $derived(page.url.pathname.endsWith(`/${category.slug}`))}
 							<!-- Categories with multiple sub-items -->
 							<svelte:element
 								this={isCategoryActive ? "h3" : "a"}
@@ -143,7 +145,7 @@
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each sortedPackages as { pkg } (pkg.name)}
-									{@const linkedBadgeData = getBadgeDataFromRecord(otherReleases, pkg.name)}
+									{let linkedBadgeData = $derived(getBadgeDataFromRecord(otherReleases, pkg.name))}
 									<li class="group inline-flex w-full gap-1">
 										<Toggle
 											aria-label={pinnedROProxy.has(pkg.name)
@@ -209,8 +211,10 @@
 							</ul>
 						{:else}
 							<!-- Categories with 1 sub-item -->
-							{@const firstPackageName = packages[0]?.pkg.name ?? ""}
-							{@const linkedBadgeData = getBadgeDataFromRecord(otherReleases, firstPackageName)}
+							{let firstPackageName = $derived(packages[0]?.pkg.name ?? "")}
+							{let linkedBadgeData = $derived(
+								getBadgeDataFromRecord(otherReleases, firstPackageName)
+							)}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<!-- Active category -->
 								<h3

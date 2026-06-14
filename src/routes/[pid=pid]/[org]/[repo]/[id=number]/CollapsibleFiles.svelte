@@ -35,7 +35,7 @@
 >
 	{#each files as file, i (file.filename)}
 		<!-- this should effectively always be a 1-sized array -->
-		{@const patches = parsePatchFiles(file)}
+		{let patches = $derived(parsePatchFiles(file))}
 		{#each patches as patch, j (patch.name)}
 			{#if i + j > 0}
 				<Separator />

@@ -20,7 +20,7 @@
 {#snippet repoList()}
 	<ul class="space-y-1">
 		{#each uniqueRepos as repo (repo)}
-			{@const active = repo.owner === params.org && repo.name === params.repo}
+			{const active = repo.owner === params.org && repo.name === params.repo}
 			<li>
 				{#if active}
 					<span class="font-bold underline underline-offset-2">{repo.owner}/<wbr />{repo.name}</span

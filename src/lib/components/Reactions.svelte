@@ -37,11 +37,13 @@
 </script>
 
 {#if reactions}
-	{@const reactionEntries = Object.entries(reactions)
-		.filter(([k, v]) => !["url", "total_count"].includes(k) && !!v)
-		.toSorted(([a], [b]) => sortedEmojis.indexOf(a) - sortedEmojis.indexOf(b)) as Entries<
-		Record<ReactionKey, number>
-	>}
+	{let reactionEntries = $derived(
+		Object.entries(reactions)
+			.filter(([k, v]) => !["url", "total_count"].includes(k) && !!v)
+			.toSorted(([a], [b]) => sortedEmojis.indexOf(a) - sortedEmojis.indexOf(b)) as Entries<
+			Record<ReactionKey, number>
+		>
+	)}
 	<div class={["flex flex-wrap gap-1.5", className]}>
 		{#each reactionEntries as [key, value] (key)}
 			<Badge
