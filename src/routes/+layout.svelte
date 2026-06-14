@@ -13,6 +13,7 @@
 		ChevronRight,
 		House,
 		type Icon,
+		Lightbulb,
 		Menu,
 		Monitor,
 		Moon,
@@ -38,6 +39,7 @@
 	import { authorVCSProfile, authorVCSUsername, siteName, siteRepo } from "$lib/properties";
 	import type { Entries } from "$lib/types";
 	import { cn } from "$lib/utils";
+	import * as Alert from "$lib/components/ui/alert";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import { Separator } from "$lib/components/ui/separator";
@@ -127,7 +129,8 @@
 	let themeSwitcherOpen = $state(false);
 	let themeSwitcherFullyClosed = $state(false);
 	// change theme on pressing "d"
-	new PressedKeys().onKeys("d", () => {
+	const themeSwitchKey = "d";
+	new PressedKeys().onKeys(themeSwitchKey, () => {
 		const element = activeElement.current;
 		// avoid impacting interactive elements
 		if (
@@ -181,6 +184,15 @@
 	});
 
 	let open = $state(false);
+
+	// Pro tips
+	const proTips = [
+		"You can prefix GitHub URLs of issues, PRs or discussions with `svcl.dev/` to view them on this page! Also try it on a GitHub release URL ;)",
+		"A hidden `/package/all` endpoint exists, listing all the releases for all the packages! It's messy & resource-heavy, hence why it's not listed, but it's there if you need it :D",
+		"You can suffix a package page with the `#X.Y.Z` hash corresponding to any version you want to highlight: browsing this link will scroll to this release and highlight it!",
+		"You can use the `?reset=X` query parameter on a package page to reset your last visit date for a given package to any date! Use it with any duration in the form of `1d4h3m` to get a preview of what it would do!",
+		`In addition to the theme selector, you can press <kbd>${themeSwitchKey}</kbd> for a quick and smart theme switch!`
+	];
 
 	// Snow - enabled during Dec 15th through Jan 15th
 	const currentDate = new Date();
@@ -424,6 +436,27 @@
 <main class="container py-8">
 	{@render children?.()}
 </main>
+
+<!-- Pro tips -->
+{#if proTips.length && !isPageDevlog && !page.error}
+	{const proTip = proTips[Math.floor(Math.random() * proTips.length)]}
+	{#if proTip}
+		<Alert.Root
+			class="w-fit group bg-background hover:bg-muted/30 my-8 mx-auto opacity-60 transition-[opacity,background-color] hover:opacity-100 duration-150"
+		>
+			<Lightbulb class="group-hover:text-amber-500 transition-colors duration-300" />
+			<Alert.Title>Pro tip</Alert.Title>
+			<Alert.Description>
+				<MarkdownRenderer
+					markdown={proTip}
+					parseRawHtml
+					inline
+					class="prose-sm text-pretty max-w-[100ch]"
+				/>
+			</Alert.Description>
+		</Alert.Root>
+	{/if}
+{/if}
 
 <footer class="mt-auto w-full border-t bg-background">
 	<div class="mx-auto flex h-12 w-full items-center px-8">
