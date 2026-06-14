@@ -1,6 +1,6 @@
 FROM node:slim AS base
 WORKDIR /app
-RUN corepack enable
+RUN npx corepack enable pnpm
 COPY pnpm-*.yaml .
 RUN pnpm fetch -P
 COPY . .
