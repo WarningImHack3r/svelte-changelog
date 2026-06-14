@@ -4,7 +4,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN npx corepack enable pnpm
 COPY pnpm-*.yaml .
-RUN pnpm fetch -P
+RUN pnpm fetch
 COPY . .
 # "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
 RUN pnpm i --prefer-offline && pnpm run build && pnpm i --prefer-offline -P
