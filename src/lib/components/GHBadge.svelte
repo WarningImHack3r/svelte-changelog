@@ -13,11 +13,15 @@
 	} from "@lucide/svelte";
 
 	const COLOR_MAP = {
-		green: { text: "text-green-600", bg: "bg-green-600" },
-		neutral: { text: "text-neutral-500", bg: "bg-neutral-500" },
-		purple: { text: "text-purple-500", bg: "bg-purple-500" },
-		red: { text: "text-red-500", bg: "bg-red-500" }
-	} as const;
+		green: { text: "text-green-600", bg: "bg-green-600", select: "selection:text-green-600" },
+		neutral: {
+			text: "text-neutral-500",
+			bg: "bg-neutral-500",
+			select: "selection:text-neutral-500"
+		},
+		purple: { text: "text-purple-500", bg: "bg-purple-500", select: "selection:text-purple-500" },
+		red: { text: "text-red-500", bg: "bg-red-500", select: "selection:text-red-500" }
+	};
 
 	type CommonStatus = "open" | "closed";
 
@@ -71,6 +75,7 @@
 		label: string;
 		textColor: string;
 		bgColor: string;
+		selectionColor: string;
 	};
 
 	let badge = $derived.by<Badge>(() => {
@@ -81,7 +86,8 @@
 				icon: undefined,
 				label: "",
 				textColor: "",
-				bgColor: ""
+				bgColor: "",
+				selectionColor: ""
 			};
 		}
 
@@ -90,13 +96,21 @@
 			icon: config.icon,
 			label: config.label,
 			textColor: color.text,
-			bgColor: color.bg
+			bgColor: color.bg,
+			selectionColor: color.select
 		};
 	});
 </script>
 
 {#if mode === "regular"}
-	<div class={["flex items-center rounded-full px-4 py-2 text-white", badge.bgColor, className]}>
+	<div
+		class={[
+			"flex items-center rounded-full px-4 py-2 text-white selection:bg-white",
+			badge.bgColor,
+			badge.selectionColor,
+			className
+		]}
+	>
 		<badge.icon class="mr-2 size-5" />
 		<span class="font-semibold">{badge.label}</span>
 	</div>
