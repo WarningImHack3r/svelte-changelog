@@ -293,7 +293,9 @@
 		{#if isLatestRelease}
 			<Tooltip.Root>
 				<Tooltip.Trigger>
-					<Badge class="bg-green-600 hover:bg-green-600 dark:bg-green-700 hover:dark:bg-green-700">
+					<Badge
+						class="bg-green-600 hover:bg-green-600 selection:text-green-600 dark:selection:text-green-700 selection:bg-white dark:bg-green-700 hover:dark:bg-green-700"
+					>
 						Latest
 					</Badge>
 				</Tooltip.Trigger>
@@ -308,7 +310,7 @@
 		{#if isMajorRelease}
 			<Tooltip.Root>
 				<Tooltip.Trigger>
-					<Badge>Major</Badge>
+					<Badge class="selection:text-primary selection:bg-white">Major</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
 					class="border bg-popover text-sm text-popover-foreground"
@@ -334,7 +336,7 @@
 				<Tooltip.Trigger>
 					<Badge
 						variant="outline"
-						class="border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+						class="border-blue-600 selection:text-white selection:bg-blue-600 dark:selection:bg-blue-400 text-blue-600 dark:border-blue-400 dark:text-blue-400"
 					>
 						Maintenance
 					</Badge>
