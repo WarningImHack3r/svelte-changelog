@@ -44,8 +44,6 @@ jobs:
       - name: 🔍 Get modified files
         id: modified-files
         uses: tj-actions/changed-files@v47
-        with:
-          skip_initial_fetch: true
 
       - name: 📤 Export results
         id: changed-files
