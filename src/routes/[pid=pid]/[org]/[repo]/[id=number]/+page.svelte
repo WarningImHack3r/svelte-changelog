@@ -136,8 +136,8 @@
 	<TopBanner
 		icon={CircleAlert}
 		title="Dev-only repo"
-		markdown="This repository is only visible in dev mode for testing purposes, it will be forbidden in production as it's not known by the site."
-		class="mb-8 border-red-500 bg-red-400/10 text-red-500 prose-a:text-red-500!"
+		markdown="This repository is only visible in dev mode for testing purposes, it will be forbidden in production as it's not listed in the site's repositories."
+		class="mb-8 border-red-500 bg-red-400/10 text-red-500 prose-a:text-red-500! selection:bg-red-500 selection:text-white"
 	/>
 {/if}
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">

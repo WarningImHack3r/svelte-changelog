@@ -128,6 +128,9 @@ importers:
       svelte-meta-tags:
         specifier: ^5.0.0
         version: 5.0.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)
+      svelte-shaker:
+        specifier: ^0.9.0
+        version: 0.9.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       svelte-sonner:
         specifier: ^1.1.1
         version: 1.1.1(svelte@5.56.3(@typescript-eslint/types@8.61.0))
@@ -2852,6 +2855,16 @@ packages:
     resolution: {integrity: sha512-bRfs71axu+UP+lybEqwaO9tQdF7K/g3p3tHrUeWs6THfsryVfzJxoC5bim3lcjOgpSk1Rw60ZExKZ31PYmKK/Q==}
     peerDependencies:
       svelte: ^5.0.0
+
+  svelte-shaker@0.9.0:
+    resolution: {integrity: sha512-FcuE5fkBlY962v2KqqL+yyd9TgDTfrlrsG9G9JDsvq7TlNnzvx2S6xP5h0UZ24uSWeiic+oWCWwXik1QijI0Kg==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@rsvelte/vite-plugin-svelte-native': '>=0.2.4'
+      svelte: ^5
+    peerDependenciesMeta:
+      '@rsvelte/vite-plugin-svelte-native':
+        optional: true
 
   svelte-sonner@1.1.1:
     resolution: {integrity: sha512-5cd3p7wa4cq0NsqslMwdlPb7x1JglEZ/GKrLePWNr5bCxR1nagAVrY01FRFrXfUGs41miLt3C327+8XJo5BzZw==}
@@ -5914,6 +5927,12 @@ snapshots:
       svelte: 5.56.3(@typescript-eslint/types@8.61.0)
     transitivePeerDependencies:
       - typescript
+
+  svelte-shaker@0.9.0(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
+    dependencies:
+      magic-string: 0.30.21
+      svelte: 5.56.3(@typescript-eslint/types@8.61.0)
+      zimmerframe: 1.1.4
 
   svelte-sonner@1.1.1(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
     dependencies:
