@@ -75,8 +75,12 @@
 
 		return new Promise(resolve =>
 			document.startViewTransition(async () => {
-				resolve();
-				await complete;
+				try {
+					resolve();
+					await complete;
+				} catch {
+					// sad :(
+				}
 			})
 		);
 	});

@@ -297,7 +297,7 @@
 						icon={CircleAlert}
 						title="Deprecated"
 						markdown={data.currentPackage.pkg.deprecated}
-						class="border-amber-500 bg-amber-400/10 prose-a:text-amber-500!"
+						class="border-amber-500 bg-amber-400/10 prose-a:text-amber-500! selection:text-amber-600 selection:bg-white"
 					/>
 				{/if}
 				{#if settingsUtils.hasChanged(packageSettings.current) && !activeSettingsReminder.current}
@@ -310,7 +310,7 @@
 						icon={Info}
 						title="Settings changed"
 						{markdown}
-						class="border-slate-600 bg-slate-400/20 prose-a:text-slate-400"
+						class="border-slate-600 bg-slate-400/20 prose-a:text-slate-400 selection:text-slate-600 selection:bg-white"
 					>
 						{#snippet additionalContent()}
 							<Button
