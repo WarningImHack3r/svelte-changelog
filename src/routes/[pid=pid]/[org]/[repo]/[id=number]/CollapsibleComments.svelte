@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { SvelteMap } from "svelte/reactivity";
 	import { MessagesSquare } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
@@ -20,11 +19,15 @@
 			| JSONCompatible<ItemDetails["comments"]>
 			| JSONCompatible<DiscussionDetails["comments"]>
 			| null;
+		chosenCommentUrl?: string;
 		currentRepo: { owner: string; name: string };
 	};
 
-	let { itemId, comments, currentRepo }: Props = $props();
+	let { itemId, comments, chosenCommentUrl, currentRepo }: Props = $props();
 	let comms = $derived(comments ?? []);
+	let hasValidatedAnswer = $derived(
+		chosenCommentUrl && comms.some(comm => comm.html_url === chosenCommentUrl)
+	);
 
 	/**
 	 * Sort comments for discussions so that they simply have to be indented
@@ -51,13 +54,18 @@
 		const discussionComments = comms as JSONCompatible<DiscussionDetails["comments"]>;
 
 		// Create a map to store children by their parent_id for quick lookups
-		const childrenMap = new SvelteMap<
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const childrenMap = new Map<
 			DiscussionDetails["comments"][number]["parent_id"],
 			JSONCompatible<DiscussionDetails["comments"]>
 		>();
 
 		// Populate the map
+		let answerId: DiscussionDetails["comments"][number]["id"] | undefined;
 		for (const comment of discussionComments) {
+			if (answerId === undefined && comment.html_url === chosenCommentUrl) {
+				answerId = comment.id;
+			}
 			if (!childrenMap.has(comment.parent_id)) {
 				childrenMap.set(comment.parent_id, []);
 			}
@@ -76,6 +84,17 @@
 			const children = childrenMap.get(parentId) ?? [];
 
 			for (const child of children) {
+				if (answerId !== undefined && child.id === answerId) {
+					/*
+					 * If an answer exists and is found, immediately insert it and its replies
+					 * at the beginning of the results.
+					 * `continue` prevents the answer from being picked again (subsequent recursive
+					 * calls will have a (deeper) `parentId`), and its replies are only ever accessible
+					 * from this answer's id passed to `traverseTree`, which the immediate loop abort prevents.
+					 */
+					result.unshift(child, ...(childrenMap.get(answerId) ?? []));
+					continue;
+				}
 				result.push(child);
 				traverseTree(child.id);
 			}
@@ -90,20 +109,34 @@
 
 <BottomCollapsible
 	icon={MessagesSquare}
-	label="Comments"
 	secondaryLabel="{comms.length} comment{comms.length > 1 ? 's' : ''}"
 >
+	{#snippet label()}
+		Comments
+		{#if hasValidatedAnswer}
+			• <span class="text-base text-green-500">Answered</span>
+		{/if}
+	{/snippet}
 	{#each sortComments(comms) as comment, i (comment.id)}
-		{let isAnswer = $derived(
+		{let isReply = $derived(
 			"parent_id" in comment && comment.parent_id ? comment.parent_id !== itemId : false
 		)}
-		{#if !isAnswer && i > 0}
+		{let isValidatedAnswer = $derived(comment.html_url === chosenCommentUrl)}
+		{#if !isReply && i > 0}
 			<Separator class="my-2 h-1" />
 		{/if}
-		<div class={[isAnswer && "ml-4 border-l-4 pl-2"]}>
+		<div
+			class={[
+				isReply && "ml-4 border-l-4 pl-2",
+				isValidatedAnswer && "bg-green-500/15 border-green-500 border rounded-md"
+			]}
+		>
 			<!-- Author -->
 			<div
-				class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
+				class={[
+					"inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0",
+					isValidatedAnswer && "border-green-500"
+				]}
 			>
 				{#if comment.user}
 					<a href={comment.user.html_url} rel="external" class="group inline-flex items-center">
@@ -124,6 +157,9 @@
 				<span class="text-muted-foreground">
 					{dateTimeFormatter.format(new Date(comment.created_at))}
 				</span>
+				{#if isValidatedAnswer}
+					<span class="text-green-500 ms-1">• Answer</span>
+				{/if}
 			</div>
 			<!-- Body -->
 			<div class="p-4">

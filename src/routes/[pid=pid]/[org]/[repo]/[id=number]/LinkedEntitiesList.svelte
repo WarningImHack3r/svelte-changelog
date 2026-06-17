@@ -85,7 +85,7 @@
 					</div>
 				</Accordion.Trigger>
 				<!-- Body -->
-				<Accordion.Content class="mx-auto sm:w-3/4">
+				<Accordion.Content class="mx-auto sm:w-10/12">
 					<MarkdownRenderer
 						markdown={entity.body || "_No description provided_"}
 						parseRawHtml

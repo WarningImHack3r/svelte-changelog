@@ -1,3 +1,10 @@
+<script lang="ts" module>
+	const percentFormatter = new Intl.NumberFormat("en-US", {
+		style: "percent",
+		maximumFractionDigits: 0
+	});
+</script>
+
 <script lang="ts">
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
@@ -6,13 +13,14 @@
 	import { replaceState } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
-	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
+	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Milestone, Tag } from "@lucide/svelte";
+	import remarkGemoji from "remark-gemoji";
 	import { pidFormatter } from "$lib/strings";
 	import type { PID } from "$lib/types";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
+	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
-	import { Separator } from "$lib/components/ui/separator";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -23,6 +31,7 @@
 	import DetailsBody from "./DetailsBody.svelte";
 	import LinkedEntitiesList from "./LinkedEntitiesList.svelte";
 	import { dateTimeFormatter } from "./formatters";
+	import { Progress } from "$lib/components/ui/progress";
 
 	let { data } = $props();
 
@@ -38,60 +47,6 @@
 				? data.item.linkedIssues
 				: []
 	);
-
-	let rightPartInfo = $derived<{ title: string; value: string }[]>([
-		...("answer_chosen_at" in info && info.answer_chosen_at
-			? [{ title: "Answered at", value: dateTimeFormatter.format(new Date(info.answer_chosen_at)) }]
-			: []),
-		...("answer_chosen_by" in info && info.answer_chosen_by
-			? [{ title: "Answered by", value: info.answer_chosen_by.login }]
-			: []),
-		...("category" in info ? [{ title: "Category", value: info.category.name }] : []),
-		...("closed_at" in info && info.closed_at
-			? [
-					{
-						title: "merged" in info && info.merged ? "Merged at" : "Closed at",
-						value: dateTimeFormatter.format(new Date(info.closed_at))
-					}
-				]
-			: []),
-		...("closed_at" in info && info.closed_at && "merged" in info && info.merged
-			? [
-					{
-						title: "Merged by",
-						value: info.merged_by?.name ?? info.merged_by?.login ?? "Unknown"
-					}
-				]
-			: []),
-		...("assignees" in info
-			? [
-					{
-						title: "Assignees",
-						value: info.assignees?.map(a => a.login).join(", ") || "None"
-					}
-				]
-			: []),
-		...("requested_reviewers" in info
-			? [
-					{
-						title: "Reviewers",
-						value: info.requested_reviewers?.map(r => r.login).join(", ") || "None"
-					}
-				]
-			: []),
-		{
-			title: "Labels",
-			value: info.labels?.map(l => (typeof l === "string" ? l : l.name)).join(", ") || "None"
-		},
-		...("milestone" in info
-			? [
-					{
-						title: "Milestone",
-						value: info.milestone?.title || "None"
-					}
-				]
-			: [])
-	]);
 
 	// Hash management
 	let wantsReducedMotion = new MediaQuery("prefers-reduced-motion: reduce");
@@ -132,6 +87,7 @@
 	}
 </script>
 
+<!-- Dev banner -->
 {#if data.devOnlyRepo}
 	<TopBanner
 		icon={CircleAlert}
@@ -140,6 +96,8 @@
 		class="mb-8 border-red-500 bg-red-400/10 text-red-500 prose-a:text-red-500! selection:bg-red-500 selection:text-white"
 	/>
 {/if}
+
+<!-- Title -->
 <h2 class="group mb-8 scroll-m-20 border-b pb-2 text-2xl font-semibold xs:text-3xl">
 	<a href={info.html_url} rel="external">
 		<MarkdownRenderer
@@ -150,6 +108,8 @@
 		<span class="ml-1 font-light text-muted-foreground group-hover:underline">#{info.number}</span>
 	</a>
 </h2>
+
+<!-- Linked issues/PRs -->
 {#if linkedEntities.length}
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{pidFormatter.toLinkedEntity(metadata.type, linkedEntities.length > 1)}
@@ -162,10 +122,77 @@
 		}}
 	/>
 {/if}
+
+<!-- Info header -->
+{#snippet tags()}
+	<div class="mt-2 flex flex-wrap items-center gap-2">
+		<!-- PRs & issues -->
+		{#if "milestone" in info && info.milestone}
+			<a href={info.milestone.html_url} rel="external" class="flex flex-col group">
+				<div class="flex items-center gap-2">
+					<Milestone />
+					<span class="font-semibold group-hover:underline underline-offset-2">
+						{info.milestone.title}
+					</span>
+				</div>
+				{#if info.milestone.description}
+					<span class="text-muted-foreground">{info.milestone.description}</span>
+				{/if}
+				<div class="flex items-center gap-2">
+					{const progress = info.milestone.closed_issues}
+					<!-- eslint-disable-next-line @typescript-eslint/restrict-plus-operands - says it "got `any`" -->
+					{const total = info.milestone.open_issues + info.milestone.closed_issues}
+					<Progress value={progress} max={total} class="w-20" />
+					{percentFormatter.format(progress / total)}
+				</div>
+			</a>
+		{/if}
+		<!-- Issues -->
+		{#if "type" in info && info.type}
+			<Badge
+				variant="outline"
+				style="--color: {info.type.color}"
+				class="border-current text-(--color) text-base selection:text-white selection:bg-(--color) py-1 px-3 bg-current/10"
+				title={info.type.description || undefined}
+			>
+				{info.type.name}
+			</Badge>
+		{/if}
+		<!-- Discussions -->
+		{#if "category" in info}
+			<Badge variant="outline" class="text-base py-1 px-3 gap-2" title={info.category.description}>
+				<MarkdownRenderer
+					markdown={info.category.emoji}
+					inline
+					additionalPlugins={[{ remarkPlugin: remarkGemoji }]}
+				/>
+				{info.category.name}
+			</Badge>
+		{/if}
+		<!-- Common -->
+		{#each info.labels as label (label)}
+			{#if typeof label === "string"}
+				<Badge variant="outline">{label}</Badge>
+			{:else if label.name}
+				<Badge
+					variant="outline"
+					style={label.color ? `--color: #${label.color}` : undefined}
+					class="border-current text-(--color) selection:text-white selection:bg-(--color) bg-current/10"
+					title={label.description || undefined}
+				>
+					{label.name}
+				</Badge>
+			{/if}
+		{/each}
+	</div>
+{/snippet}
 <div class="flex items-baseline">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{pidFormatter.toHumanReadable(metadata.type)}
 	</h3>
+	<div class="sm:inline hidden ms-4">
+		{@render tags()}
+	</div>
 	{#if info.locked}
 		<div
 			class="ml-auto flex items-center rounded-full bg-neutral-500/70 px-2 py-2 text-white xs:px-4 dark:bg-neutral-500/50"
@@ -192,124 +219,136 @@
 		/>
 	{/key}
 </div>
+<div class="block sm:hidden">
+	{@render tags()}
+</div>
+{#if "merged" in info && info.merged_at}
+	<span class="text-muted-foreground">
+		Merged at {dateTimeFormatter.format(new Date(info.merged_at))}
+		{#if info.merged_by}
+			by {info.merged_by.login}
+		{/if}
+	</span>
+{:else if "closed_at" in info && info.closed_at}
+	<span class="text-muted-foreground">
+		Closed at {dateTimeFormatter.format(new Date(info.closed_at))}
+	</span>
+{/if}
+{#if "assignees" in info && info.assignees?.length}
+	<span>Assigned to {info.assignees.map(({ login }) => login).join(", ")}</span>
+{/if}
+
+<!-- Body -->
 <div class="mt-4 flex flex-col gap-4">
 	<!-- Info -->
-	<div class="mb-8 flex w-full flex-col justify-center gap-8 *:h-fit md:flex-row">
-		<!-- Left part - body -->
-		<div class="flex-1 rounded-md border bg-background">
-			<!-- Author -->
-			<div
-				class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
-			>
-				{#if info.user}
-					<a href={info.user.html_url} rel="external" class="group inline-flex items-center">
-						<Avatar.Root class="mr-2 size-5">
-							<Avatar.Image
-								src={info.user.avatar_url}
-								alt={info.user.login}
-								class="group-hover:opacity-75"
-							/>
-							<Avatar.Fallback>
-								{info.user.login.charAt(0).toUpperCase()}
-							</Avatar.Fallback>
-						</Avatar.Root>
-						<span class="font-semibold group-hover:underline">{info.user.login}</span>
-					</a>
-					<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
-				{/if}
-				<span class="text-muted-foreground">
-					{dateTimeFormatter.format(new Date(info.created_at))}
-				</span>
+	<div class="rounded-md border bg-background">
+		<!-- Author -->
+		<div
+			class="inline-flex w-full flex-col gap-1 border-b bg-muted/60 px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
+		>
+			{#if info.user}
+				<a href={info.user.html_url} rel="external" class="group inline-flex items-center">
+					<Avatar.Root class="mr-2 size-5">
+						<Avatar.Image
+							src={info.user.avatar_url}
+							alt={info.user.login}
+							class="group-hover:opacity-75"
+						/>
+						<Avatar.Fallback>
+							{info.user.login.charAt(0).toUpperCase()}
+						</Avatar.Fallback>
+					</Avatar.Root>
+					<span class="font-semibold group-hover:underline">{info.user.login}</span>
+				</a>
+				<span class="mx-1 hidden text-muted-foreground xs:block">•</span>
+			{/if}
+			<span class="text-muted-foreground">
+				{dateTimeFormatter.format(new Date(info.created_at))}
+			</span>
+		</div>
+		<!-- Body -->
+		<DetailsBody
+			body={info.body}
+			currentRepo={{
+				owner: metadata.org,
+				name: metadata.repo
+			}}
+			renderSlug={metadata.type === "discussions"}
+			reactions={"reactions" in info ? info.reactions : undefined}
+			reactionItemUrl={info.html_url}
+			class="bg-muted/30 p-4"
+		/>
+	</div>
+	<!-- Merged on {tag} banner -->
+	{#await data.mergedTagName then mergedTag}
+		{#if mergedTag}
+			{let [tagName, tagVersion] = $derived(mergedTag)}
+			<div class="bg-background">
+				<Alert.Root
+					class="rounded-md selection:bg-green-500 dark:selection:bg-green-700 selection:text-white border-green-500 bg-green-400/10"
+				>
+					<Tag class="size-4" />
+					<Alert.Description class="inline text-foreground">
+						This pull request was released in
+						<Button
+							variant="link"
+							href={resolve(`/package/[...package]#${tagVersion}`, {
+								package: tagName
+							})}
+							class="h-auto p-0 text-green-500"
+						>
+							{tagName}
+							{tagVersion}
+						</Button>
+					</Alert.Description>
+				</Alert.Root>
 			</div>
-			<!-- Body -->
-			<DetailsBody
-				body={info.body}
+		{/if}
+	{/await}
+	<!-- Bottom block -->
+	<div class="mt-8 space-y-4">
+		<!-- Comments -->
+		{#if comments.length}
+			<CollapsibleComments
+				itemId={info.id}
+				{comments}
+				chosenCommentUrl={"answer_html_url" in info
+					? (info.answer_html_url ?? undefined)
+					: undefined}
 				currentRepo={{
 					owner: metadata.org,
 					name: metadata.repo
 				}}
-				renderSlug={metadata.type === "discussions"}
-				reactions={"reactions" in info ? info.reactions : undefined}
-				reactionItemUrl={info.html_url}
-				class="bg-muted/30 p-4"
 			/>
-		</div>
-		<!-- Right part - info -->
-		<div class="flex flex-col gap-4 md:w-2/5 md:max-w-xs md:min-w-72">
-			<div class="rounded-md border bg-background px-4 pb-3">
-				<h4 class="-mx-4 mb-4 border-b bg-muted/40 px-4 pt-2 pb-1 text-xl font-semibold">Info</h4>
-				{#each rightPartInfo as { title, value }, i (title)}
-					{#if i > 0}
-						<Separator class="my-2" />
-					{/if}
-					<div class="flex items-center justify-between gap-2">
-						<span class="font-medium">{title}</span>
-						<span class="text-right text-muted-foreground">{value}</span>
-					</div>
-				{/each}
-			</div>
-			{#await data.mergedTagName then mergedTag}
-				{#if mergedTag}
-					{let [tagName, tagVersion] = $derived(mergedTag)}
-					<div class="bg-background">
-						<Alert.Root class="rounded-md border-green-500 bg-green-400/10">
-							<Tag class="size-4" />
-							<Alert.Description class="inline text-foreground">
-								This pull request was released in
-								<Button
-									variant="link"
-									href={resolve(`/package/[...package]#${tagVersion}`, {
-										package: tagName
-									})}
-									class="h-auto p-0 text-green-500"
-								>
-									{tagName}
-									{tagVersion}
-								</Button>
-							</Alert.Description>
-						</Alert.Root>
-					</div>
-				{/if}
-			{/await}
-		</div>
+		{/if}
+		<!-- Commits -->
+		{#if metadata.type === "pull"}
+			<CollapsibleCommits
+				prCreationDate={new Date(info.created_at)}
+				prClosingDate={"merged" in info && info.closed_at ? new Date(info.closed_at) : null}
+				merged={"merged" in info ? info.merged : false}
+				{commits}
+				currentRepo={{
+					owner: metadata.org,
+					name: metadata.repo
+				}}
+			/>
+		{/if}
+		<!-- Files -->
+		{#if metadata.type === "pull"}
+			<CollapsibleFiles
+				route={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
+					pid: metadata.type,
+					org: metadata.org,
+					repo: metadata.repo,
+					id: `${info.number}`
+				})}
+				{files}
+			/>
+		{/if}
 	</div>
-	<!-- Comments -->
-	{#if comments.length}
-		<CollapsibleComments
-			itemId={info.id}
-			{comments}
-			currentRepo={{
-				owner: metadata.org,
-				name: metadata.repo
-			}}
-		/>
-	{/if}
-	<!-- Commits -->
-	{#if metadata.type === "pull"}
-		<CollapsibleCommits
-			prCreationDate={new Date(info.created_at)}
-			prClosingDate={"merged" in info && info.closed_at ? new Date(info.closed_at) : null}
-			merged={"merged" in info ? info.merged : false}
-			{commits}
-			currentRepo={{
-				owner: metadata.org,
-				name: metadata.repo
-			}}
-		/>
-	{/if}
-	<!-- Files -->
-	{#if metadata.type === "pull"}
-		<CollapsibleFiles
-			route={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
-				pid: metadata.type,
-				org: metadata.org,
-				repo: metadata.repo,
-				id: `${info.number}`
-			})}
-			{files}
-		/>
-	{/if}
 </div>
+
 <!-- Bottom links -->
 <div class="mt-16 flex w-full flex-col-reverse justify-between gap-8 md:flex-row md:items-center">
 	<Button href={getPreviousPath()} variant="link" class="group mr-auto gap-0 md:mr-0">
