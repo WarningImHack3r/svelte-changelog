@@ -1,10 +1,3 @@
-<script lang="ts" module>
-	const percentFormatter = new Intl.NumberFormat("en-US", {
-		style: "percent",
-		maximumFractionDigits: 0
-	});
-</script>
-
 <script lang="ts">
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
@@ -13,14 +6,13 @@
 	import { replaceState } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
-	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Milestone, Tag } from "@lucide/svelte";
-	import remarkGemoji from "remark-gemoji";
+	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
 	import { pidFormatter } from "$lib/strings";
 	import type { PID } from "$lib/types";
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Avatar from "$lib/components/ui/avatar";
-	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
@@ -29,9 +21,9 @@
 	import CollapsibleCommits from "./CollapsibleCommits.svelte";
 	import CollapsibleFiles from "./CollapsibleFiles.svelte";
 	import DetailsBody from "./DetailsBody.svelte";
+	import InfoBanner, { badgeText } from "./InfoBanner.svelte";
 	import LinkedEntitiesList from "./LinkedEntitiesList.svelte";
 	import { dateTimeFormatter } from "./formatters";
-	import { Progress } from "$lib/components/ui/progress";
 
 	let { data } = $props();
 
@@ -124,75 +116,11 @@
 {/if}
 
 <!-- Info header -->
-{#snippet tags()}
-	<div class="mt-2 flex flex-wrap items-center gap-2">
-		<!-- PRs & issues -->
-		{#if "milestone" in info && info.milestone}
-			<a href={info.milestone.html_url} rel="external" class="flex flex-col group">
-				<div class="flex items-center gap-2">
-					<Milestone />
-					<span class="font-semibold group-hover:underline underline-offset-2">
-						{info.milestone.title}
-					</span>
-				</div>
-				{#if info.milestone.description}
-					<span class="text-muted-foreground">{info.milestone.description}</span>
-				{/if}
-				<div class="flex items-center gap-2">
-					{const progress = info.milestone.closed_issues}
-					<!-- eslint-disable-next-line @typescript-eslint/restrict-plus-operands - says it "got `any`" -->
-					{const total = info.milestone.open_issues + info.milestone.closed_issues}
-					<Progress value={progress} max={total} class="w-20" />
-					{percentFormatter.format(progress / total)}
-				</div>
-			</a>
-		{/if}
-		<!-- Issues -->
-		{#if "type" in info && info.type}
-			<Badge
-				variant="outline"
-				style="--color: {info.type.color}"
-				class="border-current text-(--color) text-base selection:text-white selection:bg-(--color) py-1 px-3 bg-current/10"
-				title={info.type.description || undefined}
-			>
-				{info.type.name}
-			</Badge>
-		{/if}
-		<!-- Discussions -->
-		{#if "category" in info}
-			<Badge variant="outline" class="text-base py-1 px-3 gap-2" title={info.category.description}>
-				<MarkdownRenderer
-					markdown={info.category.emoji}
-					inline
-					additionalPlugins={[{ remarkPlugin: remarkGemoji }]}
-				/>
-				{info.category.name}
-			</Badge>
-		{/if}
-		<!-- Common -->
-		{#each info.labels as label (label)}
-			{#if typeof label === "string"}
-				<Badge variant="outline">{label}</Badge>
-			{:else if label.name}
-				<Badge
-					variant="outline"
-					style={label.color ? `--color: #${label.color}` : undefined}
-					class="border-current text-(--color) selection:text-white selection:bg-(--color) bg-current/10"
-					title={label.description || undefined}
-				>
-					{label.name}
-				</Badge>
-			{/if}
-		{/each}
-	</div>
-{/snippet}
+{let mobile = new MediaQuery("width < 640px")}
 <div class="flex items-baseline">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{pidFormatter.toHumanReadable(metadata.type)}
 	</h3>
-	<div class="sm:inline hidden ms-4">
-		{@render tags()}
-	</div>
 	{#if info.locked}
 		<div
 			class="ml-auto flex items-center rounded-full bg-neutral-500/70 px-2 py-2 text-white xs:px-4 dark:bg-neutral-500/50"
@@ -202,41 +130,37 @@
 		</div>
 	{/if}
 	{#key info}
-		<GHBadge
-			type={metadata.type}
-			status={info.state === "closed"
-				? "merged" in info
-					? info.merged
-						? "merged"
-						: "closed"
-					: "state_reason" in info && info.state_reason === "completed"
-						? "solved"
-						: "closed"
-				: "draft" in info && info.draft
-					? "draft"
-					: "open"}
-			class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked }}
-		/>
+		<Tooltip.Provider delayDuration={300} disabled={mobile.current}>
+			<Tooltip.Root>
+				<Tooltip.Trigger
+					class={{ "ml-auto": !info.locked, "ml-3 xs:ml-4": info.locked, "cursor-default": true }}
+				>
+					<GHBadge
+						type={metadata.type}
+						status={info.state === "closed"
+							? "merged" in info
+								? info.merged
+									? "merged"
+									: "closed"
+								: "state_reason" in info && info.state_reason === "completed"
+									? "solved"
+									: "closed"
+							: "draft" in info && info.draft
+								? "draft"
+								: "open"}
+					/>
+				</Tooltip.Trigger>
+				<Tooltip.Content
+					class="border bg-popover text-popover-foreground text-sm"
+					arrowClasses="bg-popover border-b border-r"
+				>
+					{@render badgeText(info)}
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</Tooltip.Provider>
 	{/key}
 </div>
-<div class="block sm:hidden">
-	{@render tags()}
-</div>
-{#if "merged" in info && info.merged_at}
-	<span class="text-muted-foreground">
-		Merged at {dateTimeFormatter.format(new Date(info.merged_at))}
-		{#if info.merged_by}
-			by {info.merged_by.login}
-		{/if}
-	</span>
-{:else if "closed_at" in info && info.closed_at}
-	<span class="text-muted-foreground">
-		Closed at {dateTimeFormatter.format(new Date(info.closed_at))}
-	</span>
-{/if}
-{#if "assignees" in info && info.assignees?.length}
-	<span>Assigned to {info.assignees.map(({ login }) => login).join(", ")}</span>
-{/if}
+<InfoBanner {info} />
 
 <!-- Body -->
 <div class="mt-4 flex flex-col gap-4">
