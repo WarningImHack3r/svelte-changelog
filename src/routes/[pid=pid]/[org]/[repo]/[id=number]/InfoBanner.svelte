@@ -136,7 +136,6 @@
 				{/each}
 			</div>
 		</div>
-		<!-- TODO: keep those 2 apart? -->
 		<span class="sm:hidden text-muted-foreground text-nowrap">
 			{@render badgeText(info)}
 		</span>
