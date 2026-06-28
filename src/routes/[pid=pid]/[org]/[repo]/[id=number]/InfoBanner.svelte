@@ -43,9 +43,7 @@
 {/snippet}
 
 <div class={["mt-4 rounded-md border bg-accent dark:bg-card", className]}>
-	<div
-		class="flex justify-between overflow-x-auto gap-8 rounded-md py-2 px-3 scroll-mask-x"
-	>
+	<div class="flex justify-between overflow-x-auto gap-8 rounded-md py-2 px-3 scroll-mask-x">
 		<div class="flex text-nowrap items-center gap-4">
 			<!-- Milestones (PRs & issues) -->
 			{#if "milestone" in info && info.milestone}
