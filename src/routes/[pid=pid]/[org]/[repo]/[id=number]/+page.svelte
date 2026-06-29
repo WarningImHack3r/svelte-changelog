@@ -23,7 +23,7 @@
 	import DetailsBody from "./DetailsBody.svelte";
 	import InfoBanner, { badgeText } from "./InfoBanner.svelte";
 	import LinkedEntitiesList from "./LinkedEntitiesList.svelte";
-	import { dateTimeFormatter } from "./formatters";
+	import { dateTimeFormatter, externalEntityLink } from "./formatters";
 
 	let { data } = $props();
 
@@ -296,11 +296,11 @@
 						variant="secondary"
 					>
 						Open {pidFormatter.toHumanReadable(getLinkedEntityPID(metadata.type)).toLowerCase()}
-						{#if entity.repository.owner === metadata.org && entity.repository.name === metadata.repo}
-							#{entity.number}
-						{:else}
-							{entity.repository.owner}/{entity.repository.name}#{entity.number}
-						{/if}
+						{externalEntityLink(
+							{ user: metadata.org, repo: metadata.repo },
+							{ user: entity.repository.owner, repo: entity.repository.name },
+							entity.number
+						)}
 					</AnimatedButton>
 				{/each}
 			</div>

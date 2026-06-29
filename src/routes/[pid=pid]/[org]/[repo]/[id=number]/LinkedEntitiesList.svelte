@@ -13,7 +13,7 @@
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import Reactions from "$lib/components/Reactions.svelte";
-	import { dateTimeFormatter } from "./formatters";
+	import { dateTimeFormatter, externalEntityLink } from "./formatters";
 	import { shikiPlugin } from "./syntax-highlighting";
 
 	type Props = {
@@ -54,11 +54,11 @@
 									class="leading-normal text-foreground"
 								/>
 								<span class="ml-1 font-light text-muted-foreground">
-									{#if entity.repository.owner === currentRepo.owner && entity.repository.name === currentRepo.name}
-										#{entity.number}
-									{:else}
-										{entity.repository.owner}/{entity.repository.name}#{entity.number}
-									{/if}
+									{externalEntityLink(
+										{ user: currentRepo.owner, repo: currentRepo.name },
+										{ user: entity.repository.owner, repo: entity.repository.name },
+										entity.number
+									)}
 								</span>
 							</span>
 						</div>
@@ -126,11 +126,11 @@
 								class="group"
 							>
 								Open
-								{#if entity.repository.owner === currentRepo.owner && entity.repository.name === currentRepo.name}
-									#{entity.number}
-								{:else}
-									{entity.repository.owner}/{entity.repository.name}#{entity.number}
-								{/if}
+								{externalEntityLink(
+									{ user: currentRepo.owner, repo: currentRepo.name },
+									{ user: entity.repository.owner, repo: entity.repository.name },
+									entity.number
+								)}
 								on GitHub
 								<ArrowUpRight
 									class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
