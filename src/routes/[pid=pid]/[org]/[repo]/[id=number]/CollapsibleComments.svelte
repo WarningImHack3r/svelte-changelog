@@ -50,18 +50,17 @@
 			);
 		}
 
-		// We know we're dealing with TreeItems at this point
-		const discussionComments = comms as JSONCompatible<DiscussionDetails["comments"]>;
+		// We know we're dealing with discussion items at this point
+		type DiscussionComments = JSONCompatible<DiscussionDetails["comments"]>;
+		type DiscussionComment = DiscussionComments[number];
+		const discussionComments = comms as DiscussionComments;
 
 		// Create a map to store children by their parent_id for quick lookups
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const childrenMap = new Map<
-			DiscussionDetails["comments"][number]["parent_id"],
-			JSONCompatible<DiscussionDetails["comments"]>
-		>();
+		const childrenMap = new Map<DiscussionComment["parent_id"], DiscussionComments>();
 
 		// Populate the map
-		let answerId: DiscussionDetails["comments"][number]["id"] | undefined;
+		let answerId: DiscussionComment["id"] | undefined;
 		for (const comment of discussionComments) {
 			if (answerId === undefined && comment.html_url === chosenCommentUrl) {
 				answerId = comment.id;
@@ -77,33 +76,41 @@
 			children.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 		}
 
-		// Recursively build the result array in the correct order
-		const result: JSONCompatible<DiscussionDetails["comments"]> = [];
+		function appendCommentSubtree(
+			out: DiscussionComments,
+			comment: DiscussionComment,
+			skipId?: DiscussionComment["id"]
+		) {
+			if (skipId !== undefined && comment.id === skipId) return;
 
-		function traverseTree(parentId: DiscussionDetails["comments"][number]["parent_id"]) {
+			out.push(comment);
+			traverseTree(out, comment.id, skipId);
+		}
+
+		function traverseTree(
+			out: DiscussionComments,
+			parentId: DiscussionComment["parent_id"],
+			skipId?: DiscussionComment["id"]
+		) {
 			const children = childrenMap.get(parentId) ?? [];
 
 			for (const child of children) {
-				if (answerId !== undefined && child.id === answerId) {
-					/*
-					 * If an answer exists and is found, immediately insert it and its replies
-					 * at the beginning of the results.
-					 * `continue` prevents the answer from being picked again (subsequent recursive
-					 * calls will have a (deeper) `parentId`), and its replies are only ever accessible
-					 * from this answer's id passed to `traverseTree`, which the immediate loop abort prevents.
-					 */
-					result.unshift(child, ...(childrenMap.get(answerId) ?? []));
-					continue;
-				}
-				result.push(child);
-				traverseTree(child.id);
+				appendCommentSubtree(out, child, skipId);
 			}
 		}
 
-		// Start traversal from the root
-		traverseTree(null);
+		const prioritized: DiscussionComments = [];
+		if (answerId !== undefined) {
+			const answer = discussionComments.find(({ id }) => id === answerId);
+			if (answer) {
+				appendCommentSubtree(prioritized, answer);
+			}
+		}
 
-		return result;
+		const rest: DiscussionComments = [];
+		traverseTree(rest, null, answerId);
+
+		return [...prioritized, ...rest];
 	}
 </script>
 
