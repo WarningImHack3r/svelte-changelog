@@ -7,7 +7,7 @@
 
 	type Props = {
 		icon?: typeof Icon;
-		label: string;
+		label: string | Snippet;
 		secondaryLabel?: string;
 		openByDefault?: boolean;
 		style?: string;
@@ -43,7 +43,16 @@
 				<SvelteComponent class="mr-3 size-5 shrink-0" />
 			{/if}
 			<div class="flex w-full flex-col items-start justify-between xs:flex-row xs:items-center">
-				<span class="text-xl font-semibold">{label}</span>
+				<svelte:element
+					this={typeof label === "string" ? "span" : "div"}
+					class="text-xl font-semibold"
+				>
+					{#if typeof label === "string"}
+						{label}
+					{:else}
+						{@render label()}
+					{/if}
+				</svelte:element>
 				{#if secondaryLabel}
 					<span class="mr-4 text-right text-muted-foreground xs:ml-auto">{secondaryLabel}</span>
 				{/if}
