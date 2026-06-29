@@ -80,6 +80,7 @@
 						variant="link"
 						href="{info.base.repo.html_url}/tree/{info.base.ref}"
 						rel="external"
+						target="_blank"
 						class="text-foreground p-0 h-auto text-base"
 					>
 						{info.base.ref}
@@ -89,6 +90,7 @@
 						variant="link"
 						href="{info.head.repo.html_url}/tree/{info.head.ref}"
 						rel="external"
+						target="_blank"
 						class="text-foreground p-0 h-auto text-base"
 					>
 						{#if info.head.user.login === info.base.user.login}
@@ -158,6 +160,7 @@
 							variant="link"
 							href={assignee.html_url}
 							rel="external"
+							target="_blank"
 							class="h-auto p-0 text-base text-foreground"
 						>
 							{assignee.login}
