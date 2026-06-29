@@ -145,7 +145,7 @@
 				{/each}
 			</div>
 		</div>
-		<span class="sm:hidden text-muted-foreground text-nowrap">
+		<span class="md:hidden flex items-center text-muted-foreground text-nowrap">
 			{@render badgeText(info)}
 		</span>
 		{#if "assignees" in info && info.assignees?.length}

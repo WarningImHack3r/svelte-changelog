@@ -116,7 +116,7 @@
 {/if}
 
 <!-- Info header -->
-{let mobile = new MediaQuery("width < 640px")}
+{let mobile = new MediaQuery("width < 768px")}
 <div class="flex items-baseline">
 	<h3 class="font-display text-2xl font-semibold tracking-tight">
 		{pidFormatter.toHumanReadable(metadata.type)}
