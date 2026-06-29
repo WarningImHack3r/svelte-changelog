@@ -13,7 +13,7 @@
 
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
-	import { Milestone, UserRoundArrowLeft } from "@lucide/svelte";
+	import { ArrowUpRight, Milestone, UserRoundArrowLeft } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
@@ -50,22 +50,25 @@
 				<a
 					href={info.milestone.html_url}
 					rel="external"
-					class="flex py-2 px-3 rounded-md hover:bg-accent flex-col group"
+					target="_blank"
+					class="flex py-2 px-3 group rounded-md hover:bg-accent flex-col group"
 				>
 					<div class="flex items-center gap-2">
 						<Milestone />
 						<span class="font-semibold group-hover:underline underline-offset-2">
 							{info.milestone.title}
 						</span>
+						<ArrowUpRight
+							class="size-4 -ms-1 transition-[translate,opacity] select-none -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+						/>
 					</div>
 					{#if info.milestone.description}
-						<span class="text-muted-foreground">{info.milestone.description}</span>
+						<span class="text-muted-foreground text-sm">{info.milestone.description}</span>
 					{/if}
 					<div class="flex items-center gap-2">
 						{const progress = info.milestone.closed_issues}
-						<!-- eslint-disable-next-line @typescript-eslint/restrict-plus-operands - says it "got `any`" -->
 						{const total = info.milestone.open_issues + info.milestone.closed_issues}
-						<Progress value={progress} max={total} class="w-20" />
+						<Progress value={progress} max={total} class="w-full min-w-20" />
 						{percentFormatter.format(progress / total)}
 					</div>
 				</a>
@@ -88,7 +91,11 @@
 						rel="external"
 						class="text-foreground p-0 h-auto text-base"
 					>
-						{info.head.label}
+						{#if info.head.user.login === info.base.user.login}
+							{info.head.ref}
+						{:else}
+							{info.head.label}
+						{/if}
 					</Button>
 				</div>
 			{/if}
