@@ -101,13 +101,9 @@
 							shikiPlugin
 						]}
 					/>
-					<div class="flex items-end-safe gap-8">
-						<Reactions
-							reactions={entity.reactions}
-							reactionItemUrl={entity.html_url}
-							class="mt-4"
-						/>
-						<div class="ms-auto flex shrink-0 items-center gap-2">
+					<div class="mt-4 flex flex-wrap items-end-safe gap-x-8 gap-y-4">
+						<Reactions reactions={entity.reactions} reactionItemUrl={entity.html_url} />
+						<div class="ms-auto flex flex-wrap items-center gap-2">
 							<AnimatedButton
 								variant="outline"
 								href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {
@@ -133,7 +129,7 @@
 								)}
 								on GitHub
 								<ArrowUpRight
-									class="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+									class="size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
 								/>
 							</AnimatedButton>
 						</div>
