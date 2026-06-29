@@ -68,8 +68,8 @@
 					<div class="flex items-center gap-2">
 						{const progress = info.milestone.closed_issues}
 						{const total = info.milestone.open_issues + info.milestone.closed_issues}
-						<Progress value={progress} max={total} class="w-full min-w-20" />
-						{percentFormatter.format(progress / total)}
+						<Progress value={progress} max={Math.max(total, 1)} class="w-full min-w-20" />
+						{percentFormatter.format(total > 0 ? progress / total : 0)}
 					</div>
 				</a>
 			{/if}
