@@ -17,31 +17,6 @@ export default defineConfig(
 	tseslint.configs.strictTypeChecked,
 	tseslint.configs.stylisticTypeChecked,
 	svelte.configs.recommended,
-	prettierConfig,
-	svelte.configs.prettier,
-	e18e.configs.recommended,
-	{
-		languageOptions: {
-			parserOptions: {
-				projectService: true
-			},
-			globals: {
-				...globals.browser,
-				...globals.node
-			}
-		}
-	},
-	{
-		files: ["**/*.svelte", "**/*.svelte.js", "**/*.svelte.ts"],
-		languageOptions: {
-			parserOptions: {
-				parser: tseslint.parser,
-				extraFileExtensions: [".svelte"],
-				projectService: true,
-				svelteConfig
-			}
-		}
-	},
 	{
 		rules: {
 			// Added rules
@@ -98,6 +73,31 @@ export default defineConfig(
 					allowRegExp: true
 				}
 			]
+		}
+	},
+	prettierConfig,
+	svelte.configs.prettier,
+	e18e.configs.recommended,
+	{
+		languageOptions: {
+			parserOptions: {
+				projectService: true
+			},
+			globals: {
+				...globals.browser,
+				...globals.node
+			}
+		}
+	},
+	{
+		files: ["**/*.svelte", "**/*.svelte.js", "**/*.svelte.ts"],
+		languageOptions: {
+			parserOptions: {
+				parser: tseslint.parser,
+				extraFileExtensions: [".svelte"],
+				projectService: true,
+				svelteConfig
+			}
 		}
 	},
 	{
