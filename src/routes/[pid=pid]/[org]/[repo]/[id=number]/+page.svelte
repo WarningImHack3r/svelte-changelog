@@ -72,6 +72,8 @@
 
 	/**
 	 * Returns the previous page to go back to
+	 *
+	 * @returns the pathname to go back to
 	 */
 	function getPreviousPath() {
 		if (!browser || !document.referrer) return resolve("/");
