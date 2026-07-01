@@ -223,8 +223,8 @@
 								}),
 								file
 							)}
-							data-sveltekit-preload-data="off"
-							data-sveltekit-preload-code="off"
+							data-sveltekit-preload-data={false}
+							data-sveltekit-preload-code={false}
 						>
 							{name}
 						</Button>

@@ -24,8 +24,7 @@ export default defineConfig(({ mode }) => {
 				experimental: {
 					instrumentation: {
 						server: true
-					},
-					explicitEnvironmentVariables: true
+					}
 				}
 			}),
 			tailwindcss(),

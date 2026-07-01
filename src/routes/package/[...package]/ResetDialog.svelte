@@ -120,7 +120,6 @@
 	 */
 	function clearParams() {
 		page.url.searchParams.delete("reset");
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		pushState(page.url, page.state);
 	}
 </script>
