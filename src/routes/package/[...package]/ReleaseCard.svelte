@@ -336,7 +336,7 @@
 				<Tooltip.Trigger>
 					<Badge
 						variant="outline"
-						class="border-blue-600 selection:text-white selection:bg-blue-600 dark:selection:bg-blue-400 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+						class="border-current selection:text-white selection:bg-blue-600 dark:selection:bg-blue-400 text-blue-600 dark:text-blue-400"
 					>
 						Maintenance
 					</Badge>
