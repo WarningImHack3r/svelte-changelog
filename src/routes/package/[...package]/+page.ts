@@ -38,10 +38,15 @@ export function load({ data, url }) {
 				images: [
 					{
 						get url() {
-							const [first, second] = data.currentPackage.pkg.name.split("/");
+							/*
+							 * theorically, npm packages can't have a slash; the only possible
+							 * slash comes from the @scope.
+							 * but let's be extra careful just for fun.
+							 */
+							const [first, ...rest] = data.currentPackage.pkg.name.split("/");
 							const ogUrl = new URL("og", url.origin);
-							if (first && second) ogUrl.searchParams.set("eyebrow", first);
-							ogUrl.searchParams.set("title", second ?? data.currentPackage.pkg.name);
+							if (first && rest.length) ogUrl.searchParams.set("eyebrow", first);
+							ogUrl.searchParams.set("title", rest.join("/") || data.currentPackage.pkg.name);
 							ogUrl.searchParams.set(
 								"description",
 								`${data.currentPackage.repoOwner}/${data.currentPackage.repoName}`
