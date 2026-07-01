@@ -454,6 +454,7 @@
 		<div class="mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
+				parseRawHtml
 				additionalPlugins={[
 					{
 						remarkPlugin:
