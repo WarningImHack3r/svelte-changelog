@@ -15,16 +15,12 @@ export async function handleError({ error, status, event, message }) {
 	if (status === 404) return;
 	const stringified = stringifyError(error);
 	dfatal(`[SERVER][${status}] ${stringified}`);
-	try {
-		client?.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
-			...event,
-			status_code: status,
-			error_message: message
-		});
-		await client?.shutdown();
-	} catch {
-		// Mitigate https://github.com/PostHog/posthog-js/issues/2615
-	}
+	client?.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
+		...event,
+		status_code: status,
+		error_message: message
+	});
+	await client?.shutdown();
 }
 
 const POSTHOG_PATHNAME_PREFIX = "/ingest";

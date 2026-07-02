@@ -60,14 +60,7 @@ type KeyArg = string | number | boolean;
 type OwnerKeyType = "members";
 
 type RepoKeyType =
-	| "releases"
-	| "descriptions"
-	| "issue"
-	| "issues"
-	| "pr"
-	| "prs"
-	| "discussion"
-	| "discussions";
+	"releases" | "descriptions" | "issue" | "issues" | "pr" | "prs" | "discussion" | "discussions";
 
 export type ItemDetails = {
 	comments: Awaited<ReturnType<Issues["listComments"]>>["data"];
