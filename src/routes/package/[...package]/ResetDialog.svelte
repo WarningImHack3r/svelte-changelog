@@ -87,9 +87,11 @@
 							if (willNukeUnseen) notFullySeenPackages.push(pkgName);
 						}
 					}
-					donePackages++;
 				})
-				.catch(() => donePackages++);
+				.catch(() => {
+					// nothing to do: just catching the error
+				})
+				.finally(() => donePackages++);
 		}
 	});
 
