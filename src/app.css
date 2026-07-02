@@ -11,6 +11,7 @@
 @import "@fontsource/pretendard/700.css";
 @import "@fontsource/pretendard/800.css";
 @import "@fontsource/pretendard/900.css";
+@import "./scroll-mask.css";
 
 @plugin "@tailwindcss/typography";
 
