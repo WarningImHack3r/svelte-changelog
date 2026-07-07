@@ -34,7 +34,7 @@
 		"@tailwindcss/typography": "^0.5.20",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
-		"feed": "^5.2.1",
+		"feed": "^6.0.0",
 		"marked": "^18.0.5",
 		"mode-watcher": "^1.1.0",
 		"octokit": "^5.0.5",
