@@ -93,6 +93,7 @@
 								repo: entity.repository.name,
 								id: `${entity.number}`
 							})}
+							onclick={e => e.stopPropagation()}
 						>
 							Visit
 						</AnimatedButton>
@@ -100,6 +101,7 @@
 							variant="secondary"
 							size="icon"
 							href={entity.html_url}
+							onclick={e => e.stopPropagation()}
 							target="_blank"
 							rel="external"
 						>

@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
 			shaker({ verbose: true }),
 			sveltekit({
 				adapter: adapter(),
-				// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 				paths: {
+					// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 					relative: false
 				},
 				experimental: {

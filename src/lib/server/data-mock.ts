@@ -14,8 +14,7 @@ export function createOctokitResponse<T>(data: T, url = ""): OctokitResponse<T, 
 		data,
 		status: 200,
 		headers: {},
-		url,
-		retryCount: 0
+		url
 	};
 }
 
