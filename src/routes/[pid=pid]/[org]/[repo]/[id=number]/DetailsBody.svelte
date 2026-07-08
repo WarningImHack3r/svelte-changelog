@@ -92,7 +92,8 @@
 						/^https:\/\/github.com\/(\S+)\/(\S+)\/(\S+)\/(\d+)(#[a-z]+-\d+)?$/
 					)}
 					{#if href && match}
-						{const [, org = "", repo = "", pid = "issues", id = ""] = [...match]}
+						{const [, org = "", repo = "", pid = "issues", idStr = ""] = [...match]}
+						{const id = +idStr}
 						<HoverCard.Root openDelay={300}>
 							<HoverCard.Content class="flex w-fit items-center justify-center px-6">
 								<Button

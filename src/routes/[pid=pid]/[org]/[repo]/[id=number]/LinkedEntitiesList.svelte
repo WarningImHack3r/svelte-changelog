@@ -91,7 +91,7 @@
 								pid: "issues", // not always correct but the redirect will take care of that
 								org: entity.repository.owner,
 								repo: entity.repository.name,
-								id: `${entity.number}`
+								id: entity.number
 							})}
 							onclick={e => e.stopPropagation()}
 						>
@@ -136,7 +136,7 @@
 								pid: "issues", // not always correct but the redirect will take care of that
 								org: entity.repository.owner,
 								repo: entity.repository.name,
-								id: `${entity.number}`
+								id: entity.number
 							})}
 						>
 							Visit in {siteName}

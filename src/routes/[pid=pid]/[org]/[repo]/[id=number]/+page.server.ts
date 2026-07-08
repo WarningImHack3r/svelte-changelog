@@ -31,7 +31,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 		});
 	}
 
-	const item = await githubCache.getItemDetails(org, repo, +id);
+	const item = await githubCache.getItemDetails(org, repo, id);
 	if (!item) {
 		error(404, `${pidFormatter.toHumanReadable(type)} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
@@ -50,12 +50,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 
 	return {
 		devOnlyRepo: dev && !isKnownRepo,
-		itemMetadata: {
-			org,
-			repo,
-			id: +id,
-			type
-		},
+		itemMetadata: { org, repo, id, type },
 		item,
 		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
 			// Credit to Refined GitHub: https://github.com/refined-github/refined-github/blob/main/source/features/closing-remarks.tsx

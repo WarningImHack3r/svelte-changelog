@@ -267,7 +267,7 @@
 					pid: metadata.type,
 					org: metadata.org,
 					repo: metadata.repo,
-					id: `${info.number}`
+					id: info.number
 				})}
 				{files}
 			/>
@@ -293,7 +293,7 @@
 							pid: getLinkedEntityPID(metadata.type),
 							org: entity.repository.owner,
 							repo: entity.repository.name,
-							id: `${entity.number}`
+							id: entity.number
 						})}
 						variant="secondary"
 					>

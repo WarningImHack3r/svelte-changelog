@@ -241,7 +241,7 @@
 		pid: "pull",
 		org: pr.base.repo.owner.login,
 		repo: pr.base.repo.name,
-		id: `${pr.number}`
+		id: pr.number
 	})
 )}
 
@@ -253,7 +253,7 @@
 		pid: "discussions",
 		org,
 		repo,
-		id: `${d.number}`
+		id: d.number
 	});
 })}
 
@@ -266,6 +266,6 @@
 		pid: "issues",
 		org,
 		repo,
-		id: `${issue.number}`
+		id: issue.number
 	});
 })}
