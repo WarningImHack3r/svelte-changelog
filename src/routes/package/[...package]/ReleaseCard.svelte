@@ -322,7 +322,9 @@
 		{:else if release.prerelease}
 			<Tooltip.Root>
 				<Tooltip.Trigger>
-					<Badge variant="outline" class="border-primary text-primary">Prerelease</Badge>
+					<Badge variant="outline" class="border-current text-yellow-600 dark:text-yellow-500">
+						Pre-release
+					</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
 					class="border bg-popover text-sm text-popover-foreground"
