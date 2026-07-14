@@ -1,5 +1,7 @@
 <script lang="ts" module>
-	const listFormatter = new Intl.ListFormat("en-US");
+	import { siteLang } from "$lib/properties";
+
+	const listFormatter = new Intl.ListFormat(siteLang);
 </script>
 
 <script lang="ts">

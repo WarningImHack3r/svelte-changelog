@@ -1,23 +1,25 @@
 <script lang="ts" module>
-	const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+	import { siteLang } from "$lib/properties";
+
+	const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium",
 		timeStyle: "short"
 	});
 
-	const dateFormatter = new Intl.DateTimeFormat("en-US", {
+	const dateFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium"
 	});
 
-	const dayFormatter = new Intl.DateTimeFormat("en-US", {
+	const dayFormatter = new Intl.DateTimeFormat(siteLang, {
 		day: "numeric",
 		month: "short"
 	});
 
-	const timeFormatter = new Intl.DateTimeFormat("en-US", {
+	const timeFormatter = new Intl.DateTimeFormat(siteLang, {
 		timeStyle: "short"
 	});
 
-	const listFormatter = new Intl.ListFormat("en-US");
+	const listFormatter = new Intl.ListFormat(siteLang);
 </script>
 
 <script lang="ts">

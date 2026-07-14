@@ -1,7 +1,7 @@
 import { type RequestHandler, error } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { marked } from "marked";
-import { authorFullName, authorVCSProfile, siteName } from "$lib/properties";
+import { authorFullName, authorVCSProfile, siteLang, siteName } from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getPackageReleases, getPackagesReleases } from "../releases";
@@ -25,7 +25,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 			atom: url.toString().replace(dottedAlphaRegex, "atom.xml")
 		},
 		id: url.toString(),
-		language: "en-US",
+		language: siteLang,
 		link: url.toString(),
 		title
 	});

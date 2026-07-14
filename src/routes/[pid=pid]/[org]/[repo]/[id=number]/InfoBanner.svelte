@@ -1,7 +1,8 @@
 <script lang="ts" module>
+	import { siteLang } from "$lib/properties";
 	import type { GitHubAPI } from "$lib/server/github-api";
 
-	const percentFormatter = new Intl.NumberFormat("en-US", {
+	const percentFormatter = new Intl.NumberFormat(siteLang, {
 		style: "percent",
 		maximumFractionDigits: 0
 	});
