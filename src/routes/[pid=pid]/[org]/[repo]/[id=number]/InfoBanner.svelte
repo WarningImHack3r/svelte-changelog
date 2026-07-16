@@ -44,27 +44,27 @@
 {/snippet}
 
 <div class={["mt-4 rounded-md border bg-accent dark:bg-card", className]}>
-	<div class="flex justify-between overflow-x-auto gap-8 rounded-md py-2 px-3 scroll-mask-x">
-		<div class="flex text-nowrap items-center gap-4">
+	<div class="flex justify-between gap-8 overflow-x-auto rounded-md px-3 py-2 scroll-mask-x">
+		<div class="flex items-center gap-4 text-nowrap">
 			<!-- Milestones (PRs & issues) -->
 			{#if "milestone" in info && info.milestone}
 				<a
 					href={info.milestone.html_url}
 					rel="external"
 					target="_blank"
-					class="flex py-2 px-3 group rounded-md hover:bg-accent flex-col group"
+					class="group group flex flex-col rounded-md px-3 py-2 hover:bg-accent"
 				>
 					<div class="flex items-center gap-2">
 						<Milestone />
-						<span class="font-semibold group-hover:underline underline-offset-2">
+						<span class="font-semibold underline-offset-2 group-hover:underline">
 							{info.milestone.title}
 						</span>
 						<ArrowUpRight
-							class="size-4 -ms-1 transition-[translate,opacity] select-none -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+							class="-ms-1 size-4 -translate-x-2 opacity-0 transition-[translate,opacity] select-none group-hover:translate-x-0 group-hover:opacity-100"
 						/>
 					</div>
 					{#if info.milestone.description}
-						<span class="text-muted-foreground text-sm">{info.milestone.description}</span>
+						<span class="text-sm text-muted-foreground">{info.milestone.description}</span>
 					{/if}
 					<div class="flex items-center gap-2">
 						{const progress = info.milestone.closed_issues}
@@ -76,13 +76,13 @@
 			{/if}
 			<!-- Branches (PRs) -->
 			{#if "base" in info}
-				<div class="flex gap-2 items-center">
+				<div class="flex items-center gap-2">
 					<Button
 						variant="link"
 						href="{info.base.repo.html_url}/tree/{info.base.ref}"
 						rel="external"
 						target="_blank"
-						class="text-foreground p-0 h-auto text-base"
+						class="h-auto p-0 text-base text-foreground"
 					>
 						{info.base.ref}
 					</Button>
@@ -92,7 +92,7 @@
 						href="{info.head.repo.html_url}/tree/{info.head.ref}"
 						rel="external"
 						target="_blank"
-						class="text-foreground p-0 h-auto text-base"
+						class="h-auto p-0 text-base text-foreground"
 					>
 						{#if info.head.user.login === info.base.user.login}
 							{info.head.ref}
@@ -107,7 +107,7 @@
 				<Badge
 					variant="outline"
 					style="--color: {info.type.color}"
-					class="border-current text-(--color) text-base selection:text-white selection:bg-(--color) py-1 px-3 bg-current/20"
+					class="border-current bg-current/20 px-3 py-1 text-base text-(--color) selection:bg-(--color) selection:text-white"
 					title={info.type.description || undefined}
 				>
 					{info.type.name}
@@ -117,7 +117,7 @@
 			{#if "category" in info}
 				<Badge
 					variant="outline"
-					class="text-base py-1 px-3 gap-2"
+					class="gap-2 px-3 py-1 text-base"
 					title={info.category.description}
 				>
 					<MarkdownRenderer
@@ -129,7 +129,7 @@
 				</Badge>
 			{/if}
 			<!-- Labels (common) -->
-			<div class="flex gap-2 items-center">
+			<div class="flex items-center gap-2">
 				{#each info.labels as label (label)}
 					{#if typeof label === "string"}
 						<Badge variant="outline">{label}</Badge>
@@ -137,7 +137,7 @@
 						<Badge
 							variant="outline"
 							style={label.color ? `--color: #${label.color}` : undefined}
-							class="border-(--color) dark:text-(--color) selection:text-foreground selection:bg-background dark:selection:text-black dark:selection:bg-(--color) bg-(--color) dark:bg-(--color)/20"
+							class="border-(--color) bg-(--color) selection:bg-background selection:text-foreground dark:bg-(--color)/20 dark:text-(--color) dark:selection:bg-(--color) dark:selection:text-black"
 							title={label.description || undefined}
 						>
 							{label.name}
@@ -146,12 +146,12 @@
 				{/each}
 			</div>
 		</div>
-		<span class="md:hidden flex items-center text-muted-foreground text-nowrap">
+		<span class="flex items-center text-nowrap text-muted-foreground md:hidden">
 			{@render badgeText(info)}
 		</span>
 		{#if "assignees" in info && info.assignees?.length}
-			<div class="flex gap-1 items-center">
-				<UserRoundArrowLeft class="size-5 text-muted-foreground shrink-0" />
+			<div class="flex items-center gap-1">
+				<UserRoundArrowLeft class="size-5 shrink-0 text-muted-foreground" />
 				<div class="text-nowrap">
 					{#each info.assignees as assignee, i (assignee.login)}
 						{#if i > 0}
