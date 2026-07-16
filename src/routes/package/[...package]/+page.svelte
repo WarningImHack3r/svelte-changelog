@@ -197,13 +197,13 @@
 		/: add(?:ed)? (?:experimental )?support for ([\w-]+) v?(\d+)/i,
 		/\(\w+\) add(?:ed)? (?:experimental )?support for ([\w-]+) v?(\d+)/i,
 		/Add(?:ed)? (?:experimental )?support for ([\w-]+) v?(\d+)/,
-		/: ([\w-]+) v?(\d+) support/i,
-		/: support ([\w-]+) v?(\d+)/i,
-		/Support ([\w-]+) v?(\d+)/,
+		/: ([\w-]+) v?(\d+) support(?: \()?$/i,
+		/: support ([\w-]+) v?(\d+)(?: \()?$/i,
+		/Support ([\w-]+) v?(\d+)(?: \()?$/,
 		// "new" stuff
-		/feat: add(?:ed)? (?:experimental )?support for ([\w-]+)/i,
-		/\(feat\) add(?:ed)? (?:experimental )?support for ([\w-]+)/i,
-		/Add(?:ed)? (?:experimental )?support for ([\w-]+)/
+		/feat: add(?:ed)? (?:experimental )?support for ([\w-]+)(?: \()?$/i,
+		/\(feat\) add(?:ed)? (?:experimental )?support for ([\w-]+)(?: \()?$/i,
+		/Add(?:ed)? (?:experimental )?support for ([\w-]+)(?: \()?$/
 	];
 	/**
 	 * A blacklist to help avoid false positives; dirty but can't think of a better
