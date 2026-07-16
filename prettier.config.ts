@@ -1,4 +1,8 @@
-import type { Config } from "prettier";
+import type { PluginConfig as SortImports } from "@trivago/prettier-plugin-sort-imports";
+import type { Config as Prettier } from "prettier";
+import type { PluginOptions as Tailwind } from "prettier-plugin-tailwindcss";
+
+type Config = Prettier & Tailwind & SortImports;
 
 /**
  * @see https://prettier.io/docs/configuration
