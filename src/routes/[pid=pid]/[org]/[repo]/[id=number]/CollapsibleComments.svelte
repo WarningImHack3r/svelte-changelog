@@ -135,7 +135,7 @@
 		<div
 			class={[
 				isReply && "ml-4 border-l-4 pl-2",
-				isValidatedAnswer && "bg-green-500/15 border-green-500 border rounded-md"
+				isValidatedAnswer && "rounded-md border border-green-500 bg-green-500/15"
 			]}
 		>
 			<!-- Author -->
@@ -165,7 +165,7 @@
 					{dateTimeFormatter.format(new Date(comment.created_at))}
 				</span>
 				{#if isValidatedAnswer}
-					<span class="text-green-500 ms-1">• Answer</span>
+					<span class="ms-1 text-green-500">• Answer</span>
 				{/if}
 			</div>
 			<!-- Body -->

@@ -34,7 +34,7 @@
 		{/if}
 	{/if}
 	{#if page.error?.links}
-		<div class="flex mt-8 gap-4 flex-wrap">
+		<div class="mt-8 flex flex-wrap gap-4">
 			{#each page.error.links as { href, text }, i (`${text}|${href}`)}
 				{const isExternal = href.startsWith("https://")}
 				<AnimatedButton
@@ -42,7 +42,7 @@
 					variant={i > 0 ? "outline" : undefined}
 					rel={isExternal ? "external" : undefined}
 					target={isExternal ? "_blank" : undefined}
-					class={["group", isExternal && "shrink whitespace-normal h-auto"]}
+					class={["group", isExternal && "h-auto shrink whitespace-normal"]}
 				>
 					{text}
 					{#if isExternal}
