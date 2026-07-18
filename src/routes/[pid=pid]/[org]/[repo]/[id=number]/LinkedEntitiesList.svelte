@@ -84,7 +84,7 @@
 						{/if}
 					</div>
 					<!-- Buttons -->
-					<div class="hidden items-center ms-2 gap-2 md:flex">
+					<div class="ms-2 hidden items-center gap-2 md:flex">
 						<AnimatedButton
 							variant="outline"
 							href={resolve("/[pid=pid]/[org]/[repo]/[id=number]", {

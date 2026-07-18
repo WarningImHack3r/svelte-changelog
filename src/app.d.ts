@@ -12,14 +12,14 @@ declare global {
 			 */
 			description?: string;
 			/**
-			 * A link to suggest going to in a button on the error page.
+			 * Additional links to suggest going to in a button on the error page.
 			 * Internal links must be `resolve`d for safety purposes, while
 			 * external links can also be provided.
 			 */
-			link?: {
+			links?: {
 				text: string;
 				href: ResolvedPathname | `https://${string}`;
-			};
+			}[];
 		}
 
 		interface Locals {

@@ -286,7 +286,7 @@
 				for="beta-releases-{id}"
 				class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 			>
-				Show {packageName} prereleases
+				Show {packageName} pre-releases
 			</Label>
 		</div>
 

@@ -1,4 +1,6 @@
-export const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+import { siteLang } from "$lib/properties";
+
+export const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 	dateStyle: "medium",
 	timeStyle: "short"
 });

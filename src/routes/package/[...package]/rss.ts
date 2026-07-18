@@ -1,12 +1,18 @@
 import { type RequestHandler, error } from "@sveltejs/kit";
 import { Feed } from "feed";
 import { marked } from "marked";
-import { authorFullName, authorVCSProfile, siteName } from "$lib/properties";
+import {
+	authorFullName,
+	authorVCSProfile,
+	siteLang,
+	siteName,
+	siteRepoName
+} from "$lib/properties";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
 import { getPackageReleases, getPackagesReleases } from "../releases";
 
-const dottedAlphaRegex = /[A-z\d]+\.[A-z\d]+$/;
+const dottedAlphaNumRegex = /[A-z\d]+\.[A-z\d]+$/;
 /**
  * Get the base info to build an RSS feed upon
  * @param url the page URL; must be an RSS feed
@@ -19,14 +25,15 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 		copyright: `${authorFullName} & GitHub Inc.`,
 		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by ${siteName}.`,
 		favicon: "https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg",
+		feed: url.toString(),
 		feedLinks: {
-			xml: url.toString().replace(dottedAlphaRegex, "rss.xml"),
-			json: url.toString().replace(dottedAlphaRegex, "rss.json"),
-			atom: url.toString().replace(dottedAlphaRegex, "atom.xml")
+			xml: url.toString().replace(dottedAlphaNumRegex, "rss.xml"),
+			json: url.toString().replace(dottedAlphaNumRegex, "rss.json"),
+			atom: url.toString().replace(dottedAlphaNumRegex, "atom.xml")
 		},
-		id: url.toString(),
-		language: "en-US",
-		link: url.toString(),
+		id: `${siteRepoName}${url.pathname.split("/").slice(0, -1).join("/")}`,
+		language: siteLang,
+		link: url.origin,
 		title
 	});
 	feed.addCategory("Technology");
@@ -45,7 +52,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 function mdToHtml(md: string | null | undefined) {
 	if (!md) return undefined;
 	// we'll assume GH content doesn't need to be sanitized *wink wink*
-	return marked(md) as string; // can only be a Promise if the `async` option is set to true, not the case here
+	return marked(md, { async: false }); // explicit `async: false` option to narrow down to `string` return type instead of a `MaybePromise<string>`
 }
 
 /**
@@ -116,7 +123,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 				content: release.body_html ?? mdToHtml(release.body),
 				date: new Date(release.published_at ?? release.created_at),
 				description: `${release.cleanName} ${release.cleanVersion} release`,
-				id: `${release.id}`,
+				// id: `${release.id}`, // broken since v6 if not an URL
 				link: release.html_url,
 				published: release.published_at ? new Date(release.published_at) : undefined,
 				title: `${release.cleanName}@${release.cleanVersion}`

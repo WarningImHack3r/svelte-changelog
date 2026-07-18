@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { authorFullName, authorVCSProfile, siteRepo } from "$lib/properties";
+	import { authorFullName, authorVCSProfile, siteLang, siteRepo } from "$lib/properties";
 </script>
 
 <h5 class="-mt-8 text-muted-foreground">
-	{new Intl.DateTimeFormat("en-US", {
+	{new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "long"
 	}).format(new Date("2025-04-11"))} • {authorFullName}
 </h5>

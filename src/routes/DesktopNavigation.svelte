@@ -16,7 +16,7 @@
 </script>
 
 <NavigationMenu.Root class={cn("relative", className)}>
-	<NavigationMenu.List class="group flex list-none gap-1 items-center p-1">
+	<NavigationMenu.List class="group flex list-none items-center gap-1 p-1">
 		{#each items as menuItem (menuItem.name)}
 			<NavigationMenu.Item>
 				<NavigationMenu.Link

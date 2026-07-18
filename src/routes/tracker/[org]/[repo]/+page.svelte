@@ -9,6 +9,7 @@
 	import { animatedClasses } from "$lib/components/AnimatedButton.svelte";
 	import GHBadge from "$lib/components/GHBadge.svelte";
 	import MarkdownRenderer, { Transparent } from "$lib/components/MarkdownRenderer.svelte";
+	import { siteLang } from "$lib/properties";
 
 	let { data, params } = $props();
 
@@ -20,8 +21,8 @@
 	>;
 
 	const pidAndIdUrlRegex = /\/[A-z]+\/\d+$/;
-	const daysAgoFormatter = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
-	const shortDateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+	const daysAgoFormatter = new Intl.RelativeTimeFormat(siteLang, { numeric: "auto" });
+	const shortDateFormatter = new Intl.DateTimeFormat(siteLang, { dateStyle: "medium" });
 
 	/**
 	 * Checks whether a date is more recent than a month.

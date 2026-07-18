@@ -31,10 +31,16 @@ export async function load({ params, setHeaders }) {
 		error(404, {
 			message: "Unknown repository",
 			description: `${siteName} can only track repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
-			link: {
-				text: "Tracker home page",
-				href: resolve("/tracker")
-			}
+			links: [
+				{
+					text: "Tracker home page",
+					href: resolve("/tracker")
+				},
+				{
+					text: `Visit ${params.org}/${params.repo} on GitHub`,
+					href: `https://github.com/${params.org}/${params.repo}`
+				}
+			]
 		});
 	}
 

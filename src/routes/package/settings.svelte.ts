@@ -16,7 +16,7 @@ export const settingsUtils = {
 	modificationString: (settings: PackageSettings) => {
 		const result = [];
 		if (settings.showPrereleases !== DEFAULT_SETTINGS.showPrereleases) {
-			result.push("prereleases are hidden");
+			result.push("pre-releases are hidden");
 		}
 		if (settings.releasesType !== DEFAULT_SETTINGS.releasesType) {
 			result.push(`only the ${settings.releasesType} releases are shown`);

@@ -87,7 +87,7 @@
 		icon={CircleAlert}
 		title="Dev-only repo"
 		markdown="This repository is only visible in dev mode for testing purposes, it will be forbidden in production as it's not listed in the site's repositories."
-		class="mb-8 border-red-500 bg-red-400/10 text-red-500 prose-a:text-red-500! selection:bg-red-500 selection:text-white"
+		class="mb-8 border-red-500 bg-red-400/10 text-red-500 selection:bg-red-500 selection:text-white prose-a:text-red-500!"
 	/>
 {/if}
 
@@ -153,7 +153,7 @@
 					/>
 				</Tooltip.Trigger>
 				<Tooltip.Content
-					class="border bg-popover text-popover-foreground text-sm"
+					class="border bg-popover text-sm text-popover-foreground"
 					arrowClasses="bg-popover border-b border-r"
 				>
 					{@render badgeText(info)}
@@ -211,7 +211,7 @@
 			{let [tagName, tagVersion] = $derived(mergedTag)}
 			<div class="bg-background">
 				<Alert.Root
-					class="rounded-md selection:bg-green-500 dark:selection:bg-green-700 selection:text-white border-green-500 bg-green-400/10"
+					class="rounded-md border-green-500 bg-green-400/10 selection:bg-green-500 selection:text-white dark:selection:bg-green-700"
 				>
 					<Tag class="size-4" />
 					<Alert.Description class="inline text-foreground">
