@@ -114,7 +114,7 @@
 		}
 
 		// refresh the page with the removed query param
-		const newUrl = page.url;
+		const newUrl = new URL(page.url.href);
 		newUrl.searchParams.delete("reset");
 		location.href = newUrl.toString(); // could've been an invalidate() + pushState, but I like this UX better for now
 	}
@@ -123,9 +123,10 @@
 	 * Removes the query parameter from the page
 	 */
 	function clearParams() {
-		page.url.searchParams.delete("reset");
+		const newUrl = new URL(page.url.href);
+		newUrl.searchParams.delete("reset");
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		pushState(page.url, page.state);
+		pushState(newUrl, page.state);
 	}
 </script>
 
