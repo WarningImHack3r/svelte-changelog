@@ -5,14 +5,14 @@
 		GitPullRequestClosed,
 		GitPullRequestCreateArrow
 	} from "@lucide/svelte";
-	import type { PullRequestDetails } from "$lib/server/github-api";
-	import type { JSONCompatible } from "$lib/types";
-	import * as Avatar from "$lib/components/ui/avatar";
-	import { Badge } from "$lib/components/ui/badge";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import Step from "$lib/components/Step.svelte";
-	import Steps from "$lib/components/Steps.svelte";
+	import type { PullRequestDetails } from "#lib/server/github-api";
+	import type { JSONCompatible } from "#lib/types";
+	import * as Avatar from "#lib/components/ui/avatar";
+	import { Badge } from "#lib/components/ui/badge";
+	import * as Tooltip from "#lib/components/ui/tooltip";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
+	import Step from "#lib/components/Step.svelte";
+	import Steps from "#lib/components/Steps.svelte";
 	import BottomCollapsible from "./BottomCollapsible.svelte";
 	import { dateTimeFormatter } from "./formatters";
 

@@ -1,10 +1,10 @@
 import type { PostHog } from "posthog-node";
 import semver from "semver";
-import { ddebug, dlog, dwarn } from "$lib/logging";
-import type { Repository } from "$lib/repositories";
-import { type GitHubRelease, githubCache } from "$lib/server/github-api";
-import type { discoverer } from "$lib/server/package-discoverer";
-import type { Prettify } from "$lib/types";
+import { ddebug, dlog, dwarn } from "#lib/logging";
+import type { Repository } from "#lib/repositories";
+import { type GitHubRelease, githubCache } from "#lib/server/github-api";
+import type { discoverer } from "#lib/server/package-discoverer";
+import type { Prettify } from "#lib/types";
 
 /**
  * Get all the releases for a single package.

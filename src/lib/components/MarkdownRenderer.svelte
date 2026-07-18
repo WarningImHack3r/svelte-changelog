@@ -19,9 +19,9 @@
 	import rehypeSanitize from "rehype-sanitize";
 	import Markdown, { type Plugin } from "svelte-exmarkdown";
 	import { gfmPlugin } from "svelte-exmarkdown/gfm";
-	import { siteRepo } from "$lib/properties";
-	import { stringifyError } from "$lib/strings";
-	import { cn } from "$lib/utils";
+	import { siteRepo } from "#lib/properties";
+	import { stringifyError } from "#lib/strings";
+	import { cn } from "#lib/utils";
 	import AnimatedButton from "./AnimatedButton.svelte";
 
 	type MdSnippets = Omit<ComponentProps<typeof Markdown>, "md" | "plugins">;

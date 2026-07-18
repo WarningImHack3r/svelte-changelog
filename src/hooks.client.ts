@@ -1,6 +1,6 @@
 import posthog from "posthog-js";
-import { dfatal } from "$lib/logging";
-import { stringifyError } from "$lib/strings";
+import { dfatal } from "#lib/logging";
+import { stringifyError } from "#lib/strings";
 
 export function handleError({ error, status, event, message }) {
 	if (status === 404) return;

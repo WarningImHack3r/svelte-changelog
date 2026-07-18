@@ -1,5 +1,5 @@
 import { definePageMetaTags } from "svelte-meta-tags";
-import { pidFormatter } from "$lib/strings";
+import { pidFormatter } from "#lib/strings";
 
 export function load({ data, url }) {
 	const element = pidFormatter.toHumanReadable(data.itemMetadata.type);

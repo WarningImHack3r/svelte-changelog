@@ -13,6 +13,10 @@
 		"format": "prettier --write .",
 		"prepare": "svelte-kit sync"
 	},
+	"imports": {
+		"#lib": "./src/lib/index.js",
+		"#lib/*": "./src/lib/*"
+	},
 	"dependencies": {
 		"@fontsource/dm-serif-display": "^5.2.8",
 		"@fontsource/pretendard": "^5.2.5",
@@ -30,7 +34,7 @@
 		"@shikijs/langs": "^4.3.1",
 		"@shikijs/rehype": "^4.3.1",
 		"@shikijs/themes": "^4.3.1",
-		"@sveltejs/kit": "3.0.0-next.8",
+		"@sveltejs/kit": "3.0.0-next.9",
 		"@tailwindcss/typography": "^0.5.20",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",

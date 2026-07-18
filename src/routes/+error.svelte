@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ArrowUpRight } from "@lucide/svelte";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import { siteName } from "$lib/properties";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import { siteName } from "#lib/properties";
 	import type { ErrorProps } from "./$types";
 
 	let { error }: ErrorProps = $props();

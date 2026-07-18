@@ -1,6 +1,6 @@
 <script lang="ts" module>
-	import { siteLang } from "$lib/properties";
-	import type { GitHubAPI } from "$lib/server/github-api";
+	import { siteLang } from "#lib/properties";
+	import type { GitHubAPI } from "#lib/server/github-api";
 
 	const percentFormatter = new Intl.NumberFormat(siteLang, {
 		style: "percent",
@@ -16,10 +16,10 @@
 	import type { ClassValue } from "svelte/elements";
 	import { ArrowUpRight, Milestone, UserRoundArrowLeft } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
-	import { Badge } from "$lib/components/ui/badge";
-	import { Button } from "$lib/components/ui/button";
-	import { Progress } from "$lib/components/ui/progress";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
+	import { Badge } from "#lib/components/ui/badge";
+	import { Button } from "#lib/components/ui/button";
+	import { Progress } from "#lib/components/ui/progress";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
 	import { dateTimeFormatter } from "./formatters";
 
 	type Props = {

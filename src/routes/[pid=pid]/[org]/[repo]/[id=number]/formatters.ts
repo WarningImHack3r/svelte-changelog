@@ -1,4 +1,4 @@
-import { siteLang } from "$lib/properties";
+import { siteLang } from "#lib/properties";
 
 export const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 	dateStyle: "medium",

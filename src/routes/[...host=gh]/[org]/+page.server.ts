@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { siteName } from "$lib/properties";
+import { siteName } from "#lib/properties";
 
 export function load({ params }) {
 	error(400, {

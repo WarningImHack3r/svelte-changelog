@@ -1,7 +1,7 @@
 import { dev } from "$app/env";
 import { Octokit, RequestError } from "octokit";
 import { type RedisClientType, type RedisJSON } from "redis";
-import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "$lib/logging";
+import { ddebug as debug, derror as error, dlog as info, dwarn as warn } from "#lib/logging";
 import { createOctokitResponse } from "./data-mock";
 import { KVCache } from "./kv";
 

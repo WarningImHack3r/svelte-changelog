@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { uniqueRepos } from "$lib/repositories";
+import { uniqueRepos } from "#lib/repositories";
 
 export function load() {
 	// Load the first repo of our list

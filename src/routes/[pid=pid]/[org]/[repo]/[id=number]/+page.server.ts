@@ -1,12 +1,12 @@
 import { error, redirect } from "@sveltejs/kit";
 import { dev } from "$app/env";
 import { resolve } from "$app/paths";
-import { siteName } from "$lib/properties";
-import { publicRepos, uniqueRepos } from "$lib/repositories";
-import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
-import { discoverer } from "$lib/server/package-discoverer";
-import { pidFormatter } from "$lib/strings";
-import type { BranchCommit } from "$lib/types";
+import { siteName } from "#lib/properties";
+import { publicRepos, uniqueRepos } from "#lib/repositories";
+import { FULL_DETAILS_TTL, githubCache } from "#lib/server/github-api";
+import { discoverer } from "#lib/server/package-discoverer";
+import { pidFormatter } from "#lib/strings";
+import type { BranchCommit } from "#lib/types";
 
 const versionDigitsRegex = /\d\.\d/;
 

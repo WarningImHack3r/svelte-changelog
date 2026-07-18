@@ -1,5 +1,5 @@
 import type { RedisArgument, RedisClientType } from "redis";
-import { ddebug, derror } from "$lib/logging";
+import { ddebug, derror } from "#lib/logging";
 
 export type Options<T> = {
 	/**

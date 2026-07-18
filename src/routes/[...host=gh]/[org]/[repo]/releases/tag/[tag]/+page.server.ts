@@ -1,7 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { siteName } from "$lib/properties";
-import { publicRepos } from "$lib/repositories";
+import { siteName } from "#lib/properties";
+import { publicRepos } from "#lib/repositories";
 
 export function load({ params: { org, repo, tag } }) {
 	const repository = publicRepos.find(

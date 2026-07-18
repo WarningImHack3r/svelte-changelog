@@ -1,8 +1,8 @@
 import { dev } from "$app/env";
 import { POSTHOG_KEY } from "$app/env/public";
 import { PostHog } from "posthog-node";
-import { dfatal } from "$lib/logging";
-import { stringifyError } from "$lib/strings";
+import { dfatal } from "#lib/logging";
+import { stringifyError } from "#lib/strings";
 
 const client = POSTHOG_KEY
 	? new PostHog(POSTHOG_KEY, {
