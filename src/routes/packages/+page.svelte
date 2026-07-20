@@ -108,7 +108,7 @@
 										{/if}
 									{/await}
 									{#if pkg.deprecated}
-										<Badge variant="outline" class="mb-2 border-amber-600 text-amber-600 xs:mb-0">
+										<Badge variant="outline" class="mb-2 border-current text-amber-600 xs:mb-0">
 											Deprecated
 										</Badge>
 									{/if}

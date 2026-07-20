@@ -1,8 +1,9 @@
 <script lang="ts" module>
 	import { VERSION } from "svelte/compiler";
 	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
+	import { siteLang } from "$lib/properties";
 
-	const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
+	const fullDateFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "full",
 		timeStyle: "short"
 	});
@@ -259,7 +260,7 @@
 	 * @param locale the locale to use for formatting
 	 * @returns a function you input the date to convert in, returning the relative date
 	 */
-	function timeAgo(locale = "en-US") {
+	function timeAgo(locale = siteLang) {
 		const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
 		return (date: Date) => {
@@ -294,7 +295,7 @@
 			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Badge
-						class="bg-green-600 hover:bg-green-600 selection:text-green-600 dark:selection:text-green-700 selection:bg-white dark:bg-green-700 hover:dark:bg-green-700"
+						class="bg-green-600 selection:bg-white selection:text-green-600 hover:bg-green-600 dark:bg-green-700 dark:selection:text-green-700 hover:dark:bg-green-700"
 					>
 						Latest
 					</Badge>
@@ -310,7 +311,7 @@
 		{#if isMajorRelease}
 			<Tooltip.Root>
 				<Tooltip.Trigger>
-					<Badge class="selection:text-primary selection:bg-white">Major</Badge>
+					<Badge class="selection:bg-white selection:text-primary">Major</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
 					class="border bg-popover text-sm text-popover-foreground"
@@ -322,7 +323,9 @@
 		{:else if release.prerelease}
 			<Tooltip.Root>
 				<Tooltip.Trigger>
-					<Badge variant="outline" class="border-primary text-primary">Prerelease</Badge>
+					<Badge variant="outline" class="border-current text-yellow-600 dark:text-yellow-500">
+						Pre-release
+					</Badge>
 				</Tooltip.Trigger>
 				<Tooltip.Content
 					class="border bg-popover text-sm text-popover-foreground"
@@ -336,7 +339,7 @@
 				<Tooltip.Trigger>
 					<Badge
 						variant="outline"
-						class="border-blue-600 selection:text-white selection:bg-blue-600 dark:selection:bg-blue-400 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+						class="border-current text-blue-600 selection:bg-blue-600 selection:text-white dark:text-blue-400 dark:selection:bg-blue-400"
 					>
 						Maintenance
 					</Badge>
@@ -425,7 +428,7 @@
 					<Tooltip.Root delayDuration={300}>
 						<Tooltip.Trigger class="text-right">
 							{isOlderThanAWeek
-								? releaseDate.toLocaleDateString("en-US", {
+								? releaseDate.toLocaleDateString(siteLang, {
 										year:
 											(releaseDate.getMonth() === 0 && releaseDate.getDate() <= 15) ||
 											releaseDate.getFullYear() < new Date().getFullYear()
@@ -454,6 +457,7 @@
 		<div class="mt-4 flex flex-col gap-2">
 			<MarkdownRenderer
 				markdown={releaseBody}
+				parseRawHtml
 				additionalPlugins={[
 					{
 						remarkPlugin:

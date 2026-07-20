@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { ArrowUpRight } from "@lucide/svelte";
+	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
 	import { siteName } from "$lib/properties";
-	import { Button } from "$lib/components/ui/button";
 </script>
 
 <svelte:head>
@@ -32,7 +33,25 @@
 			<h3 class="text-2xl font-semibold text-muted-foreground">{page.error.message}</h3>
 		{/if}
 	{/if}
-	{#if page.error?.link}
-		<Button href={page.error.link.href} class="mt-8">{page.error.link.text}</Button>
+	{#if page.error?.links}
+		<div class="mt-8 flex flex-wrap gap-4">
+			{#each page.error.links as { href, text }, i (`${text}|${href}`)}
+				{const isExternal = href.startsWith("https://")}
+				<AnimatedButton
+					{href}
+					variant={i > 0 ? "outline" : undefined}
+					rel={isExternal ? "external" : undefined}
+					target={isExternal ? "_blank" : undefined}
+					class={["group", isExternal && "h-auto shrink whitespace-normal"]}
+				>
+					{text}
+					{#if isExternal}
+						<ArrowUpRight
+							class="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+						/>
+					{/if}
+				</AnimatedButton>
+			{/each}
+		</div>
 	{/if}
 </div>

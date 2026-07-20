@@ -11,7 +11,7 @@ Made with SvelteKit, TailwindCSS & shadcn-svelte.
 - Track the relevant repos' PRs, issues, and discussions
 - Stunning page embedding all details of a pull request/issue/discussion
 - RSS feeds for all packages
-- Dynamically computed badges to indicate whether a package is the Latest, a Major version, a Prerelease, or a Maintenance version
+- Dynamically computed badges to indicate whether a package is the Latest, a Major version, a Pre-release, or a Maintenance version
 - Sidebar with the number of unseen releases for each package
 - ...and much more!
 

@@ -150,7 +150,8 @@ const repos: Record<Category, RepoEntry> = {
 				repoName: "magic-string",
 				metadataFromTag(tag) {
 					return [this.repoName, tag.replace(vPrefixRegex, "")];
-				}
+				},
+				changelogContentsReplacer: file => file.replace(mdTitleRegex, "## [")
 			}
 		]
 	}

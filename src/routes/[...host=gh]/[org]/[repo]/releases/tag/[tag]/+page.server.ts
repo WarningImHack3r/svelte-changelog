@@ -13,10 +13,16 @@ export function load({ params: { org, repo, tag } }) {
 		error(404, {
 			message: "Unknown repository",
 			description: `${siteName} can only display releases for the packages of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
-			link: {
-				text: "Go home",
-				href: resolve("/")
-			}
+			links: [
+				{
+					text: "Go home",
+					href: resolve("/")
+				},
+				{
+					text: `Visit ${org}/${repo}@${tag} on GitHub`,
+					href: `https://github.com/${org}/${repo}/releases/tag/${tag}`
+				}
+			]
 		});
 	}
 	const [name, version] = repository.metadataFromTag(tag);
@@ -25,10 +31,16 @@ export function load({ params: { org, repo, tag } }) {
 			message: "Failed to parse a valid package name from the release tag",
 			description:
 				"Is this tag a valid package? If so, please open an issue from the GitHub link in the navigation bar.",
-			link: {
-				text: "Go home",
-				href: resolve("/")
-			}
+			links: [
+				{
+					text: "Go home",
+					href: resolve("/")
+				},
+				{
+					text: `Visit releases of ${org}/${repo} on GitHub`,
+					href: `https://github.com/${org}/${repo}/releases`
+				}
+			]
 		});
 	}
 	const versionHash: "" | `#${string}` = version ? `#${version}` : ""; // avoids empty hash, even though this could hide a version parsing issue

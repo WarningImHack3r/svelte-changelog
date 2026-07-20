@@ -4,3 +4,4 @@ export const authorVCSUsername = "WarningImHack3r";
 export const authorVCSProfile = `https://github.com/${authorVCSUsername}`;
 export const siteRepoName = "svelte-changelog";
 export const siteRepo = `${authorVCSProfile}/${siteRepoName}`;
+export const siteLang = "en-US";

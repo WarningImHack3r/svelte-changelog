@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { SvelteMap } from "svelte/reactivity";
 	import { MessagesSquare } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
@@ -20,11 +19,15 @@
 			| JSONCompatible<ItemDetails["comments"]>
 			| JSONCompatible<DiscussionDetails["comments"]>
 			| null;
+		chosenCommentUrl?: string;
 		currentRepo: { owner: string; name: string };
 	};
 
-	let { itemId, comments, currentRepo }: Props = $props();
+	let { itemId, comments, chosenCommentUrl, currentRepo }: Props = $props();
 	let comms = $derived(comments ?? []);
+	let hasValidatedAnswer = $derived(
+		chosenCommentUrl && comms.some(comm => comm.html_url === chosenCommentUrl)
+	);
 
 	/**
 	 * Sort comments for discussions so that they simply have to be indented
@@ -47,17 +50,21 @@
 			);
 		}
 
-		// We know we're dealing with TreeItems at this point
-		const discussionComments = comms as JSONCompatible<DiscussionDetails["comments"]>;
+		// We know we're dealing with discussion items at this point
+		type DiscussionComments = JSONCompatible<DiscussionDetails["comments"]>;
+		type DiscussionComment = DiscussionComments[number];
+		const discussionComments = comms as DiscussionComments;
 
 		// Create a map to store children by their parent_id for quick lookups
-		const childrenMap = new SvelteMap<
-			DiscussionDetails["comments"][number]["parent_id"],
-			JSONCompatible<DiscussionDetails["comments"]>
-		>();
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const childrenMap = new Map<DiscussionComment["parent_id"], DiscussionComments>();
 
 		// Populate the map
+		let answerId: DiscussionComment["id"] | undefined;
 		for (const comment of discussionComments) {
+			if (answerId === undefined && comment.html_url === chosenCommentUrl) {
+				answerId = comment.id;
+			}
 			if (!childrenMap.has(comment.parent_id)) {
 				childrenMap.set(comment.parent_id, []);
 			}
@@ -69,41 +76,74 @@
 			children.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 		}
 
-		// Recursively build the result array in the correct order
-		const result: JSONCompatible<DiscussionDetails["comments"]> = [];
+		function appendCommentSubtree(
+			out: DiscussionComments,
+			comment: DiscussionComment,
+			skipId?: DiscussionComment["id"]
+		) {
+			if (skipId !== undefined && comment.id === skipId) return;
 
-		function traverseTree(parentId: DiscussionDetails["comments"][number]["parent_id"]) {
+			out.push(comment);
+			traverseTree(out, comment.id, skipId);
+		}
+
+		function traverseTree(
+			out: DiscussionComments,
+			parentId: DiscussionComment["parent_id"],
+			skipId?: DiscussionComment["id"]
+		) {
 			const children = childrenMap.get(parentId) ?? [];
 
 			for (const child of children) {
-				result.push(child);
-				traverseTree(child.id);
+				appendCommentSubtree(out, child, skipId);
 			}
 		}
 
-		// Start traversal from the root
-		traverseTree(null);
+		const prioritized: DiscussionComments = [];
+		if (answerId !== undefined) {
+			const answer = discussionComments.find(({ id }) => id === answerId);
+			if (answer) {
+				appendCommentSubtree(prioritized, answer);
+			}
+		}
 
-		return result;
+		const rest: DiscussionComments = [];
+		traverseTree(rest, null, answerId);
+
+		return [...prioritized, ...rest];
 	}
 </script>
 
 <BottomCollapsible
 	icon={MessagesSquare}
-	label="Comments"
 	secondaryLabel="{comms.length} comment{comms.length > 1 ? 's' : ''}"
 >
+	{#snippet label()}
+		Comments
+		{#if hasValidatedAnswer}
+			• <span class="text-base text-green-500">Answered</span>
+		{/if}
+	{/snippet}
 	{#each sortComments(comms) as comment, i (comment.id)}
-		{let isAnswer = $derived(
+		{let isReply = $derived(
 			"parent_id" in comment && comment.parent_id ? comment.parent_id !== itemId : false
 		)}
-		{#if !isAnswer && i > 0}
+		{let isValidatedAnswer = $derived(comment.html_url === chosenCommentUrl)}
+		{#if !isReply && i > 0}
 			<Separator class="my-2 h-1" />
 		{/if}
-		<div class={[isAnswer && "ml-4 border-l-4 pl-2"]}>
+		<div
+			class={[
+				isReply && "ml-4 border-l-4 pl-2",
+				isValidatedAnswer && "rounded-md border border-green-500 bg-green-500/15"
+			]}
+		>
 			<!-- Author -->
 			<div
-				class="inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0"
+				class={[
+					"inline-flex w-full flex-col gap-1 border-b px-4 py-2 xs:flex-row xs:items-center xs:gap-0",
+					isValidatedAnswer && "border-green-500"
+				]}
 			>
 				{#if comment.user}
 					<a href={comment.user.html_url} rel="external" class="group inline-flex items-center">
@@ -124,6 +164,9 @@
 				<span class="text-muted-foreground">
 					{dateTimeFormatter.format(new Date(comment.created_at))}
 				</span>
+				{#if isValidatedAnswer}
+					<span class="ms-1 text-green-500">• Answer</span>
+				{/if}
 			</div>
 			<!-- Body -->
 			<div class="p-4">

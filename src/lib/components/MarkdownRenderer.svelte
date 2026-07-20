@@ -100,12 +100,8 @@
 			{md}
 			plugins={[
 				gfmPlugin(),
-				...(parseRawHtml
-					? ([
-							{ rehypePlugin: [rehypeRaw, { tagfilter: true }] },
-							{ rehypePlugin: [rehypeSanitize] }
-						] as Plugin[])
-					: []),
+				{ rehypePlugin: parseRawHtml ? [rehypeRaw, { tagfilter: true }] : undefined },
+				{ rehypePlugin: parseRawHtml ? [rehypeSanitize] : undefined },
 				...additionalPlugins
 			]}
 			{...snippets}

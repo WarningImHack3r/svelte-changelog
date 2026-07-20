@@ -24,10 +24,16 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 		error(404, {
 			message: "Unknown repository",
 			description: `${siteName} can only display the details of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
-			link: {
-				text: "Go home",
-				href: resolve("/")
-			}
+			links: [
+				{
+					text: "Go home",
+					href: resolve("/")
+				},
+				{
+					text: `Visit ${org}/${repo}#${id} on GitHub`,
+					href: `https://github.com/${org}/${repo}/${type}/${id}`
+				}
+			]
 		});
 	}
 

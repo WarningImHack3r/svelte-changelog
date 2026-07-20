@@ -445,20 +445,24 @@
 {#if proTips.length && !isPageDevlog && !page.error}
 	{const proTip = proTips[Math.floor(Math.random() * proTips.length)]}
 	{#if proTip}
-		<Alert.Root
-			class="w-fit group bg-background hover:bg-muted/30 my-8 mx-auto opacity-60 transition-[opacity,background-color] hover:opacity-100 duration-150"
-		>
-			<Lightbulb class="group-hover:text-amber-500 transition-colors duration-300" />
-			<Alert.Title>Pro tip</Alert.Title>
-			<Alert.Description>
-				<MarkdownRenderer
-					markdown={proTip}
-					parseRawHtml
-					inline
-					class="prose-sm text-pretty max-w-[100ch]"
-				/>
-			</Alert.Description>
-		</Alert.Root>
+		<div class="container">
+			{#key proTip}
+				<Alert.Root
+					class="group mx-auto my-8 w-fit bg-background opacity-60 transition-[opacity,background-color] duration-150 hover:bg-muted/30 hover:opacity-100"
+				>
+					<Lightbulb class="transition-colors duration-300 group-hover:text-amber-500" />
+					<Alert.Title>Pro tip</Alert.Title>
+					<Alert.Description>
+						<MarkdownRenderer
+							markdown={proTip}
+							parseRawHtml
+							inline
+							class="prose-sm max-w-[100ch] text-pretty"
+						/>
+					</Alert.Description>
+				</Alert.Root>
+			{/key}
+		</div>
 	{/if}
 {/if}
 

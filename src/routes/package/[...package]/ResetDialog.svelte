@@ -1,23 +1,25 @@
 <script lang="ts" module>
-	const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+	import { siteLang } from "$lib/properties";
+
+	const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium",
 		timeStyle: "short"
 	});
 
-	const dateFormatter = new Intl.DateTimeFormat("en-US", {
+	const dateFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium"
 	});
 
-	const dayFormatter = new Intl.DateTimeFormat("en-US", {
+	const dayFormatter = new Intl.DateTimeFormat(siteLang, {
 		day: "numeric",
 		month: "short"
 	});
 
-	const timeFormatter = new Intl.DateTimeFormat("en-US", {
+	const timeFormatter = new Intl.DateTimeFormat(siteLang, {
 		timeStyle: "short"
 	});
 
-	const listFormatter = new Intl.ListFormat("en-US");
+	const listFormatter = new Intl.ListFormat(siteLang);
 </script>
 
 <script lang="ts">
@@ -87,9 +89,11 @@
 							if (willNukeUnseen) notFullySeenPackages.push(pkgName);
 						}
 					}
-					donePackages++;
 				})
-				.catch(() => donePackages++);
+				.catch(() => {
+					// nothing to do: just catching the error
+				})
+				.finally(() => donePackages++);
 		}
 	});
 
@@ -110,7 +114,7 @@
 		}
 
 		// refresh the page with the removed query param
-		const newUrl = page.url;
+		const newUrl = new URL(page.url.href);
 		newUrl.searchParams.delete("reset");
 		location.href = newUrl.toString(); // could've been an invalidate() + pushState, but I like this UX better for now
 	}
@@ -119,9 +123,10 @@
 	 * Removes the query parameter from the page
 	 */
 	function clearParams() {
-		page.url.searchParams.delete("reset");
+		const newUrl = new URL(page.url.href);
+		newUrl.searchParams.delete("reset");
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		pushState(page.url, page.state);
+		pushState(newUrl, page.state);
 	}
 </script>
 
