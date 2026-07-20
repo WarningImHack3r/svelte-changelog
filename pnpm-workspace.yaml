@@ -1,6 +1,6 @@
 engineStrict: true
 allowBuilds:
   "@posthog/cli": true
-  adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/0fafab89808496471cadd072a8b85e2b878a21ef#path:adapter: true
+  adapter-node-sea@https://codeload.github.com/gauben/gautier.dev/tar.gz/af325f135e52fd67549044a0b43a63a448635468#path:adapter: true
   core-js: true
   protobufjs: true
