@@ -1,4 +1,4 @@
-import { defineEnvVars } from "@sveltejs/kit/hooks";
+import { defineEnvVars } from "@sveltejs/kit/env";
 import * as v from "valibot";
 
 const USUAL_TOKEN_REGEX = /^[a-z]+_[A-Za-z\d]+$/;
