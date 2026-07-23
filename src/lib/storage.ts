@@ -4,11 +4,11 @@
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage#exceptions|MDN}
  */
-function safeStorage(store: Storage): Storage {
+function safeStorage(getStore: () => Storage): Storage {
 	return {
 		get length() {
 			try {
-				return store.length;
+				return getStore().length;
 			} catch {
 				// disabled or unavailable
 				return 0;
@@ -16,14 +16,14 @@ function safeStorage(store: Storage): Storage {
 		},
 		clear: () => {
 			try {
-				store.clear();
+				getStore().clear();
 			} catch {
 				// disabled or unavailable
 			}
 		},
 		getItem: (key, defaultValue: ReturnType<Storage["getItem"]> = null) => {
 			try {
-				return store.getItem(key);
+				return getStore().getItem(key);
 			} catch {
 				// disabled or unavailable
 				return defaultValue;
@@ -31,7 +31,7 @@ function safeStorage(store: Storage): Storage {
 		},
 		key: (index, defaultValue: ReturnType<Storage["key"]> = null) => {
 			try {
-				return store.key(index);
+				return getStore().key(index);
 			} catch {
 				// disabled or unavailable
 				return defaultValue;
@@ -39,14 +39,14 @@ function safeStorage(store: Storage): Storage {
 		},
 		removeItem: key => {
 			try {
-				store.removeItem(key);
+				getStore().removeItem(key);
 			} catch {
 				// disabled or unavailable
 			}
 		},
 		setItem: (key, value) => {
 			try {
-				store.setItem(key, value);
+				getStore().setItem(key, value);
 			} catch {
 				// disabled or unavailable
 			}
@@ -60,11 +60,11 @@ function safeStorage(store: Storage): Storage {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage#exceptions|MDN}
  */
-export const local = safeStorage(localStorage);
+export const local = safeStorage(() => localStorage);
 /**
  * A utility wrapper around `sessionStorage` to prevent
  * security errors or incorrect schemes.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage#exceptions|MDN}
  */
-export const session = safeStorage(sessionStorage);
+export const session = safeStorage(() => sessionStorage);
