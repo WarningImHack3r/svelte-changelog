@@ -65,7 +65,11 @@ export async function getPackageReleases(
 							repoName: repo.repoName,
 							...release
 						});
-						dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
+						try {
+							dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
+						} catch {
+							dwarn(`Empty release tag name: ${release.name ?? release.tag_name}`);
+						}
 						return false;
 					}
 

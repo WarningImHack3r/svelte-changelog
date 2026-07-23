@@ -53,6 +53,7 @@
 	import Snowflakes from "$lib/components/Snowflakes.svelte";
 	import DesktopNavigation from "./DesktopNavigation.svelte";
 	import { waitFor } from "$lib/reactivity.svelte";
+	import { derror } from "$lib/logging";
 
 	let { data, children } = $props();
 
@@ -155,12 +156,25 @@
 	let newsToDisplay = $state<(typeof news)[number]>();
 	const closedNewsKey = "closed-news";
 	function getClosedNewsIds() {
-		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
+		try {
+			return JSON.parse(
+				localStorage.getItem(closedNewsKey) ?? "[]"
+			) as (typeof news)[number]["id"][];
+		} catch {
+			return [];
+		}
 	}
 	function markCurrentNewsAsRead() {
 		if (!newsToDisplay) return;
-		localStorage.setItem(closedNewsKey, JSON.stringify([...getClosedNewsIds(), newsToDisplay.id]));
-		newsToDisplay = undefined;
+		try {
+			localStorage.setItem(
+				closedNewsKey,
+				JSON.stringify([...getClosedNewsIds(), newsToDisplay.id])
+			);
+			newsToDisplay = undefined;
+		} catch (e) {
+			derror(e);
+		}
 	}
 
 	// Navbar
@@ -211,14 +225,6 @@
 	let reduceMotion = new MediaQuery("prefers-reduced-motion: reduce");
 
 	$effect(() => {
-		// Legacy news key
-		const oldLsNewsKey = "closedNews";
-		const oldLsNewsValue = localStorage.getItem(oldLsNewsKey);
-		if (oldLsNewsValue) {
-			localStorage.setItem(closedNewsKey, oldLsNewsValue);
-			localStorage.removeItem(oldLsNewsKey);
-		}
-
 		// News
 		const closedNews = getClosedNewsIds();
 		const now = new Date();
