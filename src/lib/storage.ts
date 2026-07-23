@@ -4,9 +4,24 @@
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage#exceptions|MDN}
  */
-function safeStorage(store: Storage) {
+function safeStorage(store: Storage): Storage {
 	return {
-		getItem: (key: string, defaultValue: string | null = null): ReturnType<Storage["getItem"]> => {
+		get length() {
+			try {
+				return store.length;
+			} catch {
+				// disabled or unavailable
+				return 0;
+			}
+		},
+		clear: () => {
+			try {
+				store.clear();
+			} catch {
+				// disabled or unavailable
+			}
+		},
+		getItem: (key, defaultValue: ReturnType<Storage["getItem"]> = null) => {
 			try {
 				return store.getItem(key);
 			} catch {
@@ -14,18 +29,24 @@ function safeStorage(store: Storage) {
 				return defaultValue;
 			}
 		},
-
-		setItem: (key: string, value: string) => {
+		key: (index, defaultValue: ReturnType<Storage["key"]> = null) => {
 			try {
-				store.setItem(key, value);
+				return store.key(index);
+			} catch {
+				// disabled or unavailable
+				return defaultValue;
+			}
+		},
+		removeItem: key => {
+			try {
+				store.removeItem(key);
 			} catch {
 				// disabled or unavailable
 			}
 		},
-
-		removeItem: (key: string) => {
+		setItem: (key, value) => {
 			try {
-				store.removeItem(key);
+				store.setItem(key, value);
 			} catch {
 				// disabled or unavailable
 			}
