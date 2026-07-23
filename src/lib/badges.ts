@@ -1,5 +1,6 @@
 import { browser } from "$app/env";
 import type { GitHubRelease } from "./server/github-api";
+import { local } from "./storage";
 
 /**
  * Extract the data from the record parameter which the key matches the argument.
@@ -30,7 +31,7 @@ export function getBadgeDataFromRecord<T>(
 export function getUnvisitedReleases<T extends GitHubRelease>(pkgName: string, releases: T[]): T[] {
 	if (!releases.length || !browser) return [];
 
-	const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
+	const lastVisitedItem = local.getItem(`last-visited-${pkgName}`);
 	if (!lastVisitedItem) {
 		// by default, if never visited, "new" packages are those newer than a week
 		return releases.filter(
@@ -56,7 +57,7 @@ export function isPackageNew(pkgName: string, releases: GitHubRelease[]) {
 	if (!browser) return false;
 	if (!releases.length) return true;
 
-	const isVisited = !!localStorage.getItem(`last-visited-${pkgName}`);
+	const isVisited = !!local.getItem(`last-visited-${pkgName}`);
 	if (isVisited) return false;
 
 	const oldestRelease = releases

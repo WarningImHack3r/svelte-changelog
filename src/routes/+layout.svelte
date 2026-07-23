@@ -51,8 +51,9 @@
 	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
 	import ScreenSize from "$lib/components/ScreenSize.svelte";
 	import Snowflakes from "$lib/components/Snowflakes.svelte";
-	import DesktopNavigation from "./DesktopNavigation.svelte";
 	import { waitFor } from "$lib/reactivity.svelte";
+	import { local } from "$lib/storage";
+	import DesktopNavigation from "./DesktopNavigation.svelte";
 
 	let { data, children } = $props();
 
@@ -155,11 +156,11 @@
 	let newsToDisplay = $state<(typeof news)[number]>();
 	const closedNewsKey = "closed-news";
 	function getClosedNewsIds() {
-		return JSON.parse(localStorage.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
+		return JSON.parse(local.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
 	}
 	function markCurrentNewsAsRead() {
 		if (!newsToDisplay) return;
-		localStorage.setItem(closedNewsKey, JSON.stringify([...getClosedNewsIds(), newsToDisplay.id]));
+		local.setItem(closedNewsKey, JSON.stringify([...getClosedNewsIds(), newsToDisplay.id]));
 		newsToDisplay = undefined;
 	}
 
@@ -213,10 +214,10 @@
 	$effect(() => {
 		// Legacy news key
 		const oldLsNewsKey = "closedNews";
-		const oldLsNewsValue = localStorage.getItem(oldLsNewsKey);
+		const oldLsNewsValue = local.getItem(oldLsNewsKey);
 		if (oldLsNewsValue) {
-			localStorage.setItem(closedNewsKey, oldLsNewsValue);
-			localStorage.removeItem(oldLsNewsKey);
+			local.setItem(closedNewsKey, oldLsNewsValue);
+			local.removeItem(oldLsNewsKey);
 		}
 
 		// News
