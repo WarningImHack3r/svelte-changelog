@@ -11,7 +11,7 @@
 	import { navigating, page } from "$app/state";
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import semver from "semver";
+	import { compare, compareReversed, getMinor, getPatch, tryParse } from "verkit";
 	import { groupBy } from "$lib/polyfills";
 	import { ALL_SLUG } from "$lib/types";
 	import * as Accordion from "$lib/components/ui/accordion";
@@ -57,7 +57,7 @@
 					packageName,
 					releases
 						.filter(({ prerelease }) => !prerelease)
-						.toSorted((a, b) => semver.rcompare(a.cleanVersion, b.cleanVersion))[0]
+						.toSorted((a, b) => compareReversed(a.cleanVersion, b.cleanVersion))[0]
 				]
 			)
 		)
@@ -72,7 +72,7 @@
 			Object.entries(groupBy(data.releases, ({ cleanName }) => cleanName)).map(
 				([packageName, releases = []]) => {
 					const allWithSemver = releases.flatMap(release => {
-						const coerced = semver.coerce(release.cleanVersion);
+						const coerced = tryParse(release.cleanVersion);
 						return coerced ? [{ coerced, ...release }] : [];
 					});
 					const uniqueMajors = [...new Set(allWithSemver.map(({ coerced }) => coerced.major))];
@@ -83,7 +83,7 @@
 								.map(major => {
 									const firstSorted = allWithSemver
 										.filter(({ coerced, prerelease }) => coerced.major === major && !prerelease)
-										.sort((a, b) => semver.compare(a.coerced, b.coerced))[0];
+										.sort((a, b) => compare(a.coerced, b.coerced))[0];
 									if (!firstSorted) return undefined;
 									const { coerced, ...rest } = firstSorted;
 									return [major, rest];
@@ -117,15 +117,11 @@
 				case "all":
 					return baseCondition;
 				case "major":
-					return (
-						baseCondition && semver.minor(cleanVersion) === 0 && semver.patch(cleanVersion) === 0
-					);
+					return baseCondition && getMinor(cleanVersion) === 0 && getPatch(cleanVersion) === 0;
 				case "minor":
-					return (
-						baseCondition && semver.minor(cleanVersion) > 0 && semver.patch(cleanVersion) === 0
-					);
+					return baseCondition && getMinor(cleanVersion) > 0 && getPatch(cleanVersion) === 0;
 				case "patch":
-					return baseCondition && semver.patch(cleanVersion) > 0;
+					return baseCondition && getPatch(cleanVersion) > 0;
 			}
 		})
 	);
@@ -329,13 +325,13 @@
 				{#each displayableReleases as release, index (release.id)}
 					{let latestRelease = $derived(latestReleases[release.cleanName])}
 					{let earliestForMajors = $derived(earliestsForMajors[release.cleanName])}
-					{let semVersion = $derived(semver.coerce(release.cleanVersion))}
-					{let semLatest = $derived(semver.coerce(latestRelease?.cleanVersion))}
+					{let semVersion = $derived(tryParse(release.cleanVersion))}
+					{let semLatest = $derived(latestRelease ? tryParse(latestRelease.cleanVersion) : null)}
 					{let isMajorRelease = $derived(
 						!release.prerelease &&
 							semVersion?.minor === 0 &&
 							semVersion?.patch === 0 &&
-							!semVersion?.prerelease.length
+							!semVersion?.prerelease?.length
 					)}
 					{let earliestOfNextMajor = $derived(
 						semVersion ? earliestForMajors?.[semVersion.major + 1] : undefined

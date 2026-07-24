@@ -32,7 +32,12 @@ function interpretPathname(pathname: string, parameters: Record<string, unknown>
 	return pathname
 		.split("/")
 		.map(p => {
-			const path = decodeURI(p);
+			let path: string | undefined;
+			try {
+				path = decodeURI(p);
+			} catch {
+				// decode error
+			}
 			if (!path || (!path.startsWith("{") && !path.endsWith("}"))) return path;
 			const name = path.slice(1, -1); // remove brackets
 			return parameters[name]?.toString() ?? path;

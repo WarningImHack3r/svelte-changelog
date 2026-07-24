@@ -1,5 +1,5 @@
 import type { PostHog } from "posthog-node";
-import semver from "semver";
+import { compareReversed, isGreater, isValid } from "verkit";
 import { ddebug, dlog, dwarn } from "$lib/logging";
 import type { Repository } from "$lib/repositories";
 import { type GitHubRelease, githubCache } from "$lib/server/github-api";
@@ -65,7 +65,11 @@ export async function getPackageReleases(
 							repoName: repo.repoName,
 							...release
 						});
-						dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
+						try {
+							dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
+						} catch {
+							dwarn(`Empty release tag name: ${release.name ?? release.tag_name}`);
+						}
 						return false;
 					}
 
@@ -80,7 +84,7 @@ export async function getPackageReleases(
 						);
 						return false;
 					}
-					if (semver.valid(version) === null) {
+					if (!isValid(version)) {
 						posthog?.captureException(new Error("Invalid version"), undefined, {
 							repo: `${repo.repoOwner}/${repo.repoName}`,
 							packageName,
@@ -98,7 +102,7 @@ export async function getPackageReleases(
 				.sort((a, b) => {
 					const [, firstVersion] = repo.metadataFromTag(a.tag_name);
 					const [, secondVersion] = repo.metadataFromTag(b.tag_name);
-					return semver.rcompare(firstVersion, secondVersion);
+					return compareReversed(firstVersion, secondVersion);
 				});
 			dlog("Final filtered count:", validReleases.length);
 
@@ -129,13 +133,13 @@ export async function getPackageReleases(
 			if (foundVersions.has(cleanVersion)) continue;
 
 			// If not, add its version to the set and itself to the final version
-			const currentNewestVersion = [...foundVersions].sort(semver.rcompare)[0];
+			const currentNewestVersion = [...foundVersions].sort(compareReversed)[0];
 			ddebug("Current newest version", currentNewestVersion ?? "<none>");
 			foundVersions.add(cleanVersion);
 			releases.push({ cleanName, cleanVersion, ...release });
 
 			// If it is newer than the newest we got, set this repo as the "final repo"
-			if (!currentNewestVersion || semver.gt(cleanVersion, currentNewestVersion)) {
+			if (!currentNewestVersion || isGreater(cleanVersion, currentNewestVersion)) {
 				ddebug(
 					`Current newest version "${currentNewestVersion ?? "<none>"}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as candidate repo`
 				);

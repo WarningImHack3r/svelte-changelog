@@ -39,7 +39,7 @@
 	import { confetti } from "@neoconfetti/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
-	import semver from "semver";
+	import { tryParse } from "verkit";
 	import type { GitHubRelease } from "$lib/server/github-api";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { Badge } from "$lib/components/ui/badge";
@@ -70,7 +70,7 @@
 	const placeholderRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 	const hashWithCommentRegex = /\b#(\d+)(#issuecomment-\d+)?/g;
 
-	let semVersion = $derived(semver.coerce(release.cleanVersion));
+	let semVersion = $derived(tryParse(release.cleanVersion));
 	let releaseDate = $derived(new Date(release.published_at ?? release.created_at));
 	let releaseBody = $derived.by(() => {
 		if (!release.body) return "_No release body_";
@@ -111,7 +111,7 @@
 		!release.prerelease &&
 			semVersion?.minor === 0 &&
 			semVersion?.patch === 0 &&
-			!semVersion?.prerelease.length
+			!semVersion?.prerelease?.length
 	);
 	let isOlderThanAWeek = $derived(releaseDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 7);
 
