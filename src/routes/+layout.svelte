@@ -158,9 +158,7 @@
 	const closedNewsKey = "closed-news";
 	function getClosedNewsIds() {
 		try {
-			return JSON.parse(
-				local.getItem(closedNewsKey) ?? "[]"
-			) as (typeof news)[number]["id"][];
+			return JSON.parse(local.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
 		} catch {
 			return [];
 		}
