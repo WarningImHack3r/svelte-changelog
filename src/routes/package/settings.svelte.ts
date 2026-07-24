@@ -1,5 +1,6 @@
 import { createContext } from "svelte";
 import { PersistedState } from "runed";
+import { local } from "$lib/storage";
 import type { PackageSettings } from "$lib/types";
 
 const DEFAULT_SETTINGS: PackageSettings = {
@@ -40,7 +41,7 @@ class PackagesSettings {
 			for (const k of Object.keys(DEFAULT_SETTINGS)) {
 				if (!(k in storedValue.current)) {
 					defaultSettings = { ...DEFAULT_SETTINGS, ...storedValue.current };
-					localStorage.removeItem(key);
+					local.removeItem(key);
 					skip = true;
 					break;
 				}
