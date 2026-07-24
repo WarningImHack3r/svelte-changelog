@@ -240,7 +240,7 @@
 				markdown={packageInfo.description}
 				inline
 				// "relative" + < 10 z-index to go below the security fix notice
-				class="relative -z-15 mt-2 max-w-full px-0 motion-safe:[view-transition-name:var(--vt-name)]"
+				class="relative -z-15 mt-2 max-w-full px-0 motion-safe:[view-transition-name:var(--vt-name)] sm:z-[unset] sm:[display:initial]"
 				additionalPlugins={[{ renderer: { p: Transparent } }]}
 			>
 				{#snippet a({ children, ...rest })}

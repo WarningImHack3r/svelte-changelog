@@ -28,7 +28,11 @@ export function stringifyError(error: unknown, stack = true): string {
 				return error.message;
 			}
 			if ("error" in error) return stringifyError(error.error);
-			return JSON.stringify(error);
+			try {
+				return JSON.stringify(error);
+			} catch {
+				return "<unserializable error>";
+			}
 		case "string":
 			return error;
 	}
