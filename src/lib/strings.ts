@@ -1,4 +1,4 @@
-import type { PID } from "$lib/types";
+import type { PID } from "#lib/types";
 
 /**
  * Converts a given error to a readable version

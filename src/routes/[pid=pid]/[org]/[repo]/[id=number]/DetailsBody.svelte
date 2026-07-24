@@ -5,14 +5,14 @@
 	import rehypeSlug from "rehype-slug";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
-	import { siteName } from "$lib/properties";
-	import type { GitHubRelease } from "$lib/server/github-api";
-	import type { ConditionalKeys, JSONCompatible, RemoveIndexSignature } from "$lib/types";
-	import { Button } from "$lib/components/ui/button";
-	import * as HoverCard from "$lib/components/ui/hover-card";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import Reactions from "$lib/components/Reactions.svelte";
-	import LinkRenderer from "$lib/components/renderers/LinkRenderer.svelte";
+	import { siteName } from "#lib/properties";
+	import type { GitHubRelease } from "#lib/server/github-api";
+	import type { ConditionalKeys, JSONCompatible, RemoveIndexSignature } from "#lib/types";
+	import { Button } from "#lib/components/ui/button";
+	import * as HoverCard from "#lib/components/ui/hover-card";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
+	import Reactions from "#lib/components/Reactions.svelte";
+	import LinkRenderer from "#lib/components/renderers/LinkRenderer.svelte";
 	import { shikiPlugin } from "./syntax-highlighting";
 
 	type Props = {
@@ -92,7 +92,8 @@
 						/^https:\/\/github.com\/(\S+)\/(\S+)\/(\S+)\/(\d+)(#[a-z]+-\d+)?$/
 					)}
 					{#if href && match}
-						{const [, org = "", repo = "", pid = "issues", id = ""] = [...match]}
+						{const [, org = "", repo = "", pid = "issues", idStr = ""] = [...match]}
+						{const id = +idStr}
 						<HoverCard.Root openDelay={300}>
 							<HoverCard.Content class="flex w-fit items-center justify-center px-6">
 								<Button

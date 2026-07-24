@@ -4,15 +4,15 @@
 	import { ArrowUpRight } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
-	import { siteName } from "$lib/properties";
-	import type { LinkedItem } from "$lib/server/github-api";
-	import type { JSONCompatible } from "$lib/types";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import * as Avatar from "$lib/components/ui/avatar";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import GHBadge from "$lib/components/GHBadge.svelte";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import Reactions from "$lib/components/Reactions.svelte";
+	import { siteName } from "#lib/properties";
+	import type { LinkedItem } from "#lib/server/github-api";
+	import type { JSONCompatible } from "#lib/types";
+	import * as Accordion from "#lib/components/ui/accordion";
+	import * as Avatar from "#lib/components/ui/avatar";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import GHBadge from "#lib/components/GHBadge.svelte";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
+	import Reactions from "#lib/components/Reactions.svelte";
 	import { dateTimeFormatter, externalEntityLink } from "./formatters";
 	import { shikiPlugin } from "./syntax-highlighting";
 
@@ -91,7 +91,7 @@
 								pid: "issues", // not always correct but the redirect will take care of that
 								org: entity.repository.owner,
 								repo: entity.repository.name,
-								id: `${entity.number}`
+								id: entity.number
 							})}
 							onclick={e => e.stopPropagation()}
 						>
@@ -136,7 +136,7 @@
 								pid: "issues", // not always correct but the redirect will take care of that
 								org: entity.repository.owner,
 								repo: entity.repository.name,
-								id: `${entity.number}`
+								id: entity.number
 							})}
 						>
 							Visit in {siteName}

@@ -7,16 +7,16 @@
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
-	import { pidFormatter } from "$lib/strings";
-	import type { PID } from "$lib/types";
-	import * as Alert from "$lib/components/ui/alert";
-	import * as Avatar from "$lib/components/ui/avatar";
-	import { Button } from "$lib/components/ui/button";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import GHBadge from "$lib/components/GHBadge.svelte";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import TopBanner from "$lib/components/TopBanner.svelte";
+	import { pidFormatter } from "#lib/strings";
+	import type { PID } from "#lib/types";
+	import * as Alert from "#lib/components/ui/alert";
+	import * as Avatar from "#lib/components/ui/avatar";
+	import { Button } from "#lib/components/ui/button";
+	import * as Tooltip from "#lib/components/ui/tooltip";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import GHBadge from "#lib/components/GHBadge.svelte";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
+	import TopBanner from "#lib/components/TopBanner.svelte";
 	import CollapsibleComments from "./CollapsibleComments.svelte";
 	import CollapsibleCommits from "./CollapsibleCommits.svelte";
 	import CollapsibleFiles from "./CollapsibleFiles.svelte";
@@ -267,7 +267,7 @@
 					pid: metadata.type,
 					org: metadata.org,
 					repo: metadata.repo,
-					id: `${info.number}`
+					id: info.number
 				})}
 				{files}
 			/>
@@ -293,7 +293,7 @@
 							pid: getLinkedEntityPID(metadata.type),
 							org: entity.repository.owner,
 							repo: entity.repository.name,
-							id: `${entity.number}`
+							id: entity.number
 						})}
 						variant="secondary"
 					>

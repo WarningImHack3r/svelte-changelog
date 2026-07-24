@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { siteLang } from "$lib/properties";
+	import { siteLang } from "#lib/properties";
 
 	const listFormatter = new Intl.ListFormat(siteLang);
 </script>
@@ -12,14 +12,14 @@
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import { compare, compareReversed, getMinor, getPatch, tryParse } from "verkit";
-	import { groupBy } from "$lib/polyfills";
-	import { ALL_SLUG } from "$lib/types";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import { Button } from "$lib/components/ui/button";
-	import { Separator } from "$lib/components/ui/separator";
-	import { Skeleton } from "$lib/components/ui/skeleton";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import TopBanner from "$lib/components/TopBanner.svelte";
+	import { groupBy } from "#lib/polyfills";
+	import { ALL_SLUG } from "#lib/types";
+	import * as Accordion from "#lib/components/ui/accordion";
+	import { Button } from "#lib/components/ui/button";
+	import { Separator } from "#lib/components/ui/separator";
+	import { Skeleton } from "#lib/components/ui/skeleton";
+	import * as Tooltip from "#lib/components/ui/tooltip";
+	import TopBanner from "#lib/components/TopBanner.svelte";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";

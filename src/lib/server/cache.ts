@@ -1,5 +1,5 @@
 import { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID } from "$app/env/private";
-import { derror, dwarn } from "$lib/logging";
+import { derror, dwarn } from "#lib/logging";
 
 /**
  * Runs a promise in the background without blocking the response.

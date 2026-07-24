@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { siteLang } from "$lib/properties";
+	import { siteLang } from "#lib/properties";
 
 	const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium",
@@ -25,11 +25,11 @@
 <script lang="ts">
 	import { pushState } from "$app/navigation";
 	import { page } from "$app/state";
-	import type { GitHubRelease } from "$lib/server/github-api";
-	import { Button, buttonVariants } from "$lib/components/ui/button";
-	import { Checkbox } from "$lib/components/ui/checkbox";
-	import * as Dialog from "$lib/components/ui/dialog";
-	import { Label } from "$lib/components/ui/label";
+	import type { GitHubRelease } from "#lib/server/github-api";
+	import { Button, buttonVariants } from "#lib/components/ui/button";
+	import { Checkbox } from "#lib/components/ui/checkbox";
+	import * as Dialog from "#lib/components/ui/dialog";
+	import { Label } from "#lib/components/ui/label";
 
 	type Props = {
 		currentPackage: string;
@@ -125,7 +125,6 @@
 	function clearParams() {
 		const newUrl = new URL(page.url.href);
 		newUrl.searchParams.delete("reset");
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		pushState(newUrl, page.state);
 	}
 </script>

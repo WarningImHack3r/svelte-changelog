@@ -7,14 +7,14 @@
 	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
 	import posthog from "posthog-js";
 	import { toast } from "svelte-sonner";
-	import type { Package } from "$lib/server/package-discoverer";
-	import { stringifyError } from "$lib/strings";
-	import { Button } from "$lib/components/ui/button";
-	import * as Collapsible from "$lib/components/ui/collapsible";
-	import { Separator } from "$lib/components/ui/separator";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import AnimatedCollapsibleContent from "$lib/components/AnimatedCollapsibleContent.svelte";
-	import MarkdownRenderer, { Transparent } from "$lib/components/MarkdownRenderer.svelte";
+	import type { Package } from "#lib/server/package-discoverer";
+	import { stringifyError } from "#lib/strings";
+	import { Button } from "#lib/components/ui/button";
+	import * as Collapsible from "#lib/components/ui/collapsible";
+	import { Separator } from "#lib/components/ui/separator";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import AnimatedCollapsibleContent from "#lib/components/AnimatedCollapsibleContent.svelte";
+	import MarkdownRenderer, { Transparent } from "#lib/components/MarkdownRenderer.svelte";
 
 	type Props = {
 		packageInfo: Package & {
@@ -223,8 +223,8 @@
 								}),
 								file
 							)}
-							data-sveltekit-preload-data="off"
-							data-sveltekit-preload-code="off"
+							data-sveltekit-preload-data={false}
+							data-sveltekit-preload-code={false}
 						>
 							{name}
 						</Button>

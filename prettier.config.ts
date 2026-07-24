@@ -34,9 +34,9 @@ const config: Config = {
 		"^@sveltejs/.*$",
 		"\\$(app|env)/.+$",
 		"<THIRD_PARTY_MODULES>",
-		"\\$lib/(?!components).+$",
-		"\\$lib/components/ui/.+$",
-		"\\$lib/components/.+$",
+		"#lib/(?!components).+$",
+		"#lib/components/ui/.+$",
+		"#lib/components/.+$",
 		"^\\.*/.+$"
 	],
 	importOrderSortSpecifiers: true

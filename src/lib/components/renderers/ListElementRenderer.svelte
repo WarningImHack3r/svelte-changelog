@@ -2,7 +2,7 @@
 	import type { Snippet } from "svelte";
 	import type { Attachment } from "svelte/attachments";
 	import { ArrowRight } from "@lucide/svelte";
-	import { Button } from "$lib/components/ui/button";
+	import { Button } from "#lib/components/ui/button";
 
 	type Props = {
 		children?: Snippet;

@@ -2,7 +2,7 @@ import { browser, dev } from "$app/env";
 import { POSTHOG_KEY } from "$app/env/public";
 import posthog from "posthog-js";
 import { defineBaseMetaTags } from "svelte-meta-tags";
-import { siteName } from "$lib/properties";
+import { siteName } from "#lib/properties";
 
 let phInit = false;
 

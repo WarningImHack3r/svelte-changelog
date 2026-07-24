@@ -1,8 +1,8 @@
 import { error } from "@sveltejs/kit";
-import { siteName } from "$lib/properties";
-import { tagResponse } from "$lib/server/cache";
-import { discoverer } from "$lib/server/package-discoverer";
-import { ALL_SLUG } from "$lib/types";
+import { siteName } from "#lib/properties";
+import { tagResponse } from "#lib/server/cache";
+import { discoverer } from "#lib/server/package-discoverer";
+import { ALL_SLUG } from "#lib/types";
 import { getPackageReleases, getPackagesReleases } from "../releases";
 
 export async function load({ params: { package: slugPackage }, setHeaders, locals }) {

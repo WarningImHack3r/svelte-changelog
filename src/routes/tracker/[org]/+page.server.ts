@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { uniqueRepos } from "$lib/repositories";
+import { uniqueRepos } from "#lib/repositories";
 
 export function load({ params }) {
 	// Load the first repo that has the org

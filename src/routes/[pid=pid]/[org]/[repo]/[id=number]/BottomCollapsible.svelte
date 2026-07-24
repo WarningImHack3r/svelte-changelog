@@ -2,8 +2,8 @@
 	import type { Snippet } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import type { Icon } from "@lucide/svelte";
-	import { cn } from "$lib/utils";
-	import * as Accordion from "$lib/components/ui/accordion";
+	import { cn } from "#lib/utils";
+	import * as Accordion from "#lib/components/ui/accordion";
 
 	type Props = {
 		icon?: typeof Icon;

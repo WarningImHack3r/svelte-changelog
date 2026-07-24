@@ -2,7 +2,7 @@
 	import type { ClassValue } from "svelte/elements";
 	import type { ResolvedPathname } from "$app/types";
 	import { NavigationMenu } from "bits-ui";
-	import { cn } from "$lib/utils";
+	import { cn } from "#lib/utils";
 
 	type Props = {
 		items?: {

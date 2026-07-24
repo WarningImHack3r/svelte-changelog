@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import { VERSION } from "svelte/compiler";
 	import { VERSION as KIT_VERSION } from "@sveltejs/kit";
-	import { siteLang } from "$lib/properties";
+	import { siteLang } from "#lib/properties";
 
 	const fullDateFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "full",
@@ -40,14 +40,14 @@
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
 	import { tryParse } from "verkit";
-	import type { GitHubRelease } from "$lib/server/github-api";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import { Badge } from "$lib/components/ui/badge";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import Reactions from "$lib/components/Reactions.svelte";
-	import ListElementRenderer from "$lib/components/renderers/ListElementRenderer.svelte";
+	import type { GitHubRelease } from "#lib/server/github-api";
+	import * as Accordion from "#lib/components/ui/accordion";
+	import { Badge } from "#lib/components/ui/badge";
+	import * as Tooltip from "#lib/components/ui/tooltip";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
+	import Reactions from "#lib/components/Reactions.svelte";
+	import ListElementRenderer from "#lib/components/renderers/ListElementRenderer.svelte";
 
 	type Props = {
 		index?: number;

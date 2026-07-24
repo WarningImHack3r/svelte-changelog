@@ -1,5 +1,5 @@
 import { definePageMetaTags } from "svelte-meta-tags";
-import { siteName } from "$lib/properties";
+import { siteName } from "#lib/properties";
 
 export function load({ url }) {
 	return definePageMetaTags({

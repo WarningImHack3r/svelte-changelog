@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
 	import { toast } from "svelte-sonner";
-	import type { GitHubRelease } from "$lib/server/github-api";
-	import type { Entries, JSONCompatible } from "$lib/types";
-	import { Badge } from "$lib/components/ui/badge";
-	import ReactionToast from "$lib/components/ReactionToast.svelte";
+	import type { GitHubRelease } from "#lib/server/github-api";
+	import type { Entries, JSONCompatible } from "#lib/types";
+	import { Badge } from "#lib/components/ui/badge";
+	import ReactionToast from "#lib/components/ReactionToast.svelte";
 
 	type Props = {
 		reactions?: JSONCompatible<GitHubRelease["reactions"]> | undefined;

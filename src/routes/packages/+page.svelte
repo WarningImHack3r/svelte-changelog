@@ -2,10 +2,10 @@
 	import { resolve } from "$app/paths";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "$lib/badges";
-	import { Badge } from "$lib/components/ui/badge";
-	import { Separator } from "$lib/components/ui/separator";
-	import { Toggle } from "$lib/components/ui/toggle";
+	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "#lib/badges";
+	import { Badge } from "#lib/components/ui/badge";
+	import { Separator } from "#lib/components/ui/separator";
+	import { Toggle } from "#lib/components/ui/toggle";
 
 	let { data } = $props();
 

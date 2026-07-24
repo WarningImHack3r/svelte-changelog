@@ -7,9 +7,9 @@ import {
 	siteLang,
 	siteName,
 	siteRepoName
-} from "$lib/properties";
-import { discoverer } from "$lib/server/package-discoverer";
-import { ALL_SLUG } from "$lib/types";
+} from "#lib/properties";
+import { discoverer } from "#lib/server/package-discoverer";
+import { ALL_SLUG } from "#lib/types";
 import { getPackageReleases, getPackagesReleases } from "../releases";
 
 const dottedAlphaNumRegex = /[A-z\d]+\.[A-z\d]+$/;

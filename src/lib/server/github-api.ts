@@ -22,11 +22,11 @@ import type {
 } from "@octokit/graphql-schema";
 import { App, Octokit } from "octokit";
 import { type RedisClientType, type RedisJSON, createClient } from "redis";
-import parseChangelog from "$lib/changelog-parser";
-import { ddebug, derror } from "$lib/logging";
-import type { Repository } from "$lib/repositories";
-import { stringifyError } from "$lib/strings";
-import type { Issues, JSONCompatible, PID, Pulls } from "$lib/types";
+import parseChangelog from "#lib/changelog-parser";
+import { ddebug, derror } from "#lib/logging";
+import type { Repository } from "#lib/repositories";
+import { stringifyError } from "#lib/strings";
+import type { Issues, JSONCompatible, PID, Pulls } from "#lib/types";
 import {
 	commit,
 	createOctokitResponse,
