@@ -4,14 +4,18 @@ import eslint from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import prettierConfig from "eslint-config-prettier/flat";
 import svelte from "eslint-plugin-svelte";
-import { defineConfig, globalIgnores } from "eslint/config";
+import { defineConfig, globalIgnores, includeIgnoreFile } from "eslint/config";
 import globals from "globals";
+import path from "node:path";
 import tseslint from "typescript-eslint";
 
 // TODO: remove that once there is a built-in solution somewhere within Svelte ESLint packages
 const { config: svelteConfig } = await loadConfig(".", { traverse: false });
+const gitignorePath = path.resolve(import.meta.dirname, ".gitignore");
 
 export default defineConfig(
+	includeIgnoreFile(gitignorePath),
+	globalIgnores(["src/lib/components/ui/", "src/lib/utils.[jt]s"]),
 	stylistic.configs.all,
 	eslint.configs.recommended,
 	tseslint.configs.strictTypeChecked,
@@ -103,12 +107,5 @@ export default defineConfig(
 	{
 		files: ["*.config.[jt]s"],
 		extends: [tseslint.configs.disableTypeChecked]
-	},
-	globalIgnores([
-		"build/",
-		".svelte-kit/",
-		"dist/",
-		"src/lib/components/ui/",
-		"src/lib/utils.[jt]s"
-	])
+	}
 );
