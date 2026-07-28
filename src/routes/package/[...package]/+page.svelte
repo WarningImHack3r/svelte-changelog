@@ -311,13 +311,24 @@
 						class="border-slate-600 bg-slate-400/20 selection:bg-white selection:text-slate-600 prose-a:text-slate-400"
 					>
 						{#snippet additionalContent()}
-							<Button
-								variant="link"
-								onclick={() => (activeSettingsReminder.current = true)}
-								class="ms-auto h-auto p-0 text-slate-400"
+							<div
+								class="ms-auto mt-2 flex flex-wrap items-center justify-end-safe gap-x-4 gap-y-2"
 							>
-								Remind me later for this package
-							</Button>
+								<Button
+									variant="link"
+									onclick={() => settingsUtils.reset(packageSettings.current)}
+									class="h-auto p-0 text-slate-400"
+								>
+									Reset all filters
+								</Button>
+								<Button
+									variant="link"
+									onclick={() => (activeSettingsReminder.current = true)}
+									class="h-auto p-0 text-slate-400"
+								>
+									Remind me later for this package
+								</Button>
+							</div>
 						{/snippet}
 					</TopBanner>
 				{/if}
