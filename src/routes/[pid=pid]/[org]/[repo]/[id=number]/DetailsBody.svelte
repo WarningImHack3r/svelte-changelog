@@ -89,7 +89,7 @@
 			<LinkRenderer attributes={props}>
 				{#snippet linkChildren(original)}
 					{const match = href?.match(
-						/^https:\/\/github.com\/(\S+)\/(\S+)\/(\S+)\/(\d+)(#[a-z]+-\d+)?$/
+						/^https:\/\/github.com\/(\S+)\/(\S+)\/(\S+)\/(\d+)(#[a-z]+[-_][a-z\d]+)?$/
 					)}
 					{#if href && match}
 						{const [, org = "", repo = "", pid = "issues", id = ""] = [...match]}
