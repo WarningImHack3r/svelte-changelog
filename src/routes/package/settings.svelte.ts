@@ -25,7 +25,9 @@ export const settingsUtils = {
 			.filter(Boolean)
 			.map(item => `- ${item}`)
 			.join("\n");
-	}
+	},
+
+	reset: (settings: PackageSettings) => Object.assign(settings, DEFAULT_SETTINGS)
 };
 
 class PackagesSettings {
@@ -39,6 +41,7 @@ class PackagesSettings {
 			let skip = false;
 			for (const k of Object.keys(DEFAULT_SETTINGS)) {
 				if (!(k in storedValue.current)) {
+					// update existing storage values with missing keys
 					defaultSettings = { ...DEFAULT_SETTINGS, ...storedValue.current };
 					localStorage.removeItem(key);
 					skip = true;
