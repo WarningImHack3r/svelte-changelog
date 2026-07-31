@@ -30,6 +30,7 @@
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { Label } from "$lib/components/ui/label";
+	import { local } from "$lib/storage";
 
 	type Props = {
 		currentPackage: string;
@@ -76,7 +77,7 @@
 			releases
 				.then(r => {
 					if (r) {
-						const lastVisitedItem = localStorage.getItem(`last-visited-${pkgName}`);
+						const lastVisitedItem = local.getItem(`last-visited-${pkgName}`);
 						if (lastVisitedItem) {
 							const lastVisitedDate = new Date(lastVisitedItem);
 							// will nuke visits if lastVisitedDate < resetDate (targetDate) && releases between them
@@ -109,8 +110,8 @@
 				pkgName.localeCompare(currentPackage, undefined, { sensitivity: "base" }) !== 0
 			)
 				continue;
-			const item = localStorage.getItem(`last-visited-${pkgName}`);
-			if (item) localStorage.setItem(`last-visited-${pkgName}`, targetDate.toISOString());
+			const item = local.getItem(`last-visited-${pkgName}`);
+			if (item) local.setItem(`last-visited-${pkgName}`, targetDate.toISOString());
 		}
 
 		// refresh the page with the removed query param

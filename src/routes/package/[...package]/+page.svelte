@@ -20,6 +20,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import TopBanner from "$lib/components/TopBanner.svelte";
+	import { local } from "$lib/storage";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
@@ -99,11 +100,11 @@
 
 	let lastUpdateDate = $state<Date>();
 	$effect(() => {
-		const lastVisit = localStorage.getItem(
+		const lastVisit = local.getItem(
 			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`
 		);
 		if (lastVisit) lastUpdateDate = new Date(lastVisit);
-		localStorage.setItem(
+		local.setItem(
 			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`,
 			new Date().toISOString()
 		);
