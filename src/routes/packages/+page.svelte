@@ -6,8 +6,8 @@
 	import { Badge } from "$lib/components/ui/badge";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Toggle } from "$lib/components/ui/toggle";
-
-	let { data } = $props();
+	import { getDisplayablePackages } from "../packages.remote";
+	import { getAllReleases } from "../all-releases.remote";
 
 	// Pins
 	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
@@ -20,7 +20,7 @@
 </script>
 
 <ul class="space-y-8">
-	{#each data.displayablePackages as { category, packages } (category)}
+	{#each await getDisplayablePackages() as { category, packages } (category)}
 		{let sortedPackages = $derived(
 			packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
 				const isAPinned = pinnedROProxy.has(pkgA.name);
@@ -56,7 +56,7 @@
 			<ul class="mt-2">
 				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{let viewTransitionName = $derived(pkg.name.replace(/[@/-]/g, ""))}
-					{let linkedBadgeData = $derived(getBadgeDataFromRecord(data.allReleases, pkg.name))}
+					{let linkedBadgeData = $derived(getBadgeDataFromRecord(await getAllReleases(), pkg.name))}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}

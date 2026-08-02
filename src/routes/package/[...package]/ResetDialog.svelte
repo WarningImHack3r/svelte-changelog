@@ -25,26 +25,22 @@
 <script lang="ts">
 	import { pushState } from "$app/navigation";
 	import { page } from "$app/state";
-	import type { GitHubRelease } from "$lib/server/github-api";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { Label } from "$lib/components/ui/label";
 	import { local } from "$lib/storage";
+	import { getAllReleases } from "../../all-releases.remote";
 
 	type Props = {
 		currentPackage: string;
 		resetDate: Date | undefined;
-		allPackageReleases: Record<
-			string,
-			Promise<
-				{ releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] } | undefined
-			>
-		>;
 	};
 
-	let { currentPackage, resetDate, allPackageReleases }: Props = $props();
+	let { currentPackage, resetDate }: Props = $props();
 	let id = $props.id();
+
+	const allPackageReleases = await getAllReleases();
 
 	const currentDate = new Date();
 

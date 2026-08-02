@@ -1,17 +1,19 @@
 import { error } from "@sveltejs/kit";
+import { getRequestEvent, query } from "$app/server";
+import * as v from "valibot";
 import { siteName } from "$lib/properties";
-import { tagResponse } from "$lib/server/cache";
 import { discoverer } from "$lib/server/package-discoverer";
 import { ALL_SLUG } from "$lib/types";
-import { getPackageReleases, getPackagesReleases } from "../releases";
+import { getPackageReleases, getPackagesReleases } from "../../releases";
 
-export async function load({ params: { package: slugPackage }, setHeaders, locals }) {
+export const getRouteReleases = query(v.optional(v.string()), async slugPackage => {
+	if (!slugPackage) error(400);
+	const { locals } = getRequestEvent();
 	// 1. Get all the discovered packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();
 
 	// 1.5. Return a set for all the packages
 	if (slugPackage.localeCompare(ALL_SLUG, undefined, { sensitivity: "base" }) === 0) {
-		await tagResponse(setHeaders, "all-packages");
 		return {
 			currentPackage: {
 				category: {
@@ -33,11 +35,6 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 	for (const { category, packages } of categorizedPackages) {
 		if (packages.length < 2) continue; // categories with 1 package are not visitable
 		if (slugPackage.localeCompare(category.slug, undefined, { sensitivity: "base" }) === 0) {
-			await tagResponse(
-				setHeaders,
-				"all-packages",
-				...packages.map(({ pkg }) => `package-${pkg.name.toLowerCase()}`)
-			);
 			return {
 				currentPackage: {
 					category,
@@ -75,10 +72,7 @@ export async function load({ params: { package: slugPackage }, setHeaders, local
 	);
 	if (!packageReleases) error(404, `Unable to retrieve releases for ${slugPackage}`);
 
-	// Cache management
-	await tagResponse(setHeaders, "all-packages", `package-${slugPackage.toLowerCase()}`); // no need to add it for `/all` as we won't invalidate it manually (for now)
-
 	// 3. Return the data
 	const { releasesRepo: currentPackage, releases } = packageReleases;
 	return { currentPackage, releases };
-}
+});
