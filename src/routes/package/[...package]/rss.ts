@@ -10,7 +10,7 @@ import {
 } from "#lib/properties.js";
 import { discoverer } from "#lib/server/package-discoverer.js";
 import { ALL_SLUG } from "#lib/types.js";
-import { getPackageReleases, getPackagesReleases } from "../releases";
+import { getPackageReleases, getPackagesReleases } from "../../releases";
 
 const dottedAlphaNumRegex = /[A-z\d]+\.[A-z\d]+$/;
 /**
