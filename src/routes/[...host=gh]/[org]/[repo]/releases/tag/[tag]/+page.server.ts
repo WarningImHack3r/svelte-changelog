@@ -10,8 +10,7 @@ export function load({ params: { org, repo, tag } }) {
 			repo.localeCompare(repoName, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!repository) {
-		error(404, {
-			message: "Unknown repository",
+		error(404, "Unknown repository", {
 			description: `${siteName} can only display releases for the packages of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			links: [
 				{
@@ -27,8 +26,7 @@ export function load({ params: { org, repo, tag } }) {
 	}
 	const [name, version] = repository.metadataFromTag(tag);
 	if (!name) {
-		error(400, {
-			message: "Failed to parse a valid package name from the release tag",
+		error(400, "Failed to parse a valid package name from the release tag", {
 			description:
 				"Is this tag a valid package? If so, please open an issue from the GitHub link in the navigation bar.",
 			links: [

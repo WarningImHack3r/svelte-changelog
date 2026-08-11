@@ -11,8 +11,8 @@ const client = POSTHOG_KEY
 		})
 	: undefined;
 
-export async function handleError({ error, status, event, message }) {
-	if (status === 404) return;
+export async function handleError({ kind, error, status, event, message }) {
+	if (kind === "app" || kind === "framework") return;
 	const stringified = stringifyError(error);
 	dfatal(`[SERVER][${status}] ${stringified}`);
 	client?.captureException(error instanceof Error ? error : new Error(stringified), undefined, {

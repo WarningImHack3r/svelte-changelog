@@ -28,8 +28,7 @@ export async function load({ params, setHeaders }) {
 			params.repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!knownRepo) {
-		error(404, {
-			message: "Unknown repository",
+		error(404, "Unknown repository", {
 			description: `${siteName} can only track repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			links: [
 				{

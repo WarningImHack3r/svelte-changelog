@@ -3,8 +3,7 @@ import { resolve } from "$app/paths";
 import { siteName } from "#lib/properties";
 
 export function load({ params }) {
-	error(400, {
-		message: "Unable to visit a repository",
+	error(400, "Unable to visit a repository", {
 		description: `Paste a whole PR/issue/discussion link to display it in ${siteName}.`,
 		links: [
 			{

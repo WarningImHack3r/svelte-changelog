@@ -21,8 +21,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 			repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!dev && !isKnownRepo) {
-		error(404, {
-			message: "Unknown repository",
+		error(404, "Unknown repository", {
 			description: `${siteName} can only display the details of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			links: [
 				{
