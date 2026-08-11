@@ -8,6 +8,7 @@
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
+	import { snapshot } from "$app/navigation";
 	import { navigating, page } from "$app/state";
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
@@ -21,7 +22,6 @@
 	import * as Tooltip from "#lib/components/ui/tooltip";
 	import TopBanner from "#lib/components/TopBanner.svelte";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
-	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
 	import ResetDialog from "./ResetDialog.svelte";
@@ -179,10 +179,10 @@
 		)
 	);
 
-	export const snapshot: Snapshot<typeof expandableReleases> = {
+	snapshot<typeof expandableReleases>({
 		capture: () => expandableReleases,
 		restore: item => (expandableReleases = item)
-	};
+	});
 
 	/**
 	 * Regular expressions that represent changelog lines where support for something
