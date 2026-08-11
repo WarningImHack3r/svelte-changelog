@@ -23,7 +23,7 @@
 </script>
 
 <script lang="ts">
-	import { pushState } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import type { GitHubRelease } from "#lib/server/github-api";
 	import { Button, buttonVariants } from "#lib/components/ui/button";
@@ -125,7 +125,7 @@
 	function clearParams() {
 		const newUrl = new URL(page.url.href);
 		newUrl.searchParams.delete("reset");
-		pushState(newUrl, page.state);
+		void goto(newUrl, { state: page.state, shallow: true });
 	}
 </script>
 

@@ -3,7 +3,7 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { browser } from "$app/env";
-	import { replaceState } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
@@ -48,7 +48,7 @@
 		const element = document.getElementById(page.url.hash.slice(1));
 		if (!element) {
 			// remove unwanted hashes, like those from GitHub if coming from redirection
-			replaceState("", {});
+			void goto(new URL(page.url.href), { shallow: true, replace: true });
 			return;
 		}
 		element.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
