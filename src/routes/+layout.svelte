@@ -54,6 +54,7 @@
 	import DesktopNavigation from "./DesktopNavigation.svelte";
 	import { derror } from "#lib/logging.js";
 	import { waitFor } from "#lib/reactivity.svelte.js";
+	import { local } from "#lib/storage.js";
 
 	let { data, children } = $props();
 
@@ -157,9 +158,7 @@
 	const closedNewsKey = "closed-news";
 	function getClosedNewsIds() {
 		try {
-			return JSON.parse(
-				localStorage.getItem(closedNewsKey) ?? "[]"
-			) as (typeof news)[number]["id"][];
+			return JSON.parse(local.getItem(closedNewsKey) ?? "[]") as (typeof news)[number]["id"][];
 		} catch {
 			return [];
 		}
@@ -167,10 +166,7 @@
 	function markCurrentNewsAsRead() {
 		if (!newsToDisplay) return;
 		try {
-			localStorage.setItem(
-				closedNewsKey,
-				JSON.stringify([...getClosedNewsIds(), newsToDisplay.id])
-			);
+			local.setItem(closedNewsKey, JSON.stringify([...getClosedNewsIds(), newsToDisplay.id]));
 			newsToDisplay = undefined;
 		} catch (e) {
 			derror(e);

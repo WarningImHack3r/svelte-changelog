@@ -13,14 +13,15 @@
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import { compare, compareReversed, getMinor, getPatch, tryParse } from "verkit";
-	import { groupBy } from "#lib/polyfills.js";
-	import { ALL_SLUG } from "#lib/types.js";
 	import * as Accordion from "#lib/components/ui/accordion/index.js";
 	import { Button } from "#lib/components/ui/button/index.js";
 	import { Separator } from "#lib/components/ui/separator/index.js";
 	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
 	import TopBanner from "#lib/components/TopBanner.svelte";
+	import { groupBy } from "#lib/polyfills.js";
+	import { local } from "#lib/storage.js";
+	import { ALL_SLUG } from "#lib/types.js";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
@@ -99,11 +100,11 @@
 
 	let lastUpdateDate = $state<Date>();
 	$effect(() => {
-		const lastVisit = localStorage.getItem(
+		const lastVisit = local.getItem(
 			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`
 		);
 		if (lastVisit) lastUpdateDate = new Date(lastVisit);
-		localStorage.setItem(
+		local.setItem(
 			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`,
 			new Date().toISOString()
 		);

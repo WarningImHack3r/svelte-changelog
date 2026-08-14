@@ -77,7 +77,7 @@
 	} from "@pierre/diffs";
 	import { mode } from "mode-watcher";
 
-	type Props = Omit<FileDiffRenderProps<T>, "containerWrapper" | "fileContainer"> & {
+	type Props = FileDiffRenderProps<T> & {
 		options: FileDiffOptions<T>;
 		langs?: (SupportedLanguages | (string & {}))[];
 	};
