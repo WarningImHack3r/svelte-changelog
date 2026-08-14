@@ -2,7 +2,7 @@
 	import type { Snippet } from "svelte";
 	import type { ClassValue } from "svelte/elements";
 	import type { Icon } from "@lucide/svelte";
-	import { cn } from "#lib/utils.ts";
+	import { cn } from "#lib/utils.js";
 	import * as Accordion from "#lib/components/ui/accordion/index.js";
 
 	type Props = {
