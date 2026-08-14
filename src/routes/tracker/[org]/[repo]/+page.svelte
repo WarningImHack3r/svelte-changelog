@@ -2,14 +2,14 @@
 	import { resolve } from "$app/paths";
 	import { Image, Info, LoaderCircle, TriangleAlert } from "@lucide/svelte";
 	import remarkGitHub from "remark-github";
-	import { buttonVariants } from "#lib/components/ui/button";
-	import * as Dialog from "#lib/components/ui/dialog";
-	import { Separator } from "#lib/components/ui/separator";
-	import * as Tooltip from "#lib/components/ui/tooltip";
+	import { buttonVariants } from "#lib/components/ui/button/index.js";
+	import * as Dialog from "#lib/components/ui/dialog/index.js";
+	import { Separator } from "#lib/components/ui/separator/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
 	import { animatedClasses } from "#lib/components/AnimatedButton.svelte";
 	import GHBadge from "#lib/components/GHBadge.svelte";
 	import MarkdownRenderer, { Transparent } from "#lib/components/MarkdownRenderer.svelte";
-	import { siteLang } from "#lib/properties";
+	import { siteLang } from "#lib/properties.js";
 
 	let { data, params } = $props();
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { siteName } from "#lib/properties";
+	import { siteName } from "#lib/properties.js";
 
 	type Props = {
 		eyebrow?: string;

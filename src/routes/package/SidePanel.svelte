@@ -4,18 +4,18 @@
 	import { page } from "$app/state";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "#lib/badges";
-	import type { GitHubRelease } from "#lib/server/github-api";
-	import type { CategorizedPackage } from "#lib/server/package-discoverer";
-	import { type PackageSettings, type Prettify, expandStates, releasesTypes } from "#lib/types";
-	import { cn } from "#lib/utils";
-	import { Badge } from "#lib/components/ui/badge";
-	import * as Card from "#lib/components/ui/card";
-	import { Checkbox } from "#lib/components/ui/checkbox";
-	import { Label } from "#lib/components/ui/label";
-	import { Separator } from "#lib/components/ui/separator";
-	import { Toggle } from "#lib/components/ui/toggle";
-	import * as ToggleGroup from "#lib/components/ui/toggle-group";
+	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "#lib/badges.js";
+	import type { GitHubRelease } from "#lib/server/github-api.js";
+	import type { CategorizedPackage } from "#lib/server/package-discoverer.js";
+	import { type PackageSettings, type Prettify, expandStates, releasesTypes } from "#lib/types.js";
+	import { cn } from "#lib/utils.js";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import * as Card from "#lib/components/ui/card/index.js";
+	import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import { Separator } from "#lib/components/ui/separator/index.js";
+	import { Toggle } from "#lib/components/ui/toggle/index.js";
+	import * as ToggleGroup from "#lib/components/ui/toggle-group/index.js";
 
 	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
 

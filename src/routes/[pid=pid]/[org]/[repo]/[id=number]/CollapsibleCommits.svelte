@@ -5,11 +5,11 @@
 		GitPullRequestClosed,
 		GitPullRequestCreateArrow
 	} from "@lucide/svelte";
-	import type { PullRequestDetails } from "#lib/server/github-api";
-	import type { JSONCompatible } from "#lib/types";
-	import * as Avatar from "#lib/components/ui/avatar";
-	import { Badge } from "#lib/components/ui/badge";
-	import * as Tooltip from "#lib/components/ui/tooltip";
+	import type { PullRequestDetails } from "#lib/server/github-api.js";
+	import type { JSONCompatible } from "#lib/types.js";
+	import * as Avatar from "#lib/components/ui/avatar/index.js";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
 	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
 	import Step from "#lib/components/Step.svelte";
 	import Steps from "#lib/components/Steps.svelte";

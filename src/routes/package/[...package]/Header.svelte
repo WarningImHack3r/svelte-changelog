@@ -7,11 +7,11 @@
 	import { ChevronRight, Copy, Rss } from "@lucide/svelte";
 	import posthog from "posthog-js";
 	import { toast } from "svelte-sonner";
-	import type { Package } from "#lib/server/package-discoverer";
-	import { stringifyError } from "#lib/strings";
-	import { Button } from "#lib/components/ui/button";
-	import * as Collapsible from "#lib/components/ui/collapsible";
-	import { Separator } from "#lib/components/ui/separator";
+	import type { Package } from "#lib/server/package-discoverer.js";
+	import { stringifyError } from "#lib/strings.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import * as Collapsible from "#lib/components/ui/collapsible/index.js";
+	import { Separator } from "#lib/components/ui/separator/index.js";
 	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
 	import AnimatedCollapsibleContent from "#lib/components/AnimatedCollapsibleContent.svelte";
 	import MarkdownRenderer, { Transparent } from "#lib/components/MarkdownRenderer.svelte";

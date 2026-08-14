@@ -2,8 +2,8 @@
 	import { onNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { Menu } from "@lucide/svelte";
-	import { uniqueRepos } from "#lib/repositories";
-	import * as Sheet from "#lib/components/ui/sheet";
+	import { uniqueRepos } from "#lib/repositories.js";
+	import * as Sheet from "#lib/components/ui/sheet/index.js";
 	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
 	import RepoSidePanel from "./RepoSidePanel.svelte";
 

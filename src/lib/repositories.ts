@@ -1,5 +1,5 @@
-import { uniq } from "#lib/array";
-import type { Category, Entries, Prettify, RepoEntry, RepoInfo, WithRequired } from "#lib/types";
+import { uniq } from "#lib/array.js";
+import type { Category, Entries, Prettify, RepoEntry, RepoInfo, WithRequired } from "#lib/types.js";
 
 const vPrefixRegex = /^v/;
 const containsAtRegex = /@\d/;

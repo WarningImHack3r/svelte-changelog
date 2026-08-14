@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { siteLang } from "#lib/properties";
+	import { siteLang } from "#lib/properties.js";
 
 	const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium",
@@ -25,11 +25,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import type { GitHubRelease } from "#lib/server/github-api";
-	import { Button, buttonVariants } from "#lib/components/ui/button";
-	import { Checkbox } from "#lib/components/ui/checkbox";
-	import * as Dialog from "#lib/components/ui/dialog";
-	import { Label } from "#lib/components/ui/label";
+	import type { GitHubRelease } from "#lib/server/github-api.js";
+	import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
+	import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+	import * as Dialog from "#lib/components/ui/dialog/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
 
 	type Props = {
 		currentPackage: string;

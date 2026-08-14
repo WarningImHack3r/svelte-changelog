@@ -1,6 +1,6 @@
 import { defineParams } from "@sveltejs/kit/params";
 import * as v from "valibot";
-import type { PID } from "#lib/types";
+import type { PID } from "#lib/types.js";
 
 const urlSchemeRegex = /^https?:\/\/?/;
 const githubDotCom = "github.com";

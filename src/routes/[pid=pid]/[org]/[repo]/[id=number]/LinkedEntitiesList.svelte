@@ -4,11 +4,11 @@
 	import { ArrowUpRight } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import remarkGitHub from "remark-github";
-	import { siteName } from "#lib/properties";
-	import type { LinkedItem } from "#lib/server/github-api";
-	import type { JSONCompatible } from "#lib/types";
-	import * as Accordion from "#lib/components/ui/accordion";
-	import * as Avatar from "#lib/components/ui/avatar";
+	import { siteName } from "#lib/properties.js";
+	import type { LinkedItem } from "#lib/server/github-api.js";
+	import type { JSONCompatible } from "#lib/types.js";
+	import * as Accordion from "#lib/components/ui/accordion/index.js";
+	import * as Avatar from "#lib/components/ui/avatar/index.js";
 	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
 	import GHBadge from "#lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";

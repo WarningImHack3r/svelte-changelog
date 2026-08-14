@@ -2,7 +2,7 @@
 	import { onNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Menu } from "@lucide/svelte";
-	import * as Sheet from "#lib/components/ui/sheet";
+	import * as Sheet from "#lib/components/ui/sheet/index.js";
 	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
 	import SidePanel from "./SidePanel.svelte";
 	import { initPackageSettings } from "./settings.svelte";

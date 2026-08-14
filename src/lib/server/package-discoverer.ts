@@ -1,8 +1,8 @@
 import { dirname } from "node:path";
-import { uniq } from "#lib/array";
-import { dlog } from "#lib/logging";
-import { type Repository, publicRepos } from "#lib/repositories";
-import type { Prettify } from "#lib/types";
+import { uniq } from "#lib/array.js";
+import { dlog } from "#lib/logging.js";
+import { type Repository, publicRepos } from "#lib/repositories.js";
+import type { Prettify } from "#lib/types.js";
 import { GitHubAPI, githubCache } from "./github-api";
 
 export type Package = {

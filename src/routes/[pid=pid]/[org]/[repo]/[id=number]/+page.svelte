@@ -7,12 +7,12 @@
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
-	import { pidFormatter } from "#lib/strings";
-	import type { PID } from "#lib/types";
-	import * as Alert from "#lib/components/ui/alert";
-	import * as Avatar from "#lib/components/ui/avatar";
-	import { Button } from "#lib/components/ui/button";
-	import * as Tooltip from "#lib/components/ui/tooltip";
+	import { pidFormatter } from "#lib/strings.js";
+	import type { PID } from "#lib/types.js";
+	import * as Alert from "#lib/components/ui/alert/index.js";
+	import * as Avatar from "#lib/components/ui/avatar/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
 	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
 	import GHBadge from "#lib/components/GHBadge.svelte";
 	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
