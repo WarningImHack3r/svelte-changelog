@@ -100,6 +100,13 @@
     				}
     			`,
 				disableErrorHandling: true,
+				loadDiffFiles: async metadata => {
+					const response = await fetch("/api/files?path=" + encodeURIComponent(metadata.name));
+
+					// Return { oldFile, newFile }, or { oldFile: null, newFile }
+					// for pure renames.
+					return { oldFile, newFile };
+				},
 				...options
 			},
 			getWorker({ ...options, langs })
