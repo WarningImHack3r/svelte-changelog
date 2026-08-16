@@ -85,7 +85,8 @@ export default defineConfig(
 	{
 		languageOptions: {
 			parserOptions: {
-				projectService: true
+				projectService: true,
+				extraFileExtensions: [".svelte"]
 			},
 			globals: {
 				...globals.browser,
