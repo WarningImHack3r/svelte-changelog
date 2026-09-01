@@ -21,7 +21,13 @@ export default defineConfig(({ mode }) => {
 					// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 					relative: false
 				},
+				compilerOptions: {
+					experimental: {
+						async: true
+					}
+				},
 				experimental: {
+					remoteFunctions: true,
 					instrumentation: {
 						server: true
 					},

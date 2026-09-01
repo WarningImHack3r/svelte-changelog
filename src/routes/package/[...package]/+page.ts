@@ -1,64 +1,34 @@
 import { definePageMetaTags } from "svelte-meta-tags";
+import { getRouteReleases } from "./releases.remote";
 
-const durationRegex = /(\d+)([A-Za-z])/g;
-const unitToSeconds: Record<string, number> = {
-	y: 12 * 30 * 24 * 60 * 60,
-	m: 30 * 24 * 60 * 60,
-	w: 7 * 24 * 60 * 60,
-	d: 24 * 60 * 60,
-	h: 60 * 60
-};
-function parseQueryParamDuration(param: string): Date | undefined {
-	durationRegex.lastIndex = 0; // "reset" the regex consumption as global regex are stateful!!
-	if (!param || !durationRegex.test(param)) return undefined;
-	durationRegex.lastIndex = 0;
-
-	const resetValues: typeof unitToSeconds = {};
-	for (const [, num, unit] of param.matchAll(durationRegex) ?? []) {
-		if (!num || !+num || !unit) continue;
-		resetValues[unit] = +num; // ensure the last gets used with duplicates
-	}
-
-	let targetDate = Date.now();
-	for (const [unit, num] of Object.entries(resetValues)) {
-		const secs = unitToSeconds[unit.toLowerCase()];
-		if (!secs) continue;
-		targetDate -= num * secs * 1_000;
-	}
-	return new Date(targetDate);
-}
-
-export function load({ data, url }) {
-	return {
-		...data,
-		resetDate: parseQueryParamDuration(url.searchParams.get("reset") ?? ""),
-		...definePageMetaTags({
-			title: data.currentPackage.pkg.name,
-			openGraph: {
-				images: [
-					{
-						get url() {
-							/*
-							 * theorically, npm packages can't have a slash; the only possible
-							 * slash comes from the @scope.
-							 * but let's be extra careful just for fun.
-							 */
-							const [first, ...rest] = data.currentPackage.pkg.name.split("/");
-							const ogUrl = new URL("og", url.origin);
-							if (first && rest.length) ogUrl.searchParams.set("eyebrow", first);
-							ogUrl.searchParams.set("title", rest.join("/") || data.currentPackage.pkg.name);
-							ogUrl.searchParams.set(
-								"description",
-								`${data.currentPackage.repoOwner}/${data.currentPackage.repoName}`
-							);
-							return ogUrl.href;
-						}
+export async function load({ url, params: { package: slugPackage } }) {
+	const { currentPackage } = await getRouteReleases(slugPackage);
+	return definePageMetaTags({
+		title: currentPackage.pkg.name,
+		openGraph: {
+			images: [
+				{
+					get url() {
+						/*
+						 * theorically, npm packages can't have a slash; the only possible
+						 * slash comes from the @scope.
+						 * but let's be extra careful just for fun.
+						 */
+						const [first, ...rest] = currentPackage.pkg.name.split("/");
+						const ogUrl = new URL("og", url.origin);
+						if (first && rest.length) ogUrl.searchParams.set("eyebrow", first);
+						ogUrl.searchParams.set("title", rest.join("/") || currentPackage.pkg.name);
+						ogUrl.searchParams.set(
+							"description",
+							`${currentPackage.repoOwner}/${currentPackage.repoName}`
+						);
+						return ogUrl.href;
 					}
-				]
-			},
-			twitter: {
-				cardType: "summary_large_image"
-			}
-		})
-	};
+				}
+			]
+		},
+		twitter: {
+			cardType: "summary_large_image"
+		}
+	});
 }

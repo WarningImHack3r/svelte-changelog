@@ -1,67 +1,9 @@
 <script lang="ts">
-	import { onNavigate } from "$app/navigation";
-	import { page } from "$app/state";
-	import { Menu } from "@lucide/svelte";
-	import * as Sheet from "$lib/components/ui/sheet";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import SidePanel from "./SidePanel.svelte";
 	import { initPackageSettings } from "./settings.svelte";
 
-	let { data, children } = $props();
+	let { children } = $props();
 
-	onNavigate(({ from, to, type }) => {
-		if (from?.route.id !== to?.route.id || type === "form") return;
-		open = false;
-	});
-
-	let open = $state(false);
-	const sharedSettings = initPackageSettings();
-	let packageSettings = $derived(sharedSettings.get(page.data.currentPackage.pkg.name));
+	initPackageSettings();
 </script>
 
-<div class="relative flex gap-8">
-	<div class="flex-1">
-		{@render children?.()}
-	</div>
-
-	<Sheet.Root bind:open>
-		<Sheet.Trigger>
-			{#snippet child({ props })}
-				<AnimatedButton
-					{...props}
-					variant="secondary"
-					class={[
-						"absolute right-0 mt-12 ml-auto lg:hidden",
-						page.data.currentPackage.pkg.description?.length && "mt-12 sm:mt-16"
-					]}
-				>
-					<Menu />
-					<span class="sr-only">Packages list menu</span>
-				</AnimatedButton>
-			{/snippet}
-		</Sheet.Trigger>
-		<Sheet.Content class="overflow-y-auto">
-			<Sheet.Header>
-				<Sheet.Title>Packages</Sheet.Title>
-			</Sheet.Header>
-			<SidePanel
-				headless
-				packageName={page.data.currentPackage.pkg.name}
-				allPackages={data.displayablePackages}
-				otherReleases={data.allReleases}
-				bind:settings={packageSettings.current}
-			/>
-		</Sheet.Content>
-	</Sheet.Root>
-
-	<SidePanel
-		packageName={page.data.currentPackage.pkg.name}
-		allPackages={data.displayablePackages}
-		otherReleases={data.allReleases}
-		class={[
-			"mt-35 hidden h-fit w-100 shrink-0 lg:flex",
-			page.data.currentPackage.pkg.description?.length && "mt-44"
-		]}
-		bind:settings={packageSettings.current}
-	/>
-</div>
+{@render children?.()}
