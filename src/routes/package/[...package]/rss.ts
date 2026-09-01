@@ -25,7 +25,7 @@ function getBaseFeed(url: URL, title: string, mode: "all" | "single" = "single")
 		copyright: `${authorFullName} & GitHub Inc.`,
 		description: `The releases feed for ${mode === "single" ? title : "all the packages"}, brought by ${siteName}.`,
 		favicon: "https://raw.githubusercontent.com/sveltejs/branding/master/svelte-logo.svg",
-		feed: url.toString(),
+		feed: url,
 		feedLinks: {
 			xml: url.toString().replace(dottedAlphaNumRegex, "rss.xml"),
 			json: url.toString().replace(dottedAlphaNumRegex, "rss.json"),
@@ -123,7 +123,7 @@ export function rssHandler(response: (feed: Feed) => Response): RequestHandler {
 				content: release.body_html ?? mdToHtml(release.body),
 				date: new Date(release.published_at ?? release.created_at),
 				description: `${release.cleanName} ${release.cleanVersion} release`,
-				// id: `${release.id}`, // broken since v6 if not an URL
+				id: `${release.id}`,
 				link: release.html_url,
 				published: release.published_at ? new Date(release.published_at) : undefined,
 				title: `${release.cleanName}@${release.cleanVersion}`
