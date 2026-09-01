@@ -3,20 +3,20 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
 	import { browser } from "$app/env";
-	import { replaceState } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { navigating, page } from "$app/state";
 	import { ArrowUpRight, ChevronLeft, CircleAlert, Lock, Tag } from "@lucide/svelte";
-	import { pidFormatter } from "$lib/strings";
-	import type { PID } from "$lib/types";
-	import * as Alert from "$lib/components/ui/alert";
-	import * as Avatar from "$lib/components/ui/avatar";
-	import { Button } from "$lib/components/ui/button";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import GHBadge from "$lib/components/GHBadge.svelte";
-	import MarkdownRenderer from "$lib/components/MarkdownRenderer.svelte";
-	import TopBanner from "$lib/components/TopBanner.svelte";
+	import { pidFormatter } from "#lib/strings.js";
+	import type { PID } from "#lib/types.js";
+	import * as Alert from "#lib/components/ui/alert/index.js";
+	import * as Avatar from "#lib/components/ui/avatar/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import GHBadge from "#lib/components/GHBadge.svelte";
+	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
+	import TopBanner from "#lib/components/TopBanner.svelte";
 	import CollapsibleComments from "./CollapsibleComments.svelte";
 	import CollapsibleCommits from "./CollapsibleCommits.svelte";
 	import CollapsibleFiles from "./CollapsibleFiles.svelte";
@@ -48,7 +48,7 @@
 		const element = document.getElementById(page.url.hash.slice(1));
 		if (!element) {
 			// remove unwanted hashes, like those from GitHub if coming from redirection
-			replaceState("", {});
+			void goto(new URL(page.url.href), { shallow: true, replace: true });
 			return;
 		}
 		element.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
@@ -267,7 +267,7 @@
 					pid: metadata.type,
 					org: metadata.org,
 					repo: metadata.repo,
-					id: `${info.number}`
+					id: info.number
 				})}
 				{files}
 			/>
@@ -293,7 +293,7 @@
 							pid: getLinkedEntityPID(metadata.type),
 							org: entity.repository.owner,
 							repo: entity.repository.name,
-							id: `${entity.number}`
+							id: entity.number
 						})}
 						variant="secondary"
 					>

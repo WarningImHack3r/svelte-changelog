@@ -1,4 +1,4 @@
-import { discoverer } from "$lib/server/package-discoverer";
+import { discoverer } from "#lib/server/package-discoverer.js";
 import { getAllPackagesReleases } from "../all-package-releases";
 
 export async function load({ setHeaders, locals }) {

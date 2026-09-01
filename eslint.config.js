@@ -29,7 +29,7 @@ export default defineConfig(
 				"error",
 				{
 					selector: "MemberExpression[object.name='console']",
-					message: "Use the custom log functions from '$lib/logging' instead of console."
+					message: "Use the custom log functions from '#lib/logging' instead of console."
 				}
 			],
 			// Tweaked rules (already included above, but configured here)

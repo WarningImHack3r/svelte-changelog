@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { siteLang } from "$lib/properties";
+	import { siteLang } from "#lib/properties.js";
 
 	const listFormatter = new Intl.ListFormat(siteLang);
 </script>
@@ -8,21 +8,21 @@
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
+	import { snapshot } from "$app/navigation";
 	import { navigating, page } from "$app/state";
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info, LoaderCircle } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import { compare, compareReversed, getMinor, getPatch, tryParse } from "verkit";
-	import { groupBy } from "$lib/polyfills";
-	import { ALL_SLUG } from "$lib/types";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import { Button } from "$lib/components/ui/button";
-	import { Separator } from "$lib/components/ui/separator";
-	import { Skeleton } from "$lib/components/ui/skeleton";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import TopBanner from "$lib/components/TopBanner.svelte";
-	import { local } from "$lib/storage";
+	import * as Accordion from "#lib/components/ui/accordion/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Separator } from "#lib/components/ui/separator/index.js";
+	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+	import TopBanner from "#lib/components/TopBanner.svelte";
+	import { groupBy } from "#lib/polyfills.js";
+	import { local } from "#lib/storage.js";
+	import { ALL_SLUG } from "#lib/types.js";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
-	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ReleaseCard from "./ReleaseCard.svelte";
 	import ResetDialog from "./ResetDialog.svelte";
@@ -180,10 +180,10 @@
 		)
 	);
 
-	export const snapshot: Snapshot<typeof expandableReleases> = {
+	snapshot<typeof expandableReleases>({
 		capture: () => expandableReleases,
 		restore: item => (expandableReleases = item)
-	};
+	});
 
 	/**
 	 * Regular expressions that represent changelog lines where support for something

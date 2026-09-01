@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { siteLang } from "$lib/properties";
+	import { siteLang } from "#lib/properties.js";
 
 	const dateTimeFormatter = new Intl.DateTimeFormat(siteLang, {
 		dateStyle: "medium",
@@ -23,14 +23,14 @@
 </script>
 
 <script lang="ts">
-	import { pushState } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import type { GitHubRelease } from "$lib/server/github-api";
-	import { Button, buttonVariants } from "$lib/components/ui/button";
-	import { Checkbox } from "$lib/components/ui/checkbox";
-	import * as Dialog from "$lib/components/ui/dialog";
-	import { Label } from "$lib/components/ui/label";
-	import { local } from "$lib/storage";
+	import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
+	import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+	import * as Dialog from "#lib/components/ui/dialog/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import type { GitHubRelease } from "#lib/server/github-api.js";
+	import { local } from "#lib/storage.js";
 
 	type Props = {
 		currentPackage: string;
@@ -126,8 +126,7 @@
 	function clearParams() {
 		const newUrl = new URL(page.url.href);
 		newUrl.searchParams.delete("reset");
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		pushState(newUrl, page.state);
+		void goto(newUrl, { state: page.state, shallow: true });
 	}
 </script>
 
