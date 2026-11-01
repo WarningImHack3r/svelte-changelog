@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import type { ClassValue } from "svelte/elements";
-	import type { Icon } from "@lucide/svelte";
+	import type { LucideIcon } from "@lucide/svelte";
 	import { cn } from "$lib/utils";
 
 	type Props = {
 		class?: ClassValue;
-		icon?: typeof Icon;
+		icon?: LucideIcon;
 		children?: Snippet;
 	};
 

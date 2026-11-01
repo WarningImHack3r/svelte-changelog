@@ -78,7 +78,7 @@
 	import { mode } from "mode-watcher";
 
 	type Props = FileDiffRenderProps<T> & {
-		options: FileDiffOptions<T>;
+		options: FileDiffOptions<T, undefined>;
 		langs?: (SupportedLanguages | (string & {}))[];
 	};
 
