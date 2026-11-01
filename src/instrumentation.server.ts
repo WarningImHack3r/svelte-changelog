@@ -11,14 +11,14 @@ const sdk = new NodeSDK({
 	}),
 	logRecordProcessors: POSTHOG_KEY
 		? [
-				new BatchLogRecordProcessor(
-					new OTLPLogExporter({
+				new BatchLogRecordProcessor({
+					exporter: new OTLPLogExporter({
 						url: "https://eu.i.posthog.com/i/v1/logs",
 						headers: {
 							Authorization: `Bearer ${POSTHOG_KEY}`
 						}
 					})
-				)
+				})
 			]
 		: undefined
 });
