@@ -7,7 +7,7 @@
 		GitPullRequestArrow,
 		GitPullRequestClosed,
 		GitPullRequestDraft,
-		type Icon,
+		type LucideIcon,
 		MessageSquare,
 		MessageSquareCheck
 	} from "@lucide/svelte";
@@ -32,7 +32,7 @@
 	};
 
 	type BadgeConfig = {
-		icon: typeof Icon;
+		icon: LucideIcon;
 		label: string;
 		color: keyof typeof COLOR_MAP;
 	};
@@ -71,7 +71,7 @@
 	let { mode = "regular", type, status, class: className }: Props = $props();
 
 	type Badge = {
-		icon: typeof Icon | undefined;
+		icon: LucideIcon | undefined;
 		label: string;
 		textColor: string;
 		bgColor: string;
