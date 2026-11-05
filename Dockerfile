@@ -1,5 +1,7 @@
 FROM node:slim AS base
 WORKDIR /app
+ENV PNPM_HOME="$HOME/.local/share/pnpm"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN apt-get update && apt-get install -y --no-install-recommends jq curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json .
