@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import { browser, dev } from "$app/env";
-import { logs } from "@opentelemetry/api-logs";
+import { logs } from "@opentelemetry/api";
 import { siteRepoName } from "./properties";
 
 const DEBUG = false;

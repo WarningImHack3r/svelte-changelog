@@ -1,8 +1,13 @@
 FROM node:slim AS base
 WORKDIR /app
-ENV PNPM_HOME="/pnpm"
+ENV PNPM_HOME="$HOME/.local/share/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
-RUN npm i -g corepack && corepack enable
+RUN apt-get update && apt-get install -y --no-install-recommends jq curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY package.json .
+RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION="$(jq -r '.packageManager // "" | split("@")[1] // "latest" | split("+")[0]' package.json)" ENV="$HOME/.shrc" SHELL="$(which sh)" sh - \
+    && . $HOME/.shrc \
+    && rm package.json
 COPY pnpm-*.yaml .
 RUN pnpm fetch
 COPY . .

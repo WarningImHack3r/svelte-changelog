@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import type { ClassValue } from "svelte/elements";
-	import type { Icon } from "@lucide/svelte";
+	import type { LucideIcon } from "@lucide/svelte";
 	import * as Alert from "#lib/components/ui/alert/index.js";
 	import MarkdownRenderer from "#lib/components/MarkdownRenderer.svelte";
 
 	type Props = {
-		icon?: typeof Icon;
+		icon?: LucideIcon;
 		title: string;
 		markdown: string;
 		class?: ClassValue;

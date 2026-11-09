@@ -139,6 +139,7 @@ export const repo: PullRequest["head"]["repo"] = {
 	language: null,
 	has_issues: false,
 	has_projects: false,
+	// eslint-disable-next-line @typescript-eslint/no-deprecated
 	has_downloads: false,
 	has_wiki: false,
 	has_pages: false,
@@ -553,6 +554,7 @@ export const gqlRepo: GQLRepository = {
 	squashMergeAllowed: false,
 	squashMergeCommitMessage: "BLANK",
 	squashMergeCommitTitle: "PR_TITLE",
+	// eslint-disable-next-line @typescript-eslint/no-deprecated
 	squashPrTitleUsedAsDefault: false,
 	sshUrl: "",
 	stargazerCount: 0,

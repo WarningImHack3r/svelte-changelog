@@ -12,8 +12,8 @@
 		ChevronDown,
 		ChevronRight,
 		House,
-		type Icon,
 		Lightbulb,
+		type LucideIcon,
 		Menu,
 		Monitor,
 		Moon,
@@ -115,7 +115,7 @@
 	type Mode = Parameters<typeof mwSetMode>[0]; // mode-watcher doesn't export the Mode type
 	type Theme = {
 		label: string;
-		icon: typeof Icon;
+		icon: LucideIcon;
 	};
 	const themes: Record<Mode, Theme> = {
 		light: {
@@ -176,7 +176,7 @@
 	// Navbar
 	const navbarBorderThreshold = 25;
 	const navbarItems: (NonNullable<ComponentProps<typeof DesktopNavigation>["items"]>[number] & {
-		icon: typeof Icon;
+		icon: LucideIcon;
 	})[] = [
 		{ name: "Home", icon: House, href: resolve("/") },
 		{

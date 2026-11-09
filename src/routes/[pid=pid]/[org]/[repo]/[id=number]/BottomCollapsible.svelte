@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import type { ClassValue } from "svelte/elements";
-	import type { Icon } from "@lucide/svelte";
+	import type { LucideIcon } from "@lucide/svelte";
 	import { cn } from "#lib/utils.js";
 	import * as Accordion from "#lib/components/ui/accordion/index.js";
 
 	type Props = {
-		icon?: typeof Icon;
+		icon?: LucideIcon;
 		label: string | Snippet;
 		secondaryLabel?: string;
 		openByDefault?: boolean;

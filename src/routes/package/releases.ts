@@ -1,5 +1,5 @@
 import type { PostHog } from "posthog-node";
-import { compareReversed, isGreater, isValid } from "verkit";
+import { compareReversed, isGreaterThan, isValid } from "verkit";
 import { ddebug, dlog, dwarn } from "#lib/logging.js";
 import type { Repository } from "#lib/repositories.js";
 import { type GitHubRelease, githubCache } from "#lib/server/github-api.js";
@@ -139,7 +139,7 @@ export async function getPackageReleases(
 			releases.push({ cleanName, cleanVersion, ...release });
 
 			// If it is newer than the newest we got, set this repo as the "final repo"
-			if (!currentNewestVersion || isGreater(cleanVersion, currentNewestVersion)) {
+			if (!currentNewestVersion || isGreaterThan(cleanVersion, currentNewestVersion)) {
 				ddebug(
 					`Current newest version "${currentNewestVersion ?? "<none>"}" doesn't exist or is lesser than ${cleanVersion}, setting ${repo.repoOwner}/${repo.repoName} as candidate repo`
 				);
