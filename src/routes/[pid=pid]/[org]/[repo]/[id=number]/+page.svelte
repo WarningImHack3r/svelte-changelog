@@ -48,6 +48,7 @@
 		const element = document.getElementById(page.url.hash.slice(1));
 		if (!element) {
 			// remove unwanted hashes, like those from GitHub if coming from redirection
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			void goto(new URL(page.url.href), { shallow: true, replace: true });
 			return;
 		}
