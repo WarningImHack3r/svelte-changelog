@@ -1,8 +1,8 @@
 import { WEBHOOKS_REPLICATOR_TOKEN } from "$app/env/private";
-import { ddebug, derror, dlog } from "$lib/logging";
-import { invalidateTag, waitUntil } from "$lib/server/cache";
-import { githubCache } from "$lib/server/github-api";
-import { discoverer } from "$lib/server/package-discoverer";
+import { ddebug, derror, dlog } from "#lib/logging.js";
+import { invalidateTag, waitUntil } from "#lib/server/cache.js";
+import { githubCache } from "#lib/server/github-api.js";
+import { discoverer } from "#lib/server/package-discoverer.js";
 import type { ReplicatorEvent } from "./types";
 
 export async function GET() {

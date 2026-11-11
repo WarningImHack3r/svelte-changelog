@@ -1,7 +1,7 @@
 import { createContext } from "svelte";
 import { PersistedState } from "runed";
-import { local } from "$lib/storage";
-import type { PackageSettings } from "$lib/types";
+import { local } from "#lib/storage.js";
+import type { PackageSettings } from "#lib/types.js";
 
 const DEFAULT_SETTINGS: PackageSettings = {
 	showPrereleases: true,

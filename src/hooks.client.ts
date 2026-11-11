@@ -1,9 +1,9 @@
 import posthog from "posthog-js";
-import { dfatal } from "$lib/logging";
-import { stringifyError } from "$lib/strings";
+import { dfatal } from "#lib/logging.js";
+import { stringifyError } from "#lib/strings.js";
 
-export function handleError({ error, status, event, message }) {
-	if (status === 404) return;
+export function handleError({ kind, error, status, event, message }) {
+	if (kind === "app" || kind === "framework") return;
 
 	// Mitigate https://github.com/sveltejs/kit/issues/15425
 	if (

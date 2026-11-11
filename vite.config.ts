@@ -20,12 +20,6 @@ export default defineConfig(({ mode }) => {
 				paths: {
 					// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 					relative: false
-				},
-				experimental: {
-					instrumentation: {
-						server: true
-					},
-					explicitEnvironmentVariables: true
 				}
 			}),
 			tailwindcss(),
