@@ -2,6 +2,7 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import posthog from "@posthog/rollup-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import adapter from "adapter-node-sea";
+import { sep } from "node:path";
 import { shaker } from "svelte-shaker/vite";
 import { defineConfig, loadEnv } from "vite";
 import devtoolsJson from "vite-plugin-devtools-json";
@@ -16,6 +17,12 @@ export default defineConfig(({ mode }) => {
 			lucidePreprocess(),
 			shaker({ verbose: true }),
 			sveltekit({
+				// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
+				dynamicCompileOptions: ({ filename, compileOptions }) => {
+					if (!filename.split(sep).includes("node_modules") && !compileOptions.runes) {
+						return { runes: true };
+					}
+				},
 				adapter: adapter(),
 				paths: {
 					// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
