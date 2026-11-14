@@ -30,6 +30,9 @@ export default defineConfig(({ mode }) => {
 						host: "https://eu.i.posthog.com"
 					})
 				: undefined
-		]
+		],
+		ssr: {
+			noExternal: ["tw-animate-css"]
+		}
 	};
 });
