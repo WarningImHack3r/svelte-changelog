@@ -127,7 +127,7 @@
 		const newUrl = new URL(page.url.href);
 		newUrl.searchParams.delete("reset");
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		void goto(newUrl, { state: page.state, shallow: true });
+		void goto(newUrl, { state: page.state });
 	}
 </script>
 
