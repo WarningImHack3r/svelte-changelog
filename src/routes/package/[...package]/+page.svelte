@@ -99,15 +99,11 @@
 	let packageSettings = $derived(sharedSettings.get(data.currentPackage.pkg.name));
 
 	let lastUpdateDate = $state<Date>();
+	let visitKey = $derived(`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`);
 	$effect(() => {
-		const lastVisit = local.getItem(
-			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`
-		);
+		const lastVisit = local.getItem(visitKey);
 		if (lastVisit) lastUpdateDate = new Date(lastVisit);
-		local.setItem(
-			`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`,
-			new Date().toISOString()
-		);
+		local.setItem(visitKey, new Date().toISOString());
 	});
 
 	let displayableReleases = $derived(
