@@ -117,7 +117,9 @@ const repos: Record<Category, RepoEntry> = {
 			{
 				repoName: "ai-tools",
 				dataFilter: ({ tag_name }) =>
-					!tag_name.includes("-code-writer-") && !tag_name.includes("-core-bestpractices-"),
+					!tag_name.includes("-code-writer-") &&
+					!tag_name.includes("-core-bestpractices-") &&
+					!tag_name.includes("-mcp-"),
 				metadataFromTag: splitByLastAt
 			}
 		]
