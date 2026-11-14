@@ -62,7 +62,9 @@
 	 * Prevent server desync in a forced way (more strictly than by default) and related hooks errors
 	 * Snippet from https://svelte.dev/docs/kit/configuration#version
 	 */
-	beforeNavigate(({ willUnload, to }) => {
+	beforeNavigate(({ willUnload, to, shallow, type }) => {
+		if (shallow && type === "goto") return;
+
 		if (updated.current && !willUnload && to?.url) {
 			location.href = to.url.href;
 		}
@@ -72,7 +74,8 @@
 	 * View Transitions API
 	 * https://svelte.dev/blog/view-transitions
 	 */
-	onNavigate(({ complete }) => {
+	onNavigate(({ complete, shallow, type }) => {
+		if (shallow && type === "goto") return;
 		if (!document.startViewTransition) return;
 
 		return new Promise(resolve =>
@@ -179,20 +182,14 @@
 		icon: LucideIcon;
 	})[] = [
 		{ name: "Home", icon: House, href: resolve("/") },
-		{
-			name: "Packages",
-			icon: Package,
-			href: resolve("/packages")
-		},
-		{
-			name: "Tracker",
-			icon: Radar,
-			href: resolve("/tracker")
-		},
-		{ name: "Devlog", icon: Newspaper, href: resolve("/devlog") }
+		{ name: "Packages", icon: Package, href: resolve("packages") },
+		{ name: "Tracker", icon: Radar, href: resolve("tracker") },
+		{ name: "Devlog", icon: Newspaper, href: resolve("devlog") }
 	];
-	let isPageDevlog = $derived(page.route.id?.startsWith(resolve("/devlog")) ?? false);
-	onNavigate(({ from, to, type }) => {
+	let isPageDevlog = $derived(page.route.id?.startsWith(resolve("devlog")) ?? false);
+
+	onNavigate(({ from, to, type, shallow }) => {
+		if (shallow && type === "goto") return;
 		if (from?.route.id === to?.route.id || type === "form") return;
 		open = false;
 	});

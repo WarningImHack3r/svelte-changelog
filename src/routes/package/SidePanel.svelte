@@ -29,6 +29,7 @@
 				>[];
 			}
 		>[];
+
 		otherReleases?: Record<
 			string,
 			Promise<
@@ -99,7 +100,7 @@
 			<Card.Header class="grid-cols-2 items-center">
 				<Card.Title class="font-display text-2xl">Packages</Card.Title>
 				<a
-					href={resolve("/packages")}
+					href={resolve("packages")}
 					class="group ml-auto inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
 				>
 					See all

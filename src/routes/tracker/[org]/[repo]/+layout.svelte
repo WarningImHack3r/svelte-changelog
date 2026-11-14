@@ -9,7 +9,8 @@
 
 	let { params, children } = $props();
 
-	onNavigate(({ from, to, type }) => {
+	onNavigate(({ from, to, type, shallow }) => {
+		if (shallow && type === "goto") return;
 		if (from?.route.id !== to?.route.id || type === "form") return;
 		open = false;
 	});
