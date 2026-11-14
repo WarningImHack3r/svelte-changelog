@@ -14,6 +14,10 @@
 			"matchManagers": ["github-actions", "npm"],
 			"groupName": "{{manager}}",
 			"addLabels": ["{{manager}}"]
+		},
+		{
+			"matchPackageNames": ["pnpm"],
+			"allowedVersions": "<12"
 		}
 	]
 }
