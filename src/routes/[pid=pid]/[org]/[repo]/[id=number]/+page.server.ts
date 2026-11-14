@@ -1,12 +1,12 @@
 import { error, redirect } from "@sveltejs/kit";
 import { dev } from "$app/env";
 import { resolve } from "$app/paths";
-import { siteName } from "$lib/properties";
-import { publicRepos, uniqueRepos } from "$lib/repositories";
-import { FULL_DETAILS_TTL, githubCache } from "$lib/server/github-api";
-import { discoverer } from "$lib/server/package-discoverer";
-import { pidFormatter } from "$lib/strings";
-import type { BranchCommit } from "$lib/types";
+import { siteName } from "#lib/properties.js";
+import { publicRepos, uniqueRepos } from "#lib/repositories.js";
+import { FULL_DETAILS_TTL, githubCache } from "#lib/server/github-api.js";
+import { discoverer } from "#lib/server/package-discoverer.js";
+import { pidFormatter } from "#lib/strings.js";
+import type { BranchCommit } from "#lib/types.js";
 
 const versionDigitsRegex = /\d\.\d/;
 
@@ -21,8 +21,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 			repo.localeCompare(name, undefined, { sensitivity: "base" }) === 0
 	);
 	if (!dev && !isKnownRepo) {
-		error(404, {
-			message: "Unknown repository",
+		error(404, "Unknown repository", {
 			description: `${siteName} can only display the details of repositories it actively lists. Is this a false positive? Open an issue from the GitHub link in the navigation bar!`,
 			links: [
 				{
@@ -37,7 +36,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 		});
 	}
 
-	const item = await githubCache.getItemDetails(org, repo, +id);
+	const item = await githubCache.getItemDetails(org, repo, id);
 	if (!item) {
 		error(404, `${pidFormatter.toHumanReadable(type)} #${id} doesn't exist in repo ${org}/${repo}`);
 	}
@@ -56,12 +55,7 @@ export async function load({ params: { pid: type, org, repo, id }, fetch, setHea
 
 	return {
 		devOnlyRepo: dev && !isKnownRepo,
-		itemMetadata: {
-			org,
-			repo,
-			id: +id,
-			type
-		},
+		itemMetadata: { org, repo, id, type },
 		item,
 		mergedTagName: new Promise<[string, string] | undefined>((resolve, reject) => {
 			// Credit to Refined GitHub: https://github.com/refined-github/refined-github/blob/main/source/features/closing-remarks.tsx

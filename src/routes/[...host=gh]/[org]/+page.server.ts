@@ -1,10 +1,9 @@
 import { error } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { siteName } from "$lib/properties";
+import { siteName } from "#lib/properties.js";
 
 export function load({ params }) {
-	error(400, {
-		message: "Unable to visit an organization/user",
+	error(400, "Unable to visit an organization/user", {
 		description: `Paste a whole PR/issue/discussion link to display it in ${siteName}.`,
 		links: [
 			{
