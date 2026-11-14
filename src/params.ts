@@ -14,7 +14,7 @@ export const params = defineParams({
 			? (param as GitHubDotComWithMaybeScheme)
 			: undefined;
 	},
-	number: v.pipe(v.string(), v.toNumber()),
+	number: v.pipe(v.string(), v.digits(), v.toNumber(), v.safeInteger()),
 	pid: (param): PID | undefined => {
 		if (param !== "pull" && param !== "issues" && param !== "discussions") return;
 		return param;
