@@ -43,16 +43,29 @@
 	// Hash management
 	let wantsReducedMotion = new MediaQuery("prefers-reduced-motion: reduce");
 	$effect(() => {
-		if (!page.url.hash || navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
+		// Re-run when either the page URL or the shallow URL change.
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		[page.url, page.shallow];
 
-		const element = document.getElementById(page.url.hash.slice(1));
+		if (navigating.to || untrack(() => scrollY.current ?? 0) > 0) return;
+
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const url = new URL(location.href);
+		if (!url.hash) return;
+
+		const element = document.getElementById(url.hash.slice(1));
 		if (!element) {
-			// remove unwanted hashes, like those from GitHub if coming from redirection
-			// eslint-disable-next-line svelte/no-navigation-without-resolve
-			void goto(new URL(page.url.href), { shallow: true, replace: true });
+			url.hash = "";
+			void goto(resolve(url.href.replace(new RegExp(`^${url.origin}`), "")), {
+				shallow: true,
+				replace: true
+			});
 			return;
 		}
-		element.scrollIntoView({ behavior: wantsReducedMotion.current ? undefined : "smooth" });
+
+		element.scrollIntoView({
+			behavior: untrack(() => wantsReducedMotion.current) ? undefined : "smooth"
+		});
 	});
 
 	/**
