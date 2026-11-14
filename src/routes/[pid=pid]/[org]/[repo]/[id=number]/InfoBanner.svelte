@@ -14,6 +14,7 @@
 
 <script lang="ts">
 	import type { ClassValue } from "svelte/elements";
+	import { MediaQuery } from "svelte/reactivity";
 	import { ArrowUpRight, Milestone, UserRoundArrowLeft } from "@lucide/svelte";
 	import remarkGemoji from "remark-gemoji";
 	import { Badge } from "#lib/components/ui/badge/index.js";
@@ -28,6 +29,17 @@
 	};
 
 	let { info, class: className }: Props = $props();
+
+	let mobile = new MediaQuery("width < 768px");
+	let hasContent = $derived(
+		("milestone" in info && info.milestone) ||
+			"base" in info ||
+			("type" in info && info.type) ||
+			"category" in info ||
+			info.labels.length ||
+			mobile.current ||
+			("assignees" in info && info.assignees?.length)
+	);
 </script>
 
 {#snippet badgeText(obj: Info)}
@@ -43,7 +55,7 @@
 	{/if}
 {/snippet}
 
-<div class={["mt-4 rounded-md border bg-accent dark:bg-card", className]}>
+<div class={["mt-4 rounded-md border bg-accent dark:bg-card", !hasContent && "hidden", className]}>
 	<div class="flex justify-between gap-8 overflow-x-auto rounded-md px-3 py-2 scroll-mask-x">
 		<div class="flex items-center gap-4 text-nowrap">
 			<!-- Milestones (PRs & issues) -->
@@ -129,22 +141,24 @@
 				</Badge>
 			{/if}
 			<!-- Labels (common) -->
-			<div class="flex items-center gap-2">
-				{#each info.labels as label (label)}
-					{#if typeof label === "string"}
-						<Badge variant="outline">{label}</Badge>
-					{:else if label.name}
-						<Badge
-							variant="outline"
-							style={label.color ? `--color: #${label.color}` : undefined}
-							class="border-(--color) bg-(--color) selection:bg-background selection:text-foreground dark:bg-(--color)/20 dark:text-(--color) dark:selection:bg-(--color) dark:selection:text-black"
-							title={label.description || undefined}
-						>
-							{label.name}
-						</Badge>
-					{/if}
-				{/each}
-			</div>
+			{#if info.labels.length}
+				<div class="flex items-center gap-2">
+					{#each info.labels as label (label)}
+						{#if typeof label === "string"}
+							<Badge variant="outline">{label}</Badge>
+						{:else if label.name}
+							<Badge
+								variant="outline"
+								style={label.color ? `--color: #${label.color}` : undefined}
+								class="border-(--color) bg-(--color) selection:bg-background selection:text-foreground dark:bg-(--color)/20 dark:text-(--color) dark:selection:bg-(--color) dark:selection:text-black"
+								title={label.description || undefined}
+							>
+								{label.name}
+							</Badge>
+						{/if}
+					{/each}
+				</div>
+			{/if}
 		</div>
 		<span class="flex items-center text-nowrap text-muted-foreground md:hidden">
 			{@render badgeText(info)}
