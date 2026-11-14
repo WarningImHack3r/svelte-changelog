@@ -11,8 +11,7 @@ RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION="$(jq -r '.pack
 COPY pnpm-*.yaml .
 RUN pnpm fetch
 COPY . .
-# "prefer" offline due to https://github.com/pnpm/pnpm/issues/11808
-RUN pnpm i --prefer-offline && pnpm run build
+RUN pnpm i --offline && pnpm run build
 
 FROM debian:stable-slim
 WORKDIR /app
