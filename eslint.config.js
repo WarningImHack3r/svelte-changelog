@@ -11,7 +11,12 @@ import tseslint from "typescript-eslint";
 
 // TODO: remove that once there is a built-in solution somewhere within Svelte ESLint packages
 const loadedConfig = await loadConfig(".", { traverse: false });
-const svelteConfig = loadedConfig && "config" in loadedConfig ? loadedConfig.config : undefined;
+const svelteConfig =
+	loadedConfig && "config" in loadedConfig
+		? loadedConfig.config
+		: (() => {
+				throw new Error("Failed to parse the Svelte config");
+			})();
 const gitignorePath = path.resolve(import.meta.dirname, ".gitignore");
 
 export default defineConfig(
