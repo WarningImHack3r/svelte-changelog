@@ -4,9 +4,6 @@
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
 	"postUpdateOptions": ["pnpmDedupe"],
-	"constraints": {
-		"node": ">=26.12"
-	},
 	"ignoreDeps": ["node"],
 	"minimumReleaseAge": "1 day",
 	"packageRules": [
