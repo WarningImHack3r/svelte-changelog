@@ -36,10 +36,9 @@
 		const aFile = `--- ${file.status === "added" ? "/dev/null" : file.filename}`;
 		const bFile = `+++ ${file.status === "removed" ? "/dev/null" : file.filename}`;
 		return file.patch || file.changes === 0
-			? pierreParsePatchFiles(
-					`${aFile}\n${bFile}\n${file.patch ?? ""}`,
-					`diff-${file.filename}-${file.sha ?? "unknown"}`
-				).flatMap(p =>
+			? pierreParsePatchFiles(`${aFile}\n${bFile}\n${file.patch ?? ""}`, {
+					cacheKeyPrefix: `diff-${file.filename}-${file.sha ?? "unknown"}`
+				}).flatMap(p =>
 					p.files.map(patchFile => {
 						let newType = patchFile.type;
 						switch (file.status) {
