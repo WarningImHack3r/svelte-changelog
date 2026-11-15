@@ -15,6 +15,10 @@
 		{
 			"matchPackageNames": ["pnpm"],
 			"allowedVersions": "<12"
+		},
+		{
+			"matchPackageNames": ["typescript"],
+			"allowedVersions": "<7 || >= 7.1"
 		}
 	]
 }
