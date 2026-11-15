@@ -31,6 +31,7 @@
 
 <script lang="ts">
 	import { untrack } from "svelte";
+	import { fromAction } from "svelte/attachments";
 	import { dev } from "$app/env";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
@@ -397,10 +398,13 @@
 								{#if index === 0 && !isOlderThanAWeek}
 									<div
 										class="ml-auto"
-										use:confetti={{
-											duration: 5000,
-											colors: ["orange", "white"]
-										}}
+										{@attach node =>
+											fromAction(confetti, () => ({
+												stageHeight:
+													document.body.scrollHeight - node.getBoundingClientRect().top - 12,
+												duration: 5_000,
+												colors: ["orange", "white"]
+											}))(node)}
 									></div>
 								{/if}
 							</Tooltip.Trigger>
