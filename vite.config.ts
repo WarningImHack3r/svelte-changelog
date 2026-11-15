@@ -17,14 +17,21 @@ export default defineConfig(({ mode }) => {
 			lucidePreprocess(),
 			shaker({ verbose: true }),
 			sveltekit({
-				// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
-				compilerOptions: {
-					runes: ({ filename }) => (filename.split(sep).includes("node_modules") ? undefined : true)
-				},
 				adapter: adapter(),
 				paths: {
 					// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 					relative: false
+				},
+				compilerOptions: {
+					// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
+					runes: ({ filename }) =>
+						filename.split(sep).includes("node_modules") ? undefined : true,
+					experimental: {
+						async: true
+					}
+				},
+				experimental: {
+					remoteFunctions: true
 				}
 			}),
 			tailwindcss(),

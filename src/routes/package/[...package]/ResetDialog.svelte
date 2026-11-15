@@ -29,22 +29,18 @@
 	import { Checkbox } from "#lib/components/ui/checkbox/index.js";
 	import * as Dialog from "#lib/components/ui/dialog/index.js";
 	import { Label } from "#lib/components/ui/label/index.js";
-	import type { GitHubRelease } from "#lib/server/github-api.js";
 	import { local } from "#lib/storage.js";
+	import { getAllReleases } from "../../all-releases.remote";
 
 	type Props = {
 		currentPackage: string;
 		resetDate: Date | undefined;
-		allPackageReleases: Record<
-			string,
-			Promise<
-				{ releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] } | undefined
-			>
-		>;
 	};
 
-	let { currentPackage, resetDate, allPackageReleases }: Props = $props();
+	let { currentPackage, resetDate }: Props = $props();
 	let id = $props.id();
+
+	const allPackageReleases = await getAllReleases();
 
 	const currentDate = new Date();
 
