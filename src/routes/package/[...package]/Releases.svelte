@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { siteLang } from "$lib/properties";
+	import { siteLang } from "#lib/properties.js";
 
 	const listFormatter = new Intl.ListFormat(siteLang);
 </script>
@@ -8,13 +8,13 @@
 	import { ChevronUp, CircleAlert, CircleQuestionMark, Info } from "@lucide/svelte";
 	import { PersistedState } from "runed";
 	import { compare, compareReversed, tryParse } from "verkit";
-	import * as Accordion from "$lib/components/ui/accordion";
-	import { Button } from "$lib/components/ui/button";
-	import { Separator } from "$lib/components/ui/separator";
-	import * as Tooltip from "$lib/components/ui/tooltip";
-	import TopBanner from "$lib/components/TopBanner.svelte";
-	import { groupBy } from "$lib/polyfills";
-	import { ALL_SLUG } from "$lib/types";
+	import * as Accordion from "#lib/components/ui/accordion/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Separator } from "#lib/components/ui/separator/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+	import TopBanner from "#lib/components/TopBanner.svelte";
+	import { groupBy } from "#lib/polyfills.js";
+	import { ALL_SLUG } from "#lib/types.js";
 	import { getRouteReleases } from "./releases.remote";
 	import ReleaseCard from "./ReleaseCard.svelte";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";

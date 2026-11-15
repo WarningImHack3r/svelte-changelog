@@ -25,10 +25,6 @@ export default defineConfig(({ mode }) => {
 			shaker({ verbose: true }),
 			svelteDevtools(),
 			sveltekit({
-				// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
-				compilerOptions: {
-					runes: ({ filename }) => (filename.split(sep).includes("node_modules") ? undefined : true)
-				},
 				adapter: adapter(),
 				tracing: {
 					server: true
@@ -38,16 +34,15 @@ export default defineConfig(({ mode }) => {
 					relative: false
 				},
 				compilerOptions: {
+					// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
+					runes: ({ filename }) =>
+						filename.split(sep).includes("node_modules") ? undefined : true,
 					experimental: {
 						async: true
 					}
 				},
 				experimental: {
-					remoteFunctions: true,
-					instrumentation: {
-						server: true
-					},
-					explicitEnvironmentVariables: true
+					remoteFunctions: true
 				}
 			}),
 			tailwindcss(),
