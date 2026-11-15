@@ -11,15 +11,15 @@ const client = POSTHOG_KEY
 		})
 	: undefined;
 
-export async function handleError({ kind, error, status, event, message }) {
+export async function handleError({ kind, error, event }) {
 	if (kind === "app" || kind === "framework") return;
 	const stringified = stringifyError(error);
-	dfatal(`[SERVER][${status}] ${stringified}`);
-	client?.captureException(error instanceof Error ? error : new Error(stringified), undefined, {
-		...event,
-		status_code: status,
-		error_message: message
-	});
+	dfatal(`[SERVER] ${stringified}`);
+	client?.captureException(
+		error instanceof Error ? error : new Error(stringified),
+		undefined,
+		event
+	);
 	await client?.shutdown();
 }
 

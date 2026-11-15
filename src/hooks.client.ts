@@ -2,24 +2,10 @@ import posthog from "posthog-js";
 import { dfatal } from "#lib/logging.js";
 import { stringifyError } from "#lib/strings.js";
 
-export function handleError({ kind, error, status, event, message }) {
+export function handleError({ kind, error, event }) {
 	if (kind === "app" || kind === "framework") return;
 
-	// Mitigate https://github.com/sveltejs/kit/issues/15425
-	if (
-		status === 500 &&
-		typeof error === "object" &&
-		error !== null &&
-		"status" in error &&
-		error.status !== status
-	)
-		return;
-
 	const stringified = stringifyError(error);
-	dfatal(`[CLIENT][${status}] ${stringified}`);
-	posthog.captureException(error instanceof Error ? error : new Error(stringified), {
-		...event,
-		status_code: status,
-		error_message: message
-	});
+	dfatal(`[CLIENT] ${stringified}`);
+	posthog.captureException(error instanceof Error ? error : new Error(stringified), event);
 }
