@@ -2,16 +2,15 @@
 	import { untrack } from "svelte";
 	import { MediaQuery } from "svelte/reactivity";
 	import { scrollY } from "svelte/reactivity/window";
-	import { onNavigate } from "$app/navigation";
+	import { onNavigate, snapshot } from "$app/navigation";
 	import { navigating, page } from "$app/state";
 	import { LoaderCircle, Menu } from "@lucide/svelte";
 	import { getMinor, getPatch } from "verkit";
-	import * as Sheet from "$lib/components/ui/sheet";
-	import { Skeleton } from "$lib/components/ui/skeleton";
-	import AnimatedButton from "$lib/components/AnimatedButton.svelte";
-	import { local } from "$lib/storage";
+	import * as Sheet from "#lib/components/ui/sheet/index.js";
+	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
+	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
+	import { local } from "#lib/storage.js";
 	import { getPackageSettings } from "../settings.svelte";
-	import type { Snapshot } from "./$types";
 	import Header from "./Header.svelte";
 	import ResetDialog from "./ResetDialog.svelte";
 	import { getRouteReleases } from "./releases.remote";
@@ -21,7 +20,7 @@
 	import { getAllReleases } from "../../all-releases.remote";
 	import { getDisplayablePackages } from "../../packages.remote";
 
-	const { resetDate } = computeSearchParams(page.url);
+	const { resetDate } = computeSearchParams(new URL(page.url.href));
 	const { currentPackage, releases } = await getRouteReleases(page.params.package);
 
 	const loadingSentences = [
@@ -39,7 +38,7 @@
 	let packageSettings = $derived(sharedSettings.get(currentPackage.pkg.name));
 
 	let lastUpdateDate = $state<Date>();
-	let visitKey = $derived(`last-visited-${data.currentPackage.pkg.name.replace(" ", "-")}`);
+	let visitKey = $derived(`last-visited-${currentPackage.pkg.name.replace(" ", "-")}`);
 	$effect(() => {
 		const lastVisit = local.getItem(visitKey);
 		if (lastVisit) lastUpdateDate = new Date(lastVisit);
@@ -113,7 +112,7 @@
 	snapshot<typeof expandableReleases>({
 		capture: () => expandableReleases,
 		restore: item => (expandableReleases = item)
-	};
+	});
 </script>
 
 <ResetDialog currentPackage={currentPackage.pkg.name} {resetDate} />

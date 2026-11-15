@@ -1,5 +1,5 @@
 import { getRequestEvent, query } from "$app/server";
-import { discoverer } from "$lib/server/package-discoverer";
+import { discoverer } from "#lib/server/package-discoverer.js";
 import { getAllPackagesReleases } from "./all-package-releases";
 
 export const getAllReleases = query(async () => {
