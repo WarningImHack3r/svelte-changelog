@@ -18,10 +18,8 @@ export default defineConfig(({ mode }) => {
 			shaker({ verbose: true }),
 			sveltekit({
 				// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
-				dynamicCompileOptions: ({ filename, compileOptions }) => {
-					if (!filename.split(sep).includes("node_modules") && !compileOptions.runes) {
-						return { runes: true };
-					}
+				compilerOptions: {
+					runes: ({ filename }) => (filename.split(sep).includes("node_modules") ? undefined : true)
 				},
 				adapter: adapter(),
 				paths: {
