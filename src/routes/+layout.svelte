@@ -362,9 +362,7 @@
 					</AnimatedButton>
 					<DropdownMenu.Root
 						bind:open={themeSwitcherOpen}
-						// onOpenChangeComplete is not triggered on dropdown open, I need this other callback too
-						onOpenChange={() => (themeSwitcherFullyClosed = false)}
-						onOpenChangeComplete={changed => (themeSwitcherFullyClosed = changed === false)}
+						onOpenChangeComplete={changed => (themeSwitcherFullyClosed = !changed)}
 					>
 						<DropdownMenu.Trigger>
 							{#snippet child({ props })}
