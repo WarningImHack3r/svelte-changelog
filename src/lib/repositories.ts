@@ -79,6 +79,13 @@ const repos: Record<Category, RepoEntry> = {
 				}
 			},
 			{
+				repoName: "vite-devtools-svelte",
+				metadataFromTag(tag) {
+					const [, version] = splitByLastAt(tag);
+					return [`@sveltejs/${this.repoName}`, version];
+				}
+			},
+			{
 				repoName: "svelte-devtools",
 				metadataFromTag(tag) {
 					return [this.repoName, tag.replace(vPrefixRegex, "")];
