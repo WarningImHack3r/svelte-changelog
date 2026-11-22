@@ -5,6 +5,7 @@
 		type WorkerInitializationRenderOptions,
 		getOrCreateWorkerPoolSingleton
 	} from "@pierre/diffs/worker";
+	import posthog from "posthog-js";
 	import type { PullRequestDetails } from "#lib/server/github-api.js";
 	import type { JSONCompatible } from "#lib/types.js";
 	import { workerFactory } from "./workers";
@@ -13,7 +14,13 @@
 		if (!browser) return undefined; // worker is browser-only
 		return getOrCreateWorkerPoolSingleton({
 			poolOptions: {
-				workerFactory
+				workerFactory,
+				onWorkerError: (event, worker) => {
+					// Prevent the browser from reporting this error as uncaught.
+					event.preventDefault();
+					const message = "message" in event ? event.message : "worker script failed to load";
+					posthog.captureException(new Error("Diffs highlight worker failed"), { message, worker });
+				}
 			},
 			highlighterOptions: options
 		});
