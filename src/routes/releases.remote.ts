@@ -4,10 +4,10 @@ import * as v from "valibot";
 import { siteName } from "#lib/properties.js";
 import { discoverer } from "#lib/server/package-discoverer.js";
 import { ALL_SLUG } from "#lib/types.js";
-import { getPackageReleases, getPackagesReleases } from "../../releases";
+import { getPackageReleases, getPackagesReleases } from "./releases";
 
 export const getRouteReleases = query(v.optional(v.string()), async slugPackage => {
-	if (!slugPackage) error(400);
+	if (!slugPackage) error(400, "No package provided to get its releases");
 	const { locals } = getRequestEvent();
 	// 1. Get all the discovered packages
 	const categorizedPackages = await discoverer.getOrDiscoverCategorized();

@@ -4,10 +4,8 @@
 	import { page } from "$app/state";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "#lib/badges.js";
-	import type { GitHubRelease } from "#lib/server/github-api.js";
-	import type { CategorizedPackage } from "#lib/server/package-discoverer.js";
-	import { type PackageSettings, type Prettify, expandStates, releasesTypes } from "#lib/types.js";
+	import { getUnvisitedReleases, isPackageNew } from "#lib/badges.js";
+	import { type PackageSettings, expandStates, releasesTypes } from "#lib/types.js";
 	import { cn } from "#lib/utils.js";
 	import { Badge } from "#lib/components/ui/badge/index.js";
 	import * as Card from "#lib/components/ui/card/index.js";
@@ -16,44 +14,17 @@
 	import { Separator } from "#lib/components/ui/separator/index.js";
 	import { Toggle } from "#lib/components/ui/toggle/index.js";
 	import * as ToggleGroup from "#lib/components/ui/toggle-group/index.js";
-
-	type CleanRelease = { cleanName: string; cleanVersion: string } & GitHubRelease;
+	import { getDisplayablePackages } from "../../packages.remote";
+	import { getRouteReleases } from "../../releases.remote";
 
 	type Props = {
 		packageName?: string;
-		allPackages?: Prettify<
-			Omit<CategorizedPackage, "packages"> & {
-				packages: Omit<
-					CategorizedPackage["packages"][number],
-					"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
-				>[];
-			}
-		>[];
-
-		otherReleases?: Record<
-			string,
-			Promise<
-				| {
-						releasesRepo: Prettify<
-							Pick<CategorizedPackage, "category"> &
-								Omit<
-									CategorizedPackage["packages"][number],
-									"dataFilter" | "metadataFromTag" | "changelogContentsReplacer"
-								>
-						>;
-						releases: CleanRelease[] | undefined;
-				  }
-				| undefined
-			>
-		>;
 		settings: PackageSettings;
 		headless?: boolean;
 		class?: ClassValue;
 	};
 	let {
 		packageName = "",
-		allPackages = [],
-		otherReleases = {},
 		settings = $bindable(),
 		headless = false,
 		class: className
@@ -110,7 +81,7 @@
 		{/if}
 		<Card.Content class={{ "p-0": headless }}>
 			<ul>
-				{#each allPackages as { category, packages }, index (category)}
+				{#each await getDisplayablePackages() as { category, packages }, index (category)}
 					{#if index > 0}
 						<Separator class="my-2 rounded-full bg-muted-foreground" />
 					{/if}
@@ -146,7 +117,7 @@
 							<ul class="space-y-2">
 								<!-- Sub-items -->
 								{#each sortedPackages as { pkg } (pkg.name)}
-									{let linkedBadgeData = $derived(getBadgeDataFromRecord(otherReleases, pkg.name))}
+									{let linkedBadgeData = $derived(await getRouteReleases(pkg.name))}
 									<li class="group inline-flex w-full gap-1">
 										<Toggle
 											aria-label={pinnedROProxy.has(pkg.name)
@@ -178,11 +149,9 @@
 												})}
 												class="group inline-flex w-full items-center gap-1"
 											>
-												{#await linkedBadgeData then data}
-													{#if isPackageNew(pkg.name, data?.releases ?? [])}
-														{@render newPackageBadge()}
-													{/if}
-												{/await}
+												{#if isPackageNew(pkg.name, linkedBadgeData.releases)}
+													{@render newPackageBadge()}
+												{/if}
 												<span
 													class={[
 														"underline-offset-4 group-hover:underline",
@@ -194,13 +163,11 @@
 													{pkg.name}
 												</span>
 												<span class="ml-auto flex items-center gap-1">
-													{#await linkedBadgeData then data}
-														{#if !isPackageNew(pkg.name, data?.releases ?? [])}
-															{@render newCountBadge(
-																getUnvisitedReleases(pkg.name, data?.releases ?? []).length
-															)}
-														{/if}
-													{/await}
+													{#if !isPackageNew(pkg.name, linkedBadgeData.releases)}
+														{@render newCountBadge(
+															getUnvisitedReleases(pkg.name, linkedBadgeData.releases).length
+														)}
+													{/if}
 													<ChevronRight
 														class="size-4 text-primary transition-transform group-hover:translate-x-1"
 													/>
@@ -213,9 +180,7 @@
 						{:else}
 							<!-- Categories with 1 sub-item -->
 							{let firstPackageName = $derived(packages[0]?.pkg.name ?? "")}
-							{let linkedBadgeData = $derived(
-								getBadgeDataFromRecord(otherReleases, firstPackageName)
-							)}
+							{let linkedBadgeData = $derived(await getRouteReleases(firstPackageName))}
 							{#if page.url.pathname.endsWith(`/${firstPackageName}`)}
 								<!-- Active category -->
 								<h3
@@ -232,11 +197,9 @@
 									})}
 									class="group inline-flex w-full items-center gap-1 text-xl font-bold text-primary"
 								>
-									{#await linkedBadgeData then data}
-										{#if isPackageNew(firstPackageName, data?.releases ?? [])}
-											{@render newPackageBadge()}
-										{/if}
-									{/await}
+									{#if isPackageNew(firstPackageName, linkedBadgeData.releases)}
+										{@render newPackageBadge()}
+									{/if}
 									<span
 										class="underline-offset-4 group-hover:underline"
 										title={category.description}
@@ -244,13 +207,11 @@
 										{category.name}
 									</span>
 									<span class="ml-auto flex items-center gap-1">
-										{#await linkedBadgeData then data}
-											{#if !isPackageNew(firstPackageName, data?.releases ?? [])}
-												{@render newCountBadge(
-													getUnvisitedReleases(firstPackageName, data?.releases ?? []).length
-												)}
-											{/if}
-										{/await}
+										{#if !isPackageNew(firstPackageName, linkedBadgeData.releases)}
+											{@render newCountBadge(
+												getUnvisitedReleases(firstPackageName, linkedBadgeData.releases).length
+											)}
+										{/if}
 										<ChevronRight
 											class="size-4 text-primary transition-transform group-hover:translate-x-1"
 										/>

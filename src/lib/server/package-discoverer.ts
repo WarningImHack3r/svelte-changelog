@@ -1,6 +1,7 @@
 import { dirname } from "node:path";
 import { uniq } from "#lib/array.js";
-import { dlog } from "#lib/logging.js";
+import { dlog, dwarn } from "#lib/logging.js";
+import { siteLang } from "#lib/properties.js";
 import { type Repository, publicRepos } from "#lib/repositories.js";
 import type { Prettify } from "#lib/types.js";
 import { GitHubAPI, githubCache } from "./github-api";
@@ -89,7 +90,7 @@ class PackageDiscoverer {
 					...repo,
 					packages: await Promise.all(
 						packages.map<Promise<Package>>(async pkg => {
-							const deprecationStatus = (await this.#api.getPackageDeprecation(pkg)).value;
+							const { value: deprecationStatus } = await this.#api.getPackageDeprecation(pkg);
 							const deprecated =
 								typeof deprecationStatus === "string" ? deprecationStatus : undefined;
 							return {
@@ -163,10 +164,29 @@ class PackageDiscoverer {
 	 * @returns all the discovered packages per repo name
 	 */
 	async getOrDiscover() {
-		if (this.#packages.length) {
-			return this.#packages;
-		}
+		if (this.#packages.length) return this.#packages;
+
 		await this.discoverAll();
+
+		// Duplicates detection
+		const foundPackages = this.#packages
+			.flatMap(({ packages }) => packages)
+			.map(({ name }) => name);
+		const uniqueFoundPackages = new Set<string>();
+		const duplicatePackages: string[] = [];
+		for (const p of foundPackages) {
+			if (uniqueFoundPackages.has(p)) {
+				duplicatePackages.push();
+				continue;
+			}
+			uniqueFoundPackages.add(p);
+		}
+		if (duplicatePackages.length) {
+			dwarn(
+				`Duplicate package(s) ${new Intl.ListFormat(siteLang).format(duplicatePackages)} found while aggregating packages releases; this should not happen!`
+			);
+		}
+
 		return this.#packages;
 	}
 

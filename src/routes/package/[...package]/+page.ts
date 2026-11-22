@@ -1,5 +1,5 @@
 import { definePageMetaTags } from "svelte-meta-tags";
-import { getRouteReleases } from "./releases.remote";
+import { getRouteReleases } from "../../releases.remote";
 
 export async function load({ url, params: { package: slugPackage } }) {
 	const { currentPackage } = await getRouteReleases(slugPackage);

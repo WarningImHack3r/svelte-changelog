@@ -15,18 +15,23 @@
 	import TopBanner from "#lib/components/TopBanner.svelte";
 	import { groupBy } from "#lib/polyfills.js";
 	import { ALL_SLUG } from "#lib/types.js";
-	import { getRouteReleases } from "./releases.remote";
-	import ReleaseCard from "./ReleaseCard.svelte";
+	import { getRouteReleases } from "../../releases.remote";
 	import { getPackageSettings, settingsUtils } from "../settings.svelte";
+	import ReleaseCard from "./ReleaseCard.svelte";
+
+	type RouteReleasesResult = Awaited<ReturnType<typeof getRouteReleases>>;
 
 	type Props = {
+		package: RouteReleasesResult["currentPackage"];
 		expandable?: string[];
-		displayable?: Awaited<ReturnType<typeof getRouteReleases>>["releases"];
+		displayable?: RouteReleasesResult["releases"];
 	};
 
-	let { expandable = $bindable(), displayable }: Props = $props();
-
-	let { currentPackage, releases = [] } = await getRouteReleases();
+	let {
+		package: currentPackage,
+		expandable = $bindable(),
+		displayable: releases = []
+	}: Props = $props();
 
 	const sharedSettings = getPackageSettings();
 	let packageSettings = $derived(sharedSettings.get(currentPackage.pkg.name));
@@ -198,7 +203,7 @@
 			{/snippet}
 		</TopBanner>
 	{/if}
-	{#each displayable as release, index (release.id)}
+	{#each releases as release, index (release.id)}
 		{let latestRelease = $derived(latestReleases[release.cleanName])}
 		{let earliestForMajors = $derived(earliestsForMajors[release.cleanName])}
 		{let semVersion = $derived(tryParse(release.cleanVersion))}

@@ -10,18 +10,16 @@
 	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
 	import AnimatedButton from "#lib/components/AnimatedButton.svelte";
 	import { local } from "#lib/storage.js";
+	import { getRouteReleases } from "../../releases.remote";
 	import { getPackageSettings } from "../settings.svelte";
+	import { computeSearchParams } from "./search-params";
 	import Header from "./Header.svelte";
 	import ResetDialog from "./ResetDialog.svelte";
-	import { getRouteReleases } from "./releases.remote";
-	import { computeSearchParams } from "./search-params";
 	import Releases from "./Releases.svelte";
 	import SidePanel from "./SidePanel.svelte";
-	import { getAllReleases } from "../../all-releases.remote";
-	import { getDisplayablePackages } from "../../packages.remote";
 
 	const { resetDate } = computeSearchParams(new URL(page.url.href));
-	const { currentPackage, releases } = await getRouteReleases(page.params.package);
+	let { currentPackage, releases } = $derived(await getRouteReleases(page.params.package));
 
 	const loadingSentences = [
 		"Loading",
@@ -169,15 +167,17 @@
 					<SidePanel
 						headless
 						packageName={currentPackage.pkg.name}
-						allPackages={await getDisplayablePackages()}
-						otherReleases={await getAllReleases()}
 						bind:settings={packageSettings.current}
 					/>
 				</Sheet.Content>
 			</Sheet.Root>
 		</div>
 		<div class="flex gap-8">
-			<Releases bind:expandable={expandableReleases} displayable={displayableReleases} />
+			<Releases
+				package={currentPackage}
+				bind:expandable={expandableReleases}
+				displayable={displayableReleases}
+			/>
 
 			<svelte:boundary>
 				{#snippet pending()}
@@ -186,8 +186,6 @@
 
 				<SidePanel
 					packageName={currentPackage.pkg.name}
-					allPackages={await getDisplayablePackages()}
-					otherReleases={await getAllReleases()}
 					class="hidden h-fit w-100 shrink-0 lg:flex"
 					bind:settings={packageSettings.current}
 				/>
