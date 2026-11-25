@@ -99,6 +99,10 @@
     				}
     			`,
 				disableErrorHandling: true,
+				parseDiffOptions: {
+					preferredDiffLib: "@pierre/patches"
+				},
+				deferHydrationHighlight: true,
 				...options
 			},
 			getWorker({ ...options, langs })
