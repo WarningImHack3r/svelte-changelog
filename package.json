@@ -72,7 +72,7 @@
 		"@octokit/graphql-schema": "^15.26.1",
 		"@octokit/types": "^18.0.0",
 		"@posthog/rollup-plugin": "^1.6.4",
-		"@stylistic/eslint-plugin": "^5.10.0",
+		"@stylistic/eslint-plugin": "^6.0.1",
 		"@sveltejs/load-config": "^0.2.3",
 		"@tailwindcss/vite": "^4.3.5",
 		"@total-typescript/ts-reset": "^0.6.1",
