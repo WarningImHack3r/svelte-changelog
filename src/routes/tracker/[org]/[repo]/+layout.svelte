@@ -24,9 +24,9 @@
 			{const active = repo.owner === params.org && repo.name === params.repo}
 			<li>
 				{#if active}
-					<span class="font-bold underline underline-offset-2">{repo.owner}/<wbr />{repo.name}</span
-					>
-					<!-- ↖ sorry for that hideous formatting, can't help it, prettier got me -->
+					<span class="font-bold underline underline-offset-2">
+						{repo.owner}/<wbr />{repo.name}
+					</span>
 				{:else}
 					<a
 						href={resolve("/tracker/[org]/[repo]", {
