@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => {
 					runes: ({ filename }) => (filename.split(sep).includes("node_modules") ? undefined : true)
 				},
 				adapter: adapter(),
+				tracing: {
+					server: true
+				},
 				paths: {
 					// Required for PostHog — https://posthog.com/docs/libraries/svelte#configuring-session-replay-for-server-side-rendered-apps
 					relative: false

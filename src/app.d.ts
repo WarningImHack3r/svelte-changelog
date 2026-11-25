@@ -1,5 +1,5 @@
 import type { ResolvedPathname } from "$app/types";
-import type { PostHog } from "posthog-node";
+import type { CaptureExceptionOptions, PostHog } from "posthog-node";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts for information about these interfaces
 declare global {
@@ -24,6 +24,7 @@ declare global {
 
 		interface Locals {
 			posthog: PostHog;
+			posthogError: CaptureExceptionOptions;
 		}
 
 		// interface PageData {}

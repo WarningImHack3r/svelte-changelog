@@ -8,7 +8,7 @@ export const variables = defineEnvVars({
 	// PostHog
 	POSTHOG_KEY: {
 		public: true,
-		description: "The PostHog key for posthog-js analytics",
+		description: "The PostHog key for analytics",
 		schema: v.optional(v.pipe(v.string(), v.regex(USUAL_TOKEN_REGEX)))
 	},
 	POSTHOG_ENV_ID: {
