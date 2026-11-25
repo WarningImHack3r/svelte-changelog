@@ -32,7 +32,7 @@ export function loadLanguages(
 		Object.entries(languages).map(([language, registrations]) => {
 			const regexps: string[] = [];
 			for (const registration of registrations) {
-				const patterns = registration.patterns;
+				const patterns = [...registration.patterns];
 				const visitedIncludes = new Set<string>();
 				for (const pattern of patterns) {
 					// Pattern with #include
