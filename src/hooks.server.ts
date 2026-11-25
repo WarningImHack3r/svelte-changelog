@@ -70,7 +70,7 @@ export async function handle({ event, resolve }) {
 			body: event.request.body,
 			// @ts-expect-error - duplex is required for streaming request bodies
 			duplex: "half"
-		});
+		}).catch(async () => await resolve(event));
 	}
 
 	/**
@@ -95,7 +95,7 @@ export async function handle({ event, resolve }) {
 					? { $trace_id: spanContext.traceId, $span_id: spanContext.spanId }
 					: {})
 			}
-    };
+		};
 
 		return client.withContext(
 			data,
