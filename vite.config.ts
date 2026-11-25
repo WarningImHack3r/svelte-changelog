@@ -1,4 +1,5 @@
 import { sveltekit } from "@sveltejs/kit/vite";
+import { svelteDevtools } from "@sveltejs/vite-devtools-svelte";
 import posthog from "@posthog/rollup-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import adapter from "adapter-node-sea";
@@ -12,10 +13,17 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), "");
 
 	return {
+		build: {
+			rolldownOptions: {
+				devtools: {}
+			}
+		},
+		devtools: { apply: "serve" },
 		plugins: [
 			devtoolsJson(),
 			lucidePreprocess(),
 			shaker({ verbose: true }),
+			svelteDevtools(),
 			sveltekit({
 				// Force runes mode for the project, except for libraries. Can be removed in Svelte 6.
 				compilerOptions: {
