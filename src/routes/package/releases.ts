@@ -59,11 +59,13 @@ export async function getPackageReleases(
 				})
 				.filter(release => {
 					if (!release.tag_name) {
-						posthog?.captureException(new Error("Release with null tag_name"), undefined, {
-							packageName,
-							repoOwner: repo.repoOwner,
-							repoName: repo.repoName,
-							...release
+						posthog?.captureException(new Error("Release with null tag_name"), {
+							properties: {
+								packageName,
+								repoOwner: repo.repoOwner,
+								repoName: repo.repoName,
+								...release
+							}
 						});
 						try {
 							dwarn(`Empty release tag name: ${JSON.stringify(release)}`);
@@ -85,12 +87,14 @@ export async function getPackageReleases(
 						return false;
 					}
 					if (!isValid(version)) {
-						posthog?.captureException(new Error("Invalid version"), undefined, {
-							repo: `${repo.repoOwner}/${repo.repoName}`,
-							packageName,
-							tag: release.tag_name,
-							parsedName: name,
-							parsedVersion: version
+						posthog?.captureException(new Error("Invalid version"), {
+							properties: {
+								repo: `${repo.repoOwner}/${repo.repoName}`,
+								packageName,
+								tag: release.tag_name,
+								parsedName: name,
+								parsedVersion: version
+							}
 						});
 						dwarn(
 							`Invalid version from \`metadataFromTag\` "${version}" gotten from ${release.tag_name}`

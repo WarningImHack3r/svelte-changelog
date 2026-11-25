@@ -15,11 +15,9 @@ export async function handleError({ kind, error, event }) {
 	if (kind === "app" || kind === "framework") return;
 	const stringified = stringifyError(error);
 	dfatal(`[SERVER] ${stringified}`);
-	client?.captureException(
-		error instanceof Error ? error : new Error(stringified),
-		undefined,
-		event
-	);
+	client?.captureException(error instanceof Error ? error : new Error(stringified), {
+		properties: event
+	});
 	await client?.shutdown();
 }
 
