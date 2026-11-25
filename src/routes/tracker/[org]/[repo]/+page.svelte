@@ -202,8 +202,10 @@
 			class="group *:underline-offset-4 after:ml-0.5 after:inline-block after:-translate-x-2 after:font-sans after:text-2xl after:opacity-0 after:transition after:content-['↗'] hover:after:translate-x-0 hover:after:opacity-100"
 		>
 			<span class="text-primary group-hover:underline">{params.org}</span><span
-				class="text-foreground no-underline">/</span
-			><wbr /><span class="text-primary group-hover:underline">{params.repo}</span>
+				class="text-foreground no-underline"
+			>
+				/
+			</span><wbr /><span class="text-primary group-hover:underline">{params.repo}</span>
 		</a>
 	</h1>
 	<div class="flex items-center gap-2">
