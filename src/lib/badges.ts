@@ -3,25 +3,6 @@ import type { GitHubRelease } from "./server/github-api";
 import { local } from "./storage";
 
 /**
- * Extract the data from the record parameter which the key matches the argument.
- *
- * @param record the record to extract releases from
- * @param pkgName the package name to extract releases for
- * @returns the {@link Promise} of releases
- */
-export function getBadgeDataFromRecord<T>(
-	record: Record<string, Promise<T | undefined>>,
-	pkgName: string
-): Promise<T | undefined> {
-	const releases = Object.entries(record).find(
-		([k]) => k.localeCompare(pkgName, undefined, { sensitivity: "base" }) === 0
-	);
-	if (!releases) return Promise.resolve(undefined);
-	const [, v] = releases;
-	return v;
-}
-
-/**
  * Filter the releases to exclude those that have already been seen
  *
  * @param pkgName the package name for the releases

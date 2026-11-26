@@ -2,12 +2,12 @@
 	import { resolve } from "$app/paths";
 	import { ChevronRight, Pin } from "@lucide/svelte";
 	import { PersistedState } from "runed";
-	import { getBadgeDataFromRecord, getUnvisitedReleases, isPackageNew } from "#lib/badges.js";
+	import { getUnvisitedReleases, isPackageNew } from "#lib/badges.js";
 	import { Badge } from "#lib/components/ui/badge/index.js";
 	import { Separator } from "#lib/components/ui/separator/index.js";
 	import { Toggle } from "#lib/components/ui/toggle/index.js";
-
-	let { data } = $props();
+	import { getDisplayablePackages } from "../packages.remote";
+	import { getRouteReleases } from "../releases.remote";
 
 	// Pins
 	let pinnedPackages = new PersistedState<string[]>("sidebar-pinned", []);
@@ -20,7 +20,7 @@
 </script>
 
 <ul class="space-y-8">
-	{#each data.displayablePackages as { category, packages } (category)}
+	{#each await getDisplayablePackages() as { category, packages } (category)}
 		{let sortedPackages = $derived(
 			packages.toSorted(({ pkg: pkgA }, { pkg: pkgB }) => {
 				const isAPinned = pinnedROProxy.has(pkgA.name);
@@ -56,7 +56,7 @@
 			<ul class="mt-2">
 				{#each sortedPackages as { repoOwner, repoName, pkg }, index (pkg.name)}
 					{let viewTransitionName = $derived(pkg.name.replace(/[@/-]/g, ""))}
-					{let linkedBadgeData = $derived(getBadgeDataFromRecord(data.allReleases, pkg.name))}
+					{let linkedBadgeData = $derived(await getRouteReleases(pkg.name))}
 					{#if index > 0}
 						<Separator class="mx-auto my-1 w-[95%]" />
 					{/if}
@@ -102,11 +102,9 @@
 									>
 										{pkg.name}
 									</span>
-									{#await linkedBadgeData then d}
-										{#if isPackageNew(pkg.name, d?.releases ?? [])}
-											<Badge class="shrink-0">New!</Badge>
-										{/if}
-									{/await}
+									{#if isPackageNew(pkg.name, linkedBadgeData.releases)}
+										<Badge class="shrink-0">New!</Badge>
+									{/if}
 									{#if pkg.deprecated}
 										<Badge variant="outline" class="mb-2 border-current text-amber-600 xs:mb-0">
 											Deprecated
@@ -139,16 +137,14 @@
 								</span>
 							</div>
 							<span class="mr-1 ml-auto flex shrink-0 items-center gap-1">
-								{#await linkedBadgeData then d}
-									{#if !isPackageNew(pkg.name, d?.releases ?? [])}
-										{let newCount = $derived(
-											getUnvisitedReleases(pkg.name, d?.releases ?? []).length
-										)}
-										{#if newCount > 0}
-											<Badge class="shrink-0">{newCount} new</Badge>
-										{/if}
+								{#if !isPackageNew(pkg.name, linkedBadgeData.releases)}
+									{let newCount = $derived(
+										getUnvisitedReleases(pkg.name, linkedBadgeData.releases).length
+									)}
+									{#if newCount > 0}
+										<Badge class="shrink-0">{newCount} new</Badge>
 									{/if}
-								{/await}
+								{/if}
 								<ChevronRight class="transition-transform group-hover:translate-x-1" />
 							</span>
 						</a>

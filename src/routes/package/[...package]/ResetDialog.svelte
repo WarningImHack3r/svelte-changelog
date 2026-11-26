@@ -29,22 +29,21 @@
 	import { Checkbox } from "#lib/components/ui/checkbox/index.js";
 	import * as Dialog from "#lib/components/ui/dialog/index.js";
 	import { Label } from "#lib/components/ui/label/index.js";
-	import type { GitHubRelease } from "#lib/server/github-api.js";
 	import { local } from "#lib/storage.js";
+	import { getDisplayablePackages } from "../../packages.remote";
+	import { getRouteReleases } from "../../releases.remote";
 
 	type Props = {
 		currentPackage: string;
 		resetDate: Date | undefined;
-		allPackageReleases: Record<
-			string,
-			Promise<
-				{ releases: ({ cleanName: string; cleanVersion: string } & GitHubRelease)[] } | undefined
-			>
-		>;
 	};
 
-	let { currentPackage, resetDate, allPackageReleases }: Props = $props();
+	let { currentPackage, resetDate }: Props = $props();
 	let id = $props.id();
+
+	let packages = $derived(
+		(await getDisplayablePackages()).flatMap(({ packages }) => packages).map(({ pkg }) => pkg.name)
+	);
 
 	const currentDate = new Date();
 
@@ -67,29 +66,26 @@
 	});
 	let hasHourReset = $derived(resetDate && currentDate.getHours() !== resetDate.getHours());
 	let hasNotFullySeens = $derived(notFullySeenPackages.length > 0 && applyAll);
-	let isDoneScanning = $derived(donePackages >= Object.keys(allPackageReleases).length); // > should hopefully not happen, but just in case
+	let isDoneScanning = $derived(donePackages >= packages.length); // > should hopefully not happen, but just in case
 	$effect(() => {
 		if (!targetDate) return;
 		donePackages = 0;
 		notFullySeenPackages.length = 0;
 
-		for (const [pkgName, releases] of Object.entries(allPackageReleases)) {
-			releases
+		for (const pkgName of packages) {
+			getRouteReleases(pkgName)
 				.then(r => {
-					if (r) {
-						const lastVisitedItem = local.getItem(`last-visited-${pkgName}`);
-						if (lastVisitedItem) {
-							const lastVisitedDate = new Date(lastVisitedItem);
-							// will nuke visits if lastVisitedDate < resetDate (targetDate) && releases between them
-							const willNukeUnseen =
-								lastVisitedDate < targetDate &&
-								r.releases.some(({ created_at, published_at }) => {
-									const releaseDate = new Date(published_at ?? created_at);
-									return releaseDate > lastVisitedDate && releaseDate < targetDate;
-								});
-							if (willNukeUnseen) notFullySeenPackages.push(pkgName);
-						}
-					}
+					const lastVisitedItem = local.getItem(`last-visited-${pkgName}`);
+					if (!lastVisitedItem) return;
+					const lastVisitedDate = new Date(lastVisitedItem);
+					// will nuke visits if lastVisitedDate < resetDate (targetDate) && releases between them
+					const willNukeUnseen =
+						lastVisitedDate < targetDate &&
+						r.releases.some(({ created_at, published_at }) => {
+							const releaseDate = new Date(published_at ?? created_at);
+							return releaseDate > lastVisitedDate && releaseDate < targetDate;
+						});
+					if (willNukeUnseen) notFullySeenPackages.push(pkgName);
 				})
 				.catch(() => {
 					// nothing to do: just catching the error
@@ -104,7 +100,7 @@
 	function reset() {
 		if (!targetDate) return;
 
-		for (const pkgName of Object.keys(allPackageReleases)) {
+		for (const pkgName of packages) {
 			if (
 				!applyAll &&
 				pkgName.localeCompare(currentPackage, undefined, { sensitivity: "base" }) !== 0
