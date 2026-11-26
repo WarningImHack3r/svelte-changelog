@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
 				devtools: {}
 			}
 		},
-		devtools: { apply: "serve" },
+		devtools: process.env.ESLINT_RUN ? undefined : { apply: "serve" },
 		plugins: [
 			devtoolsJson(),
 			lucidePreprocess(),

@@ -10,6 +10,7 @@ import path from "node:path";
 import tseslint from "typescript-eslint";
 
 // TODO: remove that once there is a built-in solution somewhere within Svelte ESLint packages
+process.env.ESLINT_RUN = "true";
 const loadedConfig = await loadConfig(".", { traverse: false });
 const svelteConfig =
 	loadedConfig && "config" in loadedConfig
